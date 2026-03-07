@@ -27,7 +27,10 @@ jobs:
             - name: Cache full dependencies
               uses: actions/cache/save@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Install dependencies (prod-only)
@@ -36,7 +39,10 @@ jobs:
             - name: Cache prod-only dependencies
               uses: actions/cache/save@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-prod-${{ hashFiles('package-lock.json') }}
 
     test:
@@ -53,7 +59,10 @@ jobs:
             - name: Restore full dependencies
               uses: actions/cache/restore@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Run tests
@@ -73,7 +82,10 @@ jobs:
             - name: Restore full dependencies
               uses: actions/cache/restore@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Run lint
@@ -93,7 +105,10 @@ jobs:
             - name: Restore full dependencies
               uses: actions/cache/restore@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Run typecheck
@@ -113,7 +128,10 @@ jobs:
             - name: Restore full dependencies
               uses: actions/cache/restore@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Ensure clean Docker state
@@ -140,7 +158,10 @@ jobs:
             - name: Restore full dependencies
               uses: actions/cache/restore@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Build web and dependencies
@@ -166,7 +187,10 @@ jobs:
             - name: Restore full dependencies
               uses: actions/cache/restore@v5
               with:
-                  path: node_modules
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Build mobile and dependencies
@@ -196,6 +220,6 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   name: system-public-assets
-                  path: "*.zip"
+                  path: '*.zip'
                   if-no-files-found: ignore
                   retention-days: 30
