@@ -18,11 +18,7 @@ function getUnitName(armyUnit: ArmyUnit, factionData: FactionData): string {
 /**
  * Check that a leader is not assigned to lead itself.
  */
-function checkLeaderNotSelf(
-    armyUnit: ArmyUnit,
-    targetUnit: ArmyUnit,
-    leaderName: string,
-): ValidationResult | null {
+function checkLeaderNotSelf(armyUnit: ArmyUnit, targetUnit: ArmyUnit, leaderName: string): ValidationResult | null {
     if (armyUnit.id !== targetUnit.id) {
         return null;
     }
@@ -41,10 +37,7 @@ function checkLeaderNotSelf(
 /**
  * Check that a leader unit has the Character keyword.
  */
-function checkLeaderIsCharacter(
-    armyUnit: ArmyUnit,
-    leaderDefinition: Unit,
-): ValidationResult | null {
+function checkLeaderIsCharacter(armyUnit: ArmyUnit, leaderDefinition: Unit): ValidationResult | null {
     const lowerKeywords = leaderDefinition.keywords.map((k) => k.toLowerCase());
 
     if (lowerKeywords.includes('character')) {
@@ -65,10 +58,7 @@ function checkLeaderIsCharacter(
 /**
  * Check that a leader unit has the Leader ability defined.
  */
-function checkLeaderHasAbility(
-    armyUnit: ArmyUnit,
-    leaderDefinition: Unit,
-): ValidationResult | null {
+function checkLeaderHasAbility(armyUnit: ArmyUnit, leaderDefinition: Unit): ValidationResult | null {
     if (leaderDefinition.leader) {
         return null;
     }

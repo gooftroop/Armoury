@@ -88,12 +88,12 @@ describe('DataContext.builder()', () => {
 // ============================================================
 
 describe('dc.accounts (AccountDAO)', { timeout: 60_000 }, () => {
-let dc: DataContext<GameData>;
+    let dc: DataContext<GameData>;
 
     beforeEach(async () => {
         const mockAdapter = new MockDatabaseAdapter();
         await mockAdapter.initialize();
-dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
+        dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
     });
 
     it('saves and retrieves an account', async () => {
@@ -146,12 +146,12 @@ dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAd
 // ============================================================
 
 describe('dc.social (FriendDAO)', { timeout: 60_000 }, () => {
-let dc: DataContext<GameData>;
+    let dc: DataContext<GameData>;
 
     beforeEach(async () => {
         const mockAdapter = new MockDatabaseAdapter();
         await mockAdapter.initialize();
-dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
+        dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
     });
 
     it('saves and retrieves a friend', async () => {
@@ -203,12 +203,12 @@ dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAd
 // ============================================================
 
 describe('dc.armies (ArmyDAO)', { timeout: 60_000 }, () => {
-let dc: DataContext<GameData>;
+    let dc: DataContext<GameData>;
 
     beforeEach(async () => {
         const mockAdapter = new MockDatabaseAdapter();
         await mockAdapter.initialize();
-dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
+        dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
     });
 
     it('saves and retrieves an army', async () => {
@@ -250,12 +250,12 @@ dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAd
 // ============================================================
 
 describe('dc.campaigns (CampaignDAO)', { timeout: 60_000 }, () => {
-let dc: DataContext<GameData>;
+    let dc: DataContext<GameData>;
 
     beforeEach(async () => {
         const mockAdapter = new MockDatabaseAdapter();
         await mockAdapter.initialize();
-dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
+        dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
     });
 
     it('saves and retrieves a campaign', async () => {
@@ -289,12 +289,12 @@ dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAd
 // ============================================================
 
 describe('dc.matches (MatchDAO)', { timeout: 60_000 }, () => {
-let dc: DataContext<GameData>;
+    let dc: DataContext<GameData>;
 
     beforeEach(async () => {
         const mockAdapter = new MockDatabaseAdapter();
         await mockAdapter.initialize();
-dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
+        dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
     });
 
     it('saves and retrieves a match', async () => {
@@ -331,12 +331,12 @@ dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAd
 // ============================================================
 
 describe.skipIf(!HAS_TOKEN)('dc.game (real BSData)', { timeout: 120_000 }, () => {
-let dc: DataContext<GameData>;
+    let dc: DataContext<GameData>;
 
     beforeAll(async () => {
         const mockAdapter = new MockDatabaseAdapter();
         await mockAdapter.initialize();
-dc = await DataContext.builder<GameData>()
+        dc = await DataContext.builder<GameData>()
             .system(wh40k10eSystem)
             .adapter(mockAdapter)
             .github(new GitHubClient({ token: GITHUB_TOKEN! }))
@@ -476,12 +476,12 @@ dc = await DataContext.builder<GameData>()
 // ============================================================
 
 describe('dc.game — all faction getters exist', { timeout: 60_000 }, () => {
-let dc: DataContext<GameData>;
+    let dc: DataContext<GameData>;
 
     beforeAll(async () => {
         const mockAdapter = new MockDatabaseAdapter();
         await mockAdapter.initialize();
-dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
+        dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(mockAdapter).build();
     });
 
     afterAll(async () => {

@@ -178,7 +178,6 @@ describe('validation utilities', () => {
             expect((result as Error).message).toBe('Request body is required');
         });
 
-
         it('returns error for invalid preferences', () => {
             const result = parseCreateAccount({ ...validPayload, preferences: 'bad' });
 
@@ -188,7 +187,6 @@ describe('validation utilities', () => {
     });
 
     describe('parseUpdateAccount', () => {
-
         it('returns parsed payload with preferences', () => {
             const prefs: UserPreferences = { theme: 'light', language: 'fr', notificationsEnabled: false };
             const result = parseUpdateAccount({ preferences: prefs });

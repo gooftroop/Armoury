@@ -13,10 +13,7 @@ import type { UserParams } from '@clients-users/types.js';
  * @param params - Parameters containing the user ID
  * @returns Promise resolving when the user is deleted
  */
-export async function deleteUser(
-    authorization: string,
-    params: UserParams,
-): Promise<void> {
+export async function deleteUser(authorization: string, params: UserParams): Promise<void> {
     await ky.delete(`users/${params.userId}`, {
         prefixUrl: USERS_BASE_URL,
         headers: { Authorization: authorization },

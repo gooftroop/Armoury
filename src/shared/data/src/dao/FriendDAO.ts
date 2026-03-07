@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { Friend, FriendStatus } from '@models/FriendModel.js';
@@ -36,13 +35,15 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, boolean, timestamp, index } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 export const friendsTable = pgTable(
     'friends',
     {
-        id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         ownerId: text('owner_id').notNull(),
         userId: text('user_id').notNull(),
         status: text('status').notNull(),
@@ -61,7 +62,10 @@ export const friendsTable = pgTable(
 export const friendsSqliteTable = sl.sqliteTable(
     'friends',
     {
-        id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        id: sl
+            .text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         ownerId: sl.text('owner_id').notNull(),
         userId: sl.text('user_id').notNull(),
         status: sl.text('status').notNull(),

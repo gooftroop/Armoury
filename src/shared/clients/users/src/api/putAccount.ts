@@ -19,9 +19,11 @@ export async function putAccount(
     params: UserParams,
     body: UpdateAccountRequest,
 ): Promise<Account> {
-    return ky.put(`users/${params.userId}/account`, {
-        prefixUrl: USERS_BASE_URL,
-        headers: { Authorization: authorization },
-        json: body,
-    }).json<Account>();
+    return ky
+        .put(`users/${params.userId}/account`, {
+            prefixUrl: USERS_BASE_URL,
+            headers: { Authorization: authorization },
+            json: body,
+        })
+        .json<Account>();
 }

@@ -1,8 +1,6 @@
 import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
 
-export function makeCoreRules(
-    overrides: Partial<CoreRules> = {},
-): CoreRules {
+export function makeCoreRules(overrides: Partial<CoreRules> = {}): CoreRules {
     const defaults = {
         id: 'wh40k-10e-gst',
         name: 'Warhammer 40,000 10th Edition',

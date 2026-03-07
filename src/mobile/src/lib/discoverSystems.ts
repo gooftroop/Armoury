@@ -33,6 +33,6 @@ import wh40k10eManifest from '@mobile/public/systems/wh40k10e/manifest.json';
  * Add new system manifest imports above and include them in this array
  * when new game system plugins are added to the monorepo.
  */
-export const systemManifests: GameSystemManifest[] = [
-    wh40k10eManifest as GameSystemManifest,
-].sort((a, b) => a.id.localeCompare(b.id));
+export const systemManifests: GameSystemManifest[] = [wh40k10eManifest as GameSystemManifest].sort((a, b) =>
+    a.id.localeCompare(b.id),
+);

@@ -13,8 +13,10 @@ import type { User } from '@clients-users/types.js';
  * @returns Promise resolving to an array of users
  */
 export async function getUsers(authorization: string): Promise<User[]> {
-    return ky.get('users', {
-        prefixUrl: USERS_BASE_URL,
-        headers: { Authorization: authorization },
-    }).json<User[]>();
+    return ky
+        .get('users', {
+            prefixUrl: USERS_BASE_URL,
+            headers: { Authorization: authorization },
+        })
+        .json<User[]>();
 }

@@ -1,4 +1,10 @@
-import type { CreateAccountPayload, CreateUserPayload, UpdateAccountPayload, UpdateUserPayload, UserPreferences } from '@users/src/types.js';
+import type {
+    CreateAccountPayload,
+    CreateUserPayload,
+    UpdateAccountPayload,
+    UpdateUserPayload,
+    UserPreferences,
+} from '@users/src/types.js';
 
 /**
  * Type guard for records.
@@ -104,7 +110,7 @@ export function parseUpdateUser(body: unknown | null): UpdateUserPayload | Error
     return {
         email: email ?? undefined,
         name: name ?? undefined,
-        picture: picture === undefined ? undefined : (isString(picture) ? picture : null),
+        picture: picture === undefined ? undefined : isString(picture) ? picture : null,
     } as UpdateUserPayload;
 }
 

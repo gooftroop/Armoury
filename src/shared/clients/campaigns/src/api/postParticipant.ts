@@ -19,9 +19,11 @@ export async function postParticipant(
 ): Promise<CampaignParticipant> {
     const { campaignId, ...request } = params;
 
-    return ky.post(`campaigns/${campaignId}/participants`, {
-        prefixUrl: CAMPAIGNS_BASE_URL,
-        headers: { Authorization: authorization },
-        json: request,
-    }).json<CampaignParticipant>();
+    return ky
+        .post(`campaigns/${campaignId}/participants`, {
+            prefixUrl: CAMPAIGNS_BASE_URL,
+            headers: { Authorization: authorization },
+            json: request,
+        })
+        .json<CampaignParticipant>();
 }

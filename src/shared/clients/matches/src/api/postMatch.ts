@@ -10,9 +10,11 @@ import type { CreateMatchRequest, Match } from '@clients-matches/types.js';
  * @returns Promise resolving to the created match.
  */
 export async function postMatch(authorization: string, params: CreateMatchRequest): Promise<Match> {
-    return ky.post('matches', {
-        prefixUrl: MATCHES_BASE_URL,
-        headers: { Authorization: authorization },
-        json: params,
-    }).json<Match>();
+    return ky
+        .post('matches', {
+            prefixUrl: MATCHES_BASE_URL,
+            headers: { Authorization: authorization },
+            json: params,
+        })
+        .json<Match>();
 }

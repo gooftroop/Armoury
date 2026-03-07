@@ -12,7 +12,6 @@ export interface MatchDataBase<TPlayerState extends object = Record<string, unkn
     playerStateById: Record<string, TPlayerState>;
 }
 
-
 export interface MatchPlayer {
     playerId: string;
     campaignParticipantId: string | null;

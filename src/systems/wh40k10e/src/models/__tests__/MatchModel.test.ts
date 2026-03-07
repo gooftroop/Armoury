@@ -38,7 +38,13 @@ function buildMatchData(): MatchData {
                     unitsByArmyUnitId: {
                         'au-1': {
                             unitId: 'intercessors',
-                            modelWounds: { 'Sergeant': 2, 'Intercessor 1': 2, 'Intercessor 2': 2, 'Intercessor 3': 2, 'Intercessor 4': 2 },
+                            modelWounds: {
+                                Sergeant: 2,
+                                'Intercessor 1': 2,
+                                'Intercessor 2': 2,
+                                'Intercessor 3': 2,
+                                'Intercessor 4': 2,
+                            },
                             kills: 0,
                             flags: createDefaultUnitFlags(),
                         },
@@ -56,7 +62,13 @@ function buildMatchData(): MatchData {
                     unitsByArmyUnitId: {
                         'au-2': {
                             unitId: 'warriors',
-                            modelWounds: { 'Warrior 1': 1, 'Warrior 2': 1, 'Warrior 3': 1, 'Warrior 4': 1, 'Warrior 5': 1 },
+                            modelWounds: {
+                                'Warrior 1': 1,
+                                'Warrior 2': 1,
+                                'Warrior 3': 1,
+                                'Warrior 4': 1,
+                                'Warrior 5': 1,
+                            },
                             kills: 0,
                             flags: createDefaultUnitFlags(),
                         },
@@ -119,7 +131,13 @@ describe('MatchData', () => {
     it('tracks per-model wounds correctly', () => {
         const data = buildMatchData();
         const unit = data.playerStateById['user-1']!.armyProjection.unitsByArmyUnitId['au-1']!;
-        expect(unit.modelWounds).toEqual({ 'Sergeant': 2, 'Intercessor 1': 2, 'Intercessor 2': 2, 'Intercessor 3': 2, 'Intercessor 4': 2 });
+        expect(unit.modelWounds).toEqual({
+            Sergeant: 2,
+            'Intercessor 1': 2,
+            'Intercessor 2': 2,
+            'Intercessor 3': 2,
+            'Intercessor 4': 2,
+        });
         expect(unit.kills).toBe(0);
     });
 });
@@ -145,7 +163,7 @@ describe('createDefaultGameState', () => {
 });
 
 describe('Match', () => {
-        it('creates from a valid Match<MatchData>', () => {
+    it('creates from a valid Match<MatchData>', () => {
         const match = Match.fromMatch(buildCoreMatch());
         expect(match.id).toBe('match-1');
         expect(match.config.battleSize).toBe('StrikeForce');

@@ -78,12 +78,7 @@ abstract class BSDataBaseDAO<T> extends RemoteDataDAO<T> {
         }
 
         try {
-            return await this.githubClient.checkForUpdates(
-                this.owner,
-                this.repo,
-                this.getRemoteFilePath(),
-                status.sha,
-            );
+            return await this.githubClient.checkForUpdates(this.owner, this.repo, this.getRemoteFilePath(), status.sha);
         } catch {
             return true;
         }

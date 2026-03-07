@@ -61,9 +61,7 @@ export class PresenceStream implements IPresenceStream {
      * Internal BehaviorSubject holding the current map of online friends.
      * Keyed by userId, value is the {@link OnlineFriend} snapshot.
      */
-    private readonly onlineFriendsSubject = new BehaviorSubject<ReadonlyMap<string, OnlineFriend>>(
-        new Map(),
-    );
+    private readonly onlineFriendsSubject = new BehaviorSubject<ReadonlyMap<string, OnlineFriend>>(new Map());
 
     /**
      * Subscription to the underlying client's messages$ stream.
@@ -75,8 +73,7 @@ export class PresenceStream implements IPresenceStream {
     private disposed = false;
 
     /** Observable map of currently online friends, keyed by userId. */
-    readonly onlineFriends$: Observable<ReadonlyMap<string, OnlineFriend>> =
-        this.onlineFriendsSubject.asObservable();
+    readonly onlineFriends$: Observable<ReadonlyMap<string, OnlineFriend>> = this.onlineFriendsSubject.asObservable();
 
     /**
      * Observable of the count of currently online friends.

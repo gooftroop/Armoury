@@ -13,10 +13,7 @@ import type { CampaignParams } from '@clients-campaigns/types.js';
  * @param params - Parameters containing the campaign ID
  * @returns Promise resolving when the campaign is deleted
  */
-export async function deleteCampaign(
-    authorization: string,
-    params: CampaignParams,
-): Promise<void> {
+export async function deleteCampaign(authorization: string, params: CampaignParams): Promise<void> {
     await ky.delete(`campaigns/${params.campaignId}`, {
         prefixUrl: CAMPAIGNS_BASE_URL,
         headers: { Authorization: authorization },

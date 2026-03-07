@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter, EntityMap, EntityType } from '@matches/src/types.js';
 
 type QueryResult = {
@@ -50,7 +49,7 @@ type StoreConfig = {
     jsonFields: Set<string>;
 };
 
-const { Client } = await import('pg') as unknown as { Client: PgClientConstructor };
+const { Client } = (await import('pg')) as unknown as { Client: PgClientConstructor };
 
 const STORE_CONFIGS: Record<EntityType, StoreConfig> = {
     match: {

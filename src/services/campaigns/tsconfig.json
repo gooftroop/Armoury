@@ -13,5 +13,5 @@
             "@adapters-pglite/*": ["../../shared/adapters/pglite/src/*"]
         }
     },
-    "include": ["src/**/*.ts", "e2e/**/*.ts"],
+    "include": ["src/**/*.ts", "e2e/**/*.ts"]
 }

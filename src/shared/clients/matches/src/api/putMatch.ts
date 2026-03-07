@@ -9,15 +9,14 @@ import type { UpdateMatchRequest, Match, MatchParams } from '@clients-matches/ty
  * @param params - Parameters containing the match ID and update fields.
  * @returns Promise resolving to the updated match.
  */
-export async function putMatch(
-    authorization: string,
-    params: MatchParams & UpdateMatchRequest,
-): Promise<Match> {
+export async function putMatch(authorization: string, params: MatchParams & UpdateMatchRequest): Promise<Match> {
     const { matchId, ...request } = params;
 
-    return ky.put(`matches/${matchId}`, {
-        prefixUrl: MATCHES_BASE_URL,
-        headers: { Authorization: authorization },
-        json: request,
-    }).json<Match>();
+    return ky
+        .put(`matches/${matchId}`, {
+            prefixUrl: MATCHES_BASE_URL,
+            headers: { Authorization: authorization },
+            json: request,
+        })
+        .json<Match>();
 }

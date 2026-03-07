@@ -13,13 +13,12 @@ import type { Friend, SendFriendRequestPayload } from '@clients-friends/types.js
  * @param params - The friend request payload containing receiver information.
  * @returns Promise resolving to the created friend relationship.
  */
-export async function postFriendRequest(
-    authorization: string,
-    params: SendFriendRequestPayload,
-): Promise<Friend> {
-    return ky.post('friends', {
-        prefixUrl: FRIENDS_BASE_URL,
-        headers: { Authorization: authorization },
-        json: params,
-    }).json<Friend>();
+export async function postFriendRequest(authorization: string, params: SendFriendRequestPayload): Promise<Friend> {
+    return ky
+        .post('friends', {
+            prefixUrl: FRIENDS_BASE_URL,
+            headers: { Authorization: authorization },
+            json: params,
+        })
+        .json<Friend>();
 }

@@ -175,7 +175,6 @@ describe('PGliteAdapter E2E', () => {
             expect(result!.campaignId).toBe('campaign-1');
             expect(result!.userId).toBe('auth0|user-1');
         });
-
     });
 
     describe('putMany', () => {

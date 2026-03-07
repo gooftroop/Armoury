@@ -13,8 +13,10 @@ import type { Campaign } from '@clients-campaigns/types.js';
  * @returns Promise resolving to an array of campaigns
  */
 export async function getCampaigns(authorization: string): Promise<Campaign[]> {
-    return ky.get('campaigns', {
-        prefixUrl: CAMPAIGNS_BASE_URL,
-        headers: { Authorization: authorization },
-    }).json<Campaign[]>();
+    return ky
+        .get('campaigns', {
+            prefixUrl: CAMPAIGNS_BASE_URL,
+            headers: { Authorization: authorization },
+        })
+        .json<Campaign[]>();
 }

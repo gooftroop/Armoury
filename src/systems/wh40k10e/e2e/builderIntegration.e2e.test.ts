@@ -30,12 +30,12 @@ async function createInitializedAdapter(): Promise<MockDatabaseAdapter> {
  */
 describe.skipIf(!HAS_TOKEN)('DataContextBuilder integration', { timeout: 120_000 }, () => {
     let sharedAdapter: MockDatabaseAdapter;
-let sharedDc: DataContext<GameData>;
+    let sharedDc: DataContext<GameData>;
 
     beforeAll(async () => {
         const githubClient = createGitHubClient();
         sharedAdapter = await createInitializedAdapter();
-sharedDc = await DataContext.builder<GameData>()
+        sharedDc = await DataContext.builder<GameData>()
             .system(wh40k10eSystem)
             .adapter(sharedAdapter)
             .github(githubClient)
@@ -63,7 +63,7 @@ sharedDc = await DataContext.builder<GameData>()
         expect(adapter.initialized).toBe(false);
 
         /** Build WITHOUT .github() — only tests adapter initialization. */
-const dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(adapter).build();
+        const dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(adapter).build();
 
         expect(adapter.initialized).toBe(true);
 
@@ -80,12 +80,12 @@ const dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(
 
         expect(coreRules).toHaveProperty('id');
         expect(coreRules).toHaveProperty('profileTypes');
-
+    });
     it('supports building twice with the same adapter', async () => {
         const adapter = await createInitializedAdapter();
 
         /** Build WITHOUT .github() — only tests builder double-build. */
-const builder = DataContext.builder<GameData>().system(wh40k10eSystem).adapter(adapter);
+        const builder = DataContext.builder<GameData>().system(wh40k10eSystem).adapter(adapter);
 
         const first = await builder.build();
         await first.close();

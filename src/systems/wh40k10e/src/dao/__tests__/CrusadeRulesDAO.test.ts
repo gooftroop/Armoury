@@ -44,7 +44,9 @@ describe('CrusadeRulesDAO', () => {
      * Test: fetchRemoteData() returns hardcoded CrusadeRules object with correct shape.
      */
     it('fetchRemoteData() returns hardcoded CrusadeRules object with correct shape', async () => {
-        const result = await (dao as unknown as { fetchRemoteData: (client: IGitHubClient) => Promise<Record<string, unknown>> }).fetchRemoteData(mockGitHubClient);
+        const result = await (
+            dao as unknown as { fetchRemoteData: (client: IGitHubClient) => Promise<Record<string, unknown>> }
+        ).fetchRemoteData(mockGitHubClient);
 
         expect(result).toEqual({
             id: 'crusade-core',

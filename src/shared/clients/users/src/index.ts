@@ -21,12 +21,7 @@ export type {
 
 // === Error Classes and Type Guards ===
 
-export {
-    UsersApiError,
-    UsersNetworkError,
-    isUsersApiError,
-    isUsersNetworkError,
-} from '@clients-users/types.js';
+export { UsersApiError, UsersNetworkError, isUsersApiError, isUsersNetworkError } from '@clients-users/types.js';
 
 // === Config ===
 

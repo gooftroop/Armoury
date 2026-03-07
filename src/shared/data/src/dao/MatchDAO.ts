@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { Match } from '@models/MatchModel.js';
@@ -36,13 +35,15 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, jsonb } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for match entities. */
 export const matchesTable = pgTable('matches', {
-    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     systemId: text('system_id').notNull(),
     players: jsonb('players').notNull(),
     turn: jsonb('turn').notNull(),
@@ -58,7 +59,10 @@ export const matchesTable = pgTable('matches', {
 
 /** Drizzle SQLite table mapping for match entities. */
 export const matchesSqliteTable = sl.sqliteTable('matches', {
-    id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: sl
+        .text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     systemId: sl.text('system_id').notNull(),
     players: sl.text('players').notNull(),
     turn: sl.text('turn').notNull(),

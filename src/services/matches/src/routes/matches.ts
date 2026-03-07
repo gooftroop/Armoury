@@ -61,9 +61,7 @@ export const listMatches: RouteHandler = async (
     userContext: UserContext,
 ): Promise<ApiResponse> => {
     const allMatches = await adapter.getAll('match');
-    const userMatches = (allMatches as Match[]).filter((m) =>
-        m.players.some((p) => p.playerId === userContext.sub),
-    );
+    const userMatches = (allMatches as Match[]).filter((m) => m.players.some((p) => p.playerId === userContext.sub));
 
     return jsonResponse(200, userMatches);
 };

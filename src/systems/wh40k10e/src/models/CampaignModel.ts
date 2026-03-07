@@ -11,7 +11,6 @@
 
 import type { CrusadeUnitRank } from '@wh40k10e/models/CrusadeRulesModel.js';
 
-
 /**
  * A battle honour earned by a crusade unit.
  */

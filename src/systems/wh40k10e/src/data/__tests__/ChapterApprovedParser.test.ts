@@ -87,8 +87,7 @@ interface ParserTestAccessor {
 }
 
 /** Casts a ChapterApprovedParser instance to expose private methods for testing. */
-const asAccessor = (parser: ChapterApprovedParser): ParserTestAccessor =>
-    parser as unknown as ParserTestAccessor;
+const asAccessor = (parser: ChapterApprovedParser): ParserTestAccessor => parser as unknown as ParserTestAccessor;
 
 // ─── HTML Fixture Builders ────────────────────────────────────────────────────
 
@@ -242,11 +241,7 @@ const buildDeploymentZoneFragment = (name: string, imgPath: string): string => {
  * Builds a deployment zone HTML fragment with Designer's Note special rules.
  * Includes `<span class="itc">` with designer note content.
  */
-const buildDeploymentZoneWithSpecialRulesFragment = (
-    name: string,
-    imgPath: string,
-    specialRules: string,
-): string => {
+const buildDeploymentZoneWithSpecialRulesFragment = (name: string, imgPath: string, specialRules: string): string => {
     return (
         `<div class="cgHeader">${name}</div>` +
         `<img src="${imgPath}">` +
@@ -366,20 +361,14 @@ const buildTournamentTable = (
  * @param numbers - Layout numbers (e.g. [1, 2, 3])
  */
 const buildTerrainLayoutImages = (numbers: number[]): string => {
-    return numbers
-        .map((n) => `<img src="/wh40k10ed/img/maps/TerrainLayout/CA_TerrainLayout${n}.png">`)
-        .join('\n');
+    return numbers.map((n) => `<img src="/wh40k10ed/img/maps/TerrainLayout/CA_TerrainLayout${n}.png">`).join('\n');
 };
 
 /**
  * Builds a full HTML page with script arrays, tournament table, and terrain images.
  * Used for integration-style tests of the full `parse()` method.
  */
-const buildFullHtmlPage = (opts: {
-    scriptArrays: string;
-    tournamentTable: string;
-    terrainImages: string;
-}): string => {
+const buildFullHtmlPage = (opts: { scriptArrays: string; tournamentTable: string; terrainImages: string }): string => {
     return (
         `<html><body>` +
         `<script>${opts.scriptArrays}</script>` +
@@ -541,12 +530,7 @@ describe('ChapterApprovedParser', () => {
 
         /** Extracts VP values: smallest is vpPerScore, largest is maxVP. */
         it('extracts VP values correctly — smallest is vpPerScore, largest is maxVP', () => {
-            const fragment = buildPrimaryMissionFragment(
-                'VP TEST',
-                'Test VP extraction.',
-                'END OF BATTLE',
-                [2, 8, 25],
-            );
+            const fragment = buildPrimaryMissionFragment('VP TEST', 'Test VP extraction.', 'END OF BATTLE', [2, 8, 25]);
             const html = buildFullHtmlPage({
                 scriptArrays: wrapJsArray('ContentPM', [fragment]),
                 tournamentTable: '',
@@ -700,10 +684,7 @@ describe('ChapterApprovedParser', () => {
     describe('deployment zones', () => {
         /** Parses a strike-force deployment zone without special rules. */
         it('parses strike-force deployment zone', () => {
-            const fragment = buildDeploymentZoneFragment(
-                'TIPPING POINT',
-                '/wh40k10ed/img/maps/SF_TippingPoint.png',
-            );
+            const fragment = buildDeploymentZoneFragment('TIPPING POINT', '/wh40k10ed/img/maps/SF_TippingPoint.png');
             const html = buildFullHtmlPage({
                 scriptArrays: wrapJsArray('ContentD_SF', [fragment]),
                 tournamentTable: '',
@@ -764,10 +745,7 @@ describe('ChapterApprovedParser', () => {
 
         /** Resolves relative deployment map image URLs to absolute Wahapedia URLs. */
         it('resolves deployment map URLs to absolute', () => {
-            const fragment = buildDeploymentZoneFragment(
-                'TEST ZONE',
-                '/wh40k10ed/img/maps/SF_Test.png',
-            );
+            const fragment = buildDeploymentZoneFragment('TEST ZONE', '/wh40k10ed/img/maps/SF_Test.png');
             const html = buildFullHtmlPage({
                 scriptArrays: wrapJsArray('ContentD_SF', [fragment]),
                 tournamentTable: '',
@@ -906,24 +884,25 @@ describe('ChapterApprovedParser', () => {
         /** Parses tournament missions from the table, resolving primary/deployment references. */
         it('parses tournament missions from table', () => {
             /** Build primary missions and deployment zones for ID resolution */
-            const primaryFragment = buildPrimaryMissionFragment(
-                'TAKE AND HOLD',
-                'Rules.',
-                'TIMING',
-                [3, 15],
-            );
+            const primaryFragment = buildPrimaryMissionFragment('TAKE AND HOLD', 'Rules.', 'TIMING', [3, 15]);
             const deploymentFragment = buildDeploymentZoneFragment(
                 'TIPPING POINT',
                 '/wh40k10ed/img/maps/SF_TippingPoint.png',
             );
 
             const tournamentTable = buildTournamentTable([
-                { label: 'A', primary: 'Take And Hold', deployment: 'Tipping Point', layouts: ['Layout 1', 'Layout 2'] },
+                {
+                    label: 'A',
+                    primary: 'Take And Hold',
+                    deployment: 'Tipping Point',
+                    layouts: ['Layout 1', 'Layout 2'],
+                },
             ]);
 
             const html = buildFullHtmlPage({
                 scriptArrays:
-                    wrapJsArray('ContentPM', [primaryFragment]) + '\n' +
+                    wrapJsArray('ContentPM', [primaryFragment]) +
+                    '\n' +
                     wrapJsArray('ContentD_SF', [deploymentFragment]),
                 tournamentTable,
                 terrainImages: buildTerrainLayoutImages([1, 2]),
@@ -949,13 +928,16 @@ describe('ChapterApprovedParser', () => {
 
             const tournamentTable = buildTournamentTable([
                 { label: 'A', primary: 'Take And Hold', deployment: 'Tipping Point', layouts: ['Layout 1'] },
-                { label: 'B', primary: 'Supply Drop', deployment: 'Hammer And Anvil', layouts: ['Layout 2', 'Layout 3'] },
+                {
+                    label: 'B',
+                    primary: 'Supply Drop',
+                    deployment: 'Hammer And Anvil',
+                    layouts: ['Layout 2', 'Layout 3'],
+                },
             ]);
 
             const html = buildFullHtmlPage({
-                scriptArrays:
-                    wrapJsArray('ContentPM', [pm1, pm2]) + '\n' +
-                    wrapJsArray('ContentD_SF', [dz1, dz2]),
+                scriptArrays: wrapJsArray('ContentPM', [pm1, pm2]) + '\n' + wrapJsArray('ContentD_SF', [dz1, dz2]),
                 tournamentTable,
                 terrainImages: buildTerrainLayoutImages([1, 2, 3]),
             });
@@ -996,13 +978,16 @@ describe('ChapterApprovedParser', () => {
             const dz = buildDeploymentZoneFragment('TIPPING POINT', '/wh40k10ed/img/maps/SF_TP.png');
 
             const tournamentTable = buildTournamentTable([
-                { label: 'A', primary: 'Take And Hold', deployment: 'Tipping Point', layouts: ['Layout 1', 'Layout 3'] },
+                {
+                    label: 'A',
+                    primary: 'Take And Hold',
+                    deployment: 'Tipping Point',
+                    layouts: ['Layout 1', 'Layout 3'],
+                },
             ]);
 
             const html = buildFullHtmlPage({
-                scriptArrays:
-                    wrapJsArray('ContentPM', [pm]) + '\n' +
-                    wrapJsArray('ContentD_SF', [dz]),
+                scriptArrays: wrapJsArray('ContentPM', [pm]) + '\n' + wrapJsArray('ContentD_SF', [dz]),
                 tournamentTable,
                 terrainImages: buildTerrainLayoutImages([1, 2, 3]),
             });
@@ -1027,9 +1012,7 @@ describe('ChapterApprovedParser', () => {
             ]);
 
             const html = buildFullHtmlPage({
-                scriptArrays:
-                    wrapJsArray('ContentPM', [pm]) + '\n' +
-                    wrapJsArray('ContentD_SF', [dz]),
+                scriptArrays: wrapJsArray('ContentPM', [pm]) + '\n' + wrapJsArray('ContentD_SF', [dz]),
                 tournamentTable,
                 terrainImages: buildTerrainLayoutImages([1, 2]),
             });
@@ -1102,9 +1085,7 @@ describe('ChapterApprovedParser', () => {
         it('strips HTML tags and normalizes whitespace', () => {
             const parser = new ChapterApprovedParser();
             const accessor = asAccessor(parser);
-            expect(accessor.stripHtml('<b>Bold</b> and <i>italic</i>  text')).toBe(
-                'Bold and italic text',
-            );
+            expect(accessor.stripHtml('<b>Bold</b> and <i>italic</i>  text')).toBe('Bold and italic text');
         });
 
         /** Returns empty string for empty input. */
@@ -1128,18 +1109,14 @@ describe('ChapterApprovedParser', () => {
         it('prepends base URL to relative paths', () => {
             const parser = new ChapterApprovedParser();
             const accessor = asAccessor(parser);
-            expect(accessor.resolveUrl('/wh40k10ed/img/map.png')).toBe(
-                'https://wahapedia.ru/wh40k10ed/img/map.png',
-            );
+            expect(accessor.resolveUrl('/wh40k10ed/img/map.png')).toBe('https://wahapedia.ru/wh40k10ed/img/map.png');
         });
 
         /** Returns absolute URLs unchanged. */
         it('returns absolute URLs unchanged', () => {
             const parser = new ChapterApprovedParser();
             const accessor = asAccessor(parser);
-            expect(accessor.resolveUrl('https://example.com/img.png')).toBe(
-                'https://example.com/img.png',
-            );
+            expect(accessor.resolveUrl('https://example.com/img.png')).toBe('https://example.com/img.png');
         });
     });
 
@@ -1195,10 +1172,23 @@ describe('ChapterApprovedParser', () => {
 
             /** Build 2 challenger cards (1 table-based, 1 action-based) */
             const ch1 = buildTableChallengerFragment(
-                'BURST OF SPEED', '0CP', 'Movement.', 'Unit.', 'Effect.', 'FOCUSED EFFORT', 'Condition.', 3,
+                'BURST OF SPEED',
+                '0CP',
+                'Movement.',
+                'Unit.',
+                'Effect.',
+                'FOCUSED EFFORT',
+                'Condition.',
+                3,
             );
             const ch2 = buildActionChallengerFragment(
-                'FORCE A BREACH', '0CP', 'Fight.', 'Unit.', 'Effect.', 'EXTRACTION ZONE', 3,
+                'FORCE A BREACH',
+                '0CP',
+                'Fight.',
+                'Unit.',
+                'Effect.',
+                'EXTRACTION ZONE',
+                3,
             );
 
             /** Build tournament table with 2 rows */

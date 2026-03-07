@@ -123,9 +123,7 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
      */
     matchState$(matchId: string): Observable<MatchStateMessage> {
         return this.messages$.pipe(
-            filter((msg): msg is MatchStateMessage =>
-                msg.action === 'matchState' && msg.matchId === matchId,
-            ),
+            filter((msg): msg is MatchStateMessage => msg.action === 'matchState' && msg.matchId === matchId),
         );
     }
 
@@ -140,9 +138,7 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
      */
     matchUpdated$(matchId: string): Observable<MatchUpdatedMessage> {
         return this.messages$.pipe(
-            filter((msg): msg is MatchUpdatedMessage =>
-                msg.action === 'matchUpdated' && msg.matchId === matchId,
-            ),
+            filter((msg): msg is MatchUpdatedMessage => msg.action === 'matchUpdated' && msg.matchId === matchId),
         );
     }
 

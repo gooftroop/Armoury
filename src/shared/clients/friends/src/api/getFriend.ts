@@ -14,8 +14,10 @@ import type { Friend, FriendParams } from '@clients-friends/types.js';
  * @returns Promise resolving to the friend relationship.
  */
 export async function getFriend(authorization: string, params: FriendParams): Promise<Friend> {
-    return ky.get(`friends/${params.friendId}`, {
-        prefixUrl: FRIENDS_BASE_URL,
-        headers: { Authorization: authorization },
-    }).json<Friend>();
+    return ky
+        .get(`friends/${params.friendId}`, {
+            prefixUrl: FRIENDS_BASE_URL,
+            headers: { Authorization: authorization },
+        })
+        .json<Friend>();
 }

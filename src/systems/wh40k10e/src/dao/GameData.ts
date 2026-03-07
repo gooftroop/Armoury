@@ -96,7 +96,7 @@ export class GameData {
     private readonly deps: GameDataDeps;
 
     /**
- * Creates a GameData context.
+     * Creates a GameData context.
      * @param deps - All 40 faction and core rules DAOs
      */
     constructor(deps: GameDataDeps) {
@@ -156,7 +156,7 @@ export class GameData {
         const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
 
         if (failures.length > 0) {
-        console.warn(`[GameData.sync] ${failures.length}/${results.length} DAOs failed to sync`);
+            console.warn(`[GameData.sync] ${failures.length}/${results.length} DAOs failed to sync`);
         }
     }
 

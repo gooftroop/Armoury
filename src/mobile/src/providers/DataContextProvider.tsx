@@ -147,10 +147,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const { SQLiteAdapter } = await import('@armoury/adapters-sqlite');
             const database = await openDatabaseAsync('armoury');
             const adapter = new SQLiteAdapter(database);
-            const dc = await DC.builder()
-                .system(system)
-                .adapter(adapter)
-                .build();
+            const dc = await DC.builder().system(system).adapter(adapter).build();
             dataContextRef.current = dc;
             setDataContext(dc);
             setStatus('ready');

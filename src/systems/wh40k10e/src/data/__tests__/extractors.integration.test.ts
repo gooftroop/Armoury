@@ -119,7 +119,9 @@ describe('extractors integration', () => {
         expect(sergeant?.meleeWeapons).toHaveLength(1);
         expect(sergeant?.leader?.canAttachTo).toContain('Intercessor Squad');
         expect(sergeant?.leader?.leaderAbility).toBe('This model can lead Intercessor Squad.');
-        expect(sergeant?.keywords).toEqual(expect.arrayContaining(['Infantry', 'Character', 'Leader: Intercessor Squad']));
+        expect(sergeant?.keywords).toEqual(
+            expect.arrayContaining(['Infantry', 'Character', 'Leader: Intercessor Squad']),
+        );
         expect(sergeant?.factionKeywords).toContain('Adeptus Astartes');
 
         const chainsword = sergeant?.meleeWeapons[0];

@@ -10,8 +10,8 @@ type PGliteConstructor = new (dataDir?: string) => PGliteInstance;
 
 type DrizzleFactory = (client: PGliteInstance, options: { schema: Record<string, unknown> }) => unknown;
 
-const { PGlite } = await import('@electric-sql/pglite') as unknown as { PGlite: PGliteConstructor };
-const { drizzle } = await import('drizzle-orm/pglite') as unknown as { drizzle: DrizzleFactory };
+const { PGlite } = (await import('@electric-sql/pglite')) as unknown as { PGlite: PGliteConstructor };
+const { drizzle } = (await import('drizzle-orm/pglite')) as unknown as { drizzle: DrizzleFactory };
 
 /**
  * Creates an in-memory PGlite instance with all core tables created from the merged Drizzle schema.

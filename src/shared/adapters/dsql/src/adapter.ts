@@ -120,14 +120,14 @@ type EqBuilder = (column: unknown, value: unknown) => unknown;
  */
 type OrderByFn = (column: unknown) => unknown;
 
-const { DsqlSigner } = await import('@aws-sdk/dsql-signer') as unknown as { DsqlSigner: DsqlSignerConstructor };
-const { Client } = await import('pg') as unknown as { Client: PgClientConstructor };
-const { drizzle } = await import('drizzle-orm/node-postgres') as unknown as { drizzle: DrizzleFactory };
+const { DsqlSigner } = (await import('@aws-sdk/dsql-signer')) as unknown as { DsqlSigner: DsqlSignerConstructor };
+const { Client } = (await import('pg')) as unknown as { Client: PgClientConstructor };
+const { drizzle } = (await import('drizzle-orm/node-postgres')) as unknown as { drizzle: DrizzleFactory };
 const {
     eq,
     asc: drizzleAsc,
     desc: drizzleDesc,
-} = await import('drizzle-orm') as unknown as {
+} = (await import('drizzle-orm')) as unknown as {
     eq: EqBuilder;
     asc: OrderByFn;
     desc: OrderByFn;

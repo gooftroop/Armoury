@@ -146,7 +146,6 @@ const WH40K_DATA_SOURCE: DataSourceConfig = {
     licenseStatus: 'No license specified',
 };
 
-
 /**
  * Maps validation results into plugin validation rule results.
  * Ensures results align with the GameSystem contract.
@@ -275,7 +274,7 @@ class Wh40k10eSystem implements GameSystem {
     /**
      * Creates all wh40k10e-specific DAOs and the game data context.
      * Instantiates 40 faction DAOs, core rules, crusade rules, and chapter approved DAOs,
- * then wraps them in a GameData instance for unified access.
+     * then wraps them in a GameData instance for unified access.
      * @param adapter - Database adapter for entity storage
      * @param githubClient - GitHub client for BSData synchronization
      * @returns GameContextResult with armies, campaigns, matches DAOs and game data context

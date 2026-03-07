@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { User } from '@models/UserModel.js';
@@ -36,15 +35,17 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, timestamp, index } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for user entities. */
 export const usersTable = pgTable(
     'users',
     {
-        id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         sub: text('sub').notNull(),
         email: text('email').notNull(),
         name: text('name').notNull(),
@@ -63,7 +64,10 @@ export const usersTable = pgTable(
 export const usersSqliteTable = sl.sqliteTable(
     'users',
     {
-        id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        id: sl
+            .text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         sub: sl.text('sub').notNull(),
         email: sl.text('email').notNull(),
         name: sl.text('name').notNull(),

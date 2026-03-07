@@ -1,10 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { DSQLAdapter } from '@armoury/adapters-dsql';
-import {
-    getDSQLTestConfig,
-    setupDSQLTestDatabase,
-    truncateDSQLTestDatabase,
-} from '../helpers/dsqlTestDb.ts';
+import { getDSQLTestConfig, setupDSQLTestDatabase, truncateDSQLTestDatabase } from '../helpers/dsqlTestDb.ts';
 import {
     makeAccount,
     makeCampaignParticipant,

@@ -159,7 +159,7 @@ describe('matches WebSocket e2e', () => {
 
         expect(res.statusCode).toBe(200);
 
-        const updated = await adapter.get('match', match.id) as Match;
+        const updated = (await adapter.get('match', match.id)) as Match;
         expect(updated).not.toBeNull();
         expect(updated!.notes).toBe('Updated via WS');
 

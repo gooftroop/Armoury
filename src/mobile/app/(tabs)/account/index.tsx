@@ -23,25 +23,9 @@ import * as React from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import {
-    Avatar,
-    Button,
-    Card,
-    H2,
-    H3,
-    Label,
-    Paragraph,
-    ScrollView,
-    Separator,
-    Switch,
-    XStack,
-    YStack,
-} from 'tamagui';
+import { Avatar, Button, Card, H2, H3, Label, Paragraph, ScrollView, Separator, Switch, XStack, YStack } from 'tamagui';
 
-import {
-    queryAccount,
-    mutationUpdateAccount,
-} from '@armoury/clients-users';
+import { queryAccount, mutationUpdateAccount } from '@armoury/clients-users';
 import type { Account, UserPreferences } from '@armoury/clients-users';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -201,11 +185,7 @@ export default function AccountScreen(): React.ReactElement {
     /* ── Unauthenticated state ───────────────────────────────────────── */
     if (!isAuthenticated) {
         return (
-            <YStack
-                flex={1}
-                background="$background"
-                style={styles.centeredColumn}
-            >
+            <YStack flex={1} background="$background" style={styles.centeredColumn}>
                 <H2 color="$primary" style={styles.headerMargin}>
                     Account
                 </H2>
@@ -237,10 +217,7 @@ export default function AccountScreen(): React.ReactElement {
                 <XStack style={styles.profileRow}>
                     <Avatar circular size="$6">
                         {user.picture ? (
-                            <Avatar.Image
-                                accessibilityLabel={user.name ?? 'User avatar'}
-                                src={user.picture}
-                            />
+                            <Avatar.Image accessibilityLabel={user.name ?? 'User avatar'} src={user.picture} />
                         ) : null}
                         <Avatar.Fallback background="$primary">
                             <Paragraph color="$background" fontWeight="700" fontSize={18}>
@@ -278,7 +255,11 @@ export default function AccountScreen(): React.ReactElement {
                         <YStack gap="$1">
                             <Label color="$color">Theme</Label>
                             <Paragraph color="$mutedForeground" size="$3">
-                                {localPreferences.theme === 'dark' ? 'Dark' : localPreferences.theme === 'light' ? 'Light' : 'Auto'}
+                                {localPreferences.theme === 'dark'
+                                    ? 'Dark'
+                                    : localPreferences.theme === 'light'
+                                      ? 'Light'
+                                      : 'Auto'}
                             </Paragraph>
                             <Paragraph color="$mutedForeground" size="$1" opacity={0.7}>
                                 Dark only in V1 — more themes coming soon.
@@ -339,18 +320,8 @@ export default function AccountScreen(): React.ReactElement {
             </Card>
 
             {/* ── Sign Out Section ─────────────────────────────────── */}
-            <Card
-                padding="$4"
-                borderWidth={1}
-                borderColor="$destructive"
-                style={styles.signOutCard}
-            >
-                <Button
-                    size="$4"
-                    background="$destructive"
-                    onPress={handleSignOut}
-                    style={styles.signOutButton}
-                >
+            <Card padding="$4" borderWidth={1} borderColor="$destructive" style={styles.signOutCard}>
+                <Button size="$4" background="$destructive" onPress={handleSignOut} style={styles.signOutButton}>
                     Sign Out
                 </Button>
             </Card>

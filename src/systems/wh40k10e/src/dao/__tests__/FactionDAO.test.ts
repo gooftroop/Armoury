@@ -47,7 +47,7 @@ vi.mock('@wh40k10e/models/mergeCatalogues.js', () => ({
     }),
 }));
 
- /**
+/**
  * Creates a minimal FactionData fixture for testing.
  * @param overrides - Partial properties to override defaults
  * @returns FactionData object with test data
@@ -336,8 +336,8 @@ describe('FactionDAO', () => {
         });
 
         /**
- * Test: fetchRemoteData() calls parseFactionData() with merged catalogue.
- */
+         * Test: fetchRemoteData() calls parseFactionData() with merged catalogue.
+         */
         it('fetchRemoteData() calls parseFactionData() with merged catalogue', async () => {
             const config = createFactionConfig();
             const dao = new FactionDAO(adapter, githubClient, config);
@@ -897,7 +897,9 @@ describe('SpaceMarinesDAO', () => {
                 ],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.id).toBe('blood-angels');
             expect(merged.name).toBe('Blood Angels');
@@ -922,7 +924,9 @@ describe('SpaceMarinesDAO', () => {
                 sourceFiles: ['Blood Angels.cat', 'Space Marines.cat'], // Duplicate Space Marines.cat
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.sourceFiles).toContain('Space Marines.cat');
             expect(merged.sourceFiles).toContain('Blood Angels.cat');
@@ -946,7 +950,9 @@ describe('SpaceMarinesDAO', () => {
                 lastSynced: new Date('2025-02-15T00:00:00Z'), // Later
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.lastSynced.toISOString()).toBe('2025-02-15T00:00:00.000Z');
         });
@@ -967,7 +973,9 @@ describe('SpaceMarinesDAO', () => {
                 armyImageUrl: 'https://example.com/blood-angels.jpg',
             });
 
-            const merged1 = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData1);
+            const merged1 = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData1);
             expect(merged1.armyImageUrl).toBe('https://example.com/blood-angels.jpg');
 
             const chapterData2 = createFactionFixture({
@@ -975,7 +983,9 @@ describe('SpaceMarinesDAO', () => {
                 armyImageUrl: '', // Empty chapter image
             });
 
-            const merged2 = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData2);
+            const merged2 = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData2);
             expect(merged2.armyImageUrl).toBe('https://example.com/space-marines.jpg'); // Fallback to base
         });
     });
@@ -1038,7 +1048,9 @@ describe('SpaceMarinesDAO', () => {
                 ],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.stratagems.length).toBe(3);
 
@@ -1070,7 +1082,9 @@ describe('SpaceMarinesDAO', () => {
                 ],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.factionRules.length).toBe(3);
             expect(merged.factionRules.some((r: { id: string }) => r.id === 'rule-base-1')).toBe(true);
@@ -1136,7 +1150,9 @@ describe('SpaceMarinesDAO', () => {
                 ],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.detachments.length).toBe(3);
 
@@ -1195,7 +1211,9 @@ describe('SpaceMarinesDAO', () => {
                 ],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.enhancements.length).toBe(3);
             // mergeById uses Map which preserves insertion order (base first, chapter overrides/adds after)
@@ -1253,7 +1271,9 @@ describe('SpaceMarinesDAO', () => {
                 ],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.units.length).toBe(1);
             expect(merged.units[0].id).toBe('unit-death-company');
@@ -1300,7 +1320,9 @@ describe('SpaceMarinesDAO', () => {
                 units: [],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.units.length).toBe(1);
             expect(merged.units[0].id).toBe('unit-intercessor');
@@ -1336,7 +1358,9 @@ describe('SpaceMarinesDAO', () => {
                 structuredFactionRules: [],
             });
 
-            const merged = (dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }).mergeFactionData(baseData, chapterData);
+            const merged = (
+                dao as unknown as { mergeFactionData: (base: FactionData, chapter: FactionData) => FactionData }
+            ).mergeFactionData(baseData, chapterData);
 
             expect(merged.id).toBe('blood-angels');
             expect(merged.units.length).toBe(0);

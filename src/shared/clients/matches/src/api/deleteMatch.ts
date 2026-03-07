@@ -9,10 +9,7 @@ import type { MatchParams } from '@clients-matches/types.js';
  * @param params - Parameters containing the match ID.
  * @returns Promise resolving when the match is deleted.
  */
-export async function deleteMatch(
-    authorization: string,
-    params: MatchParams,
-): Promise<void> {
+export async function deleteMatch(authorization: string, params: MatchParams): Promise<void> {
     await ky.delete(`matches/${params.matchId}`, {
         prefixUrl: MATCHES_BASE_URL,
         headers: { Authorization: authorization },

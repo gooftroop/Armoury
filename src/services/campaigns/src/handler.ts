@@ -64,7 +64,7 @@ interface DSQLAdapterConstructor {
  * Resolves the DSQLAdapter class from @armoury/data at runtime using dynamic import.
  * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
  */
-const { DSQLAdapter } = await import('@armoury/data') as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
 
 /**
  * Singleton database adapter instance reused across warm Lambda invocations.

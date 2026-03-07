@@ -13,12 +13,11 @@ import type { CampaignParams, CampaignParticipant } from '@clients-campaigns/typ
  * @param params - Parameters containing the campaign ID
  * @returns Promise resolving to an array of participants
  */
-export async function getParticipants(
-    authorization: string,
-    params: CampaignParams,
-): Promise<CampaignParticipant[]> {
-    return ky.get(`campaigns/${params.campaignId}/participants`, {
-        prefixUrl: CAMPAIGNS_BASE_URL,
-        headers: { Authorization: authorization },
-    }).json<CampaignParticipant[]>();
+export async function getParticipants(authorization: string, params: CampaignParams): Promise<CampaignParticipant[]> {
+    return ky
+        .get(`campaigns/${params.campaignId}/participants`, {
+            prefixUrl: CAMPAIGNS_BASE_URL,
+            headers: { Authorization: authorization },
+        })
+        .json<CampaignParticipant[]>();
 }

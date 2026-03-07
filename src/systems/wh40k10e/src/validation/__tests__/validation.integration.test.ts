@@ -50,14 +50,14 @@ describe('validation integration', () => {
     it('accepts a legal Space Marines army', () => {
         const intercessors = makeIntercessorSquad();
         const captain = makeCaptainInTerminatorArmour();
-        const army = buildArmy([
-            buildArmyUnit(intercessors, { id: 'unit-intercessors' }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-            detachmentId: 'gladius-task-force',
-            pointsLimit: 2000,
-        });
+        const army = buildArmy(
+            [buildArmyUnit(intercessors, { id: 'unit-intercessors' }), buildArmyUnit(captain, { id: 'unit-captain' })],
+            {
+                warlordUnitId: 'unit-captain',
+                detachmentId: 'gladius-task-force',
+                pointsLimit: 2000,
+            },
+        );
 
         const summary = validateArmy(army, makeFactionData(), makeCoreRules());
 
@@ -68,12 +68,12 @@ describe('validation integration', () => {
     it('flags armies that exceed points limits', () => {
         const intercessors = makeIntercessorSquad();
         const captain = makeCaptainInTerminatorArmour();
-        const army = buildArmy([
-            buildArmyUnit(intercessors, { id: 'unit-intercessors' }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            pointsLimit: 150,
-        });
+        const army = buildArmy(
+            [buildArmyUnit(intercessors, { id: 'unit-intercessors' }), buildArmyUnit(captain, { id: 'unit-captain' })],
+            {
+                pointsLimit: 150,
+            },
+        );
 
         const errorIds = getErrorIds(army);
 
@@ -83,12 +83,15 @@ describe('validation integration', () => {
     it('flags invalid unit compositions', () => {
         const intercessors = makeIntercessorSquad();
         const captain = makeCaptainInTerminatorArmour();
-        const army = buildArmy([
-            buildArmyUnit(intercessors, { id: 'unit-intercessors', modelCount: 7 }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(intercessors, { id: 'unit-intercessors', modelCount: 7 }),
+                buildArmyUnit(captain, { id: 'unit-captain' }),
+            ],
+            {
+                warlordUnitId: 'unit-captain',
+            },
+        );
 
         const errorIds = getErrorIds(army);
 
@@ -106,26 +109,29 @@ describe('validation integration', () => {
             structuredEffect: null,
         };
         const factionData = makeFactionData({ enhancements: [enhancement] });
-        const army = buildArmy([
-            buildArmyUnit(captain, {
-                id: 'captain-1',
-                enhancement: {
-                    enhancementId: enhancement.id,
-                    enhancementName: enhancement.name,
-                    points: enhancement.points,
-                },
-            }),
-            buildArmyUnit(captain, {
-                id: 'captain-2',
-                enhancement: {
-                    enhancementId: enhancement.id,
-                    enhancementName: enhancement.name,
-                    points: enhancement.points,
-                },
-            }),
-        ], {
-            warlordUnitId: 'captain-1',
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(captain, {
+                    id: 'captain-1',
+                    enhancement: {
+                        enhancementId: enhancement.id,
+                        enhancementName: enhancement.name,
+                        points: enhancement.points,
+                    },
+                }),
+                buildArmyUnit(captain, {
+                    id: 'captain-2',
+                    enhancement: {
+                        enhancementId: enhancement.id,
+                        enhancementName: enhancement.name,
+                        points: enhancement.points,
+                    },
+                }),
+            ],
+            {
+                warlordUnitId: 'captain-1',
+            },
+        );
 
         const errorIds = getErrorIds(army, factionData);
 
@@ -144,19 +150,22 @@ describe('validation integration', () => {
             structuredEffect: null,
         };
         const factionData = makeFactionData({ enhancements: [enhancement] });
-        const army = buildArmy([
-            buildArmyUnit(intercessors, {
-                id: 'unit-intercessors',
-                enhancement: {
-                    enhancementId: enhancement.id,
-                    enhancementName: enhancement.name,
-                    points: enhancement.points,
-                },
-            }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(intercessors, {
+                    id: 'unit-intercessors',
+                    enhancement: {
+                        enhancementId: enhancement.id,
+                        enhancementName: enhancement.name,
+                        points: enhancement.points,
+                    },
+                }),
+                buildArmyUnit(captain, { id: 'unit-captain' }),
+            ],
+            {
+                warlordUnitId: 'unit-captain',
+            },
+        );
 
         const errorIds = getErrorIds(army, factionData);
 
@@ -166,12 +175,12 @@ describe('validation integration', () => {
     it('flags non-Characters designated as warlord', () => {
         const intercessors = makeIntercessorSquad();
         const captain = makeCaptainInTerminatorArmour();
-        const army = buildArmy([
-            buildArmyUnit(intercessors, { id: 'unit-intercessors' }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-intercessors',
-        });
+        const army = buildArmy(
+            [buildArmyUnit(intercessors, { id: 'unit-intercessors' }), buildArmyUnit(captain, { id: 'unit-captain' })],
+            {
+                warlordUnitId: 'unit-intercessors',
+            },
+        );
 
         const errorIds = getErrorIds(army);
 
@@ -181,12 +190,15 @@ describe('validation integration', () => {
     it('flags invalid leader attachments', () => {
         const intercessors = makeIntercessorSquad();
         const captain = makeCaptainInTerminatorArmour();
-        const army = buildArmy([
-            buildArmyUnit(intercessors, { id: 'unit-intercessors' }),
-            buildArmyUnit(captain, { id: 'unit-captain', leadingUnitId: 'unit-intercessors' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(intercessors, { id: 'unit-intercessors' }),
+                buildArmyUnit(captain, { id: 'unit-captain', leadingUnitId: 'unit-intercessors' }),
+            ],
+            {
+                warlordUnitId: 'unit-captain',
+            },
+        );
 
         const errorIds = getErrorIds(army);
 
@@ -201,12 +213,15 @@ describe('validation integration', () => {
             factionKeywords: ['Heretic Astartes'],
         };
         const factionData = makeFactionData({ units: [outcastIntercessors, captain] });
-        const army = buildArmy([
-            buildArmyUnit(outcastIntercessors, { id: 'unit-outcasts' }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(outcastIntercessors, { id: 'unit-outcasts' }),
+                buildArmyUnit(captain, { id: 'unit-captain' }),
+            ],
+            {
+                warlordUnitId: 'unit-captain',
+            },
+        );
 
         const errorIds = getErrorIds(army, factionData);
 
@@ -230,21 +245,24 @@ describe('validation integration', () => {
             wargearOptions,
         };
         const factionData = makeFactionData({ units: [armedIntercessors, captain] });
-        const army = buildArmy([
-            buildArmyUnit(armedIntercessors, {
-                id: 'unit-intercessors',
-                wargearSelections: [
-                    {
-                        wargearOptionId: 'missing-option',
-                        choiceId: 'choice-9',
-                        choiceName: 'Ghost Rifle',
-                    },
-                ],
-            }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(armedIntercessors, {
+                    id: 'unit-intercessors',
+                    wargearSelections: [
+                        {
+                            wargearOptionId: 'missing-option',
+                            choiceId: 'choice-9',
+                            choiceName: 'Ghost Rifle',
+                        },
+                    ],
+                }),
+                buildArmyUnit(captain, { id: 'unit-captain' }),
+            ],
+            {
+                warlordUnitId: 'unit-captain',
+            },
+        );
 
         const errorIds = getErrorIds(army, factionData);
 
@@ -254,17 +272,20 @@ describe('validation integration', () => {
     it('flags strategic reserves over the limit', () => {
         const intercessors = makeIntercessorSquad();
         const captain = makeCaptainInTerminatorArmour();
-        const army = buildArmy([
-            buildArmyUnit(intercessors, {
-                id: 'unit-intercessors',
-                modelCount: 10,
-                totalPoints: 180,
-            }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-            pointsLimit: 600,
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(intercessors, {
+                    id: 'unit-intercessors',
+                    modelCount: 10,
+                    totalPoints: 180,
+                }),
+                buildArmyUnit(captain, { id: 'unit-captain' }),
+            ],
+            {
+                warlordUnitId: 'unit-captain',
+                pointsLimit: 600,
+            },
+        );
 
         const errorIds = getErrorIds(army);
 
@@ -274,13 +295,13 @@ describe('validation integration', () => {
     it('flags invalid detachment selections', () => {
         const intercessors = makeIntercessorSquad();
         const captain = makeCaptainInTerminatorArmour();
-        const army = buildArmy([
-            buildArmyUnit(intercessors, { id: 'unit-intercessors' }),
-            buildArmyUnit(captain, { id: 'unit-captain' }),
-        ], {
-            warlordUnitId: 'unit-captain',
-            detachmentId: 'missing-detachment',
-        });
+        const army = buildArmy(
+            [buildArmyUnit(intercessors, { id: 'unit-intercessors' }), buildArmyUnit(captain, { id: 'unit-captain' })],
+            {
+                warlordUnitId: 'unit-captain',
+                detachmentId: 'missing-detachment',
+            },
+        );
 
         const errorIds = getErrorIds(army);
 
@@ -299,25 +320,28 @@ describe('validation integration', () => {
             structuredEffect: null,
         };
         const factionData = makeFactionData({ enhancements: [enhancement] });
-        const army = buildArmy([
-            buildArmyUnit(intercessors, {
-                id: 'unit-intercessors',
-                modelCount: 7,
-                enhancement: {
-                    enhancementId: enhancement.id,
-                    enhancementName: enhancement.name,
-                    points: enhancement.points,
-                },
-            }),
-            buildArmyUnit(captain, {
-                id: 'unit-captain',
-                leadingUnitId: 'unit-intercessors',
-            }),
-        ], {
-            pointsLimit: 100,
-            warlordUnitId: 'unit-intercessors',
-            detachmentId: 'missing-detachment',
-        });
+        const army = buildArmy(
+            [
+                buildArmyUnit(intercessors, {
+                    id: 'unit-intercessors',
+                    modelCount: 7,
+                    enhancement: {
+                        enhancementId: enhancement.id,
+                        enhancementName: enhancement.name,
+                        points: enhancement.points,
+                    },
+                }),
+                buildArmyUnit(captain, {
+                    id: 'unit-captain',
+                    leadingUnitId: 'unit-intercessors',
+                }),
+            ],
+            {
+                pointsLimit: 100,
+                warlordUnitId: 'unit-intercessors',
+                detachmentId: 'missing-detachment',
+            },
+        );
 
         const errorIds = getErrorIds(army, factionData);
 

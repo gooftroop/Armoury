@@ -1,7 +1,4 @@
-import type {
-    Campaign,
-    CampaignParticipant,
-} from '@models/CampaignModel.js';
+import type { Campaign, CampaignParticipant } from '@models/CampaignModel.js';
 
 export function makeCoreCampaign(overrides: Partial<Campaign> = {}): Campaign {
     return {
@@ -42,4 +39,3 @@ export function makeCampaignParticipant(overrides: Partial<CampaignParticipant> 
         ...overrides,
     };
 }
-

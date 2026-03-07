@@ -4,9 +4,7 @@ import { makeCaptainInTerminatorArmour } from './makeCaptainInTerminatorArmour.t
 import { makeIntercessorSquad } from './makeIntercessorSquad.ts';
 import { makePowerFist } from './makePowerFist.ts';
 
-export function makeFactionData(
-    overrides: Partial<FactionData> = {},
-): FactionData {
+export function makeFactionData(overrides: Partial<FactionData> = {}): FactionData {
     const intercessors = makeIntercessorSquad();
     const captain = makeCaptainInTerminatorArmour();
     const weapons = [

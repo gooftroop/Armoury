@@ -69,7 +69,7 @@ describe.skipIf(!HAS_TOKEN)('wh40k10e sync DAOs (real BSData)', () => {
         wh40k10eSystem.register();
     });
 
-describe('FactionDAO sync (Space Marines)', { timeout: 120_000 }, () => {
+    describe('FactionDAO sync (Space Marines)', { timeout: 120_000 }, () => {
         let smAdapter: MockDatabaseAdapter;
         let smDAO: SpaceMarinesDAO;
         let smFirst: Awaited<ReturnType<SpaceMarinesDAO['load']>>;
@@ -101,7 +101,7 @@ describe('FactionDAO sync (Space Marines)', { timeout: 120_000 }, () => {
         });
     });
 
-describe('FactionDAO sync (Blood Angels — stores to adapter)', { timeout: 120_000 }, () => {
+    describe('FactionDAO sync (Blood Angels — stores to adapter)', { timeout: 120_000 }, () => {
         let baAdapter: MockDatabaseAdapter;
 
         beforeAll(async () => {
@@ -126,12 +126,12 @@ describe('FactionDAO sync (Blood Angels — stores to adapter)', { timeout: 120_
         });
     });
 
-describe('FactionDAO sync (multi-catalogue)', { timeout: 120_000 }, () => {
+    describe('FactionDAO sync (multi-catalogue)', { timeout: 120_000 }, () => {
         it('downloads and merges multiple catalogues', async () => {
             const adapter = await createAdapter();
             const githubClient = new CountingGitHubClient(GITHUB_TOKEN);
             const config = FACTION_MAP['black-templars'];
-    const dao = new FactionDAO(adapter, githubClient, config);
+            const dao = new FactionDAO(adapter, githubClient, config);
 
             const model = await dao.load();
 

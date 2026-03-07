@@ -172,7 +172,7 @@ export interface Campaign<
     updatedAt: string;
 }
 
-/** 
+/**
  * A participant in a campaign with their army and progression data.
  *
  * @template TParticipantData - Game-system-specific participant data payload.
@@ -353,7 +353,6 @@ export interface ParticipantParams {
     participantId: string;
 }
 
-
 // === Error Classes ===
 
 /**
@@ -421,4 +420,3 @@ export function isCampaignsApiError(error: unknown): error is CampaignsApiError 
 export function isCampaignsNetworkError(error: unknown): error is CampaignsNetworkError {
     return error instanceof CampaignsNetworkError;
 }
-

@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { Account } from '@models/AccountModel.js';
@@ -36,13 +35,17 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, jsonb, timestamp, index } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for account entities. */
-export const accountsTable = pgTable('accounts', {
-        id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+export const accountsTable = pgTable(
+    'accounts',
+    {
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         userId: text('user_id').notNull(),
         preferences: jsonb('preferences'),
         systems: jsonb('systems'),
@@ -54,10 +57,14 @@ export const accountsTable = pgTable('accounts', {
     }),
 );
 
-
 /** Drizzle SQLite table mapping for account entities. */
-export const accountsSqliteTable = sl.sqliteTable('accounts', {
-        id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+export const accountsSqliteTable = sl.sqliteTable(
+    'accounts',
+    {
+        id: sl
+            .text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         userId: sl.text('user_id').notNull(),
         preferences: sl.text('preferences'),
         systems: sl.text('systems'),

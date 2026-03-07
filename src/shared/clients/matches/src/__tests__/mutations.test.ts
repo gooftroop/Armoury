@@ -27,9 +27,7 @@ describe('mutationCreateMatch', () => {
 
     const params: CreateMatchRequest = {
         systemId: 'system-1',
-        players: [
-            { playerId: 'player-1', campaignParticipantId: null },
-        ],
+        players: [{ playerId: 'player-1', campaignParticipantId: null }],
     };
 
     it('returns an object with a mutationFn function', () => {

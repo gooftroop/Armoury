@@ -94,11 +94,7 @@ describe('ArmyDAO integration tests', () => {
     });
 
     it('should save many armies', async () => {
-        await dao.saveMany([
-            makeArmy({ id: 'army-1' }),
-            makeArmy({ id: 'army-2' }),
-            makeArmy({ id: 'army-3' }),
-        ]);
+        await dao.saveMany([makeArmy({ id: 'army-1' }), makeArmy({ id: 'army-2' }), makeArmy({ id: 'army-3' })]);
 
         const results = await dao.list();
         expect(results).toHaveLength(3);
@@ -172,9 +168,7 @@ describe('ArmyDAO integration tests', () => {
         expect(result!.versions).toEqual(army.versions);
         expect(result!.units).toEqual(army.units);
         expect(result!.versions[0]!.units[0]!.modelConfigs).toEqual(army.versions[0]!.units[0]!.modelConfigs);
-        expect(result!.versions[0]!.units[0]!.wargearSelections).toEqual(
-            army.versions[0]!.units[0]!.wargearSelections,
-        );
+        expect(result!.versions[0]!.units[0]!.wargearSelections).toEqual(army.versions[0]!.units[0]!.wargearSelections);
     });
 
     it('should overwrite an army on re-save', async () => {

@@ -15,7 +15,7 @@ type PgClientConstructor = new (config: {
     ssl: boolean;
 }) => PgClient;
 
-const { Client } = await import('pg') as unknown as { Client: PgClientConstructor };
+const { Client } = (await import('pg')) as unknown as { Client: PgClientConstructor };
 
 const DSQL_E2E_CONFIG = {
     host: 'localhost',

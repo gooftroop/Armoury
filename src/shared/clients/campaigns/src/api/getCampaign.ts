@@ -13,12 +13,11 @@ import type { Campaign, CampaignParams } from '@clients-campaigns/types.js';
  * @param params - Parameters containing the campaign ID
  * @returns Promise resolving to the campaign
  */
-export async function getCampaign(
-    authorization: string,
-    params: CampaignParams,
-): Promise<Campaign> {
-    return ky.get(`campaigns/${params.campaignId}`, {
-        prefixUrl: CAMPAIGNS_BASE_URL,
-        headers: { Authorization: authorization },
-    }).json<Campaign>();
+export async function getCampaign(authorization: string, params: CampaignParams): Promise<Campaign> {
+    return ky
+        .get(`campaigns/${params.campaignId}`, {
+            prefixUrl: CAMPAIGNS_BASE_URL,
+            headers: { Authorization: authorization },
+        })
+        .json<Campaign>();
 }

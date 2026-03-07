@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { Campaign, CampaignStatus } from '@models/CampaignModel.js';
@@ -36,14 +35,16 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, jsonb, timestamp, index } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 export const campaignsTable = pgTable(
     'campaigns',
     {
-        id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         name: text('name').notNull(),
         type: text('type').notNull(),
         organizerId: text('organizer_id').notNull(),
@@ -67,7 +68,10 @@ export const campaignsTable = pgTable(
 );
 
 export const campaignsSqliteTable = sl.sqliteTable('campaigns', {
-    id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: sl
+        .text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     name: sl.text('name').notNull(),
     type: sl.text('type').notNull(),
     organizerId: sl.text('organizer_id').notNull(),
@@ -129,5 +133,4 @@ export class CampaignDAO extends BaseDAO<Campaign> {
 
         return results as Campaign[];
     }
-
 }

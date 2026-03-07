@@ -19,9 +19,11 @@ export async function postAccount(
     params: UserParams,
     body: CreateAccountRequest,
 ): Promise<Account> {
-    return ky.post(`users/${params.userId}/account`, {
-        prefixUrl: USERS_BASE_URL,
-        headers: { Authorization: authorization },
-        json: body,
-    }).json<Account>();
+    return ky
+        .post(`users/${params.userId}/account`, {
+            prefixUrl: USERS_BASE_URL,
+            headers: { Authorization: authorization },
+            json: body,
+        })
+        .json<Account>();
 }

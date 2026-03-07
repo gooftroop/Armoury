@@ -263,5 +263,4 @@ describe('Core DAO E2E Tests', () => {
             expect(u1Campaigns).toHaveLength(2);
         });
     });
-
 });

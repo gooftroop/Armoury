@@ -1,4 +1,3 @@
-
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;
     notNull: () => ColumnBuilder;
@@ -31,9 +30,9 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, timestamp } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /**
  * Drizzle table mapping for file sync status tracking.

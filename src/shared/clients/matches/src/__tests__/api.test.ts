@@ -135,9 +135,7 @@ describe('postMatch', () => {
 
     const params: CreateMatchRequest = {
         systemId: 'system-1',
-        players: [
-            { playerId: 'player-1', campaignParticipantId: null },
-        ],
+        players: [{ playerId: 'player-1', campaignParticipantId: null }],
     };
 
     it('calls ky.post with the correct URL path', async () => {
@@ -190,9 +188,7 @@ describe('putMatch', () => {
     const params: MatchParams & UpdateMatchRequest = {
         matchId: 'match-42',
         notes: 'updated notes',
-        players: [
-            { playerId: 'player-1', campaignParticipantId: null },
-        ],
+        players: [{ playerId: 'player-1', campaignParticipantId: null }],
     };
 
     it('calls ky.put with the correct URL path including matchId', async () => {

@@ -144,7 +144,10 @@ describe('AccountDAO', () => {
         });
 
         it('returns null when no account matches the userId', async () => {
-            await adapter.put('account', makeAccount({ id: 'a1b2c3d4-0001-0000-0000-000000000001', userId: 'user-123' }));
+            await adapter.put(
+                'account',
+                makeAccount({ id: 'a1b2c3d4-0001-0000-0000-000000000001', userId: 'user-123' }),
+            );
 
             const found = await dao.findByUserId('user-999');
 

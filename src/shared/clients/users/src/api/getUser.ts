@@ -13,12 +13,11 @@ import type { User, UserParams } from '@clients-users/types.js';
  * @param params - Parameters containing the user ID
  * @returns Promise resolving to the user
  */
-export async function getUser(
-    authorization: string,
-    params: UserParams,
-): Promise<User> {
-    return ky.get(`users/${params.userId}`, {
-        prefixUrl: USERS_BASE_URL,
-        headers: { Authorization: authorization },
-    }).json<User>();
+export async function getUser(authorization: string, params: UserParams): Promise<User> {
+    return ky
+        .get(`users/${params.userId}`, {
+            prefixUrl: USERS_BASE_URL,
+            headers: { Authorization: authorization },
+        })
+        .json<User>();
 }
