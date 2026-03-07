@@ -4,7 +4,7 @@
     "private": true,
     "repository": {
         "type": "git",
-        "url": "https://github.com/gooftroop/Armoury.git"
+        "url": "git+ssh://git@github.com/gooftroop/Armoury.git"
     },
     "homepage": "https://github.com/gooftroop/Armoury#readme",
     "bugs": {
