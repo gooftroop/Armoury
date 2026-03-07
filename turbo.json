@@ -12,20 +12,14 @@
         "build": {
             "dependsOn": ["^build", "copy:systems"],
             "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-            "env": [
-                "SENTRY_DSN",
-                "SENTRY_AUTH_TOKEN",
-                "SENTRY_ORG",
-                "SENTRY_PROJECT",
-                "NEXT_PUBLIC_SENTRY_DSN"
-            ]
+            "env": ["SENTRY_DSN", "SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT", "NEXT_PUBLIC_SENTRY_DSN"]
         },
         "generate:types": {
             "dependsOn": ["^generate:types"],
             "outputs": ["dist/**/*.d.ts", "dist/**/*.d.ts.map"]
         },
         "test": {
-            "dependsOn": ["^generate:types"],
+            "dependsOn": ["^generate:types", "copy:systems"],
             "outputs": []
         },
         "test:integration": {
@@ -37,7 +31,7 @@
             "outputs": []
         },
         "typecheck": {
-            "dependsOn": ["^generate:types"],
+            "dependsOn": ["^generate:types", "copy:systems"],
             "outputs": []
         },
         "format": {
