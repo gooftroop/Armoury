@@ -21,7 +21,7 @@ jobs:
               run: npx turbo run build --filter=@armoury/web^...
 
             - name: Typecheck
-              run: npm run typecheck -w @armoury/web
+              run: npx turbo run typecheck --filter=@armoury/web
 
             - name: Lint
               run: npm run lint -w @armoury/web
@@ -30,7 +30,7 @@ jobs:
               run: npm run format:check -w @armoury/web
 
             - name: Test
-              run: npm test -w @armoury/web
+              run: npx turbo run test --filter=@armoury/web
 
     deploy-preview:
         name: Deploy Preview
