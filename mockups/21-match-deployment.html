@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Match Deployment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: var(--space-3); }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 12px; color: var(--text-tertiary); }
+
+    .deployment-layout { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); padding: var(--space-4) var(--space-4) var(--space-7); }
+     .panel-card {
+       background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+       border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+     }
+     .panel-title { font-size: 16px; font-weight: 600; color: var(--text-primary); font-family: var(--font-display); }
+    .panel-subtitle { font-size: 12px; color: var(--text-tertiary); margin-top: var(--space-1); }
+
+     .unit-row {
+       display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+       padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+       border: var(--glass-border); background: var(--glass-bg); backdrop-filter: var(--glass-blur);
+     }
+    .unit-row + .unit-row { margin-top: var(--space-3); }
+    .unit-info { flex: 1; min-width: 0; }
+    .unit-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .unit-meta { font-size: 12px; color: var(--text-tertiary); margin-top: var(--space-1); }
+    .status-pill {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;
+      padding: 2px 8px; border-radius: var(--radius-full); background: oklch(0 0 0 / 30%);
+      color: var(--text-secondary); border: 1px solid var(--border-subtle);
+    }
+    .status-pill.deployed { color: var(--status-success); background: oklch(0.65 0.15 145 / 14%); border-color: oklch(0.65 0.15 145 / 28%); }
+    .status-pill.reserve { color: var(--accent-secondary); background: var(--accent-secondary-muted); border-color: var(--accent-secondary-muted); }
+    .status-pill.deepstrike { color: var(--accent-highlight); background: var(--accent-highlight-muted); border-color: oklch(0.68 0.11 40 / 25%); }
+
+    .battlefield {
+      height: 380px; border-radius: var(--radius-lg); border: 1px dashed var(--border-default);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      display: grid; grid-template-rows: 1fr auto 1fr; position: relative; overflow: hidden;
+    }
+    .zone-label {
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary);
+      padding: var(--space-3) var(--space-3); display: flex; align-items: center; justify-content: space-between;
+    }
+     .zone-bar {
+        height: 40px; background: oklch(0 0 0 / 30%); border-top: var(--glass-border);
+        border-bottom: var(--glass-border); display: flex; align-items: center; justify-content: center;
+        font-size: 12px; color: var(--text-secondary);
+      }
+    .zone-overlay {
+      position: absolute; inset: var(--space-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+    }
+    .zone-marker {
+      position: absolute; width: 12px; height: 12px; border-radius: var(--radius-full); background: var(--accent-primary);
+      box-shadow: 0 0 0 4px var(--accent-primary-muted);
+    }
+    .zone-marker.one { top: 18%; left: 20%; }
+    .zone-marker.two { top: 18%; right: 20%; }
+    .zone-marker.three { bottom: 18%; left: 24%; }
+    .zone-marker.four { bottom: 18%; right: 24%; }
+
+     .summary-bar {
+       display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+       padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+       background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+       margin: var(--space-1) var(--space-4) var(--space-4);
+     }
+    .summary-text { font-size: 12px; color: var(--text-secondary); }
+    .summary-text strong { color: var(--text-primary); font-weight: 600; }
+
+    .deployment-footer {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4) var(--space-6);
+    }
+    .deployment-note { font-size: 12px; color: var(--text-tertiary); }
+
+    @media (max-width: 767px) {
+      .deployment-layout { grid-template-columns: 1fr; }
+      .battlefield { height: 240px; }
+      .deployment-footer { flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item active" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <nav class="breadcrumb" style="padding:8px 16px;font-size:13px;">
+        <a href="11-war-ledger.html" style="color:var(--text-secondary);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> War Ledger</a>
+        <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+        <span style="color:var(--text-tertiary);">Battle of Macragge</span>
+        <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+        <span style="color:var(--text-tertiary);">Deployment</span>
+      </nav>
+
+      <div style="padding:8px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="font-size:18px;font-weight:600;color:var(--text-primary);">Deployment Phase</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);">Match Mode</span>
+          <div class="toggle-row" style="display:inline-flex;gap:2px;background:oklch(1 0 0 / 12%);backdrop-filter:blur(12px);border-radius:var(--radius-full);padding:3px;border:1px solid oklch(1 0 0 / 10%);">
+            <span id="mode-basic" class="active" style="padding:6px 20px;border-radius:var(--radius-full);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;cursor:pointer;background:var(--accent-primary);color:var(--text-inverse);transition:all var(--duration-fast) var(--ease-default);" onclick="selectMode('basic')">Basic</span>
+            <span id="mode-guided" class="inactive" style="padding:6px 20px;border-radius:var(--radius-full);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;cursor:pointer;color:var(--text-tertiary);transition:all var(--duration-fast) var(--ease-default);" onclick="selectMode('guided')">Guided</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-text"><strong>3/5 units deployed</strong> | 1 Deep Strike · 1 In Reserve</div>
+        <div class="summary-text"><strong>Your Turn</strong> — Deploy a unit</div>
+      </div>
+
+      <div class="deployment-layout">
+        <div class="panel-card">
+          <div class="panel-title">Your Units</div>
+          <div class="panel-subtitle">Set each unit's deployment status.</div>
+          <div style="margin-top:12px;">
+            <div class="unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Captain in Terminator Armour</div>
+                <div class="unit-meta">1 model · 200 pts</div>
+              </div>
+              <span class="status-pill deployed">Deployed</span>
+            </div>
+            <div class="unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Intercessor Squad</div>
+                <div class="unit-meta">10 models · 180 pts</div>
+              </div>
+              <span class="status-pill deployed">Deployed</span>
+            </div>
+            <div class="unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Terminator Squad</div>
+                <div class="unit-meta">5 models · 200 pts</div>
+              </div>
+              <span class="status-pill deepstrike">Deep Strike</span>
+              <button class="btn btn-sm" id="deploy-terminator" style="height:26px;padding:0 12px;font-size:10px;margin-left:8px;" onclick="deployUnit('terminator')">Deploy</button>
+            </div>
+            <div class="unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Assault Intercessor Squad</div>
+                <div class="unit-meta">10 models · 180 pts</div>
+              </div>
+              <span class="status-pill reserve">In Reserve</span>
+              <button class="btn btn-sm" id="deploy-assault" style="height:26px;padding:0 12px;font-size:10px;margin-left:8px;" onclick="deployUnit('assault')">Deploy</button>
+            </div>
+            <div class="unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Redemptor Dreadnought</div>
+                <div class="unit-meta">1 model · 210 pts</div>
+              </div>
+              <span class="status-pill deployed">Deployed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">Deployment Zones</div>
+          <div class="panel-subtitle">Battlefield overview with zones and objectives.</div>
+          <div class="battlefield" style="margin-top:12px;">
+            <div class="zone-label">
+              <span>Your Deployment Zone</span>
+              <span>12" from edge</span>
+            </div>
+            <div class="zone-bar">No Man's Land</div>
+            <div class="zone-label" style="justify-content:flex-end;">Opponent Deployment Zone</div>
+            <div class="zone-overlay"></div>
+            <div class="zone-marker one"></div>
+            <div class="zone-marker two"></div>
+            <div class="zone-marker three"></div>
+            <div class="zone-marker four"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="deployment-footer">
+        <div style="display:flex;gap:8px;margin-left:auto;">
+          <button class="btn btn-secondary" onclick="window.location.href='20-match-setup.html'">Back to Setup</button>
+          <button class="btn btn-primary" id="start-match-btn" onclick="window.location.href='08-match-basic.html'">Start Match</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item active"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    lucide.createIcons();
+    var currentMode = 'basic';
+    function selectMode(mode) {
+      currentMode = mode;
+      var basic = document.getElementById('mode-basic');
+      var guided = document.getElementById('mode-guided');
+      var btn = document.getElementById('start-match-btn');
+      if (mode === 'basic') {
+        basic.className = 'active';
+        basic.style.background = 'var(--accent-primary)';
+        basic.style.color = 'var(--text-inverse)';
+        guided.className = 'inactive';
+        guided.style.background = '';
+        guided.style.color = 'var(--text-tertiary)';
+        btn.onclick = function() { window.location.href = '08-match-basic.html'; };
+      } else {
+        guided.className = 'active';
+        guided.style.background = 'var(--accent-primary)';
+        guided.style.color = 'var(--text-inverse)';
+        basic.className = 'inactive';
+        basic.style.background = '';
+        basic.style.color = 'var(--text-tertiary)';
+        btn.onclick = function() { window.location.href = '23-match-guided-command.html'; };
+      }
+    }
+
+    function deployUnit(unitId) {
+      var btn = document.getElementById('deploy-' + unitId);
+      var row = btn.closest('.unit-row');
+      var pills = row.querySelectorAll('.status-pill');
+      for (var p = 0; p < pills.length; p++) {
+        pills[p].className = 'status-pill deployed';
+        pills[p].textContent = 'Deployed';
+      }
+      btn.remove();
+      
+      var allDeployBtns = document.querySelectorAll('[id^="deploy-"]');
+      for (var d = 0; d < allDeployBtns.length; d++) {
+        allDeployBtns[d].disabled = true;
+        allDeployBtns[d].style.opacity = '0.4';
+        allDeployBtns[d].style.cursor = 'not-allowed';
+      }
+      
+      var summaryBar = document.querySelector('.summary-bar');
+      if (summaryBar) {
+        var origHTML = summaryBar.innerHTML;
+        summaryBar.innerHTML = '<div class="summary-text" style="color:var(--accent-highlight);"><strong>Opponent\'s Turn</strong> — Waiting for opponent to deploy...</div>';
+        
+        setTimeout(function() {
+          summaryBar.innerHTML = origHTML;
+          var remainingBtns = document.querySelectorAll('[id^="deploy-"]');
+          for (var r = 0; r < remainingBtns.length; r++) {
+            remainingBtns[r].disabled = false;
+            remainingBtns[r].style.opacity = '1';
+            remainingBtns[r].style.cursor = 'pointer';
+          }
+        }, 2000);
+      }
+    }
+
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var j;
+      for (j = 0; j < allDetails.length; j += 1) {
+        if (!allDetails[j].contains(e.target)) {
+          allDetails[j].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

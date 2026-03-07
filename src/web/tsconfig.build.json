@@ -1,0 +1,16 @@
+{
+    "extends": "@armoury/typescript/build.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "baseUrl": ".",
+        "jsx": "preserve",
+        "noEmit": true,
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "plugins": [{ "name": "next" }],
+        "paths": {
+            "@web/*": ["./*"]
+        }
+    },
+    "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules", ".next", "**/__tests__/**", "**/__mocks__/**", "**/__fixtures__/**"]
+}

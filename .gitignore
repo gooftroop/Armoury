@@ -27,8 +27,28 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# turbo cache
+.turbo
+
+# next.js
+.next
+
+# expo
+.expo
+
 # IntelliJ based IDEs
 .idea
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# generated system assets (copied at build time)
+**/public/systems/
+
+# agent worktrees
+.worktrees
+
+# agent session artifacts
+.opencode/plans/
+.opencode/scratch/
+.sisyphus/

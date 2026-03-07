@@ -1,0 +1,9 @@
+{
+    "extends": "@armoury/typescript/base.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "allowJs": true,
+        "checkJs": true
+    },
+    "include": ["src"]
+}

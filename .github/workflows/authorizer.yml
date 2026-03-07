@@ -1,0 +1,25 @@
+name: Authorizer Service
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'src/services/authorizer/**'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'src/services/authorizer/**'
+
+concurrency:
+    group: authorizer-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/authorizer'
+            working-directory: src/services/authorizer
+            needs-shared-build: false
+            has-migrations: false
+        secrets: inherit

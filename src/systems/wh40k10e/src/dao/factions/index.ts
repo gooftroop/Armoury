@@ -1,0 +1,40 @@
+/**
+ * Faction DAO exports for wh40k10e.
+ */
+export { SpaceMarinesDAO } from '@wh40k10e/dao/factions/SpaceMarinesDAO.js';
+export { BloodAngelsDAO } from '@wh40k10e/dao/factions/BloodAngelsDAO.js';
+export { DarkAngelsDAO } from '@wh40k10e/dao/factions/DarkAngelsDAO.js';
+export { SpaceWolvesDAO } from '@wh40k10e/dao/factions/SpaceWolvesDAO.js';
+export { BlackTemplarsDAO } from '@wh40k10e/dao/factions/BlackTemplarsDAO.js';
+export { DeathwatchDAO } from '@wh40k10e/dao/factions/DeathwatchDAO.js';
+export { UltramarinesDAO } from '@wh40k10e/dao/factions/UltramarinesDAO.js';
+export { ImperialFistsDAO } from '@wh40k10e/dao/factions/ImperialFistsDAO.js';
+export { IronHandsDAO } from '@wh40k10e/dao/factions/IronHandsDAO.js';
+export { RavenGuardDAO } from '@wh40k10e/dao/factions/RavenGuardDAO.js';
+export { SalamandersDAO } from '@wh40k10e/dao/factions/SalamandersDAO.js';
+export { WhiteScarsDAO } from '@wh40k10e/dao/factions/WhiteScarsDAO.js';
+export { NecronDAO } from '@wh40k10e/dao/factions/NecronDAO.js';
+export { AeldariDAO } from '@wh40k10e/dao/factions/AeldariDAO.js';
+export { DrukhariDAO } from '@wh40k10e/dao/factions/DrukhariDAO.js';
+export { ChaosSpaceMarinesDAO } from '@wh40k10e/dao/factions/ChaosSpaceMarinesDAO.js';
+export { ChaosDaemonsDAO } from '@wh40k10e/dao/factions/ChaosDaemonsDAO.js';
+export { ChaosKnightsDAO } from '@wh40k10e/dao/factions/ChaosKnightsDAO.js';
+export { DeathGuardDAO } from '@wh40k10e/dao/factions/DeathGuardDAO.js';
+export { EmperorsChildrenDAO } from '@wh40k10e/dao/factions/EmperorsChildrenDAO.js';
+export { ThousandSonsDAO } from '@wh40k10e/dao/factions/ThousandSonsDAO.js';
+export { WorldEatersDAO } from '@wh40k10e/dao/factions/WorldEatersDAO.js';
+export { AdeptaSororitasDAO } from '@wh40k10e/dao/factions/AdeptaSororitasDAO.js';
+export { AdeptusCustodesDAO } from '@wh40k10e/dao/factions/AdeptusCustodesDAO.js';
+export { AdeptusMechanicusDAO } from '@wh40k10e/dao/factions/AdeptusMechanicusDAO.js';
+export { AgentsOfTheImperiumDAO } from '@wh40k10e/dao/factions/AgentsOfTheImperiumDAO.js';
+export { AstraMilitarumDAO } from '@wh40k10e/dao/factions/AstraMilitarumDAO.js';
+export { ImperialKnightsDAO } from '@wh40k10e/dao/factions/ImperialKnightsDAO.js';
+export { GreyKnightsDAO } from '@wh40k10e/dao/factions/GreyKnightsDAO.js';
+export { GenestealerCultsDAO } from '@wh40k10e/dao/factions/GenestealerCultsDAO.js';
+export { LeaguesOfVotannDAO } from '@wh40k10e/dao/factions/LeaguesOfVotannDAO.js';
+export { OrksDAO } from '@wh40k10e/dao/factions/OrksDAO.js';
+export { TauEmpireDAO } from '@wh40k10e/dao/factions/TauEmpireDAO.js';
+export { TyranidsDAO } from '@wh40k10e/dao/factions/TyranidsDAO.js';
+export { AdeptusTitanicusDAO } from '@wh40k10e/dao/factions/AdeptusTitanicusDAO.js';
+export { TitanicusTraitorisDAO } from '@wh40k10e/dao/factions/TitanicusTraitorisDAO.js';
+export { UnalignedForcesDAO } from '@wh40k10e/dao/factions/UnalignedForcesDAO.js';

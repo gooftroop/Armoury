@@ -1,0 +1,19 @@
+{
+    "extends": "@armoury/typescript/build.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "@campaigns/*": ["./*"],
+            "@data/*": ["../../shared/data/dist/*"],
+            "@models/*": ["../../shared/models/dist/*"],
+            "@clients-github/*": ["../../shared/clients/github/dist/*"],
+            "@clients-wahapedia/*": ["../../shared/clients/wahapedia/dist/*"],
+            "@providers-bsdata/*": ["../../shared/providers/bsdata/dist/*"],
+            "@validation/*": ["../../shared/validation/dist/*"]
+        }
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/**/__mocks__/**", "src/**/__fixtures__/**"]
+}

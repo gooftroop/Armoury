@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — War Ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .match-card {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+      padding: 20px; cursor: pointer; transition: all var(--duration-fast) var(--ease-default); position: relative;
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+    .match-card:hover { border-color: var(--border-default); transform: translateY(-1px); }
+    .match-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .match-card-name { font-size: 16px; font-weight: 500; color: var(--text-primary); }
+    .match-card-date { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .match-card-score {
+      display: flex; align-items: center; gap: 12px; margin: 12px 0;
+    }
+    .match-score-player { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .match-score-name { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .match-score-value { font-family: var(--font-mono); font-size: 24px; font-weight: 700; }
+    .match-score-sep { font-family: var(--font-mono); font-size: 18px; color: var(--text-tertiary); }
+    .match-card-armies { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-secondary); }
+    .match-card-army { display: flex; align-items: center; gap: 6px; }
+    .match-card-army-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: oklch(1 0 0 / 10%); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; }
+    .match-card-army-icon i { width: 12px; height: 12px; color: var(--text-tertiary); }
+
+    .match-group-label {
+      font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--accent-primary); padding: 16px 0 12px;
+    }
+
+    @media (max-width: 767px) {
+      .match-card { padding: 14px; }
+      .match-card-name { font-size: 14px; }
+      .match-score-value { font-size: 20px; }
+      .match-card-armies { flex-wrap: wrap; gap: 8px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item active" aria-current="page" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <header class="header">
+        <h1 class="header-title">War Ledger</h1>
+        <div class="header-actions">
+          <button class="btn btn-primary btn-sm" onclick="location.href='16-match-creation.html'"><i data-lucide="plus" style="width:16px;height:16px;"></i> New Match</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="filter-bar">
+          <div class="filter-chip active">All</div>
+          <div class="filter-chip">Active</div>
+          <div class="filter-chip">Planned</div>
+          <div class="filter-chip">Completed</div>
+          <div style="margin-left:auto;">
+            <button class="btn btn-ghost btn-sm"><i data-lucide="arrow-up-down" style="width:14px;height:14px;"></i> Sort</button>
+          </div>
+        </div>
+
+        <div class="match-group-label">Active</div>
+        <div class="grid-auto" style="margin-bottom:24px;">
+          <div class="match-card" onclick="location.href='08-match-basic.html'">
+            <div class="match-card-header">
+              <div>
+                <div class="match-card-name">vs Iron Warriors &mdash; Round 3</div>
+                <div class="match-card-date">Started Feb 8, 2026</div>
+              </div>
+              <span class="badge badge-active">Active</span>
+            </div>
+            <div class="match-card-score">
+              <div class="match-score-player">
+                <span class="match-score-name">You</span>
+                <span class="match-score-value" style="color:var(--accent-secondary);">45</span>
+              </div>
+              <span class="match-score-sep">&mdash;</span>
+              <div class="match-score-player">
+                <span class="match-score-name">Opponent</span>
+                <span class="match-score-value" style="color:var(--text-secondary);">38</span>
+              </div>
+            </div>
+            <div class="match-card-armies">
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="shield"></i></div>Ultramarines</div>
+              <span style="color:var(--text-tertiary);">vs</span>
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="skull"></i></div>Iron Warriors</div>
+            </div>
+          </div>
+        </div>
+
+         <div class="match-group-label">Planned</div>
+         <div class="grid-auto" style="margin-bottom:24px;">
+           <div class="match-card" onclick="location.href='20-match-setup.html'">
+            <div class="match-card-header">
+              <div>
+                <div class="match-card-name">Tournament Round 2</div>
+                <div class="match-card-date">Scheduled Feb 15, 2026</div>
+              </div>
+              <span class="badge badge-planned">Planned</span>
+            </div>
+            <div class="match-card-armies">
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="shield"></i></div>Ultramarines</div>
+              <span style="color:var(--text-tertiary);">vs</span>
+              <span style="color:var(--text-tertiary);font-style:italic;">TBD</span>
+            </div>
+          </div>
+        </div>
+
+         <div class="match-group-label">Completed</div>
+         <div class="grid-auto">
+           <div class="match-card" onclick="location.href='29-match-summary.html'">
+             <div class="match-card-header">
+               <div>
+                 <div class="match-card-name">vs Hive Fleet Kraken</div>
+                <div class="match-card-date">Feb 1, 2026</div>
+              </div>
+              <span class="badge badge-success">Won</span>
+            </div>
+            <div class="match-card-score">
+              <div class="match-score-player">
+                <span class="match-score-name">You</span>
+                <span class="match-score-value" style="color:var(--status-success);">85</span>
+              </div>
+              <span class="match-score-sep">&mdash;</span>
+              <div class="match-score-player">
+                <span class="match-score-name">Opponent</span>
+                <span class="match-score-value" style="color:var(--text-secondary);">60</span>
+              </div>
+            </div>
+            <div class="match-card-armies">
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="shield"></i></div>Ultramarines</div>
+              <span style="color:var(--text-tertiary);">vs</span>
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="bug"></i></div>Tyranids</div>
+            </div>
+          </div>
+
+           <div class="match-card" onclick="location.href='29-match-summary.html'">
+             <div class="match-card-header">
+               <div>
+                 <div class="match-card-name">vs World Eaters</div>
+                <div class="match-card-date">Jan 25, 2026</div>
+              </div>
+              <span class="badge badge-danger">Lost</span>
+            </div>
+            <div class="match-card-score">
+              <div class="match-score-player">
+                <span class="match-score-name">You</span>
+                <span class="match-score-value" style="color:var(--status-danger);">42</span>
+              </div>
+              <span class="match-score-sep">&mdash;</span>
+              <div class="match-score-player">
+                <span class="match-score-name">Opponent</span>
+                <span class="match-score-value" style="color:var(--text-secondary);">78</span>
+              </div>
+            </div>
+            <div class="match-card-armies">
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="skull"></i></div>Necrons</div>
+              <span style="color:var(--text-tertiary);">vs</span>
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="flame"></i></div>World Eaters</div>
+            </div>
+          </div>
+
+           <div class="match-card" onclick="location.href='29-match-summary.html'">
+             <div class="match-card-header">
+               <div>
+                 <div class="match-card-name">vs Aeldari</div>
+                <div class="match-card-date">Jan 18, 2026</div>
+              </div>
+              <span class="badge" style="background:oklch(0.68 0.01 260 / 15%);color:var(--text-secondary);">Draw</span>
+            </div>
+            <div class="match-card-score">
+              <div class="match-score-player">
+                <span class="match-score-name">You</span>
+                <span class="match-score-value" style="color:var(--text-primary);">65</span>
+              </div>
+              <span class="match-score-sep">&mdash;</span>
+              <div class="match-score-player">
+                <span class="match-score-name">Opponent</span>
+                <span class="match-score-value" style="color:var(--text-secondary);">65</span>
+              </div>
+            </div>
+            <div class="match-card-armies">
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="shield"></i></div>Ultramarines</div>
+              <span style="color:var(--text-tertiary);">vs</span>
+              <div class="match-card-army"><div class="match-card-army-icon"><i data-lucide="eye"></i></div>Aeldari</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="fab" aria-label="New Match" onclick="location.href='16-match-creation.html'"><i data-lucide="plus"></i></button>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item active"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var filterChips = document.querySelectorAll('.filter-bar .filter-chip');
+    var filterIndex = 0;
+    function handleFilterChipClick() {
+      var siblingIndex = 0;
+      for (siblingIndex = 0; siblingIndex < filterChips.length; siblingIndex += 1) {
+        filterChips[siblingIndex].classList.remove('active');
+      }
+      this.classList.add('active');
+    }
+
+    for (filterIndex = 0; filterIndex < filterChips.length; filterIndex += 1) {
+      filterChips[filterIndex].addEventListener('click', handleFilterChipClick);
+    }
+
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var j;
+      for (j = 0; j < allDetails.length; j += 1) {
+        if (!allDetails[j].contains(e.target)) {
+          allDetails[j].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

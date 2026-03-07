@@ -1,0 +1,17 @@
+{
+    "extends": "@armoury/typescript/base.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "baseUrl": ".",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "rewriteRelativeImportExtensions": false,
+        "jsx": "react-jsx",
+        "noEmit": true,
+        "paths": {
+            "@mobile/*": ["./*"]
+        }
+    },
+    "include": ["**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules", "android", "ios", ".expo"]
+}

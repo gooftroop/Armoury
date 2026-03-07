@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+@import './css/variants.css';
+@import './css/default.css';
+@import './css/defaultDark.css';
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}

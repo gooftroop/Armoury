@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Crusade of the Iron Stars</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .breadcrumb-link { color: var(--text-secondary); font-weight: 500; }
+    .breadcrumb-link:hover { color: var(--accent-secondary-hover); }
+    .breadcrumb-sep { color: var(--text-tertiary); }
+    .breadcrumb-current { color: var(--text-tertiary); font-weight: 500; }
+
+    .top-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; margin-bottom: 32px; }
+
+    .standings-table { width: 100%; border-collapse: collapse; }
+    .standings-table th {
+      font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-tertiary); text-align: left; padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .standings-table th:last-child { text-align: right; }
+    .standings-table td {
+      padding: 12px 14px; border-bottom: 1px solid var(--border-subtle);
+      font-size: 14px; color: var(--text-primary);
+    }
+    .standings-table td:first-child { font-family: var(--font-mono); font-weight: 700; color: var(--text-tertiary); width: 40px; }
+    .standings-table td:last-child { text-align: right; font-family: var(--font-mono); font-weight: 700; }
+    .standings-table tr.current-user { background: var(--accent-primary-muted); }
+    .standings-table tr.current-user td:first-child { color: var(--accent-primary); }
+    .standings-player { display: flex; align-items: center; gap: 10px; }
+    .standings-player-name { font-weight: 500; }
+    .standings-army { font-size: 12px; color: var(--text-secondary); }
+    .standings-record { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+
+    .info-card {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); }
+    .info-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+
+    .progress-row { padding: 12px 0; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); margin-bottom: 6px; }
+    .progress-bar { height: 6px; background: oklch(0 0 0 / 30%); border-radius: var(--radius-full); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: var(--radius-full); background: var(--accent-primary); }
+
+    .match-row {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+      padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 8px;
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+    .match-row:hover { border-color: var(--border-default); }
+    .match-row-players { flex: 1; }
+    .match-row-names { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+    .match-row-armies { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .match-row-date { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; }
+
+    .your-army-card {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+      padding: 20px; display: flex; align-items: center; gap: 20px;
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+    .your-army-icon {
+      width: 56px; height: 56px; border-radius: var(--radius-lg); background: var(--faction-iron-legion-muted);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .your-army-icon i { width: 28px; height: 28px; color: var(--faction-iron-legion); }
+    .your-army-info { flex: 1; }
+    .your-army-name { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+    .your-army-detail { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .your-army-stats { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
+
+    .phase-timeline { display: flex; align-items: center; gap: 0; }
+    .phase-node {
+      display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; position: relative;
+    }
+    .phase-dot {
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; border: 2px solid var(--border-default); color: var(--text-tertiary);
+    }
+    .phase-dot.completed { background: var(--status-success); border-color: var(--status-success); color: var(--text-inverse); }
+    .phase-dot.active { background: var(--accent-primary); border-color: var(--accent-primary); color: var(--text-inverse); }
+    .phase-name { font-size: 12px; font-weight: 500; color: var(--text-tertiary); text-align: center; }
+    .phase-dot.completed + .phase-name { color: var(--status-success); }
+    .phase-node.active-node .phase-name { color: var(--accent-primary); }
+    .phase-connector {
+      width: 100%; height: 2px; background: var(--border-default); flex: 1; margin: 0 -4px;
+      align-self: flex-start; margin-top: 15px;
+    }
+    .phase-connector.completed { background: var(--status-success); }
+
+    @media (max-width: 767px) {
+      .top-grid { grid-template-columns: 1fr; gap: 16px; }
+      .your-army-card { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+      .your-army-icon { width: 44px; height: 44px; }
+      .your-army-icon i { width: 22px; height: 22px; }
+      .match-row { flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px 16px; }
+      .match-row-date { font-size: 11px; }
+      .standings-table { font-size: 13px; }
+      .standings-table th, .standings-table td { padding: 8px 10px; }
+      .standings-player { gap: 6px; }
+      .phase-timeline { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item active" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-6);">
+          <div>
+            <h1 style="font-size:24px;font-weight:700;color:var(--text-primary);margin-bottom:var(--space-1);">Crusade of Iron</h1>
+            <nav class="breadcrumb" style="font-size:13px;">
+              <a href="12-campaigns.html" style="color:var(--text-secondary);">Campaigns</a>
+              <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+              <span style="color:var(--text-tertiary);">Crusade of Iron</span>
+            </nav>
+          </div>
+          <div style="display:flex;gap:var(--space-2);">
+            <button class="btn btn-primary btn-sm" aria-label="New match" onclick="openMatchDrawer()"><i data-lucide="plus" style="width:14px;height:14px;"></i> New Match</button>
+            <button class="btn btn-secondary btn-sm" aria-label="Play match" onclick="location.href='16-match-creation.html'"><i data-lucide="swords" style="width:14px;height:14px;"></i> Play Match</button>
+            <button class="btn btn-secondary btn-sm" aria-label="Manage campaign" onclick="location.href='19-campaign-management.html'"><i data-lucide="settings" style="width:14px;height:14px;"></i> Manage</button>
+          </div>
+        </div>
+
+        <div class="top-grid">
+          <div>
+            <div class="section-header">
+              <span class="section-header-label">Your Army</span>
+            </div>
+            <div class="your-army-card">
+              <div class="your-army-icon"><i data-lucide="shield"></i></div>
+              <div class="your-army-info">
+                <div class="your-army-name">Iron Wolves</div>
+                <div class="your-army-detail">Space Marines &middot; 2000pts &middot; Strike Force</div>
+                <div class="your-army-stats">6 units &middot; 3 battle honours &middot; 2 scars</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" aria-label="View army" onclick="location.href='05-army-detail.html'">View Army</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-header">
+              <span class="section-header-label">Campaign Info</span>
+            </div>
+            <div class="info-card">
+              <div class="info-row">
+                <span class="info-label">Type</span>
+                <span class="info-value">Crusade Campaign</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="badge badge-active">Active</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Dates</span>
+                <span class="info-value">Jan 5 &mdash; Mar 30, 2026</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Organizer</span>
+                <span class="info-value" style="color:var(--accent-highlight);">Commander (You)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-header-label">Upcoming Matches <span class="section-header-count">2</span></span>
+        </div>
+        <div style="margin-bottom:32px;">
+          <div class="match-row">
+            <div class="match-row-players">
+              <div class="match-row-names">Commander vs XenoSlayer</div>
+              <div class="match-row-armies">Iron Wolves (SM) vs Tyranids</div>
+            </div>
+            <div class="match-row-date">Feb 15, 2026</div>
+            <button class="btn btn-ghost btn-sm" aria-label="View match" onclick="location.href='08-match-basic.html'">View</button>
+          </div>
+          <div class="match-row">
+            <div class="match-row-players">
+              <div class="match-row-names">IronFist_42 vs BattleSister_7</div>
+              <div class="match-row-armies">Death Guard vs Adepta Sororitas</div>
+            </div>
+            <div class="match-row-date">Feb 16, 2026</div>
+            <button class="btn btn-ghost btn-sm" aria-label="View match" onclick="location.href='08-match-basic.html'">View</button>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-header-label">Standings</span>
+        </div>
+        <div class="info-card" style="padding:0;">
+          <table class="standings-table">
+            <thead>
+              <tr><th>#</th><th>Player</th><th>W/L/D</th><th>Pts</th></tr>
+            </thead>
+            <tbody>
+              <tr class="current-user">
+                <td>1</td>
+                <td>
+                  <div class="standings-player">
+                    <div class="avatar avatar-sm">C</div>
+                    <div><div class="standings-player-name">Commander</div><div class="standings-army">Iron Wolves (SM)</div></div>
+                  </div>
+                </td>
+                <td class="standings-record">4 / 1 / 0</td>
+                <td>12</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>
+                  <div class="standings-player">
+                    <div class="avatar avatar-sm">I</div>
+                    <div><div class="standings-player-name">IronFist_42</div><div class="standings-army">Death Guard</div></div>
+                  </div>
+                </td>
+                <td class="standings-record">3 / 1 / 1</td>
+                <td>10</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>
+                  <div class="standings-player">
+                    <div class="avatar avatar-sm">X</div>
+                    <div><div class="standings-player-name">XenoSlayer</div><div class="standings-army">Tyranids</div></div>
+                  </div>
+                </td>
+                <td class="standings-record">3 / 2 / 0</td>
+                <td>9</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>
+                  <div class="standings-player">
+                    <div class="avatar avatar-sm">C</div>
+                    <div><div class="standings-player-name">CrusaderKing</div><div class="standings-army">Black Templars</div></div>
+                  </div>
+                </td>
+                <td class="standings-record">2 / 2 / 1</td>
+                <td>7</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>
+                  <div class="standings-player">
+                    <div class="avatar avatar-sm">V</div>
+                    <div><div class="standings-player-name">VoidDrake99</div><div class="standings-army">Drukhari</div></div>
+                  </div>
+                </td>
+                <td class="standings-record">1 / 3 / 1</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>
+                  <div class="standings-player">
+                    <div class="avatar avatar-sm">B</div>
+                    <div><div class="standings-player-name">BattleSister_7</div><div class="standings-army">Adepta Sororitas</div></div>
+                  </div>
+                </td>
+                <td class="standings-record">1 / 4 / 0</td>
+                <td>3</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" style="display:none;"></div>
+  <div class="drawer" style="display:none;">
+    <div class="drawer-header">
+      <span class="drawer-title">Play Match</span>
+      <button class="btn-icon" aria-label="Close drawer"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-body">
+      <div>
+        <label class="input-label" for="match-name">Match Name</label>
+        <input class="input" id="match-name" type="text" value="Match — Feb 15, 2026" aria-label="Match name">
+      </div>
+
+      <div>
+        <div style="padding:var(--space-3) var(--space-4);background:oklch(0 0 0 / 30%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);margin-bottom:var(--space-4);">
+           <div style="font-size:14px;font-weight:500;color:var(--text-primary);">Your Campaign Army</div>
+           <div style="font-size:13px;color:var(--text-secondary);margin-top:2px;">Ultramarines Strike Force &bull; 1,850 pts</div>
+         </div>
+      </div>
+
+      <div>
+        <label class="input-label">Date &amp; Time</label>
+        <div class="date-time-row" style="margin-top:6px;">
+          <div>
+            <label class="input-label">Date</label>
+            <input class="input" type="text" value="Feb 15, 2026" aria-label="Match date">
+          </div>
+          <div>
+            <label class="input-label">Time <span style="font-weight:400;text-transform:none;letter-spacing:normal;color:var(--text-tertiary);">(Optional)</span></label>
+            <input class="input" type="text" value="6:30 PM" aria-label="Match time">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div style="margin-top:var(--space-4);">
+          <div class="text-label" style="margin-bottom:var(--space-2);">Select Opponents</div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+            <label style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);cursor:pointer;">
+              <input type="checkbox" checked style="accent-color:var(--accent-primary);width:16px;height:16px;">
+              <div class="avatar avatar-sm">R</div>
+              <span style="font-size:14px;color:var(--text-primary);">RedHunter_42</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);cursor:pointer;">
+              <input type="checkbox" style="accent-color:var(--accent-primary);width:16px;height:16px;">
+              <div class="avatar avatar-sm">T</div>
+              <span style="font-size:14px;color:var(--text-primary);">TankCommander</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);cursor:pointer;">
+              <input type="checkbox" style="accent-color:var(--accent-primary);width:16px;height:16px;">
+              <div class="avatar avatar-sm">G</div>
+              <span style="font-size:14px;color:var(--text-primary);">GrimDark_Lord</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="drawer-actions">
+        <button class="btn btn-primary w-full" aria-label="Create match">Create Match</button>
+        <button class="btn btn-ghost w-full" aria-label="Cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item active"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var j;
+      for (j = 0; j < allDetails.length; j += 1) {
+        if (!allDetails[j].contains(e.target)) {
+          allDetails[j].removeAttribute('open');
+        }
+      }
+    });
+
+    function openMatchDrawer() {
+      document.querySelector('.drawer-backdrop').style.display = '';
+      document.querySelector('.drawer').style.display = '';
+    }
+    function closeMatchDrawer() {
+      document.querySelector('.drawer-backdrop').style.display = 'none';
+      document.querySelector('.drawer').style.display = 'none';
+    }
+    document.querySelector('.drawer-backdrop').addEventListener('click', closeMatchDrawer);
+    document.querySelector('.drawer-header .btn-icon').addEventListener('click', closeMatchDrawer);
+  </script>
+</body>
+</html>

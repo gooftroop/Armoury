@@ -1,0 +1,165 @@
+/*
+ * Default Light Theme
+ *
+ * Registers all design tokens with Tailwind v4 via @theme.
+ * Values here define the LIGHT mode defaults.
+ * Dark overrides: defaultDark.css
+ * System theme overrides: loaded via <link> from /css/systems/<id>/theme.css
+ *
+ * Token spec: docs/design/DESIGN_TOKENS.md
+ */
+
+@theme {
+    /* ================================================================
+     * COLORS
+     * ================================================================ */
+
+    /* --- Backgrounds --- */
+    --color-background: oklch(0.97 0.003 260);
+    --color-card: oklch(1 0 0);
+    --color-card-foreground: oklch(0.21 0.006 260);
+    --color-popover: oklch(1 0 0);
+    --color-popover-foreground: oklch(0.21 0.006 260);
+    --color-muted: oklch(0.95 0.004 260);
+    --color-muted-foreground: oklch(0.45 0.01 260);
+    --color-accent: oklch(0.93 0.005 260);
+    --color-accent-foreground: oklch(0.21 0.006 260);
+
+    /* --- Text --- */
+    --color-foreground: oklch(0.21 0.006 260);
+
+    /* --- Primary: Steel Blue --- */
+    --color-primary: oklch(0.52 0.15 235);
+    --color-primary-hover: oklch(0.46 0.16 235);
+    --color-primary-muted: oklch(0.52 0.15 235 / 12%);
+    --color-primary-foreground: oklch(0.98 0.005 260);
+
+    /* --- Secondary: Amber Gold --- */
+    --color-secondary: oklch(0.52 0.14 70);
+    --color-secondary-hover: oklch(0.46 0.15 70);
+    --color-secondary-muted: oklch(0.52 0.14 70 / 12%);
+    --color-secondary-foreground: oklch(0.98 0.005 260);
+
+    /* --- Highlight: Tarnished Copper --- */
+    --color-highlight: oklch(0.5 0.15 40);
+    --color-highlight-hover: oklch(0.44 0.16 40);
+    --color-highlight-muted: oklch(0.5 0.15 40 / 12%);
+    --color-highlight-foreground: oklch(0.98 0.005 260);
+
+    /* --- Tertiary: Pale Silver --- */
+    --color-tertiary: oklch(0.48 0.04 250);
+    --color-tertiary-hover: oklch(0.42 0.05 250);
+    --color-tertiary-muted: oklch(0.48 0.04 250 / 12%);
+    --color-tertiary-foreground: oklch(0.98 0.005 260);
+
+    /* --- Status --- */
+    --color-success: oklch(0.52 0.16 145);
+    --color-warning: oklch(0.58 0.16 65);
+    --color-destructive: oklch(0.52 0.22 25);
+    --color-destructive-foreground: oklch(0.98 0.005 0);
+    --color-info: oklch(0.52 0.12 240);
+    --color-status-active: oklch(0.55 0.18 145);
+    --color-planned: oklch(0.45 0.1 235);
+
+    /* --- Borders --- */
+    --color-border: oklch(0 0 0 / 12%);
+    --color-border-subtle: oklch(0 0 0 / 8%);
+    --color-border-strong: oklch(0 0 0 / 20%);
+    --color-input: oklch(0 0 0 / 14%);
+    --color-ring: oklch(0.52 0.15 235 / 40%);
+
+    /* --- Faction Archetype Colors --- */
+    --color-faction-iron-legion: oklch(0.62 0.12 250);
+    --color-faction-iron-legion-secondary: oklch(0.52 0.08 250);
+    --color-faction-iron-legion-muted: oklch(0.32 0.02 250);
+
+    --color-faction-sunforged: oklch(0.78 0.16 75);
+    --color-faction-sunforged-secondary: oklch(0.68 0.12 65);
+    --color-faction-sunforged-muted: oklch(0.35 0.04 70);
+
+    --color-faction-verdant-order: oklch(0.65 0.15 145);
+    --color-faction-verdant-order-secondary: oklch(0.55 0.1 145);
+    --color-faction-verdant-order-muted: oklch(0.3 0.03 145);
+
+    --color-faction-voidborn: oklch(0.58 0.08 280);
+    --color-faction-voidborn-secondary: oklch(0.48 0.06 280);
+    --color-faction-voidborn-muted: oklch(0.28 0.02 280);
+
+    --color-faction-crimson-pact: oklch(0.6 0.2 25);
+    --color-faction-crimson-pact-secondary: oklch(0.5 0.16 25);
+    --color-faction-crimson-pact-muted: oklch(0.3 0.04 25);
+
+    --color-faction-storm-guard: oklch(0.64 0.12 230);
+    --color-faction-storm-guard-secondary: oklch(0.54 0.1 230);
+    --color-faction-storm-guard-muted: oklch(0.3 0.03 230);
+
+    --color-faction-ashen-dominion: oklch(0.56 0.06 60);
+    --color-faction-ashen-dominion-secondary: oklch(0.46 0.05 60);
+    --color-faction-ashen-dominion-muted: oklch(0.26 0.02 60);
+
+    --color-faction-frost-warden: oklch(0.7 0.08 220);
+    --color-faction-frost-warden-secondary: oklch(0.58 0.06 220);
+    --color-faction-frost-warden-muted: oklch(0.32 0.02 220);
+
+    --color-faction-ember-cult: oklch(0.7 0.18 40);
+    --color-faction-ember-cult-secondary: oklch(0.6 0.14 40);
+    --color-faction-ember-cult-muted: oklch(0.32 0.03 40);
+
+    --color-faction-obsidian-coil: oklch(0.52 0.02 260);
+    --color-faction-obsidian-coil-secondary: oklch(0.4 0.02 260);
+    --color-faction-obsidian-coil-muted: oklch(0.23 0.01 260);
+
+    /* ================================================================
+     * TYPOGRAPHY
+     * ================================================================ */
+    --font-sans: 'Libre Franklin', system-ui, sans-serif;
+    --font-display: 'Libre Franklin', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    /* ================================================================
+     * BORDER RADIUS
+     * ================================================================ */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    /* ================================================================
+     * SHADOWS (light mode — real drop shadows)
+     * ================================================================ */
+    --shadow-subtle: 0 0 0 1px oklch(0 0 0 / 8%);
+    --shadow-default: 0 1px 2px oklch(0 0 0 / 6%), 0 0 0 1px oklch(0 0 0 / 8%);
+    --shadow-strong: 0 1px 3px oklch(0 0 0 / 10%), 0 0 0 1px oklch(0 0 0 / 8%);
+    --shadow-glow: 0 0 0 3px oklch(0.52 0.15 235 / 20%);
+
+    /* ================================================================
+     * EASING
+     * ================================================================ */
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ====================================================================
+ * NON-UTILITY TOKENS (used via var(), not Tailwind class names)
+ * ==================================================================== */
+
+:root {
+    /* Z-index scale — use with z-[var(--z-modal)] etc. */
+    --z-base: 0;
+    --z-dropdown: 50;
+    --z-sticky: 100;
+    --z-drawer: 200;
+    --z-modal: 300;
+    --z-popover: 400;
+    --z-toast: 500;
+    --z-max: 999;
+
+    /* Duration tokens — use with duration-[var(--duration-fast)] etc. */
+    --duration-instant: 100ms;
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 350ms;
+    --duration-slower: 500ms;
+}

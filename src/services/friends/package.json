@@ -1,0 +1,47 @@
+{
+    "name": "@armoury/friends",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "main": "dist/handler.js",
+    "exports": {
+        ".": "./dist/handler.js"
+    },
+    "scripts": {
+        "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/service'\"",
+        "dev": "serverless offline",
+        "db:up": "docker compose up -d",
+        "db:down": "docker compose down",
+        "db:reset": "docker compose down -v && docker compose up -d",
+        "test": "vitest run",
+        "test:e2e": "vitest run --config vitest.e2e.config.ts",
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "generate:types": "tsc -p tsconfig.build.json"
+    },
+    "dependencies": {
+        "@armoury/data": "*",
+        "@armoury/models": "*",
+        "@aws-sdk/client-apigatewaymanagementapi": "^3.0.0",
+        "@aws-sdk/client-secrets-manager": "^3.0.0",
+        "@sentry/aws-serverless": "^10.38.0"
+    },
+    "devDependencies": {
+        "@armoury/eslint": "*",
+        "@armoury/prettier": "*",
+        "@armoury/typescript": "*",
+        "@armoury/vitest": "*",
+        "@armoury/esbuild": "*",
+        "@eslint/js": "^9.0.0",
+        "@types/aws-lambda": "^8.10.0",
+        "eslint": "^9.0.0",
+        "prettier": "^3.0.0",
+        "serverless-offline": "^14.4.0",
+        "serverless-domain-manager": "^7.0.0",
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^8.0.0",
+        "vitest": "^4.0.0"
+    }
+}

@@ -1,0 +1,22 @@
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: armoury-matches-db
+        ports:
+            - '5433:5432'
+        environment:
+            POSTGRES_DB: armoury_matches
+            POSTGRES_USER: armoury
+            POSTGRES_PASSWORD: armoury_local
+        volumes:
+            - matches_data:/var/lib/postgresql/data
+            - ./__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_matches']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    matches_data:
+        name: armoury-matches-data

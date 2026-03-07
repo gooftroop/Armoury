@@ -1,0 +1,81 @@
+{
+    "home": {
+        "tagline": "Tabletop army toolkit",
+        "heading": "Armoury keeps your armies battle-ready, everywhere.",
+        "description": "Curate rosters, sync BattleScribe data, and track missions with a focused suite of tools built for competitive and narrative play."
+    },
+    "landing": {
+        "logo": "Armoury",
+        "tagline": "Tabletop Army Management",
+        "auth": {
+            "signIn": "Already have an account? Sign In",
+            "createAccount": "New here? Create an Account"
+        },
+        "legal": "This is an unofficial, fan-made tool. It is not affiliated with or endorsed by any game publisher. All game-specific trademarks are property of their respective owners. Game data is provided by community sources.",
+        "selectSystem": "Select",
+        "comingSoon": "Coming Soon",
+        "downloadOverlay": "Click to download",
+        "downloading": "Downloading…",
+        "synced": "Ready",
+        "syncError": "Download failed. Click to retry.",
+        "systemFallbackName": "Game System"
+    },
+    "nav": {
+        "armies": "The Forge",
+        "matches": "War Ledger",
+        "campaigns": "Campaigns",
+        "social": "Allies",
+        "references": "References",
+        "account": "Account",
+        "profile": "Profile",
+        "switchSystem": "Switch Game System",
+        "collapse": "Collapse",
+        "expand": "Expand"
+    },
+    "error": {
+        "title": "Something went wrong",
+        "retry": "Try again",
+        "description": "An unexpected error occurred."
+    },
+    "account": {
+        "title": "Account Settings",
+        "preferences": {
+            "heading": "Preferences",
+            "theme": "Theme",
+            "themeDisabledNote": "Dark only in V1",
+            "language": "Language",
+            "languageDisabledNote": "English only in V1",
+            "notifications": "Notifications",
+            "notificationsDescription": "Receive push and email notifications",
+            "save": "Save Preferences",
+            "saving": "Saving…",
+            "saved": "Preferences saved",
+            "error": "Failed to save preferences"
+        },
+        "systems": {
+            "heading": "Game Systems",
+            "none": "No game systems enabled yet."
+        },
+        "danger": {
+            "heading": "Danger Zone",
+            "deleteAccount": "Delete Account",
+            "deleteConfirmTitle": "Are you sure?",
+            "deleteConfirmDescription": "This action cannot be undone. Your account and all associated data will be permanently deleted.",
+            "deleteConfirm": "Yes, delete my account",
+            "deleteCancel": "Cancel"
+        },
+        "notAuthenticated": "Sign in to manage your account."
+    },
+    "profile": {
+        "title": "Profile",
+        "displayName": "Display Name",
+        "email": "Email",
+        "memberSince": "Member Since",
+        "linkedProviders": "Linked Providers",
+        "notAuthenticated": "Sign in to view your profile.",
+        "signOut": "Sign Out"
+    },
+    "loading": {
+        "default": "Loading..."
+    }
+}

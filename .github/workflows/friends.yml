@@ -1,0 +1,27 @@
+name: Friends Service
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'src/services/friends/**'
+            - 'src/shared/**'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'src/services/friends/**'
+            - 'src/shared/**'
+
+concurrency:
+    group: friends-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/friends'
+            working-directory: src/services/friends
+            needs-shared-build: true
+            has-migrations: false
+        secrets: inherit

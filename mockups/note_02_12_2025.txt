@@ -1,0 +1,124 @@
+- Can we darken the blue a little?
+- Global to the app, the profile button should show a popover first containing their username, a button to log in/log out, create an account if necessary, their friend code, and a link to their account
+- Users should have the option of collapsing the left nav down to just icon buttons
+- General structure update: we should have a header for all top-level pages (i.e. the pages the nav bar links to), but we don't need a header for nested pages
+- We need something to indicate that users can click on "WH40K 10E" to take them back to the landing page. I think it also needs to be a little larger.
+- On screens smaller than 756px (or whatever the closest breakpoint is to that), we should switch from a left nav bar to a bottom action bar
+- make sure all pages follow the color hierarchy
+- I'm thinking that I want each game system to have it's own theme (white labeled) using the prominent colors from that game system (adjusted for the dark theme of the app). I'm thinking the main color of the app for parts that wouldn't be white labeled would be the bronze.
+- Right now the UI look very material ui-ish, which is dated. Let's make the app look more modern and cool. Here are some good links to start with for ideas: https://www.linkedin.com/pulse/modern-ui-design-trends-improve-user-experiences-designmonks-0v2ec, https://penji.co/wp-content/uploads/2020/09/10._Time_Element.jpeg.webp, https://s3-alpha.figma.com/hub/file/2228003934544788759/b675303f-3b63-404f-a07a-2cf28ba6bd00-cover.png, https://s3-alpha.figma.com/hub/file/6235856616/2dcfa04b-0f3f-43e3-bb68-3a9dd899f7c3-cover.png, https://www.figma.com/community/file/1395391782725277186, https://www.figma.com/community/file/1493201670634100006/figma-interactive-portfolio-website-ui-design-modern-ux-tutorial-for-designers, https://www.figma.com/community/file/1514251168896552518, https://pixso.net/tips/modern-ui-design/, https://www.figma.com/community/file/1521815105197434985,https://www.figma.com/community/file/1516297296186888101, https://medium.com/design-bootcamp/apples-new-liquid-glass-ui-the-power-of-perception-or-how-to-innovate-when-you-can-t-21951ea70661, 
+
+Landing Page:
+- We don't need the "Planned" tag on the game system selection tiles
+- We need copy and a link to allow people to register an account as well
+- We don't need the icons in the game system selection tiles - I want to try a cool back-splash on the tile showing a scene from the game system
+
+The Forge:
+- The deploy buttons should be primary. I think maybe a left icon of crossed swords in the button too
+- Update the font colors to match the color hierarchy
+
+Create Army page:
+- The detachment selection should be hidden until the user selects a faction. We should default to an empty state for both the faction and detachment.
+- I like how the WH40K app does it. Can you find out how they do it or do you need screenshots from me?
+
+Army Details page:
+- Let's make the banner content containing the detachment, etc. a little larger and give some horizontal space between each column
+- It should be clear that users can change the detachment and battle size
+- We don't need the points in the header
+- Keeping the profile button exactly where it is, remove the header. Move the breadcrumb up to where it is on the unit config page and move the name of the army to where the breadcrumb is now. Put the faction in the summary banner.
+- Add text to the add unit button - we need it to be more than just a plus icon
+- We should call it Auxiliary instead of "Infantry"
+- We should have all the sections, but disable the add button and put a message in the section body to the effect of "This Faction does not have <section name>" (i.e. "This Faction does not have Allied Units")
+- We don't need the saved status
+- Update the font colors to match the color hierarchy
+- We need the deploy button in the summary banner too
+
+New Match drawer:
+- Update the font colors to match the color hierarchy
+- We don't need to let them select an army if they clicked on the deploy button - we know what army they want. We only need the ability to select the army when they go to create a match from the War Ledger page.
+- When in the flow where they need to select an army for a match, we first show them a drawer where they can scroll a vertical list to select an army. Clicking "Deploy" opens the create match drawer
+- Time should be optional
+- unless it's a campaign match, users can select to add opponents from their friends list (multi-select)
+
+Match Basic:
+- The Detachment tab should be labeled as "Detachment"
+- The icons for the Army and Detachment tabs should be white.
+- The Army and Detachment rules text should be larger so they are easier to read
+- Users should have the ability to close the unit detail drawer
+- Create a unit detail drawer for the intecessors - I want to see how the weapons are listed since it'll be a major feature to see how many weapons a unit has and to which models they belong to. Same with wargear, if applicable. Users should also be able to set the HP of each model. We'll need a different UI than when there's only one model in the unit because users should be able to see the global unit information but also see everything per model underneath the summary of each weapon count that's been equipped and any unit-level wargear.
+- The unit drawer needs to be at least 200px wider - the drawer should not scroll horizontally and we don't want to wrap text
+- The weapon names in the unit drawer need to be a smaller font size
+- We don't need the equipped loadout section. If a unit has wargear, it should have a section under melee weapons
+- Make the header taller.
+- We don't need the Command Post button or page
+- The header should have the match name and a back button
+- We need a breadcrumb so that we are consistent with the rest of the app
+- Make the basic tag a toggle so users can switch between Basic and Guided modes
+- The HP display in the unit detail drawer should have the ability to increment/decrement and also be an editable text box
+- We need a layout solution with the Unit Drawer open when the screen reaches 1024 and below because the center content area gets squished
+- In general this page needs serious work on the responsiveness
+- The footer (with End Turn in it) should be pinned to the bottom of the page
+- Instead of "Available Actions", it should be "Available Strategems"
+- The CP read out and buttons are too squished
+- Remove the green dot - not sure what that's for.
+- Update the font colors to match the color hierarchy
+- When a user clicks on a strategem, the currently open drawers should close and be replaced with a drawer showing the strategem rules
+- Hovering over the health bar should show the health readout (either the current HP or a vertical list of models with the text of their current HP)
+- The HP should be to the right of the unit name if there's only one model
+- I like the HP readout in the Guided Match page unit detail drawer where it has the current our of total health with the bar. We still need the ability to set the current HP, but it'd be cool if they can drag the HP bar
+- I like the unit list in the Guide Match page - bring that into this page. We'll need two changeable states: "Not Shot/Shot" and "Not Fought/Fought". The weapon readout should have slightly larger font and the weapon count
+- Make sure we're following the color hierarchy
+- We need a state for the setup phase of the match as the zero state. This phase is where users can declare what units are in deep strike or strategic reinforcements, pick the necessary cards from the mission cards (crawl https://gdmissions.app/ for all the data), and then decide if they are playing fixed or tactical secondary missions. Users can then proceed to the deployment screen for the deployment phase. There they can press a button to start the match. Users can't choose basic or guided matches until they click the button to start the match.
+- When they start their turn they'll be issued up to two secondary missions so that they always have two.
+- Secondary cards information should be a drawer reachable from the right tab bar
+- When they click the button to end their turn, they should be prompted with a popover asking if they completed any secondary missions and showing a card for each that they can mark as completed. Their secondary points updates automatically as the mark cards completed. If they are playing tactical the card is discarded; otherwise the card remains.
+- We also need a way to mark that a unit is performing an action for either a secondary or primary mission that a user can clear at will. when the unit it performing an action, they cannot be switched to "Shot" or "Fought" states until the action state is cleared.
+- create mockups for what the page looks during the opponents turn and mock ups for the setup and deployment phases
+
+Match Guided:
+- make sure the unit detail page looks the same on this page as with the basic match page
+- We need mockups for all phases so I can see what they look like
+- Users should be able to change the CP in the header
+- The header should be the same as the basic match page
+- I like the unit list here, but add the health bars to each model card
+- We need a way to toggle "Shot" from "Ready" right there on the unit item. Rename Ready to "Not Shot"
+- The weapon readout should have slightly larger font and the weapon count
+- Make sure we're following the color hierarchy
+- Same note about responsiveness for this page as with the Basic Match page
+- Secondary cards information should be a drawer reachable from the right tab bar
+- In the command phase we'll want to automatically issue secondary missions to make sure they always have two
+- In the end of turn phase, we'll want to let them indicate which secondaries they completed, if any. If they are playing tactical, then the card gets discarded. If they are playing fixed, the card remains. Their score automatically updates when they mark a card as completed
+- We also need a way to mark that a unit is performing an action for either a secondary or primary mission that a user can clear at will. when the unit it performing an action, they cannot be switched to "Shot" or "Fought" states until the action state is cleared.
+
+Unit config page:
+- Move the keywords into a section below Enhancements, not in the Unit Composition
+
+Campaigns page:
+- We don't need two buttons to create a campaign on desktop. I think we can get rid of the FAB altogether and use the header button in mobile too
+- Make sure we're following the color hierarchy
+- We should be able to delete campaigns
+- create a mockup for the create campaign page (should be the same as the manager campaign page but with no information populated). In the manage campaign page they can't change the campaign type or the start date or completed campaign phases.
+
+Campaign Detail page:
+- The standings list should be at the bottom so it can scroll without forcing content down
+- The army card can go to the left of the campaign info card
+- we don't need the phase progress bar in the campaign info
+- we don't need the player count
+- We don't need a header - the play match and manage buttons should remain in the upper-right hand corner. The campaign name should go where the breadcrumb is now and the breadcrumb underneath the title (campaign match)
+- Make sure we're following the color hierarchy
+- We don't need the gear icon by itself - add it to the manage button (all buttons should have icons in this app)
+- create a mockup for the campaign management page
+- In the play campaign/new match drawer, we don't need the army selector since the army is already selected for the campaign
+- In the play campaign/new match drawer, they should be able to select opponents (multi-select) from a list of the campaign participants
+
+Allies page:
+- show me what the three-dot button does
+- what does clicking on a row in the friends list do?
+- the filters should go below incoming requests
+
+References:
+- The search bar should be far more prominent and centered
+- we should have tabs for core rules and every faction. The search bar should be inside the tab panel as should the filters
+- The rule tiles can take up the full width of the area
+
+Actually, come to think of it, we don't need the profile button in the top right hand corner of the screen - make the area that say "Commander" in the bottom left hand corner of the screen that button

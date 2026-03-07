@@ -1,0 +1,11 @@
+{
+    "extends": "@armoury/typescript/base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@friends/*": ["./*"],
+            "@shared/*": ["../../shared/*"]
+        }
+    },
+    "include": ["**/*.ts"],
+}

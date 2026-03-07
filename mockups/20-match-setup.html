@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Match Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: var(--space-3); }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 12px; color: var(--text-tertiary); }
+
+    .setup-wrapper {
+      max-width: 1200px; margin: 0 auto; padding: 16px 16px 40px;
+      display: flex; flex-direction: column; gap: 28px;
+    }
+     .setup-card {
+       background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+       border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6); box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+     }
+     .setup-card-title { font-size: 16px; font-weight: 600; color: var(--text-primary); font-family: var(--font-display); }
+    .setup-card-subtitle { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
+
+     .toggle-row { display: inline-flex; gap: 2px; background: oklch(1 0 0 / 10%); backdrop-filter: blur(12px); border-radius: var(--radius-full); padding: 2px; margin-top: var(--space-3); }
+    .toggle-row span {
+      padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer;
+    }
+    .toggle-row span.active { background: var(--accent-primary); color: var(--text-inverse); }
+    .toggle-row span.inactive { color: var(--text-tertiary); }
+
+     .setup-actions {
+       display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-2);
+       padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--glass-bg); backdrop-filter: var(--glass-blur);
+       border: var(--glass-border);
+     }
+    .setup-actions-note { font-size: 12px; color: var(--text-tertiary); }
+
+    .card-reveal-section {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 16px;
+    }
+    .card-reveal-group { display: flex; flex-direction: column; gap: 8px; }
+    .card-reveal-header { display: flex; align-items: center; gap: 8px; }
+    .card-reveal-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .card-reveal-tooltip { position: relative; display: inline-flex; cursor: help; }
+    .card-reveal-tooltip i { width: 12px; height: 12px; color: var(--text-tertiary); }
+    .card-reveal-tooltip:hover .card-reveal-popover { display: block; }
+    .card-reveal-popover {
+      display: none; position: absolute; bottom: calc(100% + var(--space-2)); left: 50%; transform: translateX(-50%);
+      width: 280px; padding: var(--space-3) var(--space-4);
+      background: var(--glass-popover-bg); backdrop-filter: var(--glass-popover-blur);
+      border: var(--glass-border); border-radius: var(--radius-lg);
+      box-shadow: var(--glass-highlight), var(--shadow-lg); z-index: 100;
+      font-size: 12px; color: var(--text-primary); line-height: 1.5;
+    }
+    .card-placeholder {
+      width: 100%; aspect-ratio: 2.5 / 3.5;
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur);
+      border: 2px dashed var(--border-default); border-radius: var(--radius-lg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-default);
+    }
+    .card-placeholder:hover { border-color: var(--accent-primary); background: var(--accent-primary-muted); }
+    .card-placeholder-empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: var(--space-2); text-align: center;
+    }
+    .card-placeholder-empty i { width: 32px; height: 32px; color: var(--text-tertiary); }
+    .card-placeholder-text { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+    .card-placeholder.revealed {
+      border: var(--glass-border); border-style: solid; cursor: default;
+      padding: 16px; align-items: flex-start; justify-content: flex-start;
+    }
+    .card-placeholder.revealed:hover { background: var(--glass-bg); border-color: oklch(1 0 0 / 22%); }
+    .card-placeholder.revealed .card-placeholder-empty { display: none; }
+
+    /* Playing card styles for revealed cards */
+    .mission-playing-card-name { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .mission-playing-card-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.5; flex: 1; }
+    .deployment-map-placeholder {
+      margin-top: auto; width: 100%; aspect-ratio: 16 / 10;
+      background: oklch(1 0 0 / 4%); border: 1px dashed var(--border-default); border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--text-tertiary); font-style: italic;
+    }
+
+    .secondary-rule-text {
+      margin-top: 16px;
+      font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+    }
+
+    .reserves-unit-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+      border: var(--glass-border); background: var(--glass-bg); backdrop-filter: var(--glass-blur);
+    }
+    .reserves-unit-row + .reserves-unit-row { margin-top: var(--space-3); }
+    .reserves-toggle-group {
+      display: inline-flex; gap: 2px; background: oklch(1 0 0 / 10%);
+      border-radius: var(--radius-full); padding: 2px;
+    }
+    .reserves-toggle-btn {
+      padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: 10px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      cursor: pointer; border: none; background: transparent; color: var(--text-tertiary);
+      transition: all var(--duration-fast) var(--ease-default);
+      font-family: var(--font-body);
+    }
+    .reserves-toggle-btn.active { background: var(--accent-primary); color: var(--text-inverse); }
+    .reserves-toggle-btn.active-deepstrike { background: var(--accent-highlight); color: var(--text-inverse); }
+    .reserves-toggle-btn.active-reserve { background: var(--accent-secondary); color: var(--text-inverse); }
+    .unit-info { flex: 1; min-width: 0; }
+    .unit-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .unit-meta { font-size: 12px; color: var(--text-tertiary); margin-top: var(--space-1); }
+
+    @media (max-width: 767px) {
+      .setup-wrapper { padding: 12px 8px 80px; }
+      .setup-card { padding: var(--space-4); }
+      .card-reveal-section { grid-template-columns: 1fr; }
+      .setup-actions { flex-direction: column; gap: 8px; text-align: center; }
+      .reserves-unit-row { flex-direction: column; align-items: stretch; gap: 8px; }
+      .reserves-toggle-group { justify-content: center; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item active" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <nav class="breadcrumb" style="padding:8px 16px;font-size:13px;">
+        <a href="11-war-ledger.html" style="color:var(--text-secondary);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> War Ledger</a>
+        <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+        <span style="color:var(--text-tertiary);">Battle of Macragge</span>
+        <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+        <span style="color:var(--text-tertiary);">Setup</span>
+      </nav>
+
+      <div class="setup-wrapper">
+        <!-- Card Reveal Section -->
+        <div class="setup-card">
+          <div class="setup-card-title">Mission Cards</div>
+          <div class="setup-card-subtitle">Click each card to randomly reveal</div>
+          <div class="card-reveal-section">
+            <!-- Deployment Card -->
+            <div class="card-reveal-group">
+              <div class="card-reveal-header">
+                <span class="card-reveal-title">Deployment</span>
+                <div class="card-reveal-tooltip">
+                  <i data-lucide="help-circle"></i>
+                  <div class="card-reveal-popover">The deployment card determines the layout of deployment zones on the battlefield. Each player deploys their army in their designated zone.</div>
+                </div>
+              </div>
+              <div class="card-placeholder" id="deploymentCard" onclick="revealCard('deployment')">
+                <div class="card-placeholder-empty">
+                  <i data-lucide="map"></i>
+                  <span class="card-placeholder-text">Tap to Reveal Deployment</span>
+                </div>
+              </div>
+            </div>
+            <!-- Primary Mission Card -->
+            <div class="card-reveal-group">
+              <div class="card-reveal-header">
+                <span class="card-reveal-title">Primary Mission</span>
+                <div class="card-reveal-tooltip">
+                  <i data-lucide="help-circle"></i>
+                  <div class="card-reveal-popover">The primary mission determines the main objective of the battle and how primary VP are scored each battle round.</div>
+                </div>
+              </div>
+              <div class="card-placeholder" id="missionCard" onclick="revealCard('mission')">
+                <div class="card-placeholder-empty">
+                  <i data-lucide="target"></i>
+                  <span class="card-placeholder-text">Tap to Reveal Mission</span>
+                </div>
+              </div>
+            </div>
+            <!-- Twist Card -->
+            <div class="card-reveal-group">
+              <div class="card-reveal-header">
+                <span class="card-reveal-title">Twist</span>
+                <div class="card-reveal-tooltip">
+                  <i data-lucide="help-circle"></i>
+                  <div class="card-reveal-popover">The twist card adds an additional special rule that affects the entire battle, creating unique tactical challenges.</div>
+                </div>
+              </div>
+              <div class="card-placeholder" id="twistCard" onclick="revealCard('twist')">
+                <div class="card-placeholder-empty">
+                  <i data-lucide="sparkles"></i>
+                  <span class="card-placeholder-text">Tap to Reveal Twist</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Mission Type -->
+        <div class="setup-card">
+          <div class="setup-card-title">Secondary Missions</div>
+          <div class="setup-card-subtitle">Choose how secondary missions are assigned</div>
+          <div class="toggle-row" aria-label="Secondary mission type" style="margin-top:12px;">
+            <span class="active" id="toggle-tactical" onclick="selectSecondaryType('tactical')">Tactical</span>
+            <span class="inactive" id="toggle-fixed" onclick="selectSecondaryType('fixed')">Fixed</span>
+          </div>
+          <div class="secondary-rule-text" id="secondary-rule-display">
+            <strong style="color:var(--accent-primary);">Tactical Missions:</strong> At the start of each Command phase, you generate two new Secondary Mission cards. These change every turn, requiring adaptable play. You may discard one card at the start of each Command phase if you wish.
+          </div>
+        </div>
+
+        <!-- Unit Reserves Assignment -->
+        <div class="setup-card">
+          <div class="setup-card-title">Declare Reserves</div>
+          <div class="setup-card-subtitle">Assign units to Deep Strike or Strategic Reserves. Units not assigned will deploy on the table.</div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Captain in Terminator Armour</div>
+                <div class="unit-meta">1 model · 200 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn active" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Intercessor Squad</div>
+                <div class="unit-meta">10 models · 180 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn active" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Terminator Squad</div>
+                <div class="unit-meta">5 models · 200 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn active-deepstrike" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Assault Intercessor Squad</div>
+                <div class="unit-meta">10 models · 180 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn active" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Redemptor Dreadnought</div>
+                <div class="unit-meta">1 model · 210 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn active" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Ballistus Dreadnought</div>
+                <div class="unit-meta">1 model · 170 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn active" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Hellblaster Squad</div>
+                <div class="unit-meta">10 models · 300 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn active" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+            <div class="reserves-unit-row">
+              <div class="unit-info">
+                <div class="unit-name">Inceptor Squad</div>
+                <div class="unit-meta">3 models · 115 pts</div>
+              </div>
+              <div class="reserves-toggle-group">
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'table')">On Table</button>
+                <button class="reserves-toggle-btn" onclick="selectReserveType(this,'deepstrike')">Deep Strike</button>
+                <button class="reserves-toggle-btn active-reserve" onclick="selectReserveType(this,'reserves')">Reserves</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action bar -->
+        <div class="setup-actions">
+          <div class="setup-actions-note">Basic/Guided mode selected after deployment</div>
+          <button class="btn btn-primary" onclick="location.href='21-match-deployment.html'">Continue to Deployment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item active"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var deploymentCards = [
+      { name: 'Dawn of War', desc: 'Players deploy in opposite table halves, 24" apart. Standard deployment with 12" No Man\'s Land.' },
+      { name: 'Hammer and Anvil', desc: 'Players deploy in opposite short edges. Long deployment zones with a wide No Man\'s Land.' },
+      { name: 'Search and Destroy', desc: 'Players deploy in opposite corners. Diagonal deployment creates asymmetric battle lines.' },
+      { name: 'Sweeping Engagement', desc: 'Players deploy in offset zones. Creates a dynamic, asymmetric battlefield.' }
+    ];
+    var missionCards = [
+      { name: 'Supply Drop', desc: 'Control objectives to score VP. At the end of each Command phase, score 4VP for each objective you control.' },
+      { name: 'The Ritual', desc: 'Score ritual points by performing actions near the centre objective. Score 5VP for each completed ritual.' },
+      { name: 'Purge the Foe', desc: 'Score VP for destroying enemy units. Score 2VP for each enemy unit destroyed in your turn.' },
+      { name: 'Take and Hold', desc: 'Score VP for holding objectives in No Man\'s Land. Score 5VP for each objective you control at end of battle round.' }
+    ];
+    var twistCards = [
+      { name: 'Chilling Rain', desc: 'Subtract 1 from hit rolls for ranged attacks made at targets more than 18" away.' },
+      { name: 'Supply Lines', desc: 'At the start of each battle round, each player gains 1 additional CP.' },
+      { name: 'Hidden Supplies', desc: 'After deployment, place 2 additional objective markers in No Man\'s Land.' },
+      { name: 'Fog of War', desc: 'Units cannot be targeted by ranged attacks if they are more than 24" away from the firing model.' }
+    ];
+
+    function revealCard(type) {
+      var card = document.getElementById(type + 'Card');
+      if (card.classList.contains('revealed')) return;
+      var data;
+      var badgeClass = type;
+      if (type === 'deployment') data = deploymentCards[Math.floor(Math.random() * deploymentCards.length)];
+      else if (type === 'mission') { data = missionCards[Math.floor(Math.random() * missionCards.length)]; badgeClass = 'mission'; }
+      else { data = twistCards[Math.floor(Math.random() * twistCards.length)]; badgeClass = 'twist'; }
+      card.classList.add('revealed');
+      var html = '<div class="mission-playing-card-name">' + data.name + '</div>' +
+        '<div class="mission-playing-card-desc" style="margin-top:var(--space-2);">' + data.desc + '</div>';
+      if (type === 'deployment') {
+        html += '<div class="deployment-map-placeholder"><i data-lucide="map" style="width:20px;height:20px;margin-right:6px;opacity:0.5;"></i> Deployment Zone Diagram</div>';
+      }
+      card.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function selectSecondaryType(type) {
+      var tacticalBtn = document.getElementById('toggle-tactical');
+      var fixedBtn = document.getElementById('toggle-fixed');
+      var ruleDisplay = document.getElementById('secondary-rule-display');
+      if (type === 'tactical') {
+        tacticalBtn.className = 'active';
+        fixedBtn.className = 'inactive';
+        ruleDisplay.innerHTML = '<strong style="color:var(--accent-primary);">Tactical Missions:</strong> At the start of each Command phase, you generate two new Secondary Mission cards. These change every turn, requiring adaptable play. You may discard one card at the start of each Command phase if you wish.';
+      } else {
+        fixedBtn.className = 'active';
+        tacticalBtn.className = 'inactive';
+        ruleDisplay.innerHTML = '<strong style="color:var(--accent-primary);">Fixed Missions:</strong> Before the battle, you select two Secondary Missions from your deck. These remain the same for the entire battle. You cannot discard or replace Fixed Secondaries.';
+      }
+    }
+
+    function selectReserveType(btn, type) {
+      var group = btn.closest('.reserves-toggle-group');
+      var buttons = group.querySelectorAll('.reserves-toggle-btn');
+      var i;
+      for (i = 0; i < buttons.length; i += 1) {
+        buttons[i].className = 'reserves-toggle-btn';
+      }
+      if (type === 'deepstrike') btn.className = 'reserves-toggle-btn active-deepstrike';
+      else if (type === 'reserves') btn.className = 'reserves-toggle-btn active-reserve';
+      else btn.className = 'reserves-toggle-btn active';
+    }
+
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var j;
+      for (j = 0; j < allDetails.length; j += 1) {
+        if (!allDetails[j].contains(e.target)) {
+          allDetails[j].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

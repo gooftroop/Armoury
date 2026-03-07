@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — War of the Green Tide Summary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .summary-wrapper {
+      max-width: 880px; margin: 0 auto; padding: 12px 8px 40px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 4px; }
+    .breadcrumb-link { color: var(--text-secondary); font-weight: 500; text-decoration: none; }
+    .breadcrumb-link:hover { color: var(--accent-secondary-hover); }
+    .breadcrumb-sep { color: var(--text-tertiary); }
+    .breadcrumb-current { color: var(--text-tertiary); font-weight: 500; }
+
+    .banner-card {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+    .banner-photo {
+      height: 180px; background: var(--faction-verdant-order-muted); position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .banner-photo i { width: 56px; height: 56px; color: var(--faction-verdant-order); opacity: 0.4; }
+    .banner-photo-overlay {
+      position: absolute; inset: 0; background: linear-gradient(to top, oklch(0 0 0 / 40%) 0%, transparent 70%);
+    }
+    .banner-body { padding: 20px 24px; }
+    .banner-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+    .banner-title { font-size: 26px; font-weight: 700; color: var(--text-primary); }
+    .banner-meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-secondary); }
+    .banner-meta-sep { color: var(--text-tertiary); }
+
+    .glass-card {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+
+    .card-header { margin-bottom: 16px; }
+    .card-title { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-primary); }
+
+    .standings-table { width: 100%; border-collapse: collapse; }
+    .standings-table th {
+      font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-tertiary); text-align: left; padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .standings-table th:last-child { text-align: right; }
+    .standings-table td {
+      padding: 14px 14px; border-bottom: 1px solid var(--border-subtle);
+      font-size: 14px; color: var(--text-primary);
+    }
+    .standings-table td:first-child {
+      font-family: var(--font-mono); font-weight: 700; color: var(--text-tertiary);
+      width: 50px; text-align: center;
+    }
+    .standings-table td:last-child { text-align: right; font-family: var(--font-mono); font-weight: 700; }
+    .standings-table tr:nth-child(even) { background: oklch(0 0 0 / 15%); }
+    .standings-table tr.current-user { background: var(--accent-primary-muted); }
+    .standings-table tr.current-user td:first-child { color: var(--accent-primary); }
+    .standings-player { display: flex; align-items: center; gap: 10px; }
+    .standings-player-info { flex: 1; }
+    .standings-player-army { font-weight: 500; color: var(--text-primary); }
+    .standings-player-name { font-size: 12px; color: var(--text-secondary); }
+    .standings-record { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .stat-item { }
+    .stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 4px; }
+    .stat-value { font-size: 20px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); }
+    .stat-value-sm { font-size: 16px; }
+
+    .perf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+    .perf-stat { text-align: center; padding: 16px; background: oklch(0 0 0 / 20%); border-radius: var(--radius-md); }
+    .perf-stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 6px; }
+    .perf-stat-value { font-size: 24px; font-weight: 700; font-family: var(--font-mono); }
+    .perf-stat-value.win { color: var(--status-success); }
+    .perf-stat-value.loss { color: var(--status-danger); }
+    .perf-stat-value.draw { color: var(--text-secondary); }
+
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); }
+    .info-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .info-value.highlight { color: var(--accent-secondary); }
+
+    .match-list { display: flex; flex-direction: column; gap: 8px; }
+    .match-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      background: oklch(0 0 0 / 20%); border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+    .match-item:hover { border-color: var(--border-default); background: oklch(0 0 0 / 25%); }
+    .match-result {
+      width: 36px; height: 36px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; flex-shrink: 0;
+    }
+    .match-result.win { background: var(--status-success-muted); color: var(--status-success); }
+    .match-result.loss { background: var(--status-danger-muted); color: var(--status-danger); }
+    .match-result.draw { background: oklch(0 0 0 / 30%); color: var(--text-secondary); }
+    .match-info { flex: 1; }
+    .match-opponent { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .match-score { font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); }
+    .match-date { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; }
+
+    .rules-text {
+      font-size: 14px; line-height: 1.6; color: var(--text-secondary);
+      background: oklch(0 0 0 / 20%); padding: 16px; border-radius: var(--radius-md);
+      border-left: 3px solid var(--accent-primary);
+    }
+    .rules-text strong { color: var(--text-primary); font-weight: 600; }
+
+    .medal-icon {
+      width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-full); flex-shrink: 0;
+    }
+    .medal-icon.first { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; }
+    .medal-icon.second { background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%); color: #000; }
+    .medal-icon.third { background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%); color: #000; }
+
+    @media (max-width: 767px) {
+      .summary-wrapper { padding: 8px 4px 40px; gap: 14px; }
+      .banner-photo { height: 120px; }
+      .banner-photo i { width: 40px; height: 40px; }
+      .banner-body { padding: 16px 18px; }
+      .banner-title { font-size: 20px; }
+      .banner-meta { flex-wrap: wrap; gap: 8px; font-size: 12px; }
+      .glass-card { padding: 16px 18px; }
+      .card-title { font-size: 14px; }
+      .standings-table { font-size: 13px; }
+      .standings-table th, .standings-table td { padding: 10px 10px; }
+      .standings-table td:first-child { width: 40px; }
+      .standings-player { gap: 8px; }
+      .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+      .perf-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .perf-stat { padding: 12px; }
+      .perf-stat-value { font-size: 20px; }
+      .match-item { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 14px; }
+      .match-result { width: 32px; height: 32px; font-size: 13px; }
+      .match-date { font-size: 11px; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item active" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="content">
+        <div class="summary-wrapper">
+          <nav class="breadcrumb">
+            <a href="12-campaigns.html" class="breadcrumb-link">Campaigns</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="30-campaign-summary.html" class="breadcrumb-link">War of the Green Tide</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Summary</span>
+          </nav>
+
+          <div class="banner-card">
+            <div class="banner-photo">
+              <i data-lucide="flag"></i>
+              <div class="banner-photo-overlay"></div>
+            </div>
+            <div class="banner-body">
+              <div class="banner-header">
+                <div>
+                  <h1 class="banner-title">War of the Green Tide</h1>
+                </div>
+                <span class="badge badge-success">Completed</span>
+              </div>
+              <div class="banner-meta">
+                <span>Crusade Campaign</span>
+                <span class="banner-meta-sep">&middot;</span>
+                <span>Oct &mdash; Dec 2025</span>
+                <span class="banner-meta-sep">&middot;</span>
+                <span>8 Players</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title">Final Standings</h2>
+            </div>
+            <table class="standings-table">
+              <thead>
+                <tr><th>#</th><th>Player &amp; Army</th><th>W/L/D</th><th>Pts</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="medal-icon first"><i data-lucide="trophy" style="width:12px;height:12px;"></i></span></td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">I</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Orks &mdash; Warboss Ghazkull</div>
+                        <div class="standings-player-name">IronFist42</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">12 / 2 / 0</td>
+                  <td>320</td>
+                </tr>
+                <tr class="current-user">
+                  <td><span class="medal-icon second"><i data-lucide="award" style="width:12px;height:12px;"></i></span></td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">C</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Space Marines &mdash; Ultramarines</div>
+                        <div class="standings-player-name">Commander_01 (You)</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">10 / 3 / 1</td>
+                  <td>285</td>
+                </tr>
+                <tr>
+                  <td><span class="medal-icon third"><i data-lucide="medal" style="width:12px;height:12px;"></i></span></td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">N</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Death Guard &mdash; Plague Company</div>
+                        <div class="standings-player-name">NurgleFan</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">8 / 5 / 1</td>
+                  <td>240</td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">X</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Tyranids &mdash; Hive Fleet Leviathan</div>
+                        <div class="standings-player-name">XenoSlayer</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">7 / 6 / 1</td>
+                  <td>205</td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">C</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Black Templars &mdash; Crusaders</div>
+                        <div class="standings-player-name">CrusaderKing</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">6 / 7 / 1</td>
+                  <td>180</td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">B</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Adepta Sororitas &mdash; Order of the Martyr</div>
+                        <div class="standings-player-name">BattleSister_7</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">5 / 8 / 1</td>
+                  <td>155</td>
+                </tr>
+                <tr>
+                  <td>7</td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">V</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Drukhari &mdash; Kabal of the Poisoned Tongue</div>
+                        <div class="standings-player-name">VoidDrake99</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">4 / 9 / 1</td>
+                  <td>125</td>
+                </tr>
+                <tr>
+                  <td>8</td>
+                  <td>
+                    <div class="standings-player">
+                      <div class="avatar avatar-sm">G</div>
+                      <div class="standings-player-info">
+                        <div class="standings-player-army">Necrons &mdash; Sautekh Dynasty</div>
+                        <div class="standings-player-name">GrimReaper</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="standings-record">3 / 10 / 1</td>
+                  <td>95</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title">Campaign Statistics</h2>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-label">Total Matches</div>
+                <div class="stat-value">42</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Total Rounds</div>
+                <div class="stat-value">210</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Most Played Mission</div>
+                <div class="stat-value stat-value-sm">Supply Drop <span style="font-size:13px;color:var(--text-tertiary);">(8)</span></div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Average Match Duration</div>
+                <div class="stat-value stat-value-sm">1h 48m</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title">Your Performance</h2>
+            </div>
+            <div class="perf-grid">
+              <div class="perf-stat">
+                <div class="perf-stat-label">Wins</div>
+                <div class="perf-stat-value win">10</div>
+              </div>
+              <div class="perf-stat">
+                <div class="perf-stat-label">Losses</div>
+                <div class="perf-stat-value loss">3</div>
+              </div>
+              <div class="perf-stat">
+                <div class="perf-stat-label">Draws</div>
+                <div class="perf-stat-value draw">1</div>
+              </div>
+            </div>
+            <div>
+              <div class="info-row">
+                <span class="info-label">Win Rate</span>
+                <span class="info-value" style="color:var(--status-success);">71%</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Total VP Scored</span>
+                <span class="info-value highlight">1,240</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Total VP Conceded</span>
+                <span class="info-value">890</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Best Match</span>
+                <span class="info-value">vs NurgleFan R8 <span style="color:var(--status-success);">(95-42 VP)</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title">Your Match History</h2>
+            </div>
+            <div class="match-list">
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result win">W</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs IronFist42 (Orks)</div>
+                  <div class="match-score">Score: 82-68</div>
+                </div>
+                <div class="match-date">Dec 18, 2025</div>
+              </a>
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result loss">L</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs IronFist42 (Orks)</div>
+                  <div class="match-score">Score: 58-74</div>
+                </div>
+                <div class="match-date">Dec 11, 2025</div>
+              </a>
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result win">W</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs NurgleFan (Death Guard)</div>
+                  <div class="match-score">Score: 95-42</div>
+                </div>
+                <div class="match-date">Dec 4, 2025</div>
+              </a>
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result draw">D</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs XenoSlayer (Tyranids)</div>
+                  <div class="match-score">Score: 70-70</div>
+                </div>
+                <div class="match-date">Nov 27, 2025</div>
+              </a>
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result win">W</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs CrusaderKing (Black Templars)</div>
+                  <div class="match-score">Score: 88-65</div>
+                </div>
+                <div class="match-date">Nov 20, 2025</div>
+              </a>
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result win">W</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs BattleSister_7 (Adepta Sororitas)</div>
+                  <div class="match-score">Score: 90-55</div>
+                </div>
+                <div class="match-date">Nov 13, 2025</div>
+              </a>
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result loss">L</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs NurgleFan (Death Guard)</div>
+                  <div class="match-score">Score: 52-78</div>
+                </div>
+                <div class="match-date">Nov 6, 2025</div>
+              </a>
+              <a href="29-match-summary.html" class="match-item" style="text-decoration:none;">
+                <div class="match-result win">W</div>
+                <div class="match-info">
+                  <div class="match-opponent">vs VoidDrake99 (Drukhari)</div>
+                  <div class="match-score">Score: 85-60</div>
+                </div>
+                <div class="match-date">Oct 30, 2025</div>
+              </a>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title">Campaign Rules</h2>
+            </div>
+            <div class="rules-text">
+              <p style="margin-bottom:12px;"><strong>Crusade Blessings:</strong> Units that survive 3 or more matches without being destroyed gain a Battle Honour. Battle Honours grant special abilities such as improved weapon skill, increased attacks, or enhanced survivability.</p>
+              <p><strong>Territories:</strong> Control key objectives between matches to earn bonus Victory Points. Each territory controlled provides +5 VP per round. Territories can be contested and captured through designated Territory Control missions.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item active"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var j;
+      for (j = 0; j < allDetails.length; j += 1) {
+        if (!allDetails[j].contains(e.target)) {
+          allDetails[j].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

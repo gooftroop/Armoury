@@ -1,0 +1,54 @@
+/**
+ * Friends client package.
+ *
+ * Provides React Query query/mutation options factories, query key builders,
+ * a WebSocket presence client for real-time friend online/offline notifications,
+ * and all friend entity types for the friends REST API.
+ */
+
+// === Presence Client ===
+
+export { FriendsPresenceClient, createFriendsPresenceClient } from '@clients-friends/presence.js';
+export type { IFriendsPresenceClient } from '@clients-friends/presence.js';
+
+// === Types ===
+
+export type {
+    FriendStatus,
+    Friend,
+    SendFriendRequestPayload,
+    UpdateFriendRequest,
+    FriendParams,
+    PresenceStatus,
+    UserPresence,
+    FriendOnlineMessage,
+    FriendOfflineMessage,
+    FriendsServerMessage,
+    FriendsPresenceConfig,
+    ConnectionState,
+} from '@clients-friends/types.js';
+
+// === Error Classes ===
+
+export { FriendsApiError, FriendsNetworkError } from '@clients-friends/types.js';
+export { isFriendsApiError, isFriendsNetworkError } from '@clients-friends/types.js';
+
+// === Config ===
+
+export {
+    FRIENDS_BASE_URL,
+    DEFAULT_FRIENDS_WS_URL,
+    MAX_RECONNECT_ATTEMPTS,
+    BASE_RECONNECT_DELAY_MS,
+} from '@clients-friends/config.js';
+
+// === Queries ===
+
+export { buildQueryFriendsKey, queryFriends } from '@clients-friends/queries/queryFriends.js';
+export { buildQueryFriendKey, queryFriend } from '@clients-friends/queries/queryFriend.js';
+
+// === Mutations ===
+
+export { mutationSendFriendRequest } from '@clients-friends/mutations/mutationSendFriendRequest.js';
+export { mutationUpdateFriend } from '@clients-friends/mutations/mutationUpdateFriend.js';
+export { mutationDeleteFriend } from '@clients-friends/mutations/mutationDeleteFriend.js';

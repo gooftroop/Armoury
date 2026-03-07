@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "paths": {
+            "@users/*": ["./*"],
+            "@data/*": ["../../shared/data/src/*"],
+            "@models/*": ["../../shared/models/src/*"]
+        }
+    }
+}

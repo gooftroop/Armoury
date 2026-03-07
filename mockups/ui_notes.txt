@@ -1,0 +1,171 @@
+This document contains a description of the UI and flow of both the web app and mobile app. 
+
+- The web app UI must be responsive and capable of being used on desktop browsers and mobile device browsers
+- When modals (dialogs) or drawers are used on the desktop (medium, large, x-large screen sizes) screens, these should be take-over screens on mobile devices
+- The web app should use native browser navigation for back and forward navigation, and the nav bar should be pinned to the left-hand side of the screen for tablet and desktop screen sizes, and pinned to the bottom of the screen for mobile/small screens
+- The web app should have a header that displays the name of the current page and on the far right side a profile icon that, when clicked, shows a popover that lets them select from a vertical list to navigate to the profile page, the account page, or logout if they are logged in, or just a button to log in if they are logged out
+- The mobile app should have a header for the back button to allow for back navigation and the name of the current page, and the nav bar should be pinned to the bottom of the screen
+- We need to figure out what the color palette should be. The theme should be dark and tactical.
+- All loading states should leverage skeleton loaders
+- Always use incremental loading and render-as-you-fetch
+- Every UI should have a consistent layout that contains the header, navbar, and then an area of the page content
+- The UI should be modern, clean, and innovating (it should also be cool, if we can quantify that) that prioritizes consistent UX and UX that has a low barrier to entry, small gaps of evaluation/execution, and leverages well known UYX best practices
+- If we can, we should try to have a shared UI style-guide and theme that both the web app and mobile app consume. Probably best to rename the existing STYLE_GUIDE.md to CODING_STANDARDS.md and use the STYLE_GUIDE as the UI style-guide and brand documentation.
+- Ensure that we are not violating any publisher's trademarks or other legal requirements. All imagery for factions and units, etc. should be AI generated and not violate copyright or trademarks. Any game-system-specific trademarked content should only be provided through the data via plugins - nothing should be hard-coded.
+- we should try to maximize the amount of code the mobile app and the web app share, especially since the apps will have a lot of business logic. The business logic specific to 40K should be part of the plugin (we'll want to be clear about what's frontend code and backend code in the plugins)
+
+# UI
+The apps load into a generic landing screen/home page (cool looking though) where they must select which game system to play. Game systems are provided via plugins.
+When the users selects a game system, the apps loads game system app, doing any necessary first-time downloading or syncing if this isn't the first time loading the game system.
+
+## Game System Experience
+1. Global navigation (in order left-to-right)
+    - button/link for Army list page. We need a cool name for this page - it can't be "Battle Forge" unfortunately
+    - button/link for Matches page. We need a cool name for this page
+    - button/link for Campaigns page. We need a cool name for this page
+    - button/link for Social page. We need a cool name for this page
+    - button/link for the References page. The page is name "References"
+    - For mobile only, the Account page.
+2. Home page
+    - Data sync and fetching, if necessary, occurs on home page load/app load. Wait and show loader
+    - On the mobile app, if users are not logged in, they should be redirected to the login page so they can either log in or create an account 
+    - Home page is the Army list page
+3. Log in page
+    - Auth0 login widget in the center (this should control login and registration)
+    - Cool open sourced picture for the back-splash
+4. Army list page
+    - First views shows a list of all the armies a user has made, if any
+    - Users can add armies by clicking a button. This button will make them choose a faction, then take them to the Army Creation page. The location of the button is an open question - I want the best UX here
+    - Users can delete armies from this page
+    - Users should be able to see the army picture, name, faction, and points
+    - On mobile and small screens this should be a vertical tile list, but on desktop we can be more creative since we have more space. I'd like the army picture to be kind of a splash effect for each army
+    - Each army also has a button to take them to the Combat view page (we need a better name for it)
+5. Army creation page
+    - This page requires the user to put in an army name, optionally change the default faction image, optionally select a detachment, and choose the point limit
+    - The default faction image should be the background but it shouldn't be distracting and we want it "Edgy" in it's layout
+    - User presses continue to go to the Army page
+5. Army page
+    - Header says the army name instead of the page name like it does for all other pages
+    - The header has a number of points the army current has out of the total points (i.e. 500 / 2000)
+    - We need a button that takes the user to Combat view page (or whatever we decide to name it). Not sure of the location - we need one where it's easy to find but doesn't obstruct the content of the army page
+    - The detachment information and ability to select a new detachment is at the very top of the army page body
+    - The remaining sections follow in order: Characters, Battleline, Transports, Dreadnoughts, Walkers, Vehicles, Auxiliary, and Allied
+    - Each section has a subheader when on mobile/small screens and on desktop they are grouped with some sort of heading (doesn't have to be like mobile)
+    - For each section, users can see each unit that's been added to the army, the unit image, the number of models (if we have space we can break it down into the count of each type of model), the number of points the unit costs, and the ability to delete the unit form the section
+    - When users click on an existing unit, they are taken to the Unit configuration and data sheet page 
+    - When users click one of the buttons to add a unit to the corresponding section, they are presented with a modal that let's them scroll through the list of units filtered for that section.
+        - Users can click on the unit tile and are taken to the unit data sheet (when they go back, regardless if on mobile or browser, the add unit modal should be open, so the modal should be addressable)
+        - The tile has a button to the far right that users can click to add the unit to the section
+        - The tile displays the unit image, the name, the number of these units already in the army, any enhancements it has, and the min and maximum points
+        - If rules prevent this unit from being added to the army, the entire tile and the add button should be disabled and a human-friendly message should be displayed on the tile explaining why it is disabled
+6. Unit configuration and data sheet page
+    - Header contains the name of the unit
+    - The layout of this page needs significant consideration. Users can do two things here: change the wargear/add remove models from the unit, if possible, and view the unit data sheet.
+        - The data sheet should be easily accessible, not hidden behind a small button. The experience should be cohesive without having to go back and forth to look up the weapon and wargear stats.
+        - I'm thinking that we show the data sheet as we do in the "Unit data sheet page", but instead of a read-only display, we give the users options to add and remove weapons, wargear, and enhancements.
+        - The total point cost for the unit should be displayed in the header
+7. Unit data sheet page
+    - Users can view the data sheet for a unit, including the unit image, it's stats, weapon profiles, wargear options, unit composition, and keywords
+    - The data sheet should present all unit information clearly and concisely. On mobile the image should not be too large to avoid unnecessary scrolling.
+8. Matches page
+    - Users can see a list of all their matches- past, present, and planned
+    - Each match item shows the name of the match, the participants if available, the date of the match, the score of the match, all the players and their armies that were used (you can have more than two players in a match), and the status of the match (won/lost/active/planned)
+    - Each match item can be deleted
+    - Users can filter and sort matches by status, name, user's army, and date. The default filter is active and planned matches and the default sort is by date (newest first)
+    - There should be a button that users can click to create a new match
+        - This should open a drawer that lets them pick a name (defaults to Date and then adds the army name once they select one in the format of "{date} {army name}"), the army, and the date (defaults to the current date).
+        - The complex part of this flow is the match validation. We want users to then link their match with their opponents. I think we should provide several methods, from NFC to QR codes to a code. The reason for this linking is to make sure players are cheating by giving themselves more CP than they can have by making their CP count visible to their opponents, by making sure they are lying about their Victory points, and that they aren't lying about their unit health. It'd be nice if we didn't need a server, but if there's no way, then we should add that. 
+        - Linking should link their opponent's social profile if the user and any of their opponents are friends in the app. As the users link with each other, it should populate the participant list in the drawer. Users should be able to click a participant to see their profile and optionally add them as a friend
+        - At the bottom of the drawer is a button (with an action/verb CTA) that confirms, creates, validates, and either starts or plans the match depending on the date set for the match. If the match is active (i.e. the date is the current date), then the users should be navigated to the Matches page; otherwise the modal should close
+9. Match page
+    - This page has three "modes":
+        - A read-only summary/dashboard for past matches
+        - A dashboard for future matches where all users can change their selected army (all linked users should be notified of this change). Only the user who created the match (the organizer) can change the date and name and remove or add players (any of these changes should be communicated to all linked users). All participants should see the updated data in their app if any changes are made by any user. There should also be a button for the organizer to start the match now, which updates the date for everyone  
+        - An immersive and interactive UI for active matches
+            - This experience should be the primary draw of users to use this app. 
+            - On medium/large screens this can likely be one page, but for small/mobile screens we'll likely need a flow that is heavily optimized to be extremely easy to navigiate while playing a match. For both mobile and browser, I believe the key to our success wil be on providing an "active" context screen based on where they are at in the various phases of the match
+                - This will allow them to easily access strategems, faction & army rules, units, core rules, enhancements, and any other relevant information easily with minimal scrolling and clicking
+                    - The phases should follow the official 40K rules for combat: setup, declaration, placement, pre-combat actions, then combat where users each take a turn per round
+                - They will still likely want a way to access all information regarding their army and the match
+                    - A page similar to the "Command Bunker" page in the 40K app that users can reach via the Army list page, the Army page, or the Match page.
+                        - We can't name it "Command Bunker" though - needs a new name
+                        - One thing that everyone hates about the WH 40K app Command Bunker is that, in the data sheet for each unit, it doesn't tell you how many weapons are equipped and by whom - just which ones have been equipped (This is different than the generic Unit page where that page shows all possible weapons; this unit view shows just what weapons the user equipped in the Unit configuration and data sheet page)
+                        - There's also a lot of scrolling, which makes it clunky to use while playing a game because you have to keep scrolling up or down to find units, strategems, enhancements, army and detachment rules, etc.
+                        - This page is meant to be used during a match to help simplify looking up information about your army. It does a better job than anything in the past but I think we can drastically improve it.
+                    - In general, this page should have their units, enhancements, faction & army rules, and strategems
+                - Clicking on a unit should open a drawer with the unit sheet
+                    - This sheet only includes what weapons and wargear (their loadout) were selected when the user built their army in the Army page
+                        - We should also show them what models are included and break down which models have which weapons and wargear
+                        - Some wargear items can only be used once, so we'll want to show if it's be used or not and allow them to toggle that
+                    - We should also show if the unit has any modifiers on them and provide a UI that allows users to add and remove modifiers
+                - The interactive part is that the app should guide them through a match
+                    - They can use the app to progress from the pre-combat phase to combat, then from their turn to their opponent's turn
+                        - during each step, different information will be relevant (i.e. when it's their opponent's turn, they'll want access to their units, be reminded of modifiers, see their CP, and see defensive strategems)
+                        - I think we can have a basic mode that's just turn-by-turn, and a "guided" mode where users can progress from Command phase, movement phase, shooting phase, charge phase, combat phase, and turn end phase
+                            - The basic mode will just show the user everything they need for that turn while the guided mode shows them what they need for the current phase
+                        - One of the biggest frustrations with 40k is that it's easy to forget abilities, strategems, rules, reactions, and to do something with units - I think we have an opportunity here to help the user not forget things by making sure to show them everything they can do for a turn or phase
+            - Users should be able to update their VP (victory points) and CP
+                - This should be synced across all participants
+            - Users should be able to track a model's HP and a unit's strength
+                - It would be awesome if opponents can also see this information
+            - Users will then need to press a button to conclude the match
+                - The app should then perform a validation against the other players to make sure the data is correct
+                - if we don't have a server, then maybe users need to do some sort of handshake between apps or input the data they see on the other person's app?
+            - I think that's it? Check to see if I'm missing anything
+10. Campaigns page
+    - This page, like the Army and Match page, displays the list of past, present, and future campaigns the user either is part of or is organizing
+    - Each campaign is tagged with a callout indicating if the user owns/is organizing that campaign
+    - Users can filter and search campaigns just like the army page, on dimensions that make sense - like name, date, crusade or custom
+    - Each campaign item is clickable and takes them to the Campaign page
+    - Each campaign item can be deleted if the user is the organizer/user
+    - Each campaign shows the campaign name, the date range, the number of participants, a splash image if provided, the status (completed/active/pending), and the campaign winner if applicable
+    - Users can click a button to start creating a campaign (the button placement, just like with the army page and match page, should be positioned that's ideal for the different screen sizes, but the UI of it should be consistent between devices for consistency)
+11. Create Campaign page
+    - Set name
+    - Select either custom type or a crusade from the crusades that have been loaded
+        - we'll need an option to allow users to upload (or provide a url) to crusade rules to add a new crusade to the list or remove crusades from the list
+        - we can let users create custom crusades
+    - Select start date
+    - Define stages of the campaign
+    - Define custom global rules, if any
+    - Set the narrative (if they select a crusade, this should auto populate)
+    - anything else that we need?
+    - clicking the create CTA takes them to the Campaign page
+12. Campaign page
+    - Dashboard. 
+    - Summary of campaign information at the top, including requisition points and crusade points, if the users are playing a crusade
+    - section for the current stage narrative and other information included in the stage
+    - list of participants
+    - Scoreboard
+        - player name, army, what stage they are on, win/loss
+    - upcoming matches
+    - campaign army section, listing units. same information as the unit list in the Match page, but this also includes their rank, xp points, battle honors, and battle scars if they are playing a crusade
+        - clicking the item takes the user to the campaign unit page
+    - users can choose to spend points to add units, and other actions that make sense at the campaign level
+13. Campaign unit page
+    - this is nearly identical to the match unit detail page
+    - however, there should be a banner or something at the top of the page with their requisition points and crusade points, if they are playing crusades, and the campaign name
+    - users can also choose to spend requisition points to add models (heal too I think?) and anything else that makes sense at the unit level if they are playing crusades
+    - users should be able to select the battle honors and/or battle scars here, if applicable
+13. Campaign matches page
+    - extension of the matches page
+    - shows a banner with crusade points, requisition points, if they are playing crusades, and the campaign name
+    - experience points should be automatically applied, especially since users should be tracking their model HP in the app, if they are playing crusades
+    - they will need to also mark "dealers of death" if they are playing crusades
+    - before the match is concluded, users should be prompted to mark a unit for greatness if they are playing crusades
+    - crusade limitations should exist if they are playing crusades
+    - the campaign should be updated with the match information when the match concludes
+13. Campaign management page
+    - this page should be dashboard and a configuration page
+    - organizer can see all the same information that participants do, plus all the configuration for the campaign
+    - not all data can be edited once the campaign starts, but stages that participants haven't reached yet can be edited, as well as the name
+    - organizers can add participants
+    - in the participant list, organizers can see all participant's requisition points, crusade points if they are playing a crusade. they can click on each participant as see their unit list. they can also each unit's experience points, rank, and what battle honors and/or battle scars the unit has if they are playing a crusade
+    - am i missing anything?
+14. Messaging or discord integration? is that possible? would be cool if users can schedule matches on discord and have it show up in the app for both of them
+14. Tournaments page
+    - Under construction
+15. Social page
+    - friends list, the ability to add friend by friend code, qr code, nfc, displays the user's own friend code
+    - can remove friends
+    - what else can we do with friends to make adding friends valuable?

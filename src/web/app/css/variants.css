@@ -1,0 +1,5 @@
+/*
+ * Dark mode variant — class-based via .dark on <html>.
+ * The :where() wrapper keeps specificity at 0 so normal utilities can override.
+ */
+@custom-variant dark (&:where(.dark, .dark *));

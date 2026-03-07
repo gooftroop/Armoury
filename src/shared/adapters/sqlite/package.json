@@ -1,0 +1,35 @@
+{
+    "name": "@armoury/adapters-sqlite",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/node/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/node/index.js"
+        }
+    },
+    "scripts": {
+        "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
+        "generate:types": "tsc -p tsconfig.build.json",
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "dependencies": {
+        "@armoury/data": "*",
+        "drizzle-orm": "^0.45.1",
+        "expo-sqlite": "^16.0.0"
+    },
+    "devDependencies": {
+        "@armoury/eslint": "*",
+        "@armoury/prettier": "*",
+        "@armoury/typescript": "*",
+        "@armoury/esbuild": "*",
+        "eslint": "^9.0.0",
+        "prettier": "^3.0.0"
+    }
+}

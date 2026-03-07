@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Game System Selector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .landing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: var(--space-fluid-8) var(--space-fluid-4);
+    }
+    .landing-logo {
+       font-family: var(--font-display);
+       font-size: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+       font-weight: 700;
+       letter-spacing: 0.12em;
+       color: var(--accent-primary);
+       text-transform: uppercase;
+       margin-bottom: 8px;
+     }
+    .landing-tagline {
+      font-size: var(--text-base);
+      color: var(--text-secondary);
+      letter-spacing: 0.04em;
+      margin-bottom: var(--space-fluid-8);
+    }
+    .system-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+      gap: var(--space-fluid-4);
+      width: 100%;
+      max-width: 1120px;
+      margin-bottom: var(--space-fluid-6);
+    }
+    .system-card {
+       background: var(--glass-bg);
+       background-image: var(--sheen);
+       backdrop-filter: var(--glass-blur);
+       border: var(--glass-border);
+       border-radius: var(--radius-lg);
+       padding: var(--space-fluid-4);
+       display: flex;
+       flex-direction: column;
+       gap: 16px;
+       transition: all var(--duration-fast) var(--ease-default);
+       position: relative;
+       overflow: hidden;
+       box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+       cursor: pointer;
+     }
+    .system-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+    .system-card[data-accent="gold"]::before { background: var(--accent-primary); }
+    .system-card[data-accent="muted"]::before { background: oklch(1 0 0 / 12%); }
+    .system-card:hover {
+      border-color: var(--border-default);
+      transform: translateY(-2px);
+    }
+    .system-card.disabled {
+      opacity: 0.6;
+    }
+    .system-card.disabled:hover {
+      transform: none;
+      border-color: var(--border-subtle);
+    }
+    .system-card-title {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--text-primary);
+    }
+    .system-card-edition {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: -8px;
+    }
+    .system-card-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .system-card-footer {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .landing-footer {
+      font-size: 14px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .landing-footer a {
+      color: var(--accent-secondary);
+      font-weight: 500;
+    }
+     .landing-footer a:hover { color: var(--accent-secondary-hover); }
+     @media (max-width: 767px) {
+       .landing {
+         padding: var(--space-fluid-6) var(--space-4);
+       }
+       .system-grid {
+         grid-template-columns: 1fr;
+       }
+       .system-card-splash {
+         height: 80px !important;
+       }
+     }
+   </style>
+</head>
+<body>
+  <div class="landing">
+    <div class="landing-logo">Armoury</div>
+    <div class="landing-tagline">Tabletop Army Management</div>
+
+    <div class="system-grid">
+
+      <div class="system-card" data-accent="gold">
+        <div class="system-card-splash" style="height:120px;border-radius:var(--radius-md);background:linear-gradient(135deg, oklch(0.15 0.02 235), oklch(0.25 0.06 235), oklch(0.18 0.04 260));margin-bottom:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <span style="font-size:48px;font-weight:800;color:oklch(0.65 0.14 235 / 20%);letter-spacing:0.1em;text-transform:uppercase;">40K</span>
+        </div>
+        <div class="system-card-title">Warhammer 40,000</div>
+        <div class="system-card-edition">10th Edition</div>
+        <div class="system-card-desc">Build armies, track matches, manage campaigns, and reference rules for the 41st millennium.</div>
+        <div class="system-card-footer">
+          <button class="btn btn-primary" onclick="location.href='03-forge-armies.html'">Select</button>
+        </div>
+      </div>
+
+      <div class="system-card disabled" data-accent="muted">
+        <div class="system-card-splash" style="height:120px;border-radius:var(--radius-md);background:linear-gradient(135deg, oklch(0.15 0.02 45), oklch(0.22 0.04 45), oklch(0.18 0.03 60));margin-bottom:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <span style="font-size:48px;font-weight:800;color:oklch(0.70 0.16 45 / 20%);letter-spacing:0.1em;text-transform:uppercase;">AOS</span>
+        </div>
+        <div class="system-card-title">Age of Sigmar</div>
+        <div class="system-card-edition">4th Edition</div>
+        <div class="system-card-desc">Armies of the Mortal Realms. Build, battle, and campaign in a world of high fantasy warfare.</div>
+        <div class="system-card-footer">
+          <button class="btn btn-secondary" disabled>Coming Soon</button>
+        </div>
+      </div>
+
+      <div class="system-card disabled" data-accent="muted">
+        <div class="system-card-splash" style="height:120px;border-radius:var(--radius-md);background:linear-gradient(135deg, oklch(0.15 0.01 25), oklch(0.22 0.04 25), oklch(0.18 0.02 30));margin-bottom:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <span style="font-size:48px;font-weight:800;color:oklch(0.60 0.08 25 / 20%);letter-spacing:0.1em;text-transform:uppercase;">HH</span>
+        </div>
+        <div class="system-card-title">Horus Heresy</div>
+        <div class="system-card-edition">3rd Edition</div>
+        <div class="system-card-desc">Legions of the Great Crusade. Manage your forces for the Age of Darkness.</div>
+        <div class="system-card-footer">
+          <button class="btn btn-secondary" disabled>Coming Soon</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="landing-footer">
+      <span>Already have an account?</span>
+      <a href="#">Sign In</a>
+    </div>
+    <div class="landing-footer" style="margin-top:12px;">
+      <span>New here?</span>
+      <a href="#">Create an Account</a>
+    </div>
+    <div style="text-align:center;padding:var(--space-4) var(--space-6);margin-top:var(--space-4);">
+      <p style="font-size:11px;line-height:1.5;color:var(--text-tertiary);opacity:0.6;max-width:480px;margin:0 auto;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners. Game data is provided by community sources and loaded at user request.</p>
+    </div>
+  </div>
+
+
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

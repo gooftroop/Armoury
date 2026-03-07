@@ -1,0 +1,18 @@
+{
+    "extends": "@armoury/typescript/base.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "baseUrl": ".",
+        "paths": {
+            "@adapters-dsql/*": ["./src/*"],
+            "@data/*": ["../../../shared/data/src/*"],
+            "@models/*": ["../../../shared/models/src/*"],
+            "@clients-github/*": ["../../../shared/clients/github/src/*"],
+            "@providers-bsdata/*": ["../../../shared/providers/bsdata/src/*"],
+            "@validation/*": ["../../../shared/validation/src/*"],
+            "@wh40k10e/*": ["../../../../systems/wh40k10e/src/*"]
+        }
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist"]
+}

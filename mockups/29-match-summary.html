@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Battle of Macragge (Summary)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .summary-wrapper {
+      max-width: 880px; margin: 0 auto; padding: 12px 8px 40px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+
+    .summary-card {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+      border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+
+    .summary-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-header-left {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+
+    .summary-match-name {
+      font-size: 28px; font-weight: 700; color: var(--text-primary); font-family: var(--font-display);
+    }
+
+    .summary-match-date {
+      font-size: 13px; color: var(--text-tertiary);
+    }
+
+    .result-badge {
+      font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 6px 16px; border-radius: var(--radius-md);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .result-badge.victory {
+      background: var(--status-success-muted); color: var(--status-success);
+    }
+
+    .result-badge.defeat {
+      background: var(--status-danger-muted); color: var(--status-danger);
+    }
+
+    .summary-card-title {
+      font-size: 16px; font-weight: 600; color: var(--text-primary); font-family: var(--font-display);
+      margin-bottom: 14px;
+    }
+
+    .score-comparison {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .score-player {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+
+    .score-player-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--text-tertiary);
+    }
+
+    .score-player-vp {
+      font-family: var(--font-display); font-size: 36px; font-weight: 700;
+    }
+
+    .score-player-vp.yours {
+      color: var(--accent-primary);
+    }
+
+    .score-player-vp.opponent {
+      color: var(--text-secondary);
+    }
+
+    .score-vs {
+      font-size: 14px; font-weight: 600; color: var(--text-tertiary);
+    }
+
+    .score-bar {
+      width: 100%; height: 12px; background: oklch(1 0 0 / 8%);
+      border-radius: var(--radius-full); overflow: hidden; position: relative;
+      margin-bottom: 16px;
+    }
+
+    .score-bar-fill {
+      height: 100%; position: absolute; top: 0; left: 0;
+      background: var(--accent-primary);
+      transition: width var(--duration-default) var(--ease-default);
+    }
+
+    .score-breakdown {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    }
+
+    .score-breakdown-item {
+      padding: 10px 12px; border-radius: var(--radius-md);
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+    }
+
+    .score-breakdown-label {
+      font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px;
+    }
+
+    .score-breakdown-values {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-display); font-size: 18px; font-weight: 700;
+    }
+
+    .score-breakdown-values .yours {
+      color: var(--accent-primary);
+    }
+
+    .score-breakdown-values .opponent {
+      color: var(--text-secondary);
+    }
+
+    .score-breakdown-values .sep {
+      color: var(--text-tertiary); font-size: 14px;
+    }
+
+    .details-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;
+    }
+
+    .detail-item {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+
+    .detail-label {
+      font-size: 11px; color: var(--text-tertiary);
+    }
+
+    .detail-value {
+      font-size: 14px; font-weight: 600; color: var(--text-primary);
+    }
+
+    .army-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding-bottom: 10px; margin-bottom: 12px;
+      border-bottom: 1px solid oklch(1 0 0 / 10%);
+    }
+
+    .army-name {
+      font-size: 18px; font-weight: 700; color: var(--text-primary); font-family: var(--font-display);
+    }
+
+    .army-meta {
+      font-size: 12px; color: var(--text-tertiary);
+    }
+
+    .unit-list {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .unit-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: var(--radius-md);
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+    }
+
+    .unit-item-icon {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      background: oklch(1 0 0 / 12%); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .unit-item-icon i {
+      width: 16px; height: 16px; color: var(--text-tertiary);
+    }
+
+    .unit-item-info {
+      flex: 1; min-width: 0;
+    }
+
+    .unit-item-name {
+      font-size: 13px; font-weight: 600; color: var(--text-primary);
+    }
+
+    .unit-item-meta {
+      font-size: 11px; color: var(--text-tertiary); margin-top: 2px;
+    }
+
+    .unit-item-status {
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+
+    .unit-status-badge {
+      font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-full);
+      text-transform: uppercase; letter-spacing: 0.03em;
+    }
+
+    .unit-status-badge.survived {
+      background: var(--status-success-muted); color: var(--status-success);
+    }
+
+    .unit-status-badge.destroyed {
+      background: var(--status-danger-muted); color: var(--status-danger);
+    }
+
+    .unit-hp-display {
+      font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);
+    }
+
+    .secondary-list {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .secondary-item {
+      padding: 10px 12px; border-radius: var(--radius-md);
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+    }
+
+    .secondary-item-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .secondary-item-name {
+      font-size: 13px; font-weight: 600; color: var(--text-primary);
+    }
+
+    .secondary-item-vp {
+      font-family: var(--font-display); font-size: 16px; font-weight: 700;
+      color: var(--accent-secondary);
+    }
+
+    .secondary-item-desc {
+      font-size: 11px; color: var(--text-tertiary);
+    }
+
+    .rounds-table {
+      width: 100%; border-collapse: collapse;
+    }
+
+    .rounds-table th {
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--text-tertiary); text-align: left; padding: 8px 10px;
+      border-bottom: 1px solid oklch(1 0 0 / 10%);
+    }
+
+    .rounds-table td {
+      font-family: var(--font-mono); font-size: 13px; color: var(--text-primary);
+      padding: 10px; border-bottom: 1px solid oklch(1 0 0 / 6%);
+    }
+
+    .rounds-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .rounds-table .vp-yours {
+      color: var(--accent-primary); font-weight: 600;
+    }
+
+    .rounds-table .vp-opponent {
+      color: var(--text-secondary);
+    }
+
+    .rounds-table .vp-total {
+      font-weight: 700; font-size: 14px;
+    }
+
+    @media (max-width: 767px) {
+      .summary-wrapper { padding: 12px 8px 80px; }
+      .summary-card { padding: 14px; }
+      
+      .summary-header {
+        flex-direction: column; align-items: flex-start;
+      }
+
+      .summary-match-name {
+        font-size: 22px;
+      }
+
+      .score-comparison {
+        flex-direction: column; gap: 8px;
+      }
+
+      .score-breakdown {
+        grid-template-columns: 1fr;
+      }
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item active" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+
+      <nav class="breadcrumb" style="padding:8px 16px;font-size:13px;">
+        <a href="11-war-ledger.html" style="color:var(--text-secondary);">War Ledger</a>
+        <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+        <span style="color:var(--text-tertiary);">Battle of Macragge</span>
+      </nav>
+
+      <div class="summary-wrapper">
+
+        <!-- Header -->
+        <div class="summary-header">
+          <div class="summary-header-left">
+            <h1 class="summary-match-name">Battle of Macragge</h1>
+            <div class="summary-match-date">February 10, 2026</div>
+          </div>
+          <div class="result-badge victory">
+            <i data-lucide="trophy"></i>
+            Victory
+          </div>
+        </div>
+
+        <!-- Score Summary Card -->
+        <div class="summary-card">
+          <div class="summary-card-title">Final Score</div>
+          
+          <div class="score-comparison">
+            <div class="score-player">
+              <div class="score-player-label">You</div>
+              <div class="score-player-vp yours">85</div>
+            </div>
+            <div class="score-vs">vs</div>
+            <div class="score-player">
+              <div class="score-player-label">Opponent</div>
+              <div class="score-player-vp opponent">62</div>
+            </div>
+          </div>
+
+          <div class="score-bar">
+            <div class="score-bar-fill" style="width: 57.8%;"></div>
+          </div>
+
+          <div class="score-breakdown">
+            <div class="score-breakdown-item">
+              <div class="score-breakdown-label">Primary VP</div>
+              <div class="score-breakdown-values">
+                <span class="yours">45</span>
+                <span class="sep">vs</span>
+                <span class="opponent">30</span>
+              </div>
+            </div>
+            <div class="score-breakdown-item">
+              <div class="score-breakdown-label">Secondary VP</div>
+              <div class="score-breakdown-values">
+                <span class="yours">25</span>
+                <span class="sep">vs</span>
+                <span class="opponent">20</span>
+              </div>
+            </div>
+            <div class="score-breakdown-item">
+              <div class="score-breakdown-label">Paint Bonus</div>
+              <div class="score-breakdown-values">
+                <span class="yours">15</span>
+                <span class="sep">vs</span>
+                <span class="opponent">12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match Details Card -->
+        <div class="summary-card">
+          <div class="summary-card-title">Match Details</div>
+          <div class="details-grid">
+            <div class="detail-item">
+              <div class="detail-label">Mission</div>
+              <div class="detail-value">Supply Drop</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Deployment</div>
+              <div class="detail-value">Dawn of War</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Battle Size</div>
+              <div class="detail-value">Strike Force (2000pts)</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Duration</div>
+              <div class="detail-value">2h 45m</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Rounds</div>
+              <div class="detail-value">5</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Army Card -->
+        <div class="summary-card">
+          <div class="army-header">
+            <div>
+              <div class="army-name">Ultramarines Strike Force</div>
+              <div class="army-meta">Space Marines · Gladius Task Force</div>
+            </div>
+          </div>
+
+          <div class="unit-list">
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="sword"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Captain in Terminator Armour</div>
+                <div class="unit-item-meta">200 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+                <span class="unit-hp-display">4/6 HP</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="sparkles"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Librarian</div>
+                <div class="unit-item-meta">110 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge destroyed">Destroyed R3</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="shield"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Intercessor Squad</div>
+                <div class="unit-item-meta">6/10 models · 180 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="swords"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Assault Intercessor Squad</div>
+                <div class="unit-item-meta">7/10 models · 180 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="bot"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Redemptor Dreadnought</div>
+                <div class="unit-item-meta">210 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge destroyed">Destroyed R4</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="bot"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Ballistus Dreadnought</div>
+                <div class="unit-item-meta">170 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+                <span class="unit-hp-display">10/12 HP</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="zap"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Terminator Squad</div>
+                <div class="unit-item-meta">4/5 models · 200 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="crosshair"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Hellblaster Squad</div>
+                <div class="unit-item-meta">6/10 models · 300 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opponent Army Card -->
+        <div class="summary-card">
+          <div class="army-header">
+            <div>
+              <div class="army-name">Death Guard — Plague Company</div>
+              <div class="army-meta">Death Guard · Plague Company</div>
+            </div>
+          </div>
+
+          <div class="unit-list">
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="skull"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Typhus</div>
+                <div class="unit-item-meta">165 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge destroyed">Destroyed R5</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="flame"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Plague Marines</div>
+                <div class="unit-item-meta">3/10 models · 210 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="bug"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Poxwalkers</div>
+                <div class="unit-item-meta">12/20 models · 100 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="radar"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Plagueburst Crawler</div>
+                <div class="unit-item-meta">175 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge destroyed">Destroyed R3</span>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <div class="unit-item-icon">
+                <i data-lucide="siren"></i>
+              </div>
+              <div class="unit-item-info">
+                <div class="unit-item-name">Foetid Bloat-drone</div>
+                <div class="unit-item-meta">135 pts</div>
+              </div>
+              <div class="unit-item-status">
+                <span class="unit-status-badge survived">Survived</span>
+                <span class="unit-hp-display">8/12 HP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Missions Card -->
+        <div class="summary-card">
+          <div class="summary-card-title">Secondary Missions</div>
+          
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);margin-bottom:10px;">Your Secondaries</div>
+            <div class="secondary-list">
+              <div class="secondary-item">
+                <div class="secondary-item-header">
+                  <div class="secondary-item-name">Assassination</div>
+                  <div class="secondary-item-vp">5 VP</div>
+                </div>
+                <div class="secondary-item-desc">Scored in Round 2</div>
+              </div>
+              <div class="secondary-item">
+                <div class="secondary-item-header">
+                  <div class="secondary-item-name">Behind Enemy Lines</div>
+                  <div class="secondary-item-vp">8 VP</div>
+                </div>
+                <div class="secondary-item-desc">Scored across multiple rounds</div>
+              </div>
+              <div class="secondary-item">
+                <div class="secondary-item-header">
+                  <div class="secondary-item-name">Bring It Down</div>
+                  <div class="secondary-item-vp">12 VP</div>
+                </div>
+                <div class="secondary-item-desc">Scored across multiple rounds</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);margin-bottom:10px;">Opponent Secondaries</div>
+            <div class="secondary-list">
+              <div class="secondary-item">
+                <div class="secondary-item-header">
+                  <div class="secondary-item-name">Cleanse</div>
+                  <div class="secondary-item-vp">6 VP</div>
+                </div>
+                <div class="secondary-item-desc">Scored across multiple rounds</div>
+              </div>
+              <div class="secondary-item">
+                <div class="secondary-item-header">
+                  <div class="secondary-item-name">Engage on All Fronts</div>
+                  <div class="secondary-item-vp">14 VP</div>
+                </div>
+                <div class="secondary-item-desc">Scored across multiple rounds</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Round-by-Round VP Card -->
+        <div class="summary-card">
+          <div class="summary-card-title">Round-by-Round Scorecard</div>
+          
+          <table class="rounds-table">
+            <thead>
+              <tr>
+                <th>Round</th>
+                <th>You</th>
+                <th>Opponent</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Round 1</td>
+                <td class="vp-yours">12</td>
+                <td class="vp-opponent">8</td>
+              </tr>
+              <tr>
+                <td>Round 2</td>
+                <td class="vp-yours">18</td>
+                <td class="vp-opponent">14</td>
+              </tr>
+              <tr>
+                <td>Round 3</td>
+                <td class="vp-yours">15</td>
+                <td class="vp-opponent">12</td>
+              </tr>
+              <tr>
+                <td>Round 4</td>
+                <td class="vp-yours">20</td>
+                <td class="vp-opponent">16</td>
+              </tr>
+              <tr>
+                <td>Round 5</td>
+                <td class="vp-yours">20</td>
+                <td class="vp-opponent">12</td>
+              </tr>
+              <tr>
+                <td style="font-weight:700;">Total</td>
+                <td class="vp-yours vp-total">85</td>
+                <td class="vp-opponent vp-total">62</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item active"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    lucide.createIcons();
+
+    // Popover handler
+    var popoverTriggers = document.querySelectorAll('.popover-trigger');
+    var i;
+
+    function closeAllPopovers() {
+      for (i = 0; i < popoverTriggers.length; i += 1) {
+        popoverTriggers[i].removeAttribute('open');
+      }
+    }
+
+    for (i = 0; i < popoverTriggers.length; i += 1) {
+      popoverTriggers[i].addEventListener('toggle', function(event) {
+        var j;
+        if (event.target.hasAttribute('open')) {
+          for (j = 0; j < popoverTriggers.length; j += 1) {
+            if (popoverTriggers[j] !== event.target) {
+              popoverTriggers[j].removeAttribute('open');
+            }
+          }
+        }
+      });
+    }
+
+    document.addEventListener('click', function(event) {
+      var isClickInsidePopover;
+      var j;
+      isClickInsidePopover = false;
+      for (j = 0; j < popoverTriggers.length; j += 1) {
+        if (popoverTriggers[j].contains(event.target)) {
+          isClickInsidePopover = true;
+          break;
+        }
+      }
+      if (!isClickInsidePopover) {
+        closeAllPopovers();
+      }
+    });
+  </script>
+
+</body>
+</html>

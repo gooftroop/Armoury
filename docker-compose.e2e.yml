@@ -1,0 +1,68 @@
+services:
+    matches-db:
+        image: postgres:16-alpine
+        container_name: armoury-e2e-matches
+        ports:
+            - '5433:5432'
+        environment:
+            POSTGRES_DB: armoury_matches
+            POSTGRES_USER: armoury
+            POSTGRES_PASSWORD: armoury_local
+        volumes:
+            - ./src/services/matches/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_matches']
+            interval: 3s
+            timeout: 3s
+            retries: 10
+
+    friends-db:
+        image: postgres:16-alpine
+        container_name: armoury-e2e-friends
+        ports:
+            - '5434:5432'
+        environment:
+            POSTGRES_DB: armoury_friends
+            POSTGRES_USER: armoury
+            POSTGRES_PASSWORD: armoury_local
+        volumes:
+            - ./src/services/friends/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_friends']
+            interval: 3s
+            timeout: 3s
+            retries: 10
+
+    campaigns-db:
+        image: postgres:16-alpine
+        container_name: armoury-e2e-campaigns
+        ports:
+            - '5435:5432'
+        environment:
+            POSTGRES_DB: armoury_campaigns
+            POSTGRES_USER: armoury
+            POSTGRES_PASSWORD: armoury_local
+        volumes:
+            - ./src/services/campaigns/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_campaigns']
+            interval: 3s
+            timeout: 3s
+            retries: 10
+
+    users-db:
+        image: postgres:16-alpine
+        container_name: armoury-e2e-users
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_DB: armoury_users
+            POSTGRES_USER: armoury
+            POSTGRES_PASSWORD: armoury_local
+        volumes:
+            - ./src/services/users/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_users']
+            interval: 3s
+            timeout: 3s
+            retries: 10

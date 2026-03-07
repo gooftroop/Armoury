@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Active Match (Basic Mode)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shared-match.css">
+  <style>
+
+    .match-unit-row {
+      display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: var(--space-3);
+      padding: var(--space-2) var(--space-2); border-radius: var(--radius-sm);
+      cursor: pointer; transition: background var(--duration-fast) var(--ease-default);
+      border-left: 3px solid transparent; overflow: hidden;
+    }
+    .match-unit-row:hover { background: oklch(1 0 0 / 12%); }
+    .match-unit-row.selected { background: oklch(1 0 0 / 8%); box-shadow: var(--glow-1); border-left-color: var(--accent-primary); }
+    .match-unit-row + .match-unit-row { margin-top: 6px; }
+    .match-unit-thumb {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      background: oklch(1 0 0 / 12%); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .match-unit-thumb i { width: 16px; height: 16px; color: var(--text-tertiary); }
+    .match-unit-info { min-width: 0; overflow: hidden; }
+    .match-unit-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .match-unit-models { font-size: 12px; color: var(--text-tertiary); }
+    .match-unit-hp { min-width: 0; overflow: hidden; }
+
+    .actions-section { margin-top: 28px; }
+    .action-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-2) var(--space-2); border-radius: var(--radius-sm);
+      transition: background var(--duration-fast) var(--ease-default); cursor: pointer;
+    }
+    .action-item:hover { background: oklch(1 0 0 / 12%); }
+    .action-item + .action-item { margin-top: 6px; }
+    .action-icon { flex-shrink: 0; }
+    .action-icon i { width: 16px; height: 16px; }
+    .action-icon.stratagem { color: var(--accent-primary); }
+    .action-icon.ability { color: var(--accent-secondary); }
+    .action-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .action-meta { font-size: 12px; color: var(--text-tertiary); }
+    .action-cost { font-family: var(--font-mono); font-size: 12px; color: var(--accent-secondary); margin-left: auto; flex-shrink: 0; }
+    .action-item.used { opacity: 0.4; }
+    .action-item.used .action-name { text-decoration: line-through; }
+
+    @media (max-width: 767px) {
+      .match-unit-row { grid-template-columns: 32px 1fr; }
+      .match-unit-hp { grid-column: 1 / -1; margin-top: 4px; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item active" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+
+      <nav class="breadcrumb" style="padding:8px 16px;font-size:13px;">
+        <a href="11-war-ledger.html" style="color:var(--text-secondary);">War Ledger</a>
+        <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+        <span style="color:var(--text-tertiary);">Battle of Macragge</span>
+      </nav>
+
+      <div class="status-strip" style="min-height:56px;padding:8px 16px;">
+        <div class="status-strip-left">
+          <a href="11-war-ledger.html" style="color:var(--text-secondary);display:flex;align-items:center;margin-right:8px;"><i data-lucide="arrow-left" style="width:20px;height:20px;"></i></a>
+          <span style="font-size:15px;font-weight:600;color:var(--text-primary);margin-right:16px;">Battle of Macragge</span>
+          <span class="round-badge">R3</span>
+          <span class="turn-pill yours">Your Turn</span>
+        </div>
+        <div class="status-strip-center">
+          <div class="score-compact">
+            <span class="score-compact-name">You</span>
+            <span class="score-compact-vp" style="color:var(--accent-secondary);">45</span>
+          </div>
+          <span class="score-compact-sep">&mdash;</span>
+          <div class="score-compact">
+            <span class="score-compact-vp" style="color:var(--text-secondary);">38</span>
+            <span class="score-compact-name">Opp</span>
+          </div>
+        </div>
+        <div class="status-strip-right">
+          <div class="cp-pill" style="gap:8px;padding:0 12px;">
+            <span class="cp-pill-label">CP</span>
+            <span class="counter-btn" style="width:20px;height:20px;font-size:12px;border-radius:3px;">−</span>
+            <span class="cp-pill-value">3</span>
+            <span class="counter-btn" style="width:20px;height:20px;font-size:12px;border-radius:3px;">+</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:2px;background:oklch(1 0 0 / 10%);border-radius:var(--radius-full);padding:2px;">
+            <span style="padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;background:var(--accent-primary);color:var(--text-inverse);cursor:pointer;">Basic</span>
+            <span style="padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-tertiary);cursor:pointer;" onclick="location.href='09-match-guided.html'">Guided</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="match-layout">
+
+        <div class="match-main">
+
+          <div class="reminder-banner">
+            <div class="reminder-banner-icon"><i data-lucide="bell"></i></div>
+            <div class="reminder-banner-text">
+              <strong>Rites of Battle:</strong> Captain in Terminator Armour can use one Stratagem for 0CP on a nearby unit this turn.
+            </div>
+          </div>
+
+          <div class="section-header" style="padding:4px 0;margin-bottom:8px;">
+            <span class="section-header-label">Your Units <span class="section-header-count">(8 units)</span></span>
+          </div>
+
+          <div class="match-unit-row selected" onclick="selectUnit('captain', this)">
+            <div class="match-unit-thumb"><i data-lucide="crown"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Captain in Terminator Armour</div>
+              <div class="match-unit-models">1 model · 200 pts</div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:var(--status-success);color:var(--text-inverse);cursor:pointer;">Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Fought</span>
+              </div>
+            </div>
+            <div class="match-unit-hp" style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">6/6</span>
+            </div>
+          </div>
+
+          <div class="match-unit-row">
+            <div class="match-unit-thumb"><i data-lucide="user"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Librarian</div>
+              <div class="match-unit-models">1 model · 110 pts</div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Fought</span>
+              </div>
+            </div>
+            <div class="match-unit-hp" style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">4/6</span>
+            </div>
+          </div>
+
+          <div class="match-unit-row" onclick="selectUnit('intercessor', this)">
+            <div class="match-unit-thumb"><i data-lucide="shield"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Intercessor Squad</div>
+              <div class="match-unit-models">8 / 10 models · 180 pts</div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Fought</span>
+              </div>
+            </div>
+            <div class="match-unit-hp">
+              <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                <div class="hp-bar" style="flex:1;height:6px;">
+                  <div class="hp-bar-fill hp-high" style="width:80%;"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">16/20</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;" onclick="event.stopPropagation()">−</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;" onclick="event.stopPropagation()">+</span>
+                <div class="hp-tooltip">16 / 20 HP</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="match-unit-row">
+            <div class="match-unit-thumb"><i data-lucide="shield"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Assault Intercessor Squad</div>
+              <div class="match-unit-models">7 / 10 models · 180 pts</div>
+              <div style="display:flex;gap:4px;align-items:center;margin-top:4px;">
+                <span class="status-pill reserve" style="font-size:10px;">Strategic Reserves</span>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:var(--accent-highlight-muted);color:var(--accent-highlight);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:2px;"><i data-lucide="target" style="width:10px;height:10px;"></i>Performing Action</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);opacity:0.35;cursor:not-allowed;">Not Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);opacity:0.35;cursor:not-allowed;">Not Fought</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:var(--space-2);margin-top:var(--space-2);padding:var(--space-2) var(--space-3);border:1px dashed var(--accent-primary);border-radius:var(--radius-sm);background:var(--accent-primary-muted);cursor:pointer;" onclick="event.stopPropagation();this.closest('.match-unit-row').querySelector('.status-pill').remove();this.remove();if(typeof lucide!=='undefined')lucide.createIcons();">
+                <i data-lucide="map-pin" style="width:14px;height:14px;color:var(--accent-primary);"></i>
+                <span style="font-size:12px;font-weight:600;color:var(--accent-primary);">Deploy from Strategic Reserves</span>
+              </div>
+            </div>
+            <div class="match-unit-hp">
+              <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                <div class="hp-bar" style="flex:1;height:6px;">
+                  <div class="hp-bar-fill hp-high" style="width:70%;"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">14/20</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</span>
+                <div class="hp-tooltip">14 / 20 HP</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="match-unit-row">
+            <div class="match-unit-thumb"><i data-lucide="bot"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Redemptor Dreadnought</div>
+              <div class="match-unit-models">1 model · 210 pts</div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Fought</span>
+              </div>
+            </div>
+            <div class="match-unit-hp" style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">7/14</span>
+            </div>
+          </div>
+
+          <div class="match-unit-row">
+            <div class="match-unit-thumb"><i data-lucide="bot"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Ballistus Dreadnought</div>
+              <div class="match-unit-models">1 model · 170 pts</div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Fought</span>
+              </div>
+            </div>
+            <div class="match-unit-hp" style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">10/12</span>
+            </div>
+          </div>
+
+          <div class="match-unit-row">
+            <div class="match-unit-thumb"><i data-lucide="zap"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Terminator Squad</div>
+              <div class="match-unit-models">4 / 5 models · 200 pts</div>
+              <div style="display:flex;gap:4px;align-items:center;margin-top:4px;">
+                <span class="status-pill deepstrike" style="font-size:10px;">Deep Strike</span>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Fought</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:var(--space-2);margin-top:var(--space-2);padding:var(--space-2) var(--space-3);border:1px dashed var(--accent-primary);border-radius:var(--radius-sm);background:var(--accent-primary-muted);cursor:pointer;" onclick="event.stopPropagation();this.closest('.match-unit-row').querySelector('.status-pill').remove();this.remove();if(typeof lucide!=='undefined')lucide.createIcons();">
+                <i data-lucide="map-pin" style="width:14px;height:14px;color:var(--accent-primary);"></i>
+                <span style="font-size:12px;font-weight:600;color:var(--accent-primary);">Deploy from Deep Strike</span>
+              </div>
+            </div>
+            <div class="match-unit-hp">
+              <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                <div class="hp-bar" style="flex:1;height:6px;">
+                  <div class="hp-bar-fill hp-high" style="width:80%;"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">8/10</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</span>
+                <div class="hp-tooltip">8 / 10 HP</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="match-unit-row">
+            <div class="match-unit-thumb"><i data-lucide="crosshair"></i></div>
+            <div class="match-unit-info">
+              <div class="match-unit-name">Hellblaster Squad</div>
+              <div class="match-unit-models">6 / 10 models · 300 pts</div>
+              <div style="display:flex;gap:4px;margin-top:4px;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Shot</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:oklch(1 0 0 / 10%);color:var(--text-tertiary);cursor:pointer;">Not Fought</span>
+              </div>
+            </div>
+            <div class="match-unit-hp">
+              <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                <div class="hp-bar" style="flex:1;height:6px;">
+                  <div class="hp-bar-fill hp-mid" style="width:60%;"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">12/20</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</span>
+                <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</span>
+                <div class="hp-tooltip">12 / 20 HP</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions-section">
+            <div class="section-header" style="padding:4px 0;margin-bottom:8px;">
+              <span class="section-header-label">Available Stratagems</span>
+            </div>
+
+            <div class="action-item">
+              <div class="action-icon stratagem"><i data-lucide="zap"></i></div>
+              <div>
+                <div class="action-name">Armour of Contempt</div>
+                <div class="action-meta">Any Phase · Worsen AP by 1</div>
+              </div>
+              <span class="action-cost">1 CP</span>
+            </div>
+
+            <div class="action-item">
+              <div class="action-icon stratagem"><i data-lucide="zap"></i></div>
+              <div>
+                <div class="action-name">Fire Discipline</div>
+                <div class="action-meta">Shooting Phase · +1 to Hit</div>
+              </div>
+              <span class="action-cost">1 CP</span>
+            </div>
+
+            <div class="action-item">
+              <div class="action-icon stratagem"><i data-lucide="zap"></i></div>
+              <div>
+                <div class="action-name">Only in Death Does Duty End</div>
+                <div class="action-meta">Fight Phase · Fight on death</div>
+              </div>
+              <span class="action-cost">2 CP</span>
+            </div>
+
+            <div class="action-item used">
+              <div class="action-icon ability"><i data-lucide="star"></i></div>
+              <div>
+                <div class="action-name">Oath of Moment</div>
+                <div class="action-meta">Command Phase · Re-roll hits/wounds vs target</div>
+              </div>
+              <span style="font-size:10px;color:var(--text-tertiary);margin-left:auto;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;">Used</span>
+            </div>
+          </div>
+
+          <div class="match-footer match-footer-pinned">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div class="vp-adjust">
+                <span class="counter-btn" style="width:24px;height:24px;font-size:14px;">−</span>
+                <div class="vp-adjust-value">
+                  <div class="vp-adjust-number">+5</div>
+                  <div class="vp-adjust-label">Primary</div>
+                </div>
+                <span class="counter-btn" style="width:24px;height:24px;font-size:14px;">+</span>
+              </div>
+              <div class="vp-adjust">
+                <span class="counter-btn" style="width:24px;height:24px;font-size:14px;">−</span>
+                <div class="vp-adjust-value">
+                  <div class="vp-adjust-number">+3</div>
+                  <div class="vp-adjust-label">Secondary</div>
+                </div>
+                <span class="counter-btn" style="width:24px;height:24px;font-size:14px;">+</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('end-turn-overlay').style.display='flex'">End Turn</button>
+          </div>
+
+          <!-- End Turn Secondary Completion Popover (hidden by default, shown on End Turn click) -->
+          <div id="end-turn-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:oklch(0.19 0 0 / 85%);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px);">
+            <div style="max-width:400px;width:calc(100% - 32px);background:oklch(1 0 0 / 10%);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:0 8px 32px oklch(0 0 0 / 50%);">
+              <!-- Header -->
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-subtle);">
+                <div>
+                  <div style="font-size:16px;font-weight:600;color:var(--text-primary);">End of Turn</div>
+                  <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">Mark completed secondary missions:</div>
+                </div>
+                <button class="btn-icon btn-icon-sm" aria-label="Close" style="margin-left:12px;" onclick="closeAllModals()"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+              </div>
+              
+              <!-- Secondary Mission Cards -->
+              <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
+                <!-- Bring It Down (unchecked) -->
+                <div style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:oklch(1 0 0 / 8%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);cursor:pointer;transition:all var(--duration-fast) var(--ease-default);" onmouseover="this.style.background='oklch(1 0 0 / 12%)'" onmouseout="this.style.background='oklch(1 0 0 / 8%)'">
+                  <i data-lucide="square" style="width:18px;height:18px;color:var(--text-tertiary);flex-shrink:0;margin-top:2px;"></i>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Bring It Down</div>
+                    <div style="font-size:11px;color:var(--text-secondary);line-height:1.4;">Score 2 VP for each enemy Monster or Vehicle destroyed this turn</div>
+                  </div>
+                </div>
+                
+                <!-- Assassination (checked) -->
+                <div style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--status-success-muted);border:1px solid oklch(0.65 0.15 145 / 25%);border-radius:var(--radius-md);cursor:pointer;">
+                  <i data-lucide="check-square" style="width:18px;height:18px;color:var(--status-success);flex-shrink:0;margin-top:2px;"></i>
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                      <div style="font-size:13px;font-weight:600;color:var(--text-primary);">Assassination</div>
+                      <span style="font-size:9px;padding:2px 6px;border-radius:var(--radius-full);background:var(--accent-primary-muted);color:var(--accent-primary);font-weight:500;text-transform:uppercase;letter-spacing:0.04em;">Tactical</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-secondary);line-height:1.4;margin-bottom:4px;">Score 4 VP if enemy Character destroyed this turn</div>
+                    <div style="font-size:10px;color:var(--text-tertiary);font-style:italic;">Discarded after scoring</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Summary & Action -->
+              <div style="padding:16px 20px;border-top:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <div style="font-size:13px;font-weight:600;color:var(--text-primary);">
+                  Secondary VP this turn: <span style="color:var(--accent-secondary);">+4</span>
+                </div>
+                <button class="btn btn-primary btn-sm">Confirm End Turn</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="match-detail-panel" id="defaultDetailPanel">
+          <div class="detail-unit-header">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+              <div>
+                <div class="detail-unit-name">Intercessor Squad</div>
+                <div class="detail-unit-keywords">Infantry, Battleline, Imperium, Intercessor</div>
+              </div>
+               <button class="drawer-close" aria-label="Close" onclick="hideDetailPanel()"><i data-lucide="x"></i></button>
+             </div>
+           </div>
+
+            <div class="stat-block" style="margin-bottom:14px;">
+              <div class="stat-block-cell" title="Movement"><span class="stat-block-label">M</span><span class="stat-block-value">6"</span></div>
+              <div class="stat-block-cell" title="Weapon Skill"><span class="stat-block-label">WS</span><span class="stat-block-value">3+</span></div>
+              <div class="stat-block-cell" title="Ballistic Skill"><span class="stat-block-label">BS</span><span class="stat-block-value">3+</span></div>
+             <div class="stat-block-cell" title="Strength"><span class="stat-block-label">S</span><span class="stat-block-value">4</span></div>
+             <div class="stat-block-cell" title="Toughness"><span class="stat-block-label">T</span><span class="stat-block-value">4</span></div>
+             <div class="stat-block-cell" title="Wounds"><span class="stat-block-label">W</span><span class="stat-block-value">2</span></div>
+           </div>
+
+          <div style="margin-top:var(--space-4);">
+             <div class="text-label" style="margin-bottom:var(--space-2);">Models (6)</div>
+             <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+               <div style="padding:var(--space-3);background:oklch(1 0 0 / 6%);border-radius:var(--radius-md);">
+                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
+                   <span style="font-size:14px;font-weight:500;color:var(--text-primary);">Intercessor Sergeant</span>
+                   <div style="display:flex;align-items:center;gap:var(--space-2);">
+                     <div class="hp-bar" style="width:48px;height:4px;"><div class="hp-bar-fill hp-high" style="width:100%;"></div></div>
+                     <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">2/2</span>
+                     <div class="model-hp-controls">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                       <input type="text" class="model-hp-input" value="2">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                     </div>
+                   </div>
+                 </div>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Ranged</div>
+                 <table class="weapon-table" style="font-size:12px;margin-bottom:var(--space-2);">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Bolt rifle</td><td>24"</td><td>2</td><td>3+</td><td>4</td><td>-1</td><td>1</td></tr>
+                     <tr><td>Bolt pistol</td><td>12"</td><td>1</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Melee</div>
+                 <table class="weapon-table" style="font-size:12px;">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>WS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Astartes chainsword</td><td>Melee</td><td>4</td><td>3+</td><td>4</td><td>-1</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+               </div>
+               <div style="padding:var(--space-3);background:oklch(1 0 0 / 6%);border-radius:var(--radius-md);">
+                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
+                   <span style="font-size:14px;font-weight:500;color:var(--text-primary);">Intercessor</span>
+                   <div style="display:flex;align-items:center;gap:var(--space-2);">
+                     <div class="hp-bar" style="width:48px;height:4px;"><div class="hp-bar-fill hp-high" style="width:100%;"></div></div>
+                     <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">2/2</span>
+                     <div class="model-hp-controls">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                       <input type="text" class="model-hp-input" value="2">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                     </div>
+                   </div>
+                 </div>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Ranged</div>
+                 <table class="weapon-table" style="font-size:12px;margin-bottom:var(--space-2);">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Bolt rifle</td><td>24"</td><td>2</td><td>3+</td><td>4</td><td>-1</td><td>1</td></tr>
+                     <tr><td>Bolt pistol</td><td>12"</td><td>1</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Melee</div>
+                 <table class="weapon-table" style="font-size:12px;">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>WS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Close combat weapon</td><td>Melee</td><td>3</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+               </div>
+               <div style="padding:var(--space-3);background:oklch(1 0 0 / 6%);border-radius:var(--radius-md);">
+                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
+                   <span style="font-size:14px;font-weight:500;color:var(--text-primary);">Intercessor</span>
+                   <div style="display:flex;align-items:center;gap:var(--space-2);">
+                     <div class="hp-bar" style="width:48px;height:4px;"><div class="hp-bar-fill hp-mid" style="width:50%;"></div></div>
+                     <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">1/2</span>
+                     <div class="model-hp-controls">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                       <input type="text" class="model-hp-input" value="1">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                     </div>
+                   </div>
+                 </div>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Ranged</div>
+                 <table class="weapon-table" style="font-size:12px;margin-bottom:var(--space-2);">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Bolt rifle</td><td>24"</td><td>2</td><td>3+</td><td>4</td><td>-1</td><td>1</td></tr>
+                     <tr><td>Bolt pistol</td><td>12"</td><td>1</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Melee</div>
+                 <table class="weapon-table" style="font-size:12px;">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>WS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Close combat weapon</td><td>Melee</td><td>3</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+               </div>
+               <div style="padding:var(--space-3);background:oklch(1 0 0 / 6%);border-radius:var(--radius-md);">
+                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
+                   <span style="font-size:14px;font-weight:500;color:var(--text-primary);">Intercessor</span>
+                   <div style="display:flex;align-items:center;gap:var(--space-2);">
+                     <div class="hp-bar" style="width:48px;height:4px;"><div class="hp-bar-fill hp-high" style="width:100%;"></div></div>
+                     <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">2/2</span>
+                     <div class="model-hp-controls">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                       <input type="text" class="model-hp-input" value="2">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                     </div>
+                   </div>
+                 </div>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Ranged</div>
+                 <table class="weapon-table" style="font-size:12px;margin-bottom:var(--space-2);">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Bolt rifle</td><td>24"</td><td>2</td><td>3+</td><td>4</td><td>-1</td><td>1</td></tr>
+                     <tr><td>Bolt pistol</td><td>12"</td><td>1</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Melee</div>
+                 <table class="weapon-table" style="font-size:12px;">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>WS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Close combat weapon</td><td>Melee</td><td>3</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+               </div>
+               <div style="padding:var(--space-3);background:oklch(1 0 0 / 6%);border-radius:var(--radius-md);">
+                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
+                   <span style="font-size:14px;font-weight:500;color:var(--text-primary);">Intercessor</span>
+                   <div style="display:flex;align-items:center;gap:var(--space-2);">
+                     <div class="hp-bar" style="width:48px;height:4px;"><div class="hp-bar-fill hp-high" style="width:100%;"></div></div>
+                     <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">2/2</span>
+                     <div class="model-hp-controls">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                       <input type="text" class="model-hp-input" value="2">
+                       <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                     </div>
+                   </div>
+                 </div>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Ranged</div>
+                 <table class="weapon-table" style="font-size:12px;margin-bottom:var(--space-2);">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Astartes grenade launcher</td><td>24"</td><td>D6</td><td>3+</td><td>3</td><td>0</td><td>1</td></tr>
+                     <tr><td>Bolt pistol</td><td>12"</td><td>1</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:var(--space-1);">Melee</div>
+                 <table class="weapon-table" style="font-size:12px;">
+                   <thead><tr><th>Weapon</th><th>Rng</th><th>A</th><th>WS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                   <tbody>
+                     <tr><td>Close combat weapon</td><td>Melee</td><td>3</td><td>3+</td><td>4</td><td>0</td><td>1</td></tr>
+                   </tbody>
+                 </table>
+               </div>
+             </div>
+           </div>
+         </div>
+
+         <!-- DRAWER STATE 1: Multi-Model Unit Detail (Intercessors) -->
+         <div class="match-detail-panel unit-detail-drawer">
+           <div class="detail-unit-header">
+             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+               <div>
+                 <div class="detail-unit-name">Intercessor Squad</div>
+                 <div class="detail-unit-keywords">Infantry, Battleline, Imperium, Intercessor</div>
+               </div>
+                <button class="drawer-close" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x"></i></button>
+              </div>
+            </div>
+
+           <div class="unit-summary-row">
+              <div class="unit-summary-text">5 Models · 100 pts</div>
+              <div class="unit-summary-hp">
+                <div class="hp-bar unit-summary-hp-bar">
+                  <div class="hp-bar-fill hp-high" style="width:90%;"></div>
+                </div>
+                <span class="unit-summary-hp-value">18/20</span>
+                <div class="model-hp-controls">
+                  <button class="counter-btn" style="width:20px;height:20px;font-size:11px;border-radius:4px;">−</button>
+                  <input type="text" class="model-hp-input" value="18" style="width:36px;height:22px;">
+                  <button class="counter-btn" style="width:20px;height:20px;font-size:11px;border-radius:4px;">+</button>
+                </div>
+              </div>
+            </div>
+
+           <div class="detail-section">
+             <div class="detail-section-title">Weapons Summary</div>
+             <div class="weapons-summary">
+               5× Bolt Rifle, 1× Astartes Grenade Launcher, 5× Close Combat Weapon
+             </div>
+           </div>
+
+           <div class="detail-section">
+             <div class="models-section-title">Models</div>
+             
+             <!-- Intercessor Sergeant -->
+             <div class="model-card">
+               <div class="model-name">Intercessor Sergeant</div>
+               <div class="model-weapons">Bolt Rifle, Bolt Pistol, Close Combat Weapon</div>
+               <div class="model-hp-row">
+                 <div class="hp-bar model-hp-bar">
+                   <div class="hp-bar-fill hp-high" style="width:100%;"></div>
+                 </div>
+                 <span class="model-hp-value">2/2</span>
+                 <div class="model-hp-controls">
+                   <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                   <input type="text" class="model-hp-input" value="2">
+                   <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                 </div>
+               </div>
+             </div>
+
+              <div class="model-card">
+                <div class="model-name">Intercessor 1</div>
+                <div class="model-weapons">Bolt Rifle, Bolt Pistol, Close Combat Weapon</div>
+                <div class="model-hp-row">
+                  <div class="hp-bar model-hp-bar">
+                    <div class="hp-bar-fill hp-high" style="width:100%;"></div>
+                  </div>
+                  <span class="model-hp-value">2/2</span>
+                  <div class="model-hp-controls">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                    <input type="text" class="model-hp-input" value="2">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="model-card">
+                <div class="model-name">Intercessor 2</div>
+                <div class="model-weapons">Bolt Rifle, Bolt Pistol, Close Combat Weapon</div>
+                <div class="model-hp-row">
+                  <div class="hp-bar model-hp-bar">
+                    <div class="hp-bar-fill hp-mid" style="width:50%;"></div>
+                  </div>
+                  <span class="model-hp-value">1/2</span>
+                  <div class="model-hp-controls">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                    <input type="text" class="model-hp-input" value="1">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="model-card">
+                <div class="model-name">Intercessor 3</div>
+                <div class="model-weapons">Astartes Grenade Launcher, Bolt Pistol, Close Combat Weapon</div>
+                <div class="model-hp-row">
+                  <div class="hp-bar model-hp-bar">
+                    <div class="hp-bar-fill hp-high" style="width:100%;"></div>
+                  </div>
+                  <span class="model-hp-value">2/2</span>
+                  <div class="model-hp-controls">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                    <input type="text" class="model-hp-input" value="2">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="model-card destroyed">
+                <div class="model-name">Intercessor 4</div>
+                <div class="model-weapons">Bolt Rifle, Bolt Pistol, Close Combat Weapon</div>
+                <div class="model-hp-row">
+                  <div class="hp-bar model-hp-bar">
+                    <div class="hp-bar-fill" style="width:0%;"></div>
+                  </div>
+                  <span class="model-hp-value">0/2</span>
+                  <div class="model-hp-controls">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</button>
+                    <input type="text" class="model-hp-input" value="0">
+                    <button class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</button>
+                  </div>
+                </div>
+              </div>
+           </div>
+         </div>
+
+         <!-- DRAWER STATE 2: Stratagem Rules -->
+         <div class="match-detail-panel stratagem-drawer">
+           <div class="stratagem-header">
+             <div>
+               <div class="stratagem-title">Fire Overwatch</div>
+               <div class="stratagem-meta">
+                 <span class="stratagem-badge">1 CP</span>
+                 <span class="stratagem-phase">Shooting Phase</span>
+               </div>
+             </div>
+              <button class="drawer-close" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="stratagem-field">
+              <div class="stratagem-field-label">When:</div>
+             <div class="stratagem-field-value">Your opponent's Shooting phase, just after an enemy unit has selected its targets.</div>
+           </div>
+
+           <div class="stratagem-field">
+             <div class="stratagem-field-label">Target:</div>
+             <div class="stratagem-field-value">One unit from your army that was selected as a target.</div>
+           </div>
+
+           <div class="stratagem-field">
+             <div class="stratagem-field-label">Effect:</div>
+             <div class="stratagem-field-value">Until the end of the phase, each time an attack targets your unit, your unit can Hold Steady or Set to Defend.</div>
+           </div>
+
+           <div class="stratagem-field">
+             <div class="stratagem-field-label">Restrictions:</div>
+             <div class="stratagem-field-value">Cannot be used if your unit is in engagement range of an enemy unit.</div>
+           </div>
+         </div>
+
+         <div class="rules-rail">
+            <button class="rules-rail-tab" aria-label="Army Rules">
+               <i data-lucide="shield-check"></i>
+               <span class="rules-rail-tab-label">Army</span>
+             </button>
+             <button class="rules-rail-tab" aria-label="Detachment Rules">
+               <i data-lucide="swords"></i>
+              <span class="rules-rail-tab-label">Detachment</span>
+            </button>
+            <button class="rules-rail-tab" aria-label="Secondary Missions" onclick="toggleMissionDrawer('secondary')">
+              <i data-lucide="target"></i>
+              <span class="rules-rail-tab-label">Secondary Missions</span>
+            </button>
+            <button class="rules-rail-tab" aria-label="Mission Rules" onclick="toggleMissionDrawer('rules')">
+              <i data-lucide="book-open"></i>
+              <span class="rules-rail-tab-label">Mission</span>
+            </button>
+        </div>
+
+        <div class="rules-overlay">
+          <div class="rules-overlay-title">
+            Army Rules
+            <button class="btn-icon btn-icon-sm" aria-label="Close"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+          </div>
+          <div class="rule-block">
+            <div class="rule-block-name">Oath of Moment</div>
+            <div class="rule-block-desc" style="font-size:15px;">
+              At the start of your Command phase, select one enemy unit. Until the start of your next Command phase, each time a model from your army makes an attack that targets that enemy unit, you can re-roll the Hit roll and you can re-roll the Wound roll.
+            </div>
+          </div>
+          <div class="rule-block">
+            <div class="rule-block-name">Combat Doctrines</div>
+            <div class="rule-block-desc" style="font-size:15px;">
+              During the battle, your army benefits from the active Combat Doctrine. At the start of each battle round, you can change the active doctrine.
+            </div>
+          </div>
+         </div>
+
+         <div class="secondary-cards-drawer">
+           <div class="secondary-cards-header">
+             <span class="secondary-cards-title">Secondary Missions</span>
+             <button class="btn-icon btn-icon-sm" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+           </div>
+           <div class="secondary-cards-body" style="display:flex;gap:16px;padding:20px;align-items:flex-start;flex-wrap:wrap;">
+             <div class="mission-playing-card" style="position:relative;">
+               <button class="btn-icon btn-icon-sm" aria-label="Discard" style="position:absolute;top:8px;right:8px;color:var(--status-danger);" title="Discard secondary mission"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+               <span class="mission-playing-card-type tactical">Tactical</span>
+               <div class="mission-playing-card-name">Assassination</div>
+               <div class="mission-playing-card-desc">Score 5VP each time an enemy Character model is destroyed. At the end of the battle, score 5VP if the enemy Warlord was destroyed during the battle.</div>
+               <div class="mission-playing-card-vp">Max: 15 VP</div>
+             </div>
+             <div class="mission-playing-card" style="position:relative;">
+               <button class="btn-icon btn-icon-sm" aria-label="Discard" style="position:absolute;top:8px;right:8px;color:var(--status-danger);" title="Discard secondary mission"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+               <span class="mission-playing-card-type fixed">Fixed</span>
+               <div class="mission-playing-card-name">Behind Enemy Lines</div>
+               <div class="mission-playing-card-desc">Score 4VP if you have one or more units wholly within your opponent's deployment zone at the end of your turn.</div>
+               <div class="mission-playing-card-vp">Max: 8 VP / Turn</div>
+             </div>
+           </div>
+          </div>
+
+           <div class="mission-card-drawer" id="secondaryMissionCardDrawer" style="width:496px;">
+             <div class="mission-card-drawer-title">
+               Secondary Missions
+               <button class="btn-icon btn-icon-sm" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+             </div>
+            <div class="mission-cards-grid">
+              <div class="mission-playing-card">
+                <span class="mission-playing-card-type tactical">Tactical</span>
+                <div class="mission-playing-card-name">Assassination</div>
+                <div class="mission-playing-card-desc">Score 5VP each time an enemy Character model is destroyed. At the end of the battle, score 5VP if the enemy Warlord was destroyed during the battle.</div>
+                <div class="mission-playing-card-vp">Max: 15 VP</div>
+              </div>
+              <div class="mission-playing-card">
+                <span class="mission-playing-card-type fixed">Fixed</span>
+                <div class="mission-playing-card-name">Behind Enemy Lines</div>
+                <div class="mission-playing-card-desc">Score 4VP if you have one or more units wholly within your opponent's deployment zone at the end of your turn. Score 2VP if one or more of those units are within 6" of the centre of the battlefield.</div>
+                <div class="mission-playing-card-vp">Max: 8 VP / Turn</div>
+              </div>
+            </div>
+          </div>
+
+           <div class="mission-card-drawer" id="missionRulesCardDrawer" style="width:496px;">
+             <div class="mission-card-drawer-title">
+               Mission Rules
+               <button class="btn-icon btn-icon-sm" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+             </div>
+            <div class="mission-cards-grid">
+              <div class="mission-playing-card">
+                <span class="mission-playing-card-type fixed">Core</span>
+                <div class="mission-playing-card-name">Fog of War</div>
+                <div class="mission-playing-card-desc">At the start of each player's Command phase, if that player has fewer than two Secondary Mission cards, they must generate new cards from their Secondary Mission deck until they have two.</div>
+                <div class="mission-playing-card-vp">Mission Rule</div>
+              </div>
+              <div class="mission-playing-card">
+                <span class="mission-playing-card-type tactical">Deployment</span>
+                <div class="mission-playing-card-name">Sweep and Clear</div>
+                <div class="mission-playing-card-desc">In this mission, an objective marker is controlled by the player who has the most models within range of it. Each objective marker is worth 5 VP at the end of the battle round to the controlling player.</div>
+                <div class="mission-playing-card-vp">Mission Rule</div>
+              </div>
+            </div>
+          </div>
+
+       </div>
+     </div>
+
+   </div>
+
+   <!--
+     OPPONENT TURN STATE — When it's the opponent's turn:
+    - Status strip: turn-pill changes to class="turn-pill opponent" text "Opponent's Turn"
+    - Reminder banner changes to defensive reminders:
+      "Armour of Contempt: You can worsen AP by 1 when targeted."
+    - Main content reorders to:
+      1. Defensive reactions / counter-stratagems (filtered to opponent's current phase)
+      2. Your units
+      3. Army/detachment rules become more prominent
+    - Actions section shows only defensive/reactive stratagems
+    - "End Turn" button replaced by "Waiting for opponent..." text
+  -->
+
+  <!-- Unit Detail Overlay Drawer -->
+  <div class="drawer-backdrop" id="unitDetailBackdrop" style="display:none;" onclick="closeAllModals()"></div>
+  <div class="drawer" id="unitDetailDrawerOverlay" style="display:none;">
+    <div class="drawer-header">
+      <div class="drawer-header-title" id="unitDrawerTitle">Unit Details</div>
+      <button class="btn-icon btn-icon-sm drawer-close" aria-label="Close" onclick="closeAllModals()">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <div class="drawer-body" id="unitDrawerContent">
+      <!-- Dynamic content will be inserted here -->
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item active"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>lucide.createIcons();</script>
+<script src="shared-match.js"></script>
+
+</body>
+</html>

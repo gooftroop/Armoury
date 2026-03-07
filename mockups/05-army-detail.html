@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Army Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .army-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .army-header-left { display: flex; align-items: center; gap: 16px; }
+    .army-header-info { display: flex; flex-direction: column; gap: 2px; }
+    .army-header-name { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+    .army-header-faction { font-size: 14px; color: var(--text-secondary); }
+    .army-header-points {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; color: var(--text-tertiary); margin-bottom: 24px;
+    }
+    .breadcrumb a { color: var(--text-secondary); }
+    .breadcrumb a:hover { color: var(--text-primary); }
+    .breadcrumb-sep { color: var(--text-tertiary); }
+    .breadcrumb-current { color: var(--accent-tertiary); }
+
+    .army-meta {
+       display: flex;
+       align-items: center;
+       gap: 16px;
+       margin-bottom: 24px;
+       padding: 16px;
+       background: var(--glass-bg);
+       backdrop-filter: var(--glass-blur);
+       border: var(--glass-border);
+       border-radius: var(--radius-lg);
+     }
+    .army-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .army-meta-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-tertiary); }
+    .army-meta-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .army-meta-divider {
+      width: 1px;
+      height: 32px;
+      background: var(--border-subtle);
+    }
+
+    .validation-panel {
+      padding: 12px 16px;
+      background: oklch(0.75 0.15 65 / 8%);
+      border: 1px solid oklch(0.75 0.15 65 / 25%);
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .validation-panel-icon { color: var(--status-warning); flex-shrink: 0; margin-top: 2px; }
+    .validation-panel-icon i { width: 20px; height: 20px; }
+    .validation-panel-content { flex: 1; }
+    .validation-panel-title { font-size: 14px; font-weight: 600; color: var(--status-warning); margin-bottom: 4px; }
+    .validation-panel-list { font-size: 13px; color: var(--text-secondary); list-style: none; padding: 0; }
+    .validation-panel-list li { padding: 2px 0; display: flex; align-items: center; gap: 6px; }
+    .validation-panel-list li::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--status-warning); flex-shrink: 0; }
+
+    .unit-row {
+       display: flex;
+       align-items: center;
+       gap: 16px;
+       padding: 12px 16px;
+       background: var(--glass-bg);
+       background-image: var(--sheen);
+       backdrop-filter: var(--glass-blur);
+       border: var(--glass-border);
+       border-radius: var(--radius-lg);
+       transition: all var(--duration-fast) var(--ease-default);
+       cursor: pointer;
+       box-shadow: var(--glass-highlight), var(--glass-shade);
+     }
+    .unit-row:hover { border-color: var(--border-default); }
+    .unit-row + .unit-row { margin-top: 8px; }
+    .unit-row-thumb {
+       width: 48px;
+       height: 48px;
+       border-radius: var(--radius-md);
+       background: var(--glass-bg);
+       backdrop-filter: var(--glass-blur);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       flex-shrink: 0;
+     }
+    .unit-row-thumb i { width: 24px; height: 24px; color: var(--text-tertiary); }
+    .unit-row-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .unit-row-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .unit-row-keywords { font-size: 12px; color: var(--text-tertiary); }
+    .unit-row-models { font-size: 13px; color: var(--text-secondary); font-family: var(--font-mono); }
+    .unit-row-points {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      flex-shrink: 0;
+    }
+    .unit-row-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+    .section-group { margin-bottom: 32px; }
+
+    .config-section {
+      margin-bottom: 24px;
+    }
+    .config-section-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .config-section-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stat-block.stat-block--full {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      padding: 12px;
+      background: var(--glass-bg);
+      border: var(--glass-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 16px;
+    }
+    .stat-block-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+      text-align: center;
+    }
+    .stat-block-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-tertiary);
+    }
+    .stat-block-value {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .ability-card {
+      padding: 12px;
+      background: var(--glass-bg);
+      border: var(--glass-border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ability-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-primary);
+    }
+    .ability-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+    .keywords-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .wargear-list {
+      padding: 12px 16px;
+      background: var(--glass-bg);
+      border: var(--glass-border);
+      border-radius: var(--radius-lg);
+      list-style: none;
+    }
+    .wargear-list li {
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .wargear-list li::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent-tertiary);
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 767px) {
+      .unit-row {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .unit-row-models {
+        display: none;
+      }
+      .unit-row-points {
+        font-size: 14px;
+      }
+      .stat-block.stat-block--full {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item active" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="content">
+        <nav class="breadcrumb" style="margin-bottom:var(--space-2);" aria-label="Breadcrumb">
+          <a href="03-forge-armies.html">The Forge</a>
+          <span class="breadcrumb-sep">/</span>
+          <span>Army Detail</span>
+        </nav>
+        <div class="army-detail-banner has-photo" style="background:var(--faction-iron-legion-muted);">
+          <i data-lucide="shield" style="color:var(--faction-iron-legion);"></i>
+          <span class="photo-hint">Add Photo</span>
+          <img class="photo-img" src="https://picsum.photos/seed/wh-army-banner/800/320" alt="">
+          <div class="army-detail-banner-overlay"></div>
+          <details class="photo-actions">
+            <summary class="photo-overlay">
+              <i data-lucide="camera"></i>
+              <span class="photo-overlay-label">Change Photo</span>
+            </summary>
+            <div class="photo-menu">
+              <button class="photo-menu-item"><i data-lucide="camera"></i> Change Photo</button>
+              <button class="photo-menu-item photo-menu-item-danger"><i data-lucide="trash-2"></i> Remove Photo</button>
+            </div>
+          </details>
+        </div>
+
+        <h1 style="font-size:24px;font-weight:700;margin-bottom:var(--space-4);">Ultramarines Strike Force</h1>
+
+        <div style="display:flex;align-items:center;gap:var(--space-8);padding:var(--space-5) var(--space-6);background:oklch(1 0 0 / 8%);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);margin-bottom:var(--space-6);flex-wrap:wrap;">
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <span class="text-label">Faction</span>
+            <span style="font-size:16px;font-weight:600;color:var(--text-primary);">Space Marines</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <span class="text-label">Detachment</span>
+            <span style="font-size:16px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:6px;">Gladius Task Force <i data-lucide="pencil" style="width:14px;height:14px;color:var(--text-tertiary);cursor:pointer;"></i></span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <span class="text-label">Battle Size</span>
+            <span style="font-size:16px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:6px;">Strike Force (2000pts) <i data-lucide="pencil" style="width:14px;height:14px;color:var(--text-tertiary);cursor:pointer;"></i></span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <span class="text-label">Units</span>
+            <span style="font-size:16px;font-weight:600;color:var(--text-primary);">12</span>
+          </div>
+          <div style="margin-left:auto;">
+            <button class="btn btn-primary btn-sm"><i data-lucide="swords" style="width:14px;height:14px;"></i> Deploy</button>
+          </div>
+        </div>
+
+        <div class="validation-panel">
+          <div class="validation-panel-icon"><i data-lucide="alert-triangle"></i></div>
+          <div class="validation-panel-content">
+            <div class="validation-panel-title">2 Warnings</div>
+            <ul class="validation-panel-list">
+              <li>Missing required Battleline unit (minimum 3 for Strike Force)</li>
+              <li>Captain has no Enhancement assigned</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-group">
+          <div class="section-header">
+            <span class="section-header-label">
+              Characters
+              <span class="section-header-count">(2 units, 310 pts)</span>
+            </span>
+            <button class="btn btn-secondary btn-sm" aria-label="Add Character" onclick="location.href='06-unit-add-modal.html'"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(0)">
+            <div class="unit-row-thumb has-photo"><i data-lucide="crown"></i><img class="photo-img" src="https://picsum.photos/seed/wh-captain/96/96" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Captain in Terminator Armour</div>
+              <div class="unit-row-keywords">Infantry, Character, Imperium, Terminator</div>
+            </div>
+            <span class="unit-row-models">1 model</span>
+            <span class="unit-row-points">200 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(1)">
+            <div class="unit-row-thumb"><i data-lucide="user"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Librarian</div>
+              <div class="unit-row-keywords">Infantry, Character, Imperium, Psyker</div>
+            </div>
+            <span class="unit-row-models">1 model</span>
+            <span class="unit-row-points">110 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-group">
+          <div class="section-header">
+            <span class="section-header-label">
+              Battleline
+              <span class="section-header-count">(2 units, 360 pts)</span>
+            </span>
+            <button class="btn btn-secondary btn-sm" aria-label="Add Battleline" onclick="location.href='06-unit-add-modal.html'"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(2)">
+            <div class="unit-row-thumb has-photo"><i data-lucide="shield"></i><img class="photo-img" src="https://picsum.photos/seed/wh-intercessor/96/96" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Intercessor Squad</div>
+              <div class="unit-row-keywords">Infantry, Battleline, Imperium, Tacticus</div>
+            </div>
+            <div class="unit-row-models" style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation();">
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">−</span>
+              <span style="min-width:24px;text-align:center;">10</span>
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">+</span>
+            </div>
+            <span class="unit-row-points">180 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(3)">
+            <div class="unit-row-thumb"><i data-lucide="shield"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Assault Intercessor Squad</div>
+              <div class="unit-row-keywords">Infantry, Battleline, Imperium, Tacticus</div>
+            </div>
+            <div class="unit-row-models" style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation();">
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">−</span>
+              <span style="min-width:24px;text-align:center;">10</span>
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">+</span>
+            </div>
+            <span class="unit-row-points">180 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-group">
+          <div class="section-header">
+            <span class="section-header-label">
+              Walkers
+              <span class="section-header-count">(2 units, 680 pts)</span>
+            </span>
+            <button class="btn btn-secondary btn-sm" aria-label="Add Walker" onclick="location.href='06-unit-add-modal.html'"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(4)">
+            <div class="unit-row-thumb"><i data-lucide="bot"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Redemptor Dreadnought</div>
+              <div class="unit-row-keywords">Vehicle, Walker, Imperium, Dreadnought</div>
+            </div>
+            <span class="unit-row-models">1 model</span>
+            <span class="unit-row-points">210 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(5)">
+            <div class="unit-row-thumb"><i data-lucide="bot"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Ballistus Dreadnought</div>
+              <div class="unit-row-keywords">Vehicle, Walker, Imperium, Dreadnought</div>
+            </div>
+            <span class="unit-row-models">1 model</span>
+            <span class="unit-row-points">170 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-group" style="margin-bottom:var(--space-6);">
+          <div class="section-header">
+            <span class="section-header-label">Vehicles</span>
+            <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+          <div style="padding:var(--space-4);color:var(--text-tertiary);font-size:14px;font-style:italic;">This Faction does not have Vehicles units</div>
+        </div>
+
+        <div class="section-group" style="margin-bottom:var(--space-6);">
+          <div class="section-header">
+            <span class="section-header-label">Transports</span>
+            <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+          <div style="padding:var(--space-4);color:var(--text-tertiary);font-size:14px;font-style:italic;">This Faction does not have Transports units</div>
+        </div>
+
+        <div class="section-group" style="margin-bottom:var(--space-6);">
+          <div class="section-header">
+            <span class="section-header-label">Dreadnoughts</span>
+            <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+          <div style="padding:var(--space-4);color:var(--text-tertiary);font-size:14px;font-style:italic;">This Faction does not have Dreadnoughts units</div>
+        </div>
+
+        <div class="section-group">
+          <div class="section-header">
+            <span class="section-header-label">
+              Auxiliary
+              <span class="section-header-count">(2 units, 500 pts)</span>
+            </span>
+            <button class="btn btn-secondary btn-sm" aria-label="Add Auxiliary" onclick="location.href='06-unit-add-modal.html'"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(6)">
+            <div class="unit-row-thumb"><i data-lucide="zap"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Terminator Squad</div>
+              <div class="unit-row-keywords">Infantry, Imperium, Terminator</div>
+            </div>
+            <div class="unit-row-models" style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation();">
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">−</span>
+              <span style="min-width:24px;text-align:center;">5</span>
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">+</span>
+            </div>
+            <span class="unit-row-points">200 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+
+          <div class="unit-row" onclick="openUnitDrawer(7)">
+            <div class="unit-row-thumb"><i data-lucide="crosshair"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+            <div class="unit-row-info">
+              <div class="unit-row-name">Hellblaster Squad</div>
+              <div class="unit-row-keywords">Infantry, Imperium, Tacticus, Heavy</div>
+            </div>
+            <div class="unit-row-models" style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation();">
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">−</span>
+              <span style="min-width:24px;text-align:center;">10</span>
+              <span class="counter-btn" style="width:22px;height:22px;font-size:12px;border-radius:4px;">+</span>
+            </div>
+            <span class="unit-row-points">300 pts</span>
+            <div class="unit-row-actions">
+              <button class="btn-icon btn-icon-sm btn-icon-danger" aria-label="Remove" onclick="event.stopPropagation();"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-group" style="margin-bottom:var(--space-6);">
+          <div class="section-header">
+            <span class="section-header-label">Allied</span>
+            <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Unit</button>
+          </div>
+          <div style="padding:var(--space-4);color:var(--text-tertiary);font-size:14px;font-style:italic;">This Faction does not have Allied units</div>
+        </div>
+
+      </div>
+
+      <div class="drawer-backdrop" id="unitDrawerBackdrop" style="display:none;" onclick="closeUnitDrawer()"></div>
+      <div class="drawer" id="unitDrawer" style="display:none;">
+        <div class="drawer-header">
+          <span class="drawer-title" id="drawerUnitName"></span>
+          <button class="btn-icon" aria-label="Close drawer" onclick="closeUnitDrawer()">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="drawer-body" id="drawerUnitBody"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item active"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var i;
+      for (i = 0; i < allDetails.length; i += 1) {
+        if (!allDetails[i].contains(e.target)) {
+          allDetails[i].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+
+  <script>
+    var unitData = [
+      {
+        name: 'Captain in Terminator Armour',
+        keywords: ['Infantry', 'Character', 'Imperium', 'Terminator', 'Captain'],
+        stats: ['5"', '5', '2+', '6', '6+', '1'],
+        ranged: [['Storm bolter', '24"', '2', '2+', '4', '0', '1', 'Rapid Fire 2']],
+        melee: [['Relic weapon', 'Melee', '6', '2+', '5', '-2', '2', ''], ['Power fist', 'Melee', '5', '2+', '8', '-2', '2', ''], ['Chainfist', 'Melee', '5', '2+', '8', '-2', '2', 'Anti-Vehicle 3+']],
+        wargear: ['Storm bolter', 'Relic weapon OR Power fist OR Chainfist'],
+        abilities: [['Rites of Battle', 'Once per battle round, one unit from your army within 6" of this model can be targeted with a Stratagem for 0CP, even if another unit from your army has already been targeted by that Stratagem this phase.'], ['Deep Strike', 'This unit can be set up in Reserves. At the end of your Movement phase, you can set it up anywhere on the battlefield that is more than 9" horizontally away from all enemy models.'], ['Leader', 'This model can be attached to the following units: Terminator Squad, Relic Terminator Squad, Assault Terminator Squad.']]
+      },
+      {
+        name: 'Librarian',
+        keywords: ['Infantry', 'Character', 'Psyker', 'Imperium', 'Librarian'],
+        stats: ['6"', '4', '3+', '4', '6+', '1'],
+        ranged: [['Bolt pistol', '12"', '1', '3+', '4', '0', '1', '']],
+        melee: [['Force weapon', 'Melee', '4', '3+', '6', '-1', 'D3', '']],
+        wargear: ['Bolt pistol', 'Force weapon'],
+        abilities: [['Psychic Hood', 'While leading a unit, models in that unit have the Feel No Pain 4+ ability against Psychic Attacks.'], ['Leader', 'Can attach to: Intercessor Squad, Assault Intercessor Squad, Sternguard Veteran Squad.']]
+      },
+      {
+        name: 'Intercessor Squad',
+        keywords: ['Infantry', 'Battleline', 'Imperium', 'Intercessor Squad'],
+        stats: ['6"', '4', '3+', '2', '6+', '2'],
+        ranged: [['Bolt rifle', '30"', '2', '3+', '4', '-1', '1', 'Assault, Heavy'], ['Bolt pistol', '12"', '1', '3+', '4', '0', '1', '']],
+        melee: [['Close combat weapon', 'Melee', '3', '3+', '4', '0', '1', '']],
+        wargear: ['Bolt rifle', 'Bolt pistol', 'Close combat weapon'],
+        abilities: [['Objective Secured', 'Models in this unit have the Objective Secured ability.']]
+      },
+      {
+        name: 'Assault Intercessor Squad',
+        keywords: ['Infantry', 'Battleline', 'Imperium', 'Assault Intercessor Squad'],
+        stats: ['6"', '4', '3+', '2', '6+', '2'],
+        ranged: [['Heavy bolt pistol', '18"', '1', '3+', '4', '-1', '1', '']],
+        melee: [['Astartes chainsword', 'Melee', '4', '3+', '4', '-1', '1', '']],
+        wargear: ['Heavy bolt pistol', 'Astartes chainsword'],
+        abilities: [['Objective Secured', 'Models in this unit have the Objective Secured ability.']]
+      },
+      {
+        name: 'Redemptor Dreadnought',
+        keywords: ['Vehicle', 'Walker', 'Imperium', 'Dreadnought', 'Redemptor'],
+        stats: ['8"', '10', '2+', '12', '6+', '4'],
+        ranged: [['Macro plasma incinerator', '36"', 'D6+1', '3+', '8', '-3', '2', ''], ['Onslaught gatling cannon', '24"', '8', '3+', '5', '0', '1', ''], ['Icarus rocket pod', '24"', 'D3', '3+', '8', '-1', '2', '']],
+        melee: [['Redemptor fist', 'Melee', '5', '3+', '12', '-2', '3', '']],
+        wargear: ['Macro plasma incinerator', 'Onslaught gatling cannon', 'Icarus rocket pod', 'Redemptor fist'],
+        abilities: [['Duty Eternal', 'Each time an attack is allocated to this model, subtract 1 from the Damage characteristic.']]
+      },
+      {
+        name: 'Ballistus Dreadnought',
+        keywords: ['Vehicle', 'Walker', 'Imperium', 'Dreadnought', 'Ballistus'],
+        stats: ['8"', '10', '2+', '12', '6+', '4'],
+        ranged: [['Ballistus lascannon', '48"', '2', '3+', '12', '-3', 'D6+1', ''], ['Ballistus missile launcher', '48"', '2', '3+', '10', '-2', 'D6', '']],
+        melee: [['Armoured feet', 'Melee', '5', '3+', '7', '0', '1', '']],
+        wargear: ['Ballistus lascannon', 'Ballistus missile launcher', 'Armoured feet'],
+        abilities: [['Duty Eternal', 'Each time an attack is allocated to this model, subtract 1 from the Damage characteristic.']]
+      },
+      {
+        name: 'Terminator Squad',
+        keywords: ['Infantry', 'Imperium', 'Terminator'],
+        stats: ['5"', '5', '2+', '3', '6+', '1'],
+        ranged: [['Storm bolter', '24"', '2', '3+', '4', '0', '1', 'Rapid Fire 2']],
+        melee: [['Power fist', 'Melee', '3', '3+', '8', '-2', '2', '']],
+        wargear: ['Storm bolter', 'Power fist'],
+        abilities: [['Fury of the First', 'Each time a model in this unit makes an attack, re-roll a Wound roll of 1.'], ['Deep Strike', 'This unit can be set up in Reserves and deployed more than 9" from enemy models.']]
+      },
+      {
+        name: 'Hellblaster Squad',
+        keywords: ['Infantry', 'Imperium', 'Tacticus', 'Heavy', 'Hellblaster Squad'],
+        stats: ['6"', '4', '3+', '2', '6+', '1'],
+        ranged: [['Plasma incinerator', '24"', '2', '3+', '7', '-2', '1', ''], ['Plasma incinerator - supercharge', '24"', '2', '3+', '8', '-3', '2', 'Hazardous']],
+        melee: [['Close combat weapon', 'Melee', '3', '3+', '4', '0', '1', '']],
+        wargear: ['Plasma incinerator', 'Close combat weapon'],
+        abilities: [['For the Chapter!', 'Each time a model in this unit is destroyed by a ranged attack, if that model has not shot this phase, roll one D6: on a 3+, do not remove it from play. The destroyed model can shoot after the attacking unit has finished making its attacks, and is then removed from play.']]
+      }
+    ];
+
+    function openUnitDrawer(index) {
+      var unit = unitData[index];
+      var html = '';
+      var i, j, k;
+
+      html += '<div class="keywords-list">';
+      for (i = 0; i < unit.keywords.length; i += 1) {
+        html += '<span class="badge">' + unit.keywords[i] + '</span>';
+      }
+      html += '</div>';
+
+      html += '<div class="stat-block stat-block--full">';
+      var statLabels = ['M', 'T', 'SV', 'W', 'LD', 'OC'];
+      for (i = 0; i < statLabels.length; i += 1) {
+        html += '<div class="stat-block-cell">';
+        html += '<span class="stat-block-label">' + statLabels[i] + '</span>';
+        html += '<span class="stat-block-value">' + unit.stats[i] + '</span>';
+        html += '</div>';
+      }
+      html += '</div>';
+
+      if (unit.ranged && unit.ranged.length > 0) {
+        html += '<div class="config-section">';
+        html += '<div class="config-section-header">Ranged Weapons</div>';
+        html += '<div class="config-section-body">';
+        html += '<table class="weapon-table">';
+        html += '<thead><tr><th>Weapon</th><th>Range</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th><th>Abilities</th></tr></thead>';
+        html += '<tbody>';
+        for (i = 0; i < unit.ranged.length; i += 1) {
+          html += '<tr>';
+          for (j = 0; j < unit.ranged[i].length; j += 1) {
+            html += '<td>' + unit.ranged[i][j] + '</td>';
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        html += '</div></div>';
+      }
+
+      if (unit.melee && unit.melee.length > 0) {
+        html += '<div class="config-section">';
+        html += '<div class="config-section-header">Melee Weapons</div>';
+        html += '<div class="config-section-body">';
+        html += '<table class="weapon-table">';
+        html += '<thead><tr><th>Weapon</th><th>Range</th><th>A</th><th>WS</th><th>S</th><th>AP</th><th>D</th><th>Abilities</th></tr></thead>';
+        html += '<tbody>';
+        for (i = 0; i < unit.melee.length; i += 1) {
+          html += '<tr>';
+          for (j = 0; j < unit.melee[i].length; j += 1) {
+            html += '<td>' + unit.melee[i][j] + '</td>';
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        html += '</div></div>';
+      }
+
+      if (unit.wargear && unit.wargear.length > 0) {
+        html += '<div class="config-section">';
+        html += '<div class="config-section-header">Wargear Options</div>';
+        html += '<div class="config-section-body">';
+        html += '<ul class="wargear-list">';
+        for (i = 0; i < unit.wargear.length; i += 1) {
+          html += '<li>' + unit.wargear[i] + '</li>';
+        }
+        html += '</ul>';
+        html += '</div></div>';
+      }
+
+      if (unit.abilities && unit.abilities.length > 0) {
+        html += '<div class="config-section">';
+        html += '<div class="config-section-header">Abilities</div>';
+        html += '<div class="config-section-body">';
+        for (i = 0; i < unit.abilities.length; i += 1) {
+          html += '<div class="ability-card">';
+          html += '<div class="ability-name">' + unit.abilities[i][0] + '</div>';
+          html += '<div class="ability-desc">' + unit.abilities[i][1] + '</div>';
+          html += '</div>';
+        }
+        html += '</div></div>';
+      }
+
+      document.getElementById('drawerUnitName').textContent = unit.name;
+      document.getElementById('drawerUnitBody').innerHTML = html;
+      document.getElementById('unitDrawerBackdrop').style.display = '';
+      document.getElementById('unitDrawer').style.display = '';
+      lucide.createIcons();
+    }
+
+    function closeUnitDrawer() {
+      document.getElementById('unitDrawerBackdrop').style.display = 'none';
+      document.getElementById('unitDrawer').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

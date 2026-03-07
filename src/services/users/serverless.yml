@@ -1,0 +1,90 @@
+service: armoury-users
+
+provider:
+    name: aws
+    runtime: nodejs22.x
+    architecture: arm64
+    stage: ${opt:stage, 'dev'}
+    region: ${opt:region, 'us-east-1'}
+    memorySize: 256
+    timeout: 29
+    environment:
+        SECRET_NAME: armoury/${self:provider.stage}/users
+        NODE_OPTIONS: '--import ./src/instrument.js'
+        SENTRY_DSN: ${env:SENTRY_DSN, ''}
+        SENTRY_ENVIRONMENT: ${self:provider.stage}
+    iam:
+        role:
+            statements:
+                - Effect: Allow
+                  Action:
+                      - dsql:DbConnectAdmin
+                  Resource: '*'
+                - Effect: Allow
+                  Action:
+                      - secretsmanager:GetSecretValue
+                  Resource: '*'
+
+build:
+    esbuild:
+        bundle: true
+        minify: true
+        sourcemap: true
+        target: es2022
+        platform: node
+        format: esm
+        mainFields:
+            - module
+            - main
+        banner:
+            js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+        external:
+            - '@aws-sdk/dsql-signer'
+            - '@aws-sdk/client-secrets-manager'
+            - pg
+
+plugins:
+    - serverless-offline
+    - serverless-domain-manager
+
+custom:
+    customDomain:
+        rest:
+            domainName: users.${param:domainName}
+            certificateArn: ${param:certificateArn}
+            hostedZoneId: ${param:hostedZoneId}
+            basePath: ''
+            stage: ${self:provider.stage}
+            endpointType: REGIONAL
+            securityPolicy: tls_1_2
+            createRoute53Record: true
+            createRoute53IPv6Record: true
+            autoDomain: true
+            enabled: ${param:customDomainEnabled}
+    serverless-offline:
+        httpPort: 3007
+        lambdaPort: 3009
+        noPrependStageInUrl: true
+
+functions:
+    users:
+        handler: src/handler.handler
+        events:
+            - http:
+                  path: /users
+                  method: ANY
+                  authorizer:
+                      type: token
+                      arn: ${param:authorizerArn}
+            - http:
+                  path: /users/{id}
+                  method: ANY
+                  authorizer:
+                      type: token
+                      arn: ${param:authorizerArn}
+            - http:
+                  path: /users/{id}/account
+                  method: ANY
+                  authorizer:
+                      type: token
+                      arn: ${param:authorizerArn}

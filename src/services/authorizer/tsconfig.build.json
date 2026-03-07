@@ -1,0 +1,13 @@
+{
+    "extends": "@armoury/typescript/build.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "@authorizer/*": ["./*"]
+        }
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules", "dist", "**/__tests__/**", "**/__mocks__/**", "**/__fixtures__/**"]
+}

@@ -1,0 +1,201 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+concurrency:
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    install:
+        name: Install dependencies
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Install dependencies (full)
+              run: npm ci
+
+            - name: Cache full dependencies
+              uses: actions/cache/save@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
+
+            - name: Install dependencies (prod-only)
+              run: npm ci --omit=dev
+
+            - name: Cache prod-only dependencies
+              uses: actions/cache/save@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-prod-${{ hashFiles('package-lock.json') }}
+
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        needs: install
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore full dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
+
+            - name: Run tests
+              run: npm run test
+
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        needs: install
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore full dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
+
+            - name: Run lint
+              run: npm run lint
+
+    typecheck:
+        name: Typecheck
+        runs-on: ubuntu-latest
+        needs: install
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore full dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
+
+            - name: Run typecheck
+              run: npm run typecheck
+
+    test-e2e:
+        name: E2E tests
+        runs-on: ubuntu-latest
+        needs: install
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore full dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
+
+            - name: Ensure clean Docker state
+              run: docker compose -f docker-compose.e2e.yml down -v --remove-orphans 2>/dev/null || true
+
+            - name: Run e2e tests
+              run: npm run test:e2e
+
+            - name: Cleanup Docker containers
+              if: always()
+              run: docker compose -f docker-compose.e2e.yml down -v --remove-orphans 2>/dev/null || true
+
+    build-web:
+        name: Build web
+        runs-on: ubuntu-latest
+        needs: [install, test, test-e2e, lint, typecheck]
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore full dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
+
+            - name: Build web and dependencies
+              run: npx turbo run build --filter=@armoury/web
+
+            - name: Cache Next.js build output
+              uses: actions/cache/save@v5
+              with:
+                  path: src/web/.next
+                  key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json', 'src/web/**', 'src/shared/**') }}
+
+    build-mobile:
+        name: Build mobile
+        runs-on: ubuntu-latest
+        needs: [install, test, test-e2e, lint, typecheck]
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore full dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
+
+            - name: Build mobile and dependencies
+              run: npx turbo run build --filter=@armoury/mobile
+
+    package-system-assets:
+        name: Package system public assets
+        runs-on: ubuntu-latest
+        needs: [install, test, test-e2e, lint, typecheck]
+        steps:
+            - uses: actions/checkout@v6
+
+            - name: Zip system public folders
+              run: |
+                  for dir in src/systems/*/src/public; do
+                      system=$(basename $(dirname $(dirname "$dir")))
+                      if [ -d "$dir" ] && [ "$(ls -A "$dir" 2>/dev/null | grep -v .gitkeep)" ]; then
+                          (cd "$dir" && zip -r "../../../../${system}-public.zip" . -x '.gitkeep')
+                          echo "Packaged ${system} public assets"
+                      else
+                          echo "Skipping ${system} — public folder empty"
+                      fi
+                  done
+
+            - name: Upload system assets
+              if: github.ref == 'refs/heads/main'
+              uses: actions/upload-artifact@v7
+              with:
+                  name: system-public-assets
+                  path: "*.zip"
+                  if-no-files-found: ignore
+                  retention-days: 30

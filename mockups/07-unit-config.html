@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Unit Configuration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; color: var(--text-tertiary); margin-bottom: 8px;
+    }
+    .breadcrumb a { color: var(--text-secondary); }
+    .breadcrumb a:hover { color: var(--text-primary); }
+    .breadcrumb-sep { color: var(--text-tertiary); }
+    .breadcrumb-current { color: var(--accent-tertiary); }
+
+    .unit-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .unit-title { font-size: 24px; font-weight: 600; color: var(--text-primary); }
+
+    .unit-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: var(--space-fluid-6);
+    }
+    .unit-main { display: flex; flex-direction: column; gap: 32px; }
+    @media (max-width: 767px) {
+      .unit-layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar-panel {
+        position: static;
+        order: -1;
+      }
+    }
+
+    .config-section {
+       background: var(--glass-bg);
+       background-image: var(--sheen);
+       backdrop-filter: var(--glass-blur);
+       border: var(--glass-border);
+       border-radius: var(--radius-lg);
+       overflow: hidden;
+       box-shadow: var(--glass-highlight), var(--glass-shade);
+     }
+    .config-section-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-primary);
+    }
+    .config-section-body { padding: 20px; }
+
+    .wargear-group-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .wargear-group-hint {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+    .wargear-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+    }
+    .wargear-option:last-child { border-bottom: none; }
+    .wargear-radio {
+      width: 18px; height: 18px; border-radius: var(--radius-full);
+      border: 2px solid var(--border-default); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer;
+      transition: border-color var(--duration-fast) var(--ease-default);
+    }
+    .wargear-option.selected .wargear-radio {
+      border-color: var(--accent-primary);
+    }
+    .wargear-radio-inner {
+      width: 8px; height: 8px; border-radius: var(--radius-full);
+      background: transparent;
+      transition: background var(--duration-fast) var(--ease-default);
+    }
+    .wargear-option.selected .wargear-radio-inner {
+      background: var(--accent-primary);
+    }
+    .wargear-name { font-size: 14px; color: var(--text-primary); flex: 1; }
+    .wargear-cost { font-family: var(--font-mono); font-size: 13px; color: var(--accent-secondary); }
+
+    .ability-card {
+       padding: 12px;
+       background: var(--glass-bg);
+       backdrop-filter: var(--glass-blur);
+       border: var(--glass-border);
+       border-radius: var(--radius-md);
+       margin-bottom: 8px;
+     }
+    .ability-card:last-child { margin-bottom: 0; }
+    .ability-name { font-size: 14px; font-weight: 600; color: var(--accent-highlight); margin-bottom: 4px; }
+    .ability-desc { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+
+    .composition-models {
+      font-size: 14px; color: var(--text-primary); margin-bottom: 12px;
+    }
+    .composition-keywords {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;
+    }
+
+    .sidebar-panel {
+      position: sticky;
+      top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-card {
+       background: var(--glass-bg);
+       backdrop-filter: var(--glass-blur);
+       border: var(--glass-border);
+       border-radius: var(--radius-lg);
+       padding: 16px;
+     }
+    .panel-label {
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--accent-tertiary); margin-bottom: 8px;
+    }
+    .panel-value {
+      font-family: var(--font-mono); font-size: 24px; font-weight: 700;
+      color: var(--accent-primary);
+    }
+
+    .unit-size-control {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .unit-size-value {
+      font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+      display: flex; align-items: baseline; gap: 4px;
+    }
+    .unit-size-current { color: var(--text-primary); }
+    .unit-size-sep { color: var(--text-tertiary); font-weight: 400; font-size: 16px; }
+    .unit-size-max { color: var(--text-tertiary); font-weight: 400; }
+
+    .unit-image-placeholder {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .unit-image-placeholder i { width: 64px; height: 64px; opacity: 0.4; }
+
+    .enhancement-select {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .enhancement-option {
+      padding: 12px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-default);
+    }
+     .enhancement-option:hover { background: oklch(1 0 0 / 12%); }
+     .enhancement-option.selected {
+       border-color: var(--border-accent);
+       background: oklch(1 0 0 / 8%); box-shadow: var(--glow-1);
+     }
+    .enhancement-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .enhancement-cost { font-family: var(--font-mono); font-size: 12px; color: var(--accent-secondary); }
+    .enhancement-desc { font-size: 13px; color: var(--text-primary); margin-top: 4px; line-height: 1.5; }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item active" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content" style="position:relative;">
+      <div class="content">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="03-forge-armies.html">The Forge</a>
+          <span class="breadcrumb-sep">/</span>
+          <a href="05-army-detail.html">Ultramarines Strike Force</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Captain in Terminator Armour</span>
+        </nav>
+
+        <div class="unit-title-row">
+          <button class="btn-icon" aria-label="Back to army" onclick="location.href='05-army-detail.html'">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <h1 class="unit-title">Captain in Terminator Armour</h1>
+        </div>
+
+        <div class="unit-layout">
+          <div class="unit-main">
+
+            <div class="stat-block stat-block--full">
+              <div class="stat-block-cell">
+                <span class="stat-block-label">Movement</span>
+                <span class="stat-block-value">5"</span>
+              </div>
+              <div class="stat-block-cell">
+                <span class="stat-block-label">Toughness</span>
+                <span class="stat-block-value">5</span>
+              </div>
+              <div class="stat-block-cell">
+                <span class="stat-block-label">Save</span>
+                <span class="stat-block-value">2+</span>
+              </div>
+              <div class="stat-block-cell">
+                <span class="stat-block-label">Wounds</span>
+                <span class="stat-block-value">6</span>
+              </div>
+              <div class="stat-block-cell">
+                <span class="stat-block-label">Leadership</span>
+                <span class="stat-block-value">6+</span>
+              </div>
+              <div class="stat-block-cell">
+                <span class="stat-block-label">Obj Control</span>
+                <span class="stat-block-value">1</span>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <div class="config-section-header">Ranged Weapons</div>
+              <div class="config-section-body" style="padding:0;">
+                <table class="weapon-table">
+                  <thead>
+                    <tr>
+                      <th>Weapon</th>
+                      <th>Range</th>
+                      <th>A</th>
+                      <th>BS</th>
+                      <th>S</th>
+                      <th>AP</th>
+                      <th>D</th>
+                      <th>Keywords</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Storm bolter</td>
+                      <td>24"</td>
+                      <td>2</td>
+                      <td>2+</td>
+                      <td>4</td>
+                      <td>0</td>
+                      <td>1</td>
+                      <td><span class="keyword-chip">Rapid Fire 2<span class="keyword-popover"><div class="keyword-popover-title">Rapid Fire 2</div><div class="keyword-popover-desc">Each time this weapon's bearer shoots, if it Remained Stationary this turn, this weapon has 2 additional Attacks.</div></span></span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <div class="config-section-header">Melee Weapons</div>
+              <div class="config-section-body" style="padding:0;">
+                <table class="weapon-table">
+                  <thead>
+                    <tr>
+                      <th>Weapon</th>
+                      <th>Range</th>
+                      <th>A</th>
+                      <th>WS</th>
+                      <th>S</th>
+                      <th>AP</th>
+                      <th>D</th>
+                      <th>Keywords</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Relic weapon</td>
+                      <td>Melee</td>
+                      <td>6</td>
+                      <td>2+</td>
+                      <td>5</td>
+                      <td>-2</td>
+                      <td>2</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Power fist</td>
+                      <td>Melee</td>
+                      <td>5</td>
+                      <td>2+</td>
+                      <td>8</td>
+                      <td>-2</td>
+                      <td>2</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Chainfist</td>
+                      <td>Melee</td>
+                      <td>5</td>
+                      <td>2+</td>
+                      <td>8</td>
+                      <td>-2</td>
+                      <td>2</td>
+                      <td><span class="keyword-chip">Anti-Vehicle 3+<span class="keyword-popover"><div class="keyword-popover-title">Anti-Vehicle 3+</div><div class="keyword-popover-desc">An unmodified Wound roll of 3+ scores a Critical Wound against Vehicle and Fortification targets.</div></span></span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <div class="config-section-header">Wargear Options</div>
+              <div class="config-section-body">
+                <div class="wargear-group-label">Melee Weapon</div>
+                <div class="wargear-option selected" data-group="melee-weapon">
+                  <div class="wargear-radio"><div class="wargear-radio-inner"></div></div>
+                  <span class="wargear-name">Relic weapon</span>
+                </div>
+                <div class="wargear-option" data-group="melee-weapon">
+                  <div class="wargear-radio"><div class="wargear-radio-inner"></div></div>
+                  <span class="wargear-name">Power fist</span>
+                </div>
+                <div class="wargear-option" data-group="melee-weapon">
+                  <div class="wargear-radio"><div class="wargear-radio-inner"></div></div>
+                  <span class="wargear-name">Chainfist</span>
+                </div>
+                <div class="wargear-group-hint">Select 1</div>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <div class="config-section-header">Abilities</div>
+              <div class="config-section-body">
+                <div class="ability-card">
+                  <div class="ability-name">Rites of Battle</div>
+                  <div class="ability-desc">Once per battle round, one unit from your army within 6" of this model can be targeted with a Stratagem for 0CP, even if another unit from your army has already been targeted by that Stratagem this phase.</div>
+                </div>
+                <div class="ability-card">
+                  <div class="ability-name">Deep Strike</div>
+                  <div class="ability-desc">This unit can be set up in Reserves. At the end of your Movement phase, you can set it up anywhere on the battlefield that is more than 9" horizontally away from all enemy models.</div>
+                </div>
+                <div class="ability-card">
+                  <div class="ability-name">Leader</div>
+                  <div class="ability-desc">This model can be attached to the following units: Terminator Squad, Relic Terminator Squad, Assault Terminator Squad.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <div class="config-section-header">Unit Composition</div>
+              <div class="config-section-body">
+                <div class="composition-models">1 Captain in Terminator Armour</div>
+              </div>
+            </div>
+
+            <div class="config-section" style="margin-top:var(--space-6);">
+              <div class="config-section-header">
+                <span class="section-header-label">Keywords</span>
+              </div>
+              <div class="config-section-body">
+                <div class="composition-keywords">
+                  <span class="badge">Infantry</span>
+                  <span class="badge">Character</span>
+                  <span class="badge">Imperium</span>
+                  <span class="badge">Terminator</span>
+                  <span class="badge">Captain</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sidebar-panel">
+            <div class="panel-card" style="padding:0;overflow:hidden;">
+              <div class="unit-image-placeholder has-photo" style="background:var(--faction-iron-legion-muted);">
+                <i data-lucide="shield" style="color:var(--faction-iron-legion);"></i>
+                <span class="photo-hint">Add Photo</span>
+                <img class="photo-img" src="https://picsum.photos/seed/wh-terminator/400/400" alt="">
+                <details class="photo-actions">
+                  <summary class="photo-overlay">
+                    <i data-lucide="camera"></i>
+                    <span class="photo-overlay-label">Change Photo</span>
+                  </summary>
+                  <div class="photo-menu">
+                    <button class="photo-menu-item"><i data-lucide="camera"></i> Change Photo</button>
+                    <button class="photo-menu-item photo-menu-item-danger"><i data-lucide="trash-2"></i> Remove Photo</button>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-label">Total Points</div>
+              <div class="panel-value">200 pts</div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-label">Unit Size</div>
+              <div class="unit-size-control">
+                <span class="counter-btn" style="width:28px;height:28px;font-size:14px;opacity:0.5;cursor:not-allowed;">−</span>
+                <div class="unit-size-value">
+                  <span class="unit-size-current">1</span>
+                  <span class="unit-size-sep">/</span>
+                  <span class="unit-size-max">1</span>
+                </div>
+                <span class="counter-btn" style="width:28px;height:28px;font-size:14px;opacity:0.5;cursor:not-allowed;">+</span>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-label">Enhancement</div>
+              <div class="enhancement-select">
+                <div class="enhancement-option selected">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="enhancement-name">Adept of the Codex</span>
+                    <span class="enhancement-cost">+25 pts</span>
+                  </div>
+                  <div class="enhancement-desc">At the start of your Command phase, if this model is on the battlefield, you gain 1CP.</div>
+                </div>
+                <div class="enhancement-option">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="enhancement-name">Bolter Discipline</span>
+                    <span class="enhancement-cost">+10 pts</span>
+                  </div>
+                  <div class="enhancement-desc">Each time a model in the bearer's unit makes a ranged attack, re-roll a Hit roll of 1.</div>
+                </div>
+                <div class="enhancement-option">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="enhancement-name">None</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item active"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var i;
+      for (i = 0; i < allDetails.length; i += 1) {
+        if (!allDetails[i].contains(e.target)) {
+          allDetails[i].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+  <script>
+    var wargearOptions = document.querySelectorAll('.wargear-option');
+    var wargearIndex = 0;
+    for (wargearIndex = 0; wargearIndex < wargearOptions.length; wargearIndex += 1) {
+      wargearOptions[wargearIndex].addEventListener('click', function() {
+        var group = this.getAttribute('data-group');
+        var siblings = document.querySelectorAll('.wargear-option[data-group="' + group + '"]');
+        var siblingIndex = 0;
+        for (siblingIndex = 0; siblingIndex < siblings.length; siblingIndex += 1) {
+          siblings[siblingIndex].classList.remove('selected');
+        }
+        this.classList.add('selected');
+      });
+    }
+
+    var enhancementOptions = document.querySelectorAll('.enhancement-option');
+    var enhancementIndex = 0;
+    for (enhancementIndex = 0; enhancementIndex < enhancementOptions.length; enhancementIndex += 1) {
+      enhancementOptions[enhancementIndex].addEventListener('click', function() {
+        var siblingIndex = 0;
+        for (siblingIndex = 0; siblingIndex < enhancementOptions.length; siblingIndex += 1) {
+          enhancementOptions[siblingIndex].classList.remove('selected');
+        }
+        this.classList.add('selected');
+      });
+    }
+  </script>
+</body>
+</html>

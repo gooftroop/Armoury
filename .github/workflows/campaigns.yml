@@ -1,0 +1,27 @@
+name: Campaigns Service
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'src/services/campaigns/**'
+            - 'src/shared/**'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'src/services/campaigns/**'
+            - 'src/shared/**'
+
+concurrency:
+    group: campaigns-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/campaigns'
+            working-directory: src/services/campaigns
+            needs-shared-build: true
+            has-migrations: true
+        secrets: inherit

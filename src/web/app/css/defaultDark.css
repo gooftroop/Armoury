@@ -1,0 +1,78 @@
+/*
+ * Default Dark Theme Overrides
+ *
+ * Overrides @theme CSS custom properties when .dark is on <html>.
+ * Values from docs/design/DESIGN_TOKENS.md (the canonical dark palette).
+ *
+ * Uses @variant dark inside @layer theme so that:
+ *   1. Dark overrides live alongside @theme values in the same cascade layer.
+ *   2. System themes loaded via <link> (unlayered) naturally override both
+ *      light and dark defaults without specificity hacks.
+ */
+
+@layer theme {
+    :root,
+    :host {
+        @variant dark {
+            /* --- Backgrounds --- */
+            --color-background: oklch(0.19 0.005 260);
+            --color-card: oklch(0.23 0.006 260);
+            --color-card-foreground: oklch(0.94 0.01 260);
+            --color-popover: oklch(0.27 0.007 260);
+            --color-popover-foreground: oklch(0.94 0.01 260);
+            --color-muted: oklch(0.26 0.007 260);
+            --color-muted-foreground: oklch(0.72 0.01 260);
+            --color-accent: oklch(0.29 0.008 260);
+            --color-accent-foreground: oklch(0.94 0.01 260);
+
+            /* --- Text --- */
+            --color-foreground: oklch(0.94 0.01 260);
+
+            /* --- Primary: Steel Blue --- */
+            --color-primary: oklch(0.72 0.12 235);
+            --color-primary-hover: oklch(0.78 0.13 235);
+            --color-primary-muted: oklch(0.72 0.12 235 / 18%);
+            --color-primary-foreground: oklch(0.15 0.01 260);
+
+            /* --- Secondary: Amber Gold --- */
+            --color-secondary: oklch(0.75 0.12 70);
+            --color-secondary-hover: oklch(0.8 0.13 70);
+            --color-secondary-muted: oklch(0.75 0.12 70 / 18%);
+            --color-secondary-foreground: oklch(0.15 0.01 260);
+
+            /* --- Highlight: Tarnished Copper --- */
+            --color-highlight: oklch(0.68 0.11 40);
+            --color-highlight-hover: oklch(0.74 0.12 40);
+            --color-highlight-muted: oklch(0.68 0.11 40 / 18%);
+            --color-highlight-foreground: oklch(0.15 0.01 260);
+
+            /* --- Tertiary: Pale Silver --- */
+            --color-tertiary: oklch(0.75 0.03 250);
+            --color-tertiary-hover: oklch(0.8 0.04 250);
+            --color-tertiary-muted: oklch(0.75 0.03 250 / 18%);
+            --color-tertiary-foreground: oklch(0.15 0.01 260);
+
+            /* --- Status --- */
+            --color-success: oklch(0.65 0.15 145);
+            --color-warning: oklch(0.75 0.15 65);
+            --color-destructive: oklch(0.62 0.2 25);
+            --color-destructive-foreground: oklch(0.94 0.01 260);
+            --color-info: oklch(0.67 0.1 240);
+            --color-status-active: oklch(0.78 0.18 145);
+            --color-planned: oklch(0.58 0.08 235);
+
+            /* --- Borders (white-based for dark surfaces) --- */
+            --color-border: oklch(1 0 0 / 14%);
+            --color-border-subtle: oklch(1 0 0 / 10%);
+            --color-border-strong: oklch(1 0 0 / 22%);
+            --color-input: oklch(1 0 0 / 15%);
+            --color-ring: oklch(0.72 0.12 235 / 45%);
+
+            /* --- Shadows (border-glow style for dark surfaces) --- */
+            --shadow-subtle: 0 0 0 1px oklch(1 0 0 / 10%);
+            --shadow-default: 0 0 0 1px oklch(1 0 0 / 14%);
+            --shadow-strong: 0 0 0 1px oklch(1 0 0 / 22%);
+            --shadow-glow: 0 0 12px oklch(0.72 0.12 235 / 15%);
+        }
+    }
+}

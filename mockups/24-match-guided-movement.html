@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Active Match (Guided Mode — Movement Phase)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shared-match.css">
+  <style>
+    /* ── Page-specific: Move unit ── */
+    .move-unit {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-md);
+      padding: 12px; margin-bottom: 8px; cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-default);
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+    .move-unit:hover { border-color: var(--border-default); }
+    .move-unit.advanced { border-color: var(--accent-secondary); background: var(--accent-secondary-muted); }
+    .move-unit-header { display: flex; align-items: center; justify-content: space-between; }
+    .move-unit-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .move-unit-meta { font-size: 12px; color: var(--text-tertiary); }
+
+    .move-controls { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .move-pill {
+      font-size: 10px; padding: 2px 6px; border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 10%); color: var(--text-tertiary); cursor: pointer;
+    }
+    .move-pill.active { background: var(--accent-primary); color: var(--text-inverse); }
+    .move-pill.warning { background: var(--status-warning); color: var(--text-inverse); }
+
+    /* ── stat-block override (flex layout, not grid) ── */
+    .stat-block { display: flex; gap: 4px; margin-bottom: 14px; }
+    .stat-block .stat-block-cell {
+      background: oklch(0 0 0 / 25%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px; flex: 1; text-align: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .stat-block-label { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-tertiary); }
+    .stat-block-value { font-size: 16px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); margin-top: 2px; }
+
+    @media (max-width: 767px) {
+      .match-layout { padding-bottom: 72px; }
+      .rules-rail { display: none; }
+      .rules-overlay { display: none; }
+      .mission-card-drawer { display: none !important; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item active" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+
+      <nav class="breadcrumb" style="padding:8px 16px;font-size:13px;">
+        <a href="11-war-ledger.html" style="color:var(--text-secondary);">War Ledger</a>
+        <span style="color:var(--text-tertiary);margin:0 6px;">/</span>
+        <span style="color:var(--text-tertiary);">Battle of Macragge</span>
+      </nav>
+
+      <div class="status-strip" style="min-height:56px;padding:8px 16px;">
+        <div class="status-strip-left">
+          <a href="11-war-ledger.html" style="color:var(--text-secondary);display:flex;align-items:center;margin-right:8px;"><i data-lucide="arrow-left" style="width:20px;height:20px;"></i></a>
+          <span style="font-size:15px;font-weight:600;color:var(--text-primary);margin-right:16px;">Battle of Macragge</span>
+          <span class="round-badge">R3</span>
+          <span class="turn-pill yours">Your Turn</span>
+          
+        </div>
+        <div class="status-strip-center">
+          <div class="score-compact">
+            <span class="score-compact-name">You</span>
+            <span class="score-compact-vp" style="color:var(--accent-secondary);">45</span>
+          </div>
+          <span class="score-compact-sep">&mdash;</span>
+          <div class="score-compact">
+            <span class="score-compact-vp" style="color:var(--text-secondary);">38</span>
+            <span class="score-compact-name">Opp</span>
+          </div>
+        </div>
+        <div class="status-strip-right">
+          <div class="cp-pill" style="display:flex;align-items:center;gap:8px;padding:0 12px;">
+            <span class="cp-pill-label">CP</span>
+            <span class="counter-btn" style="width:20px;height:20px;font-size:12px;border-radius:3px;">−</span>
+            <span class="cp-pill-value">3</span>
+            <span class="counter-btn" style="width:20px;height:20px;font-size:12px;border-radius:3px;">+</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:2px;background:oklch(1 0 0 / 10%);border-radius:var(--radius-full);padding:2px;">
+            <span style="padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-tertiary);cursor:pointer;" onclick="location.href='08-match-basic.html'">Basic</span>
+            <span style="padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;background:var(--accent-primary);color:var(--text-inverse);cursor:pointer;">Guided</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-bar">
+        <div class="phase-stepper">
+          <a href="23-match-guided-command.html" class="phase-step completed" style="text-decoration:none;color:inherit;">
+            <i data-lucide="crown" style="width:14px;height:14px;"></i>
+            Command
+          </a>
+          <div class="phase-connector"></div>
+          <div class="phase-step active">
+            <i data-lucide="move" style="width:14px;height:14px;"></i>
+            Movement
+          </div>
+          <div class="phase-connector"></div>
+          <a href="25-match-guided-shooting.html" class="phase-step" style="text-decoration:none;color:inherit;">
+            <i data-lucide="crosshair" style="width:14px;height:14px;"></i>
+            Shooting
+          </a>
+          <div class="phase-connector"></div>
+          <a href="26-match-guided-charge.html" class="phase-step" style="text-decoration:none;color:inherit;">
+            <i data-lucide="zap" style="width:14px;height:14px;"></i>
+            Charge
+          </a>
+          <div class="phase-connector"></div>
+          <a href="27-match-guided-fight.html" class="phase-step" style="text-decoration:none;color:inherit;">
+            <i data-lucide="swords" style="width:14px;height:14px;"></i>
+            Fight
+          </a>
+          <div class="phase-connector"></div>
+          <a href="28-match-guided-endturn.html" class="phase-step" style="text-decoration:none;color:inherit;">
+            <i data-lucide="flag-off" style="width:14px;height:14px;"></i>
+            End Turn
+          </a>
+        </div>
+      </div>
+
+      <div class="match-layout">
+        <div class="match-main">
+
+          <div class="phase-callout">
+            <div class="phase-callout-icon"><i data-lucide="move"></i></div>
+            <div>
+              <div class="phase-callout-title">Movement Phase</div>
+              <div class="phase-callout-desc">Move your units across the battlefield.</div>
+            </div>
+          </div>
+
+          <div class="section-header" style="padding:4px 0;margin-bottom:8px;">
+            <span class="section-header-label">Units to Move <span class="section-header-count">(6 units)</span></span>
+          </div>
+
+          <div class="move-unit" onclick="selectUnit('captain', this)">
+            <div class="move-unit-header">
+              <span class="move-unit-name">Captain in Terminator Armour</span>
+              <span class="move-unit-meta"><span style="font-family:var(--font-mono);font-weight:700;font-size:14px;color:var(--accent-primary);margin-right:4px;">5"</span> Not Moved</span>
+            </div>
+            <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+              <div class="hp-bar" style="flex:1;height:6px;"><div class="hp-bar-fill hp-high" style="width:100%;"></div></div>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">5/5</span>
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;" onclick="event.stopPropagation()">−</span>
+              <input type="text" class="model-hp-input" value="5" style="width:28px;height:20px;font-size:11px;text-align:center;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);" onclick="event.stopPropagation()">
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;" onclick="event.stopPropagation()">+</span>
+              <div class="hp-tooltip">5 / 5 HP</div>
+            </div>
+            <div class="move-controls">
+              <span class="move-pill" onclick="event.stopPropagation()">Not Moved</span>
+              <span class="move-pill active" onclick="event.stopPropagation()">Moved</span>
+              <span class="move-pill" onclick="event.stopPropagation()">Advanced</span>
+              <span class="move-pill" onclick="event.stopPropagation()">Fall Back</span>
+            </div>
+          </div>
+
+          <div class="move-unit advanced" onclick="selectUnit('intercessor', this)">
+            <div class="move-unit-header">
+              <span class="move-unit-name">Intercessor Squad</span>
+              <span class="move-unit-meta"><span style="font-family:var(--font-mono);font-weight:700;font-size:14px;color:var(--accent-primary);margin-right:4px;">6"</span> Advanced</span>
+            </div>
+            <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+              <div class="hp-bar" style="flex:1;height:6px;"><div class="hp-bar-fill hp-high" style="width:85%;"></div></div>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">8/10</span>
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;" onclick="event.stopPropagation()">−</span>
+              <input type="text" class="model-hp-input" value="8" style="width:28px;height:20px;font-size:11px;text-align:center;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);" onclick="event.stopPropagation()">
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;" onclick="event.stopPropagation()">+</span>
+              <div class="hp-tooltip">8 / 10 models</div>
+            </div>
+            <div class="move-controls">
+              <span class="move-pill" onclick="event.stopPropagation()">Not Moved</span>
+              <span class="move-pill" onclick="event.stopPropagation()">Moved</span>
+              <span class="move-pill active" onclick="event.stopPropagation()">Advanced</span>
+            </div>
+          </div>
+
+          <div class="move-unit">
+            <div class="move-unit-header">
+              <span class="move-unit-name">Hellblaster Squad</span>
+              <span class="move-unit-meta"><span style="font-family:var(--font-mono);font-weight:700;font-size:14px;color:var(--accent-primary);margin-right:4px;">6"</span> Not Moved</span>
+            </div>
+            <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+              <div class="hp-bar" style="flex:1;height:6px;"><div class="hp-bar-fill hp-mid" style="width:60%;"></div></div>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">6/10</span>
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</span>
+              <input type="text" class="model-hp-input" value="6" style="width:28px;height:20px;font-size:11px;text-align:center;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);">
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</span>
+              <div class="hp-tooltip">6 / 10 models</div>
+            </div>
+            <div class="move-controls">
+              <span class="move-pill active">Not Moved</span>
+              <span class="move-pill">Moved</span>
+              <span class="move-pill">Advanced</span>
+              <span class="move-pill warning">Fall Back</span>
+            </div>
+          </div>
+
+          <div class="move-unit">
+            <div class="move-unit-header">
+              <span class="move-unit-name">Redemptor Dreadnought</span>
+              <span class="move-unit-meta"><span style="font-family:var(--font-mono);font-weight:700;font-size:14px;color:var(--accent-primary);margin-right:4px;">8"</span> Not Moved</span>
+            </div>
+            <div class="hp-tooltip-trigger" style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+              <div class="hp-bar" style="flex:1;height:6px;"><div class="hp-bar-fill hp-mid" style="width:55%;"></div></div>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">6/12</span>
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">−</span>
+              <input type="text" class="model-hp-input" value="6" style="width:28px;height:20px;font-size:11px;text-align:center;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);">
+              <span class="counter-btn" style="width:18px;height:18px;font-size:10px;border-radius:3px;">+</span>
+              <div class="hp-tooltip">6 / 12 HP</div>
+            </div>
+            <div class="move-controls">
+              <span class="move-pill active">Not Moved</span>
+              <span class="move-pill">Moved</span>
+              <span class="move-pill">Advanced</span>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="section-header" style="padding:4px 0;margin-bottom:8px;">
+              <span class="section-header-label">Units in Reserves</span>
+            </div>
+
+            <div style="padding:12px;border:1px dashed var(--border-default);border-radius:var(--radius-md);background:oklch(1 0 0 / 6%);margin-bottom:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div>
+                  <div style="font-size:14px;font-weight:500;color:var(--text-primary);">Assault Squad</div>
+                  <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">
+                    <span style="font-size:10px;padding:2px 6px;border-radius:var(--radius-full);background:var(--accent-primary-muted);color:var(--accent-primary);font-weight:500;">Deep Strike</span>
+                    <span style="margin-left:6px;">M 8" · 9/10 models</span>
+                  </div>
+                </div>
+                <button class="btn btn-primary btn-sm" style="white-space:nowrap;">
+                  <i data-lucide="map-pin" style="width:12px;height:12px;vertical-align:-1px;margin-right:4px;"></i>
+                  Place on Table
+                </button>
+              </div>
+              <div style="font-size:11px;color:var(--text-tertiary);">Must be placed 9"+ from enemy models. Available from Battle Round 2+.</div>
+            </div>
+
+            <div style="padding:8px 12px;background:oklch(1 0 0 / 10%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);font-size:12px;color:var(--text-secondary);margin-bottom:16px;">
+              <i data-lucide="info" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;color:var(--text-tertiary);"></i>
+              1 unit in Deep Strike. Place during Movement phase, 9"+ from enemy models.
+            </div>
+          </div>
+
+          <div style="margin-top:4px;">
+            <div class="section-header" style="padding:4px 0;margin-bottom:8px;">
+              <span class="section-header-label">Movement Stratagems</span>
+            </div>
+
+            <div class="stratagem-card">
+              <div class="stratagem-icon"><i data-lucide="zap"></i></div>
+              <div class="stratagem-info">
+                <div class="stratagem-name">Desperate Escape</div>
+                <div class="stratagem-desc">When a unit Falls Back, roll to avoid casualties.</div>
+              </div>
+              <span class="stratagem-cost">1 CP</span>
+            </div>
+
+            <div class="stratagem-card">
+              <div class="stratagem-icon"><i data-lucide="zap"></i></div>
+              <div class="stratagem-info">
+                <div class="stratagem-name">Adaptive Strategy</div>
+                <div class="stratagem-desc">Select one unit to count as Remained Stationary.</div>
+              </div>
+              <span class="stratagem-cost">1 CP</span>
+            </div>
+          </div>
+
+          <div class="phase-footer">
+            <a href="23-match-guided-command.html" class="btn btn-ghost btn-sm" style="text-decoration:none;">
+              <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+              Previous Phase
+            </a>
+            <span style="font-size:12px;color:var(--text-secondary);">4 of 6 units moved</span>
+            <a href="25-match-guided-shooting.html" class="btn btn-primary btn-sm" style="text-decoration:none;">
+              Next Phase
+              <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+            </a>
+          </div>
+
+        </div>
+
+        <div class="match-detail-panel" id="defaultDetailPanel">
+          <div class="detail-unit-header">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+              <div>
+                <div class="detail-unit-name">Intercessor Squad</div>
+                <div class="detail-unit-keywords">Infantry, Battleline, Imperium, Intercessor</div>
+              </div>
+              <button class="drawer-close" aria-label="Close" onclick="hideDetailPanel()"><i data-lucide="x"></i></button>
+            </div>
+          </div>
+
+          <div class="stat-block" style="margin-bottom:14px;">
+             <div class="stat-block-cell" title="Movement"><span class="stat-block-label">M</span><span class="stat-block-value">6"</span></div>
+             <div class="stat-block-cell" title="Toughness"><span class="stat-block-label">T</span><span class="stat-block-value">4</span></div>
+             <div class="stat-block-cell" title="Save"><span class="stat-block-label">SV</span><span class="stat-block-value">3+</span></div>
+             <div class="stat-block-cell" title="Wounds"><span class="stat-block-label">W</span><span class="stat-block-value">2</span></div>
+             <div class="stat-block-cell" title="Leadership"><span class="stat-block-label">LD</span><span class="stat-block-value">6+</span></div>
+             <div class="stat-block-cell" title="Objective Control"><span class="stat-block-label">OC</span><span class="stat-block-value">2</span></div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">Movement Actions</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span class="move-pill" style="background:oklch(1 0 0 / 10%);color:var(--text-tertiary);">Move 6"</span>
+              <span class="move-pill" style="background:var(--accent-secondary);color:var(--text-inverse);">Advance (D6)</span>
+              <span class="move-pill" style="background:oklch(1 0 0 / 10%);color:var(--text-tertiary);">Fall Back</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">HP</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="hp-grid" style="flex:1;">
+                <div class="hp-model full">2</div>
+                <div class="hp-model full">2</div>
+                <div class="hp-model full">2</div>
+                <div class="hp-model full">2</div>
+                <div class="hp-model full">2</div>
+                <div class="hp-model full">2</div>
+                <div class="hp-model full">2</div>
+                <div class="hp-model full">2</div>
+              </div>
+              <div class="model-hp-controls" style="display:flex;gap:4px;">
+                <button class="counter-btn" style="width:22px;height:22px;font-size:11px;border-radius:4px;">−</button>
+                <input type="text" class="model-hp-input" value="16" style="width:32px;height:22px;font-size:12px;text-align:center;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);">
+                <button class="counter-btn" style="width:22px;height:22px;font-size:11px;border-radius:4px;">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">Notes</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+              Advanced units cannot shoot or charge this turn unless they have special rules.
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-rail">
+          <button class="rules-rail-tab" aria-label="Army Rules">
+            <span class="rules-rail-tab-dot"></span>
+            <i data-lucide="shield-check"></i>
+            <span class="rules-rail-tab-label">Army</span>
+          </button>
+          <button class="rules-rail-tab" aria-label="Detachment Rules">
+            <span class="rules-rail-tab-dot"></span>
+            <i data-lucide="swords"></i>
+            <span class="rules-rail-tab-label">Detachment</span>
+          </button>
+          <button class="rules-rail-tab" aria-label="Secondary Missions" onclick="toggleMissionDrawer('secondary')">
+            <i data-lucide="target"></i>
+            <span class="rules-rail-tab-label">Secondary Missions</span>
+          </button>
+          <button class="rules-rail-tab" aria-label="Mission Rules" onclick="toggleMissionDrawer('rules')">
+            <i data-lucide="book-open"></i>
+            <span class="rules-rail-tab-label">Mission</span>
+          </button>
+        </div>
+
+        <div class="mission-card-drawer" id="secondaryMissionCardDrawer" style="width:496px;">
+          <div class="mission-card-drawer-title">
+            Secondary Missions
+            <button class="btn-icon btn-icon-sm" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+          </div>
+          <div class="mission-cards-grid">
+            <div class="mission-playing-card">
+              <span class="mission-playing-card-type tactical">Tactical</span>
+              <div class="mission-playing-card-name">Assassination</div>
+              <div class="mission-playing-card-desc">Score 5VP each time an enemy Character model is destroyed.</div>
+              <div class="mission-playing-card-vp">Max: 15 VP</div>
+            </div>
+            <div class="mission-playing-card">
+              <span class="mission-playing-card-type fixed">Fixed</span>
+              <div class="mission-playing-card-name">Behind Enemy Lines</div>
+              <div class="mission-playing-card-desc">Score 4VP if you have units wholly within your opponent's deployment zone at the end of your turn.</div>
+              <div class="mission-playing-card-vp">Max: 8 VP / Turn</div>
+            </div>
+          </div>
+        </div>
+        <div class="mission-card-drawer" id="missionRulesCardDrawer" style="width:496px;">
+          <div class="mission-card-drawer-title">
+            Mission Rules
+            <button class="btn-icon btn-icon-sm" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+          </div>
+          <div class="mission-cards-grid">
+            <div class="mission-playing-card">
+              <span class="mission-playing-card-type fixed">Core</span>
+              <div class="mission-playing-card-name">Fog of War</div>
+              <div class="mission-playing-card-desc">At the start of each player's Command phase, generate new Secondary Mission cards until you have two.</div>
+              <div class="mission-playing-card-vp">Mission Rule</div>
+            </div>
+            <div class="mission-playing-card">
+              <span class="mission-playing-card-type tactical">Deployment</span>
+              <div class="mission-playing-card-name">Sweep and Clear</div>
+              <div class="mission-playing-card-desc">Each objective marker is worth 5 VP at the end of the battle round to the controlling player.</div>
+              <div class="mission-playing-card-vp">Mission Rule</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-overlay">
+          <div class="rules-overlay-title">
+            Secondary Missions
+            <button class="btn-icon btn-icon-sm" aria-label="Close" onclick="closeAllModals()"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+          </div>
+          <div class="mission-playing-card">
+            <span class="mission-playing-card-type tactical">Tactical</span>
+            <div class="mission-playing-card-name">Bring It Down</div>
+            <div class="mission-playing-card-desc">Score 2 VP each time an enemy Monster or Vehicle unit is destroyed.</div>
+            <div class="mission-playing-card-vp">Max: 20 VP</div>
+          </div>
+          <div class="mission-playing-card">
+            <span class="mission-playing-card-type fixed">Fixed</span>
+            <div class="mission-playing-card-name">Cleanse</div>
+            <div class="mission-playing-card-desc">End of your turn, if a unit completed this action on an objective you control, score 3 VP.</div>
+            <div class="mission-playing-card-vp">Action</div>
+          </div>
+          <div class="mission-playing-card" style="opacity:0.6;">
+            <span class="mission-playing-card-type tactical">Tactical</span>
+            <div class="mission-playing-card-name">Assassination</div>
+            <div class="mission-playing-card-desc">Score 4 VP for each enemy Character destroyed this battle round.</div>
+            <div class="mission-playing-card-vp">Available</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item active"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script src="shared-match.js"></script>
+</body>
+</html>

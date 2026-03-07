@@ -1,0 +1,16 @@
+name: Friends Sandbox Cleanup
+
+on:
+    pull_request:
+        types: [closed]
+        branches: [main]
+        paths:
+            - 'src/services/friends/**'
+            - 'src/shared/**'
+
+jobs:
+    cleanup:
+        uses: ./.github/workflows/_cleanup-service.yml
+        with:
+            working-directory: src/services/friends
+        secrets: inherit

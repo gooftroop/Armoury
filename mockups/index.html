@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Mockup Index</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .index-container { max-width: 960px; margin: 0 auto; padding: 64px 32px; }
+    .index-title { font-size: 36px; font-weight: 700; color: var(--accent-primary); margin-bottom: 8px; font-family: var(--font-display); }
+    .index-subtitle { font-size: 16px; color: var(--text-secondary); margin-bottom: 48px; }
+    .index-group { margin-bottom: 40px; }
+    .index-group-label {
+      font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--accent-primary); margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle); font-family: var(--font-display);
+    }
+    .index-links { display: flex; flex-direction: column; gap: 4px; }
+    .index-link {
+      display: flex; align-items: center; gap: 16px; padding: 14px 16px;
+      border-radius: var(--radius-md); color: var(--text-primary); text-decoration: none;
+      transition: background var(--duration-fast) var(--ease-default);
+    }
+    .index-link:hover { background: oklch(1 0 0 / 5%); color: var(--text-primary); }
+    .index-link-num {
+      font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+      color: var(--text-tertiary); width: 28px; text-align: right; flex-shrink: 0;
+    }
+    .index-link-name { font-size: 15px; font-weight: 500; flex: 1; }
+    .index-link-desc { font-size: 13px; color: var(--text-tertiary); }
+  </style>
+</head>
+<body>
+  <div class="index-container">
+    <h1 class="index-title">Armoury Mockups</h1>
+    <p class="index-subtitle">Desktop mockups (1440px) for Figma import via html.to.design</p>
+
+    <div class="index-group">
+      <div class="index-group-label">Onboarding</div>
+      <div class="index-links">
+        <a href="01-landing.html" class="index-link">
+          <span class="index-link-num">01</span>
+          <span class="index-link-name">Game System Selector</span>
+          <span class="index-link-desc">Landing page with game system cards</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="index-group">
+      <div class="index-group-label">The Forge (Army Management)</div>
+      <div class="index-links">
+        <a href="02-forge-empty.html" class="index-link">
+          <span class="index-link-num">02</span>
+          <span class="index-link-name">The Forge &mdash; Empty State</span>
+          <span class="index-link-desc">No armies yet, CTA to create first army</span>
+        </a>
+        <a href="03-forge-armies.html" class="index-link">
+          <span class="index-link-num">03</span>
+          <span class="index-link-name">The Forge &mdash; Army List</span>
+          <span class="index-link-desc">Grid of army cards with faction archetypes</span>
+        </a>
+        <a href="04-army-creation.html" class="index-link">
+          <span class="index-link-num">04</span>
+          <span class="index-link-name">Army Creation</span>
+          <span class="index-link-desc">New army form with faction picker and preview</span>
+        </a>
+        <a href="05-army-detail.html" class="index-link">
+          <span class="index-link-num">05</span>
+          <span class="index-link-name">Army Builder</span>
+          <span class="index-link-desc">Unit sections, validation summary, points tracking</span>
+        </a>
+        <a href="06-unit-add-modal.html" class="index-link">
+          <span class="index-link-num">06</span>
+          <span class="index-link-name">Unit Add Drawer</span>
+          <span class="index-link-desc">Search, filters, and unit tiles for adding units</span>
+        </a>
+        <a href="07-unit-config.html" class="index-link">
+          <span class="index-link-num">07</span>
+          <span class="index-link-name">Unit Configuration</span>
+          <span class="index-link-desc">Stat block, weapons, wargear, abilities</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="index-group">
+      <div class="index-group-label">War Ledger (Matches)</div>
+      <div class="index-links">
+        <a href="08-match-basic.html" class="index-link">
+          <span class="index-link-num">08</span>
+          <span class="index-link-name">Active Match &mdash; Basic Mode</span>
+          <span class="index-link-desc">Split panel, VP/CP counters, unit list, actions</span>
+        </a>
+
+        <a href="20-match-setup.html" class="index-link">
+          <span class="index-link-num">20</span>
+          <span class="index-link-name">Match Setup Phase</span>
+          <span class="index-link-desc">Deep strike declarations, mission cards, secondary selection</span>
+        </a>
+        <a href="21-match-deployment.html" class="index-link">
+          <span class="index-link-num">21</span>
+          <span class="index-link-name">Match Deployment Phase</span>
+          <span class="index-link-desc">Deploy units, choose basic/guided, start match</span>
+        </a>
+        <a href="22-match-basic-opponent.html" class="index-link">
+          <span class="index-link-num">22</span>
+          <span class="index-link-name">Active Match &mdash; Opponent's Turn</span>
+          <span class="index-link-desc">Defensive stratagems, waiting state, reactive abilities</span>
+        </a>
+        <a href="23-match-guided-command.html" class="index-link">
+          <span class="index-link-num">23</span>
+          <span class="index-link-name">Guided Mode &mdash; Command Phase</span>
+          <span class="index-link-desc">Battle-shock tests, CP gain, secondary mission issuance</span>
+        </a>
+        <a href="24-match-guided-movement.html" class="index-link">
+          <span class="index-link-num">24</span>
+          <span class="index-link-name">Guided Mode &mdash; Movement Phase</span>
+          <span class="index-link-desc">Unit movement, advances, strategic reserves</span>
+        </a>
+        <a href="25-match-guided-shooting.html" class="index-link">
+          <span class="index-link-num">25</span>
+          <span class="index-link-name">Guided Mode &mdash; Shooting Phase (Alt)</span>
+          <span class="index-link-desc">Alternate shooting layout with weapon selection flow</span>
+        </a>
+        <a href="26-match-guided-charge.html" class="index-link">
+          <span class="index-link-num">26</span>
+          <span class="index-link-name">Guided Mode &mdash; Charge Phase</span>
+          <span class="index-link-desc">Declare charges, 2D6 charge rolls, charge eligibility</span>
+        </a>
+        <a href="27-match-guided-fight.html" class="index-link">
+          <span class="index-link-num">27</span>
+          <span class="index-link-name">Guided Mode &mdash; Fight Phase</span>
+          <span class="index-link-desc">Pile in, melee attacks, fight order selection</span>
+        </a>
+        <a href="28-match-guided-endturn.html" class="index-link">
+          <span class="index-link-num">28</span>
+          <span class="index-link-name">Guided Mode &mdash; End of Turn</span>
+          <span class="index-link-desc">Secondary missions scoring, VP tally, turn summary</span>
+        </a>
+
+        <a href="11-war-ledger.html" class="index-link">
+          <span class="index-link-num">11</span>
+          <span class="index-link-name">War Ledger &mdash; Matches List</span>
+          <span class="index-link-desc">Active, planned, and completed matches</span>
+        </a>
+        <a href="16-match-creation.html" class="index-link">
+          <span class="index-link-num">16</span>
+          <span class="index-link-name">Match Creation Drawer</span>
+          <span class="index-link-desc">Right-side drawer: army picker, date, opponent linking</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="index-group">
+      <div class="index-group-label">Campaigns</div>
+      <div class="index-links">
+        <a href="12-campaigns.html" class="index-link">
+          <span class="index-link-num">12</span>
+          <span class="index-link-name">Campaigns List</span>
+          <span class="index-link-desc">Active, upcoming, and completed campaign cards</span>
+        </a>
+        <a href="17-campaign-detail.html" class="index-link">
+          <span class="index-link-num">17</span>
+          <span class="index-link-name">Campaign Dashboard</span>
+          <span class="index-link-desc">Standings, phases, upcoming matches, your army</span>
+        </a>
+        <a href="18-campaign-creation.html" class="index-link">
+          <span class="index-link-num">18</span>
+          <span class="index-link-name">Campaign Creation</span>
+          <span class="index-link-desc">Create new campaign: type, stages, rules, narrative</span>
+        </a>
+        <a href="19-campaign-management.html" class="index-link">
+          <span class="index-link-num">19</span>
+          <span class="index-link-name">Campaign Management</span>
+          <span class="index-link-desc">Organizer dashboard: edit stages, manage participants</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="index-group">
+      <div class="index-group-label">Social &amp; Reference</div>
+      <div class="index-links">
+        <a href="13-allies.html" class="index-link">
+          <span class="index-link-num">13</span>
+          <span class="index-link-name">Allies</span>
+          <span class="index-link-desc">Friends list, friend code, add friend modal</span>
+        </a>
+        <a href="14-references.html" class="index-link">
+          <span class="index-link-num">14</span>
+          <span class="index-link-name">References</span>
+          <span class="index-link-desc">Core rules, stratagems, abilities with search</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="index-group">
+      <div class="index-group-label">Account</div>
+      <div class="index-links">
+        <a href="15-account.html" class="index-link">
+          <span class="index-link-num">15</span>
+          <span class="index-link-name">Account Settings</span>
+          <span class="index-link-desc">Profile, providers, preferences, danger zone</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

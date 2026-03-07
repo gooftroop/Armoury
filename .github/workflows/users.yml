@@ -1,0 +1,27 @@
+name: Users Service
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'src/services/users/**'
+            - 'src/shared/**'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'src/services/users/**'
+            - 'src/shared/**'
+
+concurrency:
+    group: users-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/users'
+            working-directory: src/services/users
+            needs-shared-build: true
+            has-migrations: true
+        secrets: inherit

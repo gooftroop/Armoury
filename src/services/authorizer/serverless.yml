@@ -1,0 +1,57 @@
+service: armoury-authorizer
+
+provider:
+    name: aws
+    runtime: nodejs22.x
+    architecture: arm64
+    stage: ${opt:stage, 'dev'}
+    region: ${opt:region, 'us-east-1'}
+    memorySize: 128
+    timeout: 10
+    environment:
+        SECRET_NAME: armoury/${self:provider.stage}/authorizer
+        NODE_OPTIONS: '--import ./src/instrument.js'
+        SENTRY_DSN: ${env:SENTRY_DSN, ''}
+        SENTRY_ENVIRONMENT: ${self:provider.stage}
+    iam:
+        role:
+            statements:
+                - Effect: Allow
+                  Action:
+                      - secretsmanager:GetSecretValue
+                  Resource: '*'
+
+build:
+    esbuild:
+        bundle: true
+        minify: true
+        sourcemap: true
+        target: es2022
+        platform: node
+        format: esm
+        mainFields:
+            - module
+            - main
+        external:
+            - '@aws-sdk/client-secrets-manager'
+
+plugins:
+    - serverless-offline
+
+custom:
+    serverless-offline:
+        httpPort: 3000
+        lambdaPort: 3002
+        noPrependStageInUrl: true
+
+# CloudFormation output consumed by serverless-compose.yml to wire the authorizer
+# into downstream services (campaigns, matches) via ${authorizer.AuthorizerArn}.
+resources:
+    Outputs:
+        AuthorizerArn:
+            Value: !GetAtt AuthorizerLambdaFunction.Arn
+            Description: ARN of the authorizer Lambda function for cross-service reference
+
+functions:
+    authorizer:
+        handler: src/handler.handler

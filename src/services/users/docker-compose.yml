@@ -1,0 +1,22 @@
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: armoury-users-db
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_DB: armoury_users
+            POSTGRES_USER: armoury
+            POSTGRES_PASSWORD: armoury_local
+        volumes:
+            - users_data:/var/lib/postgresql/data
+            - ./__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_users']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    users_data:
+        name: armoury-users-data

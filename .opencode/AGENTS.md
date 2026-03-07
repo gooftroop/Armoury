@@ -183,6 +183,27 @@ Commit, push, create PR. Load `git-worktree-agent-workflow` and `mastering-githu
 
 **Gate**: Present PR for review before starting the next increment.
 
+### Phase Gate Approval Signals
+
+The phase gates above require human approval to advance. Recognize these approval patterns:
+
+- **Explicit approval**: "Approved", "LGTM", "Go ahead", "Proceed"
+- **Forward intent**: "Continue", "Continue if you have next steps", "Keep going", "What's next?"
+- **Conditional approval**: "Proceed with [option]", "Do [X] first, then [Y]"
+
+If the human expresses forward intent and there are pending tasks in your todo list, **continue working**. Do not re-ask for permission that was already granted. Silence after a gate presentation (no response at all) is the only case where you should wait — an explicit message with forward language is approval.
+
+### TODO Continuation
+
+The system may inject a `TODO CONTINUATION` directive when you have incomplete tasks. This is a **legitimate signal to resume work**, not noise to ignore. When you receive it:
+
+1. Check your todo list for the next pending task.
+2. If the human's last message expressed approval or forward intent, continue immediately.
+3. If the human's last message redirected the approach, follow the redirect instead.
+4. If there was no human message (pure system directive after inactivity), continue with the next pending task.
+
+**Never stall on a TODO continuation when prior approval was given.** The purpose of phase gates is to get human input at decision points — once input is received, execute until the next gate or until all tasks are complete.
+
 ## Agile Delivery
 
 - **Commit small, commit fast.** Each PR is one focused, reviewable change.

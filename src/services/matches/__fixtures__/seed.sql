@@ -1,0 +1,121 @@
+CREATE TABLE IF NOT EXISTS match_records (
+    id TEXT PRIMARY KEY,
+    player_id TEXT NOT NULL,
+    player_name TEXT NOT NULL,
+    opponent_match_id TEXT,
+    opponent_id TEXT NOT NULL,
+    opponent_name TEXT NOT NULL,
+    friend_id TEXT,
+    army_id TEXT NOT NULL,
+    army_name TEXT NOT NULL,
+    campaign_id TEXT,
+    participant_campaign_id TEXT,
+    battle_size TEXT NOT NULL,
+    points_limit INTEGER NOT NULL,
+    mission TEXT NOT NULL,
+    result TEXT NOT NULL,
+    round_scores JSONB,
+    total_vp INTEGER NOT NULL,
+    opponent_total_vp INTEGER NOT NULL,
+    army_hp_state JSONB,
+    game_tracker JSONB NOT NULL,
+    notes TEXT NOT NULL DEFAULT '',
+    played_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_match_records_player_id ON match_records (player_id);
+CREATE INDEX IF NOT EXISTS idx_match_records_campaign_id ON match_records (campaign_id);
+
+CREATE TABLE IF NOT EXISTS ws_connections (
+    connection_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    connected_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS match_subscriptions (
+    id TEXT PRIMARY KEY,
+    connection_id TEXT NOT NULL,
+    match_id TEXT NOT NULL,
+    user_id TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_match_subscriptions_connection_id ON match_subscriptions (connection_id);
+CREATE INDEX IF NOT EXISTS idx_match_subscriptions_match_id ON match_subscriptions (match_id);
+
+INSERT INTO match_records (
+    id,
+    player_id,
+    player_name,
+    opponent_match_id,
+    opponent_id,
+    opponent_name,
+    friend_id,
+    army_id,
+    army_name,
+    campaign_id,
+    participant_campaign_id,
+    battle_size,
+    points_limit,
+    mission,
+    result,
+    round_scores,
+    total_vp,
+    opponent_total_vp,
+    army_hp_state,
+    game_tracker,
+    notes,
+    played_at,
+    created_at,
+    updated_at
+) VALUES (
+    'match-1',
+    'user-1',
+    'Player One',
+    NULL,
+    'user-2',
+    'Opponent One',
+    NULL,
+    'army-1',
+    'Iron Wardens',
+    NULL,
+    NULL,
+    'StrikeForce',
+    2000,
+    'Take and Hold',
+    'win',
+    '[{"round":1,"primaryVP":5,"secondaryVP":5,"cpSpent":1,"cpGained":1,"notes":""}]',
+    75,
+    60,
+    '[{"armyUnitId":"unit-1","unitName":"Squad Alpha","modelHP":[{"currentWounds":2,"maxWounds":2,"destroyed":false}]}]',
+    '{"currentRound":3,"currentTurn":"player1","currentPhase":"Shooting","gameEnded":false}',
+    'Close game.',
+    '2024-01-15T12:00:00.000Z',
+    '2024-01-15T12:00:00.000Z',
+    '2024-01-15T12:00:00.000Z'
+),
+(
+    'match-2',
+    'user-2',
+    'Player Two',
+    'match-1',
+    'user-1',
+    'Opponent One',
+    NULL,
+    'army-2',
+    'Void Sentinels',
+    'campaign-1',
+    'participant-1',
+    'Incursion',
+    1000,
+    'Retrieve Data',
+    'loss',
+    NULL,
+    60,
+    75,
+    NULL,
+    '{"currentRound":5,"currentTurn":"player2","currentPhase":"Fight","gameEnded":true}',
+    '',
+    '2024-02-20T18:30:00.000Z',
+    '2024-02-20T18:30:00.000Z',
+    '2024-02-20T18:30:00.000Z'
+);

@@ -1,0 +1,12 @@
+{
+    "name": "@armoury/prettier",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./index.json"
+    },
+    "peerDependencies": {
+        "prettier": "^3.0.0"
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "extends": "@armoury/typescript/base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@campaigns/*": ["./*"],
+            "@data/*": ["../../shared/data/src/*"],
+            "@models/*": ["../../shared/models/src/*"],
+            "@clients-github/*": ["../../shared/clients/github/src/*"],
+            "@clients-wahapedia/*": ["../../shared/clients/wahapedia/src/*"],
+            "@providers-bsdata/*": ["../../shared/providers/bsdata/src/*"],
+            "@validation/*": ["../../shared/validation/src/*"],
+            "@adapters-pglite/*": ["../../shared/adapters/pglite/src/*"]
+        }
+    },
+    "include": ["src/**/*.ts", "e2e/**/*.ts"],
+}

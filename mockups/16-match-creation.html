@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — New Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+     .match-card {
+       background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+       padding: 20px; cursor: pointer; transition: all var(--duration-fast) var(--ease-default); position: relative; box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+     }
+    .match-card:hover { border-color: var(--border-default); transform: translateY(-1px); }
+    .match-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .match-card-name { font-size: 16px; font-weight: 500; color: var(--text-primary); }
+    .match-card-date { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .match-card-score { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+    .match-score-player { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .match-score-name { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+     .match-score-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+    .match-score-sep { font-family: var(--font-mono); font-size: 18px; color: var(--text-tertiary); }
+    .match-card-armies { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-secondary); }
+    .match-card-army { display: flex; align-items: center; gap: 6px; }
+    .match-card-army-icon { width: 20px; height: 20px; border-radius: var(--radius-sm); background: oklch(1 0 0 / 10%); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; }
+    .match-card-army-icon i { width: 12px; height: 12px; color: var(--text-tertiary); }
+    .match-group-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); padding: 16px 0 12px; }
+
+    /* Drawer base styles now in styles.css */
+
+     .army-option {
+       background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-md);
+       padding: 12px 16px; display: flex; align-items: center; gap: 14px; cursor: pointer;
+       transition: all var(--duration-fast) var(--ease-default);
+     }
+    .army-option:hover { border-color: var(--border-default); }
+    .army-option.selected { border-color: var(--accent-primary); background: var(--accent-primary-muted); }
+    .army-option-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-md); background: oklch(1 0 0 / 10%); backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); flex-shrink: 0;
+    }
+    .army-option-icon i { width: 18px; height: 18px; }
+    .army-option-info { flex: 1; }
+    .army-option-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+    .army-option-detail { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .army-option-radio {
+      width: 18px; height: 18px; border-radius: var(--radius-full); border: 2px solid var(--border-strong);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    }
+    .army-option.selected .army-option-radio { border-color: var(--accent-primary); }
+    .army-option.selected .army-option-radio::after {
+      content: ""; width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--accent-primary);
+    }
+
+    .date-time-row { display: flex; gap: 12px; }
+    .date-time-row > div { flex: 1; }
+
+     .link-info-card {
+       background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-md);
+       padding: 16px 20px; display: flex; align-items: center; gap: 16px;
+     }
+    .link-info-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--accent-primary-muted);
+      display: flex; align-items: center; justify-content: center; color: var(--accent-primary); flex-shrink: 0;
+    }
+    .link-info-icon i { width: 22px; height: 22px; }
+    .link-info-text { font-size: 14px; color: var(--text-secondary); }
+    .link-info-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
+
+    /* Army Selection Drawer */
+    .army-select-drawer { display: none; }
+    .army-select-drawer.active { display: flex; flex-direction: column; }
+     .army-card {
+       background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-md);
+       padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+       transition: all var(--duration-fast) var(--ease-default); margin-bottom: 8px;
+     }
+    .army-card:hover { border-color: var(--border-default); background: oklch(1 0 0 / 12%); }
+    .army-card-indicator { width: 4px; height: 48px; border-radius: 2px; flex-shrink: 0; }
+    .army-card-content { flex: 1; min-width: 0; }
+    .army-card-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .army-card-faction { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .army-card-points { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .army-select-list { display: flex; flex-direction: column; gap: 0; max-height: 400px; overflow-y: auto; }
+
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item active" aria-current="page" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="content" style="opacity:0.4;pointer-events:none;">
+        <div class="match-group-label">Active</div>
+        <div class="grid-auto" style="margin-bottom:24px;">
+          <div class="match-card">
+            <div class="match-card-header">
+              <div>
+                <div class="match-card-name">vs Iron Warriors &mdash; Round 3</div>
+                <div class="match-card-date">Started Feb 8, 2026</div>
+              </div>
+              <span class="badge badge-active">Active</span>
+            </div>
+            <div class="match-card-score">
+              <div class="match-score-player">
+                <span class="match-score-name">You</span>
+                <span class="match-score-value" style="color:var(--text-primary);">45</span>
+              </div>
+              <span class="match-score-sep">&mdash;</span>
+              <div class="match-score-player">
+                <span class="match-score-name">Opponent</span>
+                <span class="match-score-value" style="color:var(--text-primary);">38</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="match-group-label">Completed</div>
+        <div class="grid-auto">
+          <div class="match-card">
+            <div class="match-card-header">
+              <div>
+                <div class="match-card-name">vs Hive Fleet Kraken</div>
+                <div class="match-card-date">Feb 1, 2026</div>
+              </div>
+              <span class="badge badge-success">Won</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop"></div>
+  
+  <!-- Army Selection Drawer -->
+  <div class="drawer army-select-drawer active">
+    <div class="drawer-header">
+      <span class="drawer-title">Select Army</span>
+      <button class="btn-icon" aria-label="Close drawer"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-body">
+      <div class="army-select-list">
+        <div class="army-card" onclick="selectArmy(this)">
+          <div class="army-card-indicator" style="background:var(--faction-iron-legion);"></div>
+          <div class="army-card-content">
+            <div class="army-card-name">Ultramarines Strike Force</div>
+            <div class="army-card-faction">Space Marines</div>
+            <div class="army-card-points">1,850 pts</div>
+          </div>
+        </div>
+        <div class="army-card" onclick="selectArmy(this)">
+          <div class="army-card-indicator" style="background:var(--faction-crimson-pact);"></div>
+          <div class="army-card-content">
+            <div class="army-card-name">Death Guard Pestilent Host</div>
+            <div class="army-card-faction">Death Guard</div>
+            <div class="army-card-points">2,000 pts</div>
+          </div>
+        </div>
+        <div class="army-card" onclick="selectArmy(this)">
+          <div class="army-card-indicator" style="background:var(--faction-sunforged);"></div>
+          <div class="army-card-content">
+            <div class="army-card-name">Custodes Shield Host</div>
+            <div class="army-card-faction">Adeptus Custodes</div>
+            <div class="army-card-points">1,500 pts</div>
+          </div>
+        </div>
+        <div class="army-card" onclick="selectArmy(this)">
+          <div class="army-card-indicator" style="background:var(--faction-iron-legion);"></div>
+          <div class="army-card-content">
+            <div class="army-card-name">Iron Warriors Siege Force</div>
+            <div class="army-card-faction">Iron Warriors</div>
+            <div class="army-card-points">2,000 pts</div>
+          </div>
+        </div>
+        <div class="army-card" onclick="selectArmy(this)">
+          <div class="army-card-indicator" style="background:var(--faction-crimson-pact);"></div>
+          <div class="army-card-content">
+            <div class="army-card-name">Blood Angels Strike Force</div>
+            <div class="army-card-faction">Blood Angels</div>
+            <div class="army-card-points">1,750 pts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Match Creation Drawer -->
+  <div class="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">New Match</span>
+      <button class="btn-icon" aria-label="Close drawer"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-body">
+      <div>
+        <label class="input-label" for="match-name">Match Name</label>
+        <input class="input" id="match-name" type="text" value="Match — Feb 8, 2026" aria-label="Match name">
+      </div>
+
+      <div>
+        <div class="text-label" style="margin-bottom:var(--space-3);color:var(--text-tertiary);">State 1 — From Deploy (Army pre-selected)</div>
+        <div style="padding:var(--space-3) var(--space-4);background:oklch(0 0 0 / 30%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);display:flex;align-items:center;gap:var(--space-3);">
+           <div class="avatar" style="background:var(--faction-iron-legion-muted);color:var(--faction-iron-legion);">
+             <i data-lucide="shield" style="width:16px;height:16px;"></i>
+           </div>
+           <div>
+             <div style="font-size:15px;font-weight:600;color:var(--text-primary);">Ultramarines Strike Force</div>
+             <div style="font-size:12px;color:var(--text-secondary);">Space Marines &bull; 1,850 pts</div>
+           </div>
+         </div>
+
+        <div class="divider" style="margin:var(--space-5) 0 var(--space-3);"></div>
+        <div class="text-label" style="margin-bottom:var(--space-3);color:var(--text-tertiary);">State 2 — From War Ledger (Select an Army)</div>
+        <div style="margin-bottom:var(--space-6);">
+          <div class="text-label" style="margin-bottom:var(--space-3);">Select an Army to Deploy</div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2);max-height:300px;overflow-y:auto;">
+            <div class="army-option" style="padding:var(--space-3) var(--space-4);background:oklch(0 0 0 / 30%);border:1px solid var(--border-accent);border-radius:var(--radius-md);cursor:pointer;display:flex;align-items:center;gap:var(--space-3);">
+               <div class="avatar" style="background:var(--faction-iron-legion-muted);color:var(--faction-iron-legion);"><i data-lucide="shield" style="width:16px;height:16px;"></i></div>
+               <div style="flex:1;">
+                 <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Ultramarines Strike Force</div>
+                 <div style="font-size:12px;color:var(--text-secondary);">Space Marines &bull; 1,850 pts</div>
+               </div>
+               <i data-lucide="check" style="width:18px;height:18px;color:var(--accent-primary);"></i>
+             </div>
+             <div class="army-option" style="padding:var(--space-3) var(--space-4);background:oklch(0 0 0 / 30%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);cursor:pointer;display:flex;align-items:center;gap:var(--space-3);">
+               <div class="avatar" style="background:var(--faction-crimson-pact-muted);color:var(--faction-crimson-pact);"><i data-lucide="skull" style="width:16px;height:16px;"></i></div>
+               <div style="flex:1;">
+                 <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Death Guard Pestilent Host</div>
+                 <div style="font-size:12px;color:var(--text-secondary);">Death Guard &bull; 2,000 pts</div>
+               </div>
+             </div>
+             <div class="army-option" style="padding:var(--space-3) var(--space-4);background:oklch(0 0 0 / 30%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);cursor:pointer;display:flex;align-items:center;gap:var(--space-3);">
+               <div class="avatar" style="background:var(--faction-sunforged-muted);color:var(--faction-sunforged);"><i data-lucide="sun" style="width:16px;height:16px;"></i></div>
+               <div style="flex:1;">
+                 <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Custodes Shield Host</div>
+                 <div style="font-size:12px;color:var(--text-secondary);">Adeptus Custodes &bull; 1,500 pts</div>
+               </div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="input-label">Date &amp; Time</label>
+        <div class="date-time-row" style="margin-top:6px;">
+          <div>
+            <label class="input-label">Date</label>
+            <input class="input" type="text" value="Feb 8, 2026" aria-label="Match date">
+          </div>
+          <div>
+            <label class="input-label">Time <span style="font-weight:400;text-transform:none;letter-spacing:normal;color:var(--text-tertiary);">(Optional)</span></label>
+            <input class="input" type="text" value="2:00 PM" aria-label="Match time">
+          </div>
+        </div>
+      </div>
+
+      <div style="margin:var(--space-4) calc(-1 * var(--space-4));padding:0;height:1px;background:linear-gradient(90deg, transparent, var(--border-default), transparent);"></div>
+
+       <div class="form-group">
+         <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-3);">
+           <i data-lucide="swords" style="width:16px;height:16px;color:var(--accent-primary);"></i>
+           <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);">Opponents</span>
+         </div>
+         <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-3);">Invite friends or share a match code for others to join.</p>
+         
+         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+           <!-- Left: Friend Selection -->
+           <div>
+             <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-secondary);margin-bottom:var(--space-2);">Select Friends</div>
+             <div style="display:flex;flex-direction:column;gap:var(--space-1);max-height:200px;overflow-y:auto;background:oklch(0 0 0 / 20%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-2);">
+               <label style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);cursor:pointer;background:var(--accent-primary-muted);border:1px solid var(--border-accent);transition:background var(--duration-fast) var(--ease-default);">
+                 <input type="checkbox" checked style="accent-color:var(--accent-primary);width:16px;height:16px;">
+                 <div class="avatar avatar-sm">R</div>
+                 <div style="flex:1;">
+                   <span style="font-size:14px;color:var(--text-primary);font-weight:500;">RedHunter_42</span>
+                   <div style="font-size:11px;color:var(--text-tertiary);">Online</div>
+                 </div>
+                 <i data-lucide="check" style="width:16px;height:16px;color:var(--accent-primary);"></i>
+               </label>
+               <label style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);cursor:pointer;transition:background var(--duration-fast) var(--ease-default);">
+                 <input type="checkbox" style="accent-color:var(--accent-primary);width:16px;height:16px;">
+                 <div class="avatar avatar-sm">T</div>
+                 <div style="flex:1;">
+                   <span style="font-size:14px;color:var(--text-primary);">TankCommander</span>
+                   <div style="font-size:11px;color:var(--text-tertiary);">Online</div>
+                 </div>
+               </label>
+               <label style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);cursor:pointer;transition:background var(--duration-fast) var(--ease-default);">
+                 <input type="checkbox" style="accent-color:var(--accent-primary);width:16px;height:16px;">
+                 <div class="avatar avatar-sm">W</div>
+                 <div style="flex:1;">
+                   <span style="font-size:14px;color:var(--text-primary);">WarBoss_Grimskull</span>
+                   <div style="font-size:11px;color:var(--text-tertiary);">Last seen 2h ago</div>
+                 </div>
+               </label>
+               <label style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);cursor:pointer;transition:background var(--duration-fast) var(--ease-default);">
+                 <input type="checkbox" style="accent-color:var(--accent-primary);width:16px;height:16px;">
+                 <div class="avatar avatar-sm">N</div>
+                 <div style="flex:1;">
+                   <span style="font-size:14px;color:var(--text-primary);">NecronLord_99</span>
+                   <div style="font-size:11px;color:var(--text-tertiary);">Offline</div>
+                 </div>
+               </label>
+             </div>
+           </div>
+           
+           <!-- Right: Match Code / QR -->
+           <div>
+             <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-secondary);margin-bottom:var(--space-2);">Match Code</div>
+             <div style="background:oklch(0 0 0 / 20%);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;align-items:center;gap:var(--space-3);">
+               <!-- QR Code placeholder -->
+               <div style="width:120px;height:120px;background:var(--text-primary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;position:relative;">
+                 <div style="width:100px;height:100px;background:repeating-conic-gradient(oklch(0.15 0 0) 0% 25%, var(--text-primary) 0% 50%) 0 0 / 10px 10px;border-radius:var(--radius-sm);"></div>
+               </div>
+               <!-- Match ID -->
+               <div style="text-align:center;">
+                 <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:0.1em;">ARM-X7K2-M3</div>
+                 <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">Share this code with your opponent</div>
+               </div>
+               <!-- Copy button -->
+               <button class="btn btn-ghost btn-sm" style="width:100%;">
+                 <i data-lucide="copy" style="width:14px;height:14px;"></i> Copy Code
+               </button>
+             </div>
+           </div>
+         </div>
+       </div>
+
+      <div class="divider"></div>
+
+      <div class="drawer-actions">
+        <button class="btn btn-primary w-full" aria-label="Create match">Create Match</button>
+        <button class="btn btn-ghost w-full" aria-label="Cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item active"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var armySelectDrawer = document.querySelector('.army-select-drawer');
+    var matchCreationDrawer = document.querySelector('.drawer:not(.army-select-drawer)');
+    var drawerBackdrop = document.querySelector('.drawer-backdrop');
+    var drawerCloseButtons = document.querySelectorAll('.drawer-header .btn-icon');
+    var createMatchButton = document.querySelector('.drawer-actions .btn.btn-primary');
+    var cancelButton = document.querySelector('.drawer-actions .btn.btn-ghost');
+
+    function selectArmy(element) {
+      if (armySelectDrawer) {
+        armySelectDrawer.classList.remove('active');
+      }
+      if (matchCreationDrawer) {
+        matchCreationDrawer.style.display = 'flex';
+      }
+    }
+
+    function goToWarLedger() {
+      location.href = '11-war-ledger.html';
+    }
+
+    function goToMatch() {
+      location.href = '08-match-basic.html';
+    }
+
+    function handleCloseButton(event) {
+      if (armySelectDrawer && armySelectDrawer.classList.contains('active')) {
+        goToWarLedger();
+      } else {
+        goToWarLedger();
+      }
+    }
+
+    var closeButtonIndex = 0;
+    for (closeButtonIndex = 0; closeButtonIndex < drawerCloseButtons.length; closeButtonIndex += 1) {
+      drawerCloseButtons[closeButtonIndex].addEventListener('click', handleCloseButton);
+    }
+
+    if (drawerBackdrop) {
+      drawerBackdrop.addEventListener('click', goToWarLedger);
+    }
+
+    if (createMatchButton) {
+      createMatchButton.addEventListener('click', goToMatch);
+    }
+
+    if (cancelButton) {
+      cancelButton.addEventListener('click', goToWarLedger);
+    }
+
+    var armyOptions = document.querySelectorAll('.army-option');
+    var armyIndex = 0;
+    function handleArmyOptionClick() {
+      var siblingIndex = 0;
+      for (siblingIndex = 0; siblingIndex < armyOptions.length; siblingIndex += 1) {
+        armyOptions[siblingIndex].classList.remove('selected');
+      }
+      this.classList.add('selected');
+    }
+
+    for (armyIndex = 0; armyIndex < armyOptions.length; armyIndex += 1) {
+      armyOptions[armyIndex].addEventListener('click', handleArmyOptionClick);
+    }
+
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var j;
+      for (j = 0; j < allDetails.length; j += 1) {
+        if (!allDetails[j].contains(e.target)) {
+          allDetails[j].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+# Add unit drawer
+- The filters under the search bar are cut off - you can only see the top half of the filters. the container is not tall enough
+- The unit item in the unit list in the army page should not open up to a new page, but rather should open a drawer that displays the unit details
+- Both the unit detail drawers in the army page (the one opened when clicking a unit item in the unit list and the one opened when clicking on a unit item in the add unit drawer) should be identical
+- Both unit details drawers on this page should have all the content that's currently in 07-unit-config
+- All unit detail drawers should be twice as wide as they are now and should be allowed to take up the full screen as part of the fluid/responsive layout. The drawer contents should NEVER be allowed to scroll horizontally
+
+# Unit Details drawers
+- The close button (the "X") should close all modals. Make sure all modals have this functionality
+- Fetch the data for the Intecessor squad from BSData
+- Right now the unit detail drawer mockup shows the mockup for single model units. We'll need a new mockup for a multiple model unit for the unit detail drawer.
+- All "Captain in Terminator" unit items in every match unit list should link to and open the single model unit detail drawer mockup
+- All "Intecessor Squad" unit items in every match unit list should link to and open the multiple models unit detail drawer mockup
+- The unit detail drawer in the Army builder page should also be it's own mockup; in this drawer we don't treat single
+- All unit detail drawers should be twice as wide as they are now and should be allowed to take up the full screen as part of the fluid/responsive layout. The drawer contents should NEVER be allowed to scroll horizontally
+
+## Single model unit detail drawer
+The structure of the modal, from top to bottom, should be:
+
+Name (title)
+keywords (small text)
+M | T | SV | W | LD | OC
+Health Bar
+Ranged Weapons
+Melee Weapons
+Wargear
+Abilities
+
+## Multiple model unit detail drawer
+The structure of the modal, from top to bottom, should be:
+
+Name (title)
+keywords (small text)
+M | T | SV | W | LD | OC
+Wargear
+Unit-specific Abilities
+Model List:
+    Model Name      Health
+    Ranged Weapons
+    Melee Weapons
+    Model-specific Wargear
+
+
+# Match pages
+- On both match pages, the right rail should have a tab for secondary missions. This tab opens a drawer that shows two the secondary missions as cards side-by-side in the shape of a card from a standard card deck. the drawer should be wide enough to fit these two cards
+    - These cards should indicate if the mission is tactical or fixed
+- On both match pages, the right rail should have a tab for mission rules. This tab opens a drawer that shows two cards side-by-side in the shape of a card from a standard card deck. the drawer should be wide enough to fit these two cards
+- The rail should be 48px wide when on the right-hand side of the screen and 48px tall when on the bottom of the screen
+- overflow on the main main element should cause the window to scroll - we don't want a scrollbar directly on match main element
+- For the "Tournament Match 2" card on the War Ledger page should link to the Match setup page. The match setup page should link to the match deployment page via a button that says "Deploy". the match deployment page should then link to the basic match page via a button that says "Start".
+    - Review the core rules for what occurs during match setup and match deployment and craft the UI for both those pages to match those requirements
+- All the completed matches should link to a "Match summary" page. This page shows read-only data and summarizes the match. For the first pass of this page, let me see what you can come up with
+
+# Campaign page
+- Completed campaigns should link to a "Campaign summary" page.  This page shows read-only data and summarizes the Campaign. For the first pass of this page, let me see what you can come up with
+- You messed up the campaign detail page. The create match drawer shouldn't be open by default and should only open when a user clicks the "new match" button that should be located in the header of the campaign detail page
+- The create campaign drawer should not provide the ability to select from friends - adding players is done differently than with a match
+- All create match pages should have both the ability to add friends but also show a barcode/match ID so that non-friends can join the match. These two sections should be side-by-side

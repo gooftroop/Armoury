@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Add Unit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .page-with-drawer { display: flex; height: calc(100vh - 64px); overflow: hidden; }
+    .page-bg {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+
+
+    .unit-tile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-lg);
+      transition: all var(--duration-fast) var(--ease-default);
+      cursor: pointer;
+    }
+     .unit-tile:hover { background: oklch(1 0 0 / 12%); }
+    .unit-tile + .unit-tile { margin-top: 4px; }
+
+    .unit-tile-image {
+       width: 56px;
+       height: 56px;
+       border-radius: var(--radius-md);
+       background: var(--glass-bg);
+       backdrop-filter: var(--glass-blur);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       flex-shrink: 0;
+     }
+    .unit-tile-image i { width: 28px; height: 28px; color: var(--text-tertiary); }
+    .unit-tile-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .unit-tile-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .unit-tile-meta { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+    .unit-tile-points {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .unit-tile-in-army {
+      font-size: 11px;
+      color: var(--accent-primary);
+      background: var(--accent-primary-muted);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+    }
+    .unit-tile-add {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--accent-primary);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-inverse);
+      flex-shrink: 0;
+      transition: all var(--duration-fast) var(--ease-default);
+    }
+    .unit-tile-add:hover { background: var(--accent-primary-hover); }
+    .unit-tile-add i { width: 18px; height: 18px; }
+
+    .unit-tile.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .unit-tile.disabled:hover { background: transparent; }
+     .unit-tile.disabled .unit-tile-add {
+       background: oklch(1 0 0 / 8%);
+       color: var(--text-tertiary);
+       cursor: not-allowed;
+     }
+    .unit-tile-disabled-reason {
+      font-size: 11px;
+      color: var(--status-danger);
+    }
+
+    /* Unit detail preview panel (inside drawer) */
+    .unit-detail-preview { display: none; flex-direction: column; height: 100%; }
+    .unit-detail-preview.active { display: flex; }
+    .drawer-body.hidden { display: none !important; }
+
+    .detail-back-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer; transition: background var(--duration-fast) var(--ease-default);
+    }
+    .detail-back-row:hover { background: var(--bg-hover); }
+    .detail-back-row i { width: 16px; height: 16px; color: var(--text-secondary); }
+    .detail-back-label { font-size: 13px; color: var(--text-secondary); }
+
+    .detail-unit-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .detail-unit-header .unit-tile-image { width: 48px; height: 48px; }
+    .detail-unit-name { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--text-primary); }
+    .detail-unit-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    .detail-scroll { flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+    .detail-scroll::-webkit-scrollbar { display: none; }
+
+    .detail-section-label {
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--accent-primary); margin-bottom: 6px;
+    }
+
+    .detail-stat-block {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px;
+      background: var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;
+    }
+    .detail-stat-cell {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur);
+      padding: 8px 4px; text-align: center; display: flex; flex-direction: column; gap: 2px;
+    }
+    .detail-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); }
+    .detail-stat-value { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+    .detail-weapon-table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+    }
+    .detail-weapon-table th {
+      text-align: left; padding: 6px 8px; font-size: 10px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .detail-weapon-table td {
+      padding: 6px 8px; color: var(--text-primary); border-bottom: 1px solid oklch(1 0 0 / 5%);
+    }
+    .detail-weapon-table td:first-child { color: var(--accent-secondary); font-weight: 500; }
+
+    .detail-ability {
+      padding: 8px 10px; background: var(--glass-bg); backdrop-filter: var(--glass-blur);
+      border: var(--glass-border); border-radius: var(--radius-md); margin-bottom: 6px;
+    }
+    .detail-ability:last-child { margin-bottom: 0; }
+    .detail-ability-name { font-size: 13px; font-weight: 600; color: var(--accent-highlight); margin-bottom: 2px; }
+    .detail-ability-desc { font-size: 12px; color: var(--text-primary); line-height: 1.5; }
+
+    .detail-keywords { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    .detail-add-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px; border: none; border-radius: var(--radius-lg);
+      background: var(--accent-primary); color: var(--text-inverse);
+      font-family: var(--font-display); font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all var(--duration-fast) var(--ease-default);
+      margin-top: auto; flex-shrink: 0;
+    }
+    .detail-add-btn:hover { background: var(--accent-primary-hover); }
+    .detail-add-btn i { width: 18px; height: 18px; }
+
+    .detail-footer { padding: 12px 16px; border-top: 1px solid var(--border-subtle); }
+
+    @media (max-width: 767px) {
+      .detail-stat-block { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item active" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="page-with-drawer">
+        <div class="page-bg">
+          <div style="color:var(--text-tertiary);font-size:14px;">Army builder content is dimmed while the unit drawer is open.</div>
+        </div>
+
+        <div class="drawer-backdrop"></div>
+
+        <div class="drawer">
+          <div class="drawer-header">
+            <span class="drawer-title">Add Unit</span>
+            <button class="btn-icon" aria-label="Close drawer">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+
+          <div class="drawer-search">
+            <div style="position:relative;">
+              <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-tertiary);"></i>
+              <input class="input" type="text" placeholder="Search units..." style="padding-left:36px;">
+            </div>
+          </div>
+
+          <div class="drawer-filters">
+            <div class="filter-chip active">All</div>
+            <div class="filter-chip">Characters</div>
+            <div class="filter-chip">Battleline</div>
+            <div class="filter-chip">Auxiliary</div>
+            <div class="filter-chip">Vehicles</div>
+            <div class="filter-chip">Walkers</div>
+          </div>
+
+          <div class="drawer-body">
+
+            <div class="drawer-section-label">Characters</div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image has-photo"><i data-lucide="crown"></i><img class="photo-img" src="https://picsum.photos/seed/wh-sm-captain/112/112" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Captain</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">80–115 pts</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add Captain"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="crown"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Captain in Terminator Armour</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">200 pts</span>
+                  <span class="unit-tile-in-army">1 in army</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="user"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Librarian</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">75–110 pts</span>
+                  <span class="unit-tile-in-army">1 in army</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="heart"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Apothecary Biologis</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">55 pts</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image has-photo"><i data-lucide="megaphone"></i><img class="photo-img" src="https://picsum.photos/seed/wh-chaplain/112/112" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Chaplain</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">60–85 pts</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="drawer-section-label" style="margin-top:12px;">Battleline</div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="shield"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Intercessor Squad</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">90–180 pts</span>
+                  <span class="unit-tile-in-army">1 in army</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="shield"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Assault Intercessor Squad</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">90–180 pts</span>
+                  <span class="unit-tile-in-army">1 in army</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile disabled">
+              <div class="unit-tile-image"><i data-lucide="shield"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Heavy Intercessor Squad</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">100–200 pts</span>
+                </div>
+                <div class="unit-tile-disabled-reason">Maximum 3 reached</div>
+              </div>
+              <button class="unit-tile-add" disabled aria-label="Maximum reached"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="drawer-section-label" style="margin-top:12px;">Walkers</div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="bot"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Redemptor Dreadnought</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">195–210 pts</span>
+                  <span class="unit-tile-in-army">1 in army</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="bot"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Ballistus Dreadnought</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">170 pts</span>
+                  <span class="unit-tile-in-army">1 in army</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+            <div class="unit-tile">
+              <div class="unit-tile-image"><i data-lucide="bot"></i><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+              <div class="unit-tile-info">
+                <div class="unit-tile-name">Brutalis Dreadnought</div>
+                <div class="unit-tile-meta">
+                  <span class="unit-tile-points">160 pts</span>
+                </div>
+              </div>
+              <button class="unit-tile-add" aria-label="Add"><i data-lucide="plus"></i></button>
+            </div>
+
+          </div>
+
+          <!-- Unit detail preview (hidden by default, shown on tile click) -->
+          <div class="unit-detail-preview" id="unitDetailPreview">
+            <div class="detail-back-row" id="detailBackBtn">
+              <i data-lucide="arrow-left"></i>
+              <span class="detail-back-label">Back to unit list</span>
+            </div>
+
+            <div class="detail-unit-header">
+              <div class="unit-tile-image"><i data-lucide="shield"></i></div>
+              <div>
+                <div class="detail-unit-name" id="detailUnitName">Captain in Terminator Armour</div>
+                <div class="detail-unit-meta" id="detailUnitMeta">200 pts &middot; Character</div>
+              </div>
+            </div>
+
+            <div class="detail-scroll">
+              <!-- Stat block -->
+              <div>
+                <div class="detail-section-label">Characteristics</div>
+                <div class="detail-stat-block" id="detailStats">
+                  <div class="detail-stat-cell"><span class="detail-stat-label">M</span><span class="detail-stat-value">5"</span></div>
+                  <div class="detail-stat-cell"><span class="detail-stat-label">T</span><span class="detail-stat-value">5</span></div>
+                  <div class="detail-stat-cell"><span class="detail-stat-label">Sv</span><span class="detail-stat-value">2+</span></div>
+                  <div class="detail-stat-cell"><span class="detail-stat-label">W</span><span class="detail-stat-value">6</span></div>
+                  <div class="detail-stat-cell"><span class="detail-stat-label">Ld</span><span class="detail-stat-value">6+</span></div>
+                  <div class="detail-stat-cell"><span class="detail-stat-label">OC</span><span class="detail-stat-value">1</span></div>
+                </div>
+              </div>
+
+              <!-- Ranged weapons -->
+              <div>
+                <div class="detail-section-label">Ranged Weapons</div>
+                <table class="detail-weapon-table" id="detailRanged">
+                  <thead><tr><th>Weapon</th><th>R</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                  <tbody>
+                    <tr><td>Storm bolter</td><td>24"</td><td>2</td><td>2+</td><td>4</td><td>0</td><td>1</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Melee weapons -->
+              <div>
+                <div class="detail-section-label">Melee Weapons</div>
+                <table class="detail-weapon-table" id="detailMelee">
+                  <thead><tr><th>Weapon</th><th>R</th><th>A</th><th>WS</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                  <tbody>
+                    <tr><td>Relic weapon</td><td>Melee</td><td>6</td><td>2+</td><td>5</td><td>-2</td><td>2</td></tr>
+                    <tr><td>Power fist</td><td>Melee</td><td>5</td><td>2+</td><td>8</td><td>-2</td><td>2</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Abilities -->
+              <div>
+                <div class="detail-section-label">Abilities</div>
+                <div id="detailAbilities">
+                  <div class="detail-ability">
+                    <div class="detail-ability-name">Rites of Battle</div>
+                    <div class="detail-ability-desc">Once per battle round, one unit from your army within 6" can be targeted with a Stratagem for 0CP.</div>
+                  </div>
+                  <div class="detail-ability">
+                    <div class="detail-ability-name">Deep Strike</div>
+                    <div class="detail-ability-desc">This unit can be set up in Reserves and deployed more than 9" from enemy models.</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Keywords -->
+              <div>
+                <div class="detail-section-label">Keywords</div>
+                <div class="detail-keywords" id="detailKeywords">
+                  <span class="badge">Infantry</span>
+                  <span class="badge">Character</span>
+                  <span class="badge">Imperium</span>
+                  <span class="badge">Terminator</span>
+                  <span class="badge">Captain</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-footer">
+              <button class="detail-add-btn" id="detailAddBtn">
+                <i data-lucide="plus"></i>
+                Add to Army
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item active"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var i;
+      for (i = 0; i < allDetails.length; i += 1) {
+        if (!allDetails[i].contains(e.target)) {
+          allDetails[i].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+  <script>
+    var drawerBackdrop = document.querySelector('.drawer-backdrop');
+    var drawerCloseButton = document.querySelector('.drawer-header .btn-icon');
+    function handleDrawerClose() {
+      location.href = '05-army-detail.html';
+    }
+
+    if (drawerCloseButton) {
+      drawerCloseButton.addEventListener('click', handleDrawerClose);
+    }
+    if (drawerBackdrop) {
+      drawerBackdrop.addEventListener('click', handleDrawerClose);
+    }
+
+    var filterChips = document.querySelectorAll('.drawer-filters .filter-chip');
+    var filterIndex = 0;
+    function handleFilterChipClick() {
+      var siblingIndex = 0;
+      for (siblingIndex = 0; siblingIndex < filterChips.length; siblingIndex += 1) {
+        filterChips[siblingIndex].classList.remove('active');
+      }
+      this.classList.add('active');
+    }
+
+    for (filterIndex = 0; filterIndex < filterChips.length; filterIndex += 1) {
+      filterChips[filterIndex].addEventListener('click', handleFilterChipClick);
+    }
+
+    var unitData = [
+      {
+        name: 'Captain', pts: '80\u2013115 pts', role: 'Character',
+        stats: ['6"','4','3+','4','6+','1'],
+        ranged: [['Bolt pistol','12"','1','2+','4','0','1']],
+        melee: [['Master-crafted power weapon','Melee','5','2+','5','-2','2']],
+        abilities: [
+          ['Rites of Battle','Once per battle round, one unit within 6\u2033 can be targeted with a Stratagem for 0CP.'],
+          ['Leader','Can attach to: Intercessor Squad, Assault Intercessor Squad, Sternguard Veteran Squad.']
+        ],
+        keywords: ['Infantry','Character','Imperium','Captain']
+      },
+      {
+        name: 'Captain in Terminator Armour', pts: '200 pts', role: 'Character',
+        stats: ['5"','5','2+','6','6+','1'],
+        ranged: [['Storm bolter','24"','2','2+','4','0','1']],
+        melee: [['Relic weapon','Melee','6','2+','5','-2','2'],['Power fist','Melee','5','2+','8','-2','2']],
+        abilities: [
+          ['Rites of Battle','Once per battle round, one unit within 6\u2033 can be targeted with a Stratagem for 0CP.'],
+          ['Deep Strike','Can be set up in Reserves and deployed more than 9\u2033 from enemy models.']
+        ],
+        keywords: ['Infantry','Character','Imperium','Terminator','Captain']
+      },
+      {
+        name: 'Librarian', pts: '75\u2013110 pts', role: 'Character',
+        stats: ['6"','4','3+','4','6+','1'],
+        ranged: [['Bolt pistol','12"','1','3+','4','0','1']],
+        melee: [['Force weapon','Melee','4','3+','6','-1','D3']],
+        abilities: [
+          ['Psychic Hood','While leading a unit, models in that unit have the Feel No Pain 4+ ability against Psychic Attacks.'],
+          ['Leader','Can attach to: Intercessor Squad, Assault Intercessor Squad, Sternguard Veteran Squad.']
+        ],
+        keywords: ['Infantry','Character','Psyker','Imperium','Librarian']
+      },
+      {
+        name: 'Apothecary Biologis', pts: '55 pts', role: 'Character',
+        stats: ['6"','4','3+','4','6+','1'],
+        ranged: [['Bolt pistol','12"','1','3+','4','0','1']],
+        melee: [['Close combat weapon','Melee','3','3+','4','0','1']],
+        abilities: [
+          ['Surgical Precision','While leading, each time a model in this unit makes a ranged attack, on Critical Wound improve AP by 1.']
+        ],
+        keywords: ['Infantry','Character','Imperium','Gravis','Apothecary Biologis']
+      },
+      {
+        name: 'Chaplain', pts: '60\u201385 pts', role: 'Character',
+        stats: ['6"','4','3+','4','6+','1'],
+        ranged: [['Bolt pistol','12"','1','2+','4','0','1']],
+        melee: [['Crozius arcanum','Melee','5','2+','6','-1','2']],
+        abilities: [
+          ['Litany of Hate','While leading, each time a model in this unit makes a melee attack, add 1 to the Wound roll.'],
+          ['Leader','Can attach to: Intercessor Squad, Assault Intercessor Squad, Sternguard Veteran Squad.']
+        ],
+        keywords: ['Infantry','Character','Imperium','Chaplain']
+      },
+      {
+        name: 'Intercessor Squad', pts: '90\u2013180 pts', role: 'Battleline',
+        stats: ['6"','4','3+','2','6+','2'],
+        ranged: [['Bolt rifle','30"','2','3+','4','-1','1'],['Bolt pistol','12"','1','3+','4','0','1']],
+        melee: [['Close combat weapon','Melee','3','3+','4','0','1']],
+        abilities: [
+          ['Objective Secured','Models in this unit have the Objective Secured ability.']
+        ],
+        keywords: ['Infantry','Battleline','Imperium','Intercessor Squad']
+      },
+      {
+        name: 'Assault Intercessor Squad', pts: '90\u2013180 pts', role: 'Battleline',
+        stats: ['6"','4','3+','2','6+','2'],
+        ranged: [['Heavy bolt pistol','18"','1','3+','4','-1','1']],
+        melee: [['Astartes chainsword','Melee','4','3+','4','-1','1']],
+        abilities: [
+          ['Objective Secured','Models in this unit have the Objective Secured ability.']
+        ],
+        keywords: ['Infantry','Battleline','Imperium','Assault Intercessor Squad']
+      },
+      {
+        name: 'Heavy Intercessor Squad', pts: '100\u2013200 pts', role: 'Battleline',
+        stats: ['5"','6','3+','3','6+','1'],
+        ranged: [['Heavy bolt rifle','36"','2','3+','5','-1','1']],
+        melee: [['Close combat weapon','Melee','3','3+','4','0','1']],
+        abilities: [
+          ['Objective Secured','Models in this unit have the Objective Secured ability.']
+        ],
+        keywords: ['Infantry','Battleline','Imperium','Gravis','Heavy Intercessor Squad']
+      },
+      {
+        name: 'Redemptor Dreadnought', pts: '195\u2013210 pts', role: 'Walker',
+        stats: ['8"','10','2+','12','6+','4'],
+        ranged: [['Macro plasma incinerator','36"','D6+1','3+','8','-3','2'],['Icarus rocket pod','24"','D3','3+','8','-1','2']],
+        melee: [['Redemptor fist','Melee','5','3+','12','-2','3']],
+        abilities: [
+          ['Duty Eternal','Each time an attack is allocated to this model, subtract 1 from the Damage characteristic.']
+        ],
+        keywords: ['Vehicle','Walker','Imperium','Dreadnought','Redemptor']
+      },
+      {
+        name: 'Ballistus Dreadnought', pts: '170 pts', role: 'Walker',
+        stats: ['8"','10','2+','12','6+','4'],
+        ranged: [['Ballistus lascannon','48"','2','3+','12','-3','D6+1'],['Ballistus missile launcher','48"','2','3+','10','-2','D6']],
+        melee: [['Armoured feet','Melee','5','3+','7','0','1']],
+        abilities: [
+          ['Duty Eternal','Each time an attack is allocated to this model, subtract 1 from the Damage characteristic.']
+        ],
+        keywords: ['Vehicle','Walker','Imperium','Dreadnought','Ballistus']
+      },
+      {
+        name: 'Brutalis Dreadnought', pts: '160 pts', role: 'Walker',
+        stats: ['8"','10','2+','12','6+','4'],
+        ranged: [['Twin heavy bolter','36"','6','3+','5','-1','2']],
+        melee: [['Brutalis fists','Melee','6','3+','12','-2','3'],['Brutalis talons','Melee','8','3+','7','-1','2']],
+        abilities: [
+          ['Duty Eternal','Each time an attack is allocated to this model, subtract 1 from the Damage characteristic.']
+        ],
+        keywords: ['Vehicle','Walker','Imperium','Dreadnought','Brutalis']
+      }
+    ];
+
+    var detailPreview = document.getElementById('unitDetailPreview');
+    var detailBackBtn = document.getElementById('detailBackBtn');
+    var drawerSearch = document.querySelector('.drawer-search');
+    var drawerFilters = document.querySelector('.drawer-filters');
+    var drawerBody = document.querySelector('.drawer-body');
+    var unitTiles = document.querySelectorAll('.unit-tile');
+    var statLabels = ['M','T','Sv','W','Ld','OC'];
+
+    function buildWeaponRows(weapons) {
+      var html = '';
+      var w;
+      var c;
+      for (w = 0; w < weapons.length; w += 1) {
+        html += '<tr>';
+        for (c = 0; c < weapons[w].length; c += 1) {
+          html += '<td>' + weapons[w][c] + '</td>';
+        }
+        html += '</tr>';
+      }
+      return html;
+    }
+
+    function showUnitDetail(index) {
+      var data = unitData[index];
+      if (!data) { return; }
+
+      document.getElementById('detailUnitName').textContent = data.name;
+      document.getElementById('detailUnitMeta').textContent = data.pts + ' \u00b7 ' + data.role;
+
+      var statsHtml = '';
+      var s;
+      for (s = 0; s < data.stats.length; s += 1) {
+        statsHtml += '<div class="detail-stat-cell"><span class="detail-stat-label">' + statLabels[s] + '</span><span class="detail-stat-value">' + data.stats[s] + '</span></div>';
+      }
+      document.getElementById('detailStats').innerHTML = statsHtml;
+
+      document.getElementById('detailRanged').querySelector('tbody').innerHTML = buildWeaponRows(data.ranged);
+      document.getElementById('detailMelee').querySelector('tbody').innerHTML = buildWeaponRows(data.melee);
+
+      var abilitiesHtml = '';
+      var a;
+      for (a = 0; a < data.abilities.length; a += 1) {
+        abilitiesHtml += '<div class="detail-ability"><div class="detail-ability-name">' + data.abilities[a][0] + '</div><div class="detail-ability-desc">' + data.abilities[a][1] + '</div></div>';
+      }
+      document.getElementById('detailAbilities').innerHTML = abilitiesHtml;
+
+      var keywordsHtml = '';
+      var k;
+      for (k = 0; k < data.keywords.length; k += 1) {
+        keywordsHtml += '<span class="badge">' + data.keywords[k] + '</span>';
+      }
+      document.getElementById('detailKeywords').innerHTML = keywordsHtml;
+
+      drawerSearch.style.display = 'none';
+      drawerFilters.style.display = 'none';
+      drawerBody.classList.add('hidden');
+      detailPreview.classList.add('active');
+
+      lucide.createIcons();
+    }
+
+    function hideUnitDetail() {
+      detailPreview.classList.remove('active');
+      drawerSearch.style.display = '';
+      drawerFilters.style.display = '';
+      drawerBody.classList.remove('hidden');
+    }
+
+    detailBackBtn.addEventListener('click', hideUnitDetail);
+
+    var tileIndex;
+    for (tileIndex = 0; tileIndex < unitTiles.length; tileIndex += 1) {
+      (function(idx) {
+        var tile = unitTiles[idx];
+        var infoArea = tile.querySelector('.unit-tile-info');
+        var imageArea = tile.querySelector('.unit-tile-image');
+        if (infoArea) {
+          infoArea.addEventListener('click', function(e) {
+            e.stopPropagation();
+            showUnitDetail(idx);
+          });
+        }
+        if (imageArea) {
+          imageArea.addEventListener('click', function(e) {
+            e.stopPropagation();
+            showUnitDetail(idx);
+          });
+        }
+      })(tileIndex);
+    }
+
+    document.getElementById('detailAddBtn').addEventListener('click', function() {
+      hideUnitDetail();
+    });
+  </script>
+</body>
+</html>

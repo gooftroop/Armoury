@@ -1,0 +1,13 @@
+{
+    "extends": "@armoury/typescript/build.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "@clients-github/*": ["./src/*"]
+        }
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/**/__mocks__/**", "src/**/__fixtures__/**"]
+}

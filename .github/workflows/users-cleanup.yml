@@ -1,0 +1,16 @@
+name: Users Sandbox Cleanup
+
+on:
+    pull_request:
+        types: [closed]
+        branches: [main]
+        paths:
+            - 'src/services/users/**'
+            - 'src/shared/**'
+
+jobs:
+    cleanup:
+        uses: ./.github/workflows/_cleanup-service.yml
+        with:
+            working-directory: src/services/users
+        secrets: inherit

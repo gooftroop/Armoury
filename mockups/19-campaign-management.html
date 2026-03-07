@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armoury — Manage Campaign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .sidebar-user-role { font-size: 11px; color: var(--text-tertiary); }
+
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .breadcrumb-link { color: var(--text-secondary); font-weight: 500; }
+    .breadcrumb-link:hover { color: var(--accent-secondary-hover); }
+    .breadcrumb-sep { color: var(--text-tertiary); }
+    .breadcrumb-current { color: var(--text-tertiary); font-weight: 500; }
+
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: var(--space-6); }
+    .page-title { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+    .page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+
+    .panel {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: var(--radius-lg);
+      padding: 20px; margin-bottom: 20px;
+      box-shadow: var(--glass-highlight), var(--glass-shade), var(--shadow-sm);
+    }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .form-row { display: flex; flex-direction: column; gap: 6px; }
+    .form-row-full { grid-column: 1 / -1; }
+
+    .participant-list { display: flex; flex-direction: column; gap: 10px; }
+    .participant-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-md);
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+    }
+    .participant-item:hover { border-color: var(--border-default); }
+    .participant-info { flex: 1; }
+    .participant-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .participant-detail { font-size: 12px; color: var(--text-tertiary); }
+    .role-badge { margin-left: auto; }
+
+    .schedule-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px 14px; border-radius: var(--radius-md); background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);
+    }
+    .schedule-row + .schedule-row { margin-top: 8px; }
+    .schedule-meta { display: flex; flex-direction: column; gap: 2px; }
+    .schedule-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .schedule-subtitle { font-size: 12px; color: var(--text-tertiary); }
+
+    .danger-zone { border-color: oklch(0.60 0.20 25 / 25%); background: oklch(0.23 0.006 260 / 60%); }
+    .danger-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-danger-outline {
+      background: transparent; border: 1px solid var(--status-danger); color: var(--status-danger);
+      padding: 0 20px; height: 40px; border-radius: var(--radius-md); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .btn-danger-outline:hover { background: oklch(0.60 0.20 25 / 12%); }
+    select.input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--text-tertiary) 50%), linear-gradient(135deg, var(--text-tertiary) 50%, transparent 50%); background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px); background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; padding-right: 32px; }
+
+    @media (max-width: 767px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .panel { padding: 16px; }
+      .page-header { flex-direction: column; gap: 12px; }
+      .participant-item { flex-wrap: wrap; gap: 8px; }
+      .danger-actions { flex-direction: column; }
+      .danger-actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body data-system="wh40k10e">
+  <div class="app-shell">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header" style="display:flex;align-items:center;gap:8px;">
+        <a href="01-landing.html" class="sidebar-game-label" style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);padding:4px 12px;background:var(--accent-primary-muted);border-radius:var(--radius-md);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;transition:all var(--duration-fast) var(--ease-default);">40K 10E<i data-lucide="chevron-down" style="width:12px;height:12px;opacity:0.5;"></i></a>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" onclick="this.closest('.sidebar').classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav">
+        <a href="03-forge-armies.html" class="nav-item" data-tooltip="The Forge">
+          <i data-lucide="hammer"></i>
+          <span>The Forge</span>
+        </a>
+        <a href="11-war-ledger.html" class="nav-item" data-tooltip="War Ledger">
+          <i data-lucide="scroll-text"></i>
+          <span>War Ledger</span>
+        </a>
+        <a href="12-campaigns.html" class="nav-item active" data-tooltip="Campaigns">
+          <i data-lucide="flag"></i>
+          <span>Campaigns</span>
+        </a>
+        <a href="13-allies.html" class="nav-item" data-tooltip="Allies">
+          <i data-lucide="users"></i>
+          <span>Allies</span>
+        </a>
+        <a href="14-references.html" class="nav-item" data-tooltip="References">
+          <i data-lucide="book-open"></i>
+          <span>References</span>
+        </a>
+      </div>
+      <div class="sidebar-disclaimer" style="padding:0 var(--space-3);margin-bottom:var(--space-2);">
+        <p style="font-size:10px;line-height:1.4;color:var(--text-tertiary);opacity:0.7;">Unofficial fan tool. Not affiliated with or endorsed by any game publisher. All trademarks are property of their respective owners.</p>
+      </div>
+      <div class="sidebar-footer">
+         <details class="popover-trigger">
+           <summary class="sidebar-user" style="cursor:pointer;">
+             <div class="avatar has-photo">C<img class="photo-img" src="https://picsum.photos/seed/wh-avatar/64/64" alt=""><div class="photo-overlay-sm"><i data-lucide="camera"></i></div></div>
+             <div>
+               <div class="sidebar-user-name">Commander</div>
+               <div class="sidebar-user-role">Online</div>
+             </div>
+           </summary>
+           <div class="popover-content" style="bottom:calc(100% + 8px);left:0;right:0;">
+             <div class="popover-header">Commander_01</div>
+            <div style="padding:0 var(--space-3);font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--space-1);">Friend Code: ARM-X7K2-Q9</div>
+            <div class="popover-divider"></div>
+            <a href="15-account.html" class="popover-item"><i data-lucide="settings"></i> Account Settings</a>
+            <button class="popover-item"><i data-lucide="user-plus"></i> Create Account</button>
+            <button class="popover-item"><i data-lucide="log-in"></i> Sign In</button>
+            <div class="popover-divider"></div>
+            <button class="popover-item" style="color:var(--status-danger);"><i data-lucide="log-out"></i> Sign Out</button>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="content">
+        <nav class="breadcrumb" style="font-size:13px;margin-bottom:var(--space-2);">
+          <a href="12-campaigns.html" class="breadcrumb-link">Campaigns</a>
+          <span class="breadcrumb-sep">/</span>
+          <a href="17-campaign-detail.html" class="breadcrumb-link">Crusade of Iron</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Manage</span>
+        </nav>
+
+        <div class="page-header">
+          <div>
+            <div class="page-title">Manage Campaign</div>
+            <div class="page-subtitle">Crusade of Iron</div>
+          </div>
+          <button class="btn btn-primary btn-sm"><i data-lucide="save" style="width:14px;height:14px;"></i> Save Changes</button>
+        </div>
+
+        <div class="panel">
+          <div class="section-header">
+            <span class="section-header-label">Campaign Settings</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-row form-row-full">
+              <label class="input-label" for="campaign-name">Campaign Name</label>
+              <input class="input" id="campaign-name" type="text" value="Crusade of Iron">
+            </div>
+
+            <div class="form-row">
+              <label class="input-label" for="campaign-type">Campaign Type</label>
+              <select class="input" id="campaign-type">
+                <option selected>Crusade</option>
+                <option>Narrative</option>
+                <option>Matched Play</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label class="input-label" for="start-date">Start Date</label>
+              <input class="input" id="start-date" type="date" value="2026-01-05">
+            </div>
+
+            <div class="form-row">
+              <label class="input-label" for="end-date">End Date</label>
+              <input class="input" id="end-date" type="date" value="2026-03-30">
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="section-header">
+            <span class="section-header-label">Participants</span>
+            <span class="section-header-count">6 active</span>
+          </div>
+          <div class="participant-list">
+            <div class="participant-item">
+              <div class="avatar avatar-sm">C</div>
+              <div class="participant-info">
+                <div class="participant-name">Commander</div>
+                <div class="participant-detail">Organizer · Iron Wolves</div>
+              </div>
+              <span class="badge badge-primary role-badge">Organizer</span>
+              <button class="btn-icon btn-icon-sm" aria-label="Remove participant"><i data-lucide="x"></i></button>
+            </div>
+            <div class="participant-item">
+              <div class="avatar avatar-sm">I</div>
+              <div class="participant-info">
+                <div class="participant-name">IronFist_42</div>
+                <div class="participant-detail">Participant · Death Guard</div>
+              </div>
+              <span class="badge badge-accent role-badge">Veteran</span>
+              <button class="btn-icon btn-icon-sm" aria-label="Remove participant"><i data-lucide="x"></i></button>
+            </div>
+            <div class="participant-item">
+              <div class="avatar avatar-sm">X</div>
+              <div class="participant-info">
+                <div class="participant-name">XenoSlayer</div>
+                <div class="participant-detail">Participant · Tyranids</div>
+              </div>
+              <span class="badge badge-active role-badge">Active</span>
+              <button class="btn-icon btn-icon-sm" aria-label="Remove participant"><i data-lucide="x"></i></button>
+            </div>
+            <div class="participant-item">
+              <div class="avatar avatar-sm">B</div>
+              <div class="participant-info">
+                <div class="participant-name">BattleSister_7</div>
+                <div class="participant-detail">Participant · Adepta Sororitas</div>
+              </div>
+              <span class="badge badge-planned role-badge">Invited</span>
+              <button class="btn-icon btn-icon-sm" aria-label="Remove participant"><i data-lucide="x"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="section-header">
+            <span class="section-header-label">Campaign Schedule</span>
+          </div>
+          <div>
+            <div class="schedule-row">
+              <div class="schedule-meta">
+                <div class="schedule-title">Round 3 — Supply Raid</div>
+                <div class="schedule-subtitle">Feb 18, 2026 · Pairings live</div>
+              </div>
+              <span class="badge badge-active">Active</span>
+            </div>
+            <div class="schedule-row">
+              <div class="schedule-meta">
+                <div class="schedule-title">Round 4 — Iron Bastion</div>
+                <div class="schedule-subtitle">Mar 5, 2026 · Drafting</div>
+              </div>
+              <span class="badge badge-planned">Planned</span>
+            </div>
+            <div class="schedule-row">
+              <div class="schedule-meta">
+                <div class="schedule-title">Finale — The Iron Stars</div>
+                <div class="schedule-subtitle">Mar 30, 2026 · Lock in standings</div>
+              </div>
+              <span class="badge badge-info">Upcoming</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel danger-zone">
+          <div class="section-header">
+            <span class="section-header-label" style="color:var(--status-danger);">Danger Zone</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-3);">Ending or deleting a campaign removes access for participants. Deleting is permanent.</p>
+          <div class="danger-actions">
+            <button class="btn-danger-outline">End Campaign</button>
+            <button class="btn btn-danger">Delete Campaign</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="03-forge-armies.html" class="bottom-nav-item"><i data-lucide="hammer"></i><span>Forge</span></a>
+    <a href="11-war-ledger.html" class="bottom-nav-item"><i data-lucide="scroll-text"></i><span>Ledger</span></a>
+    <a href="12-campaigns.html" class="bottom-nav-item active"><i data-lucide="flag"></i><span>Campaigns</span></a>
+    <a href="13-allies.html" class="bottom-nav-item"><i data-lucide="users"></i><span>Allies</span></a>
+    <a href="14-references.html" class="bottom-nav-item"><i data-lucide="book-open"></i><span>Refs</span></a>
+  </nav>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    var allDetails = document.querySelectorAll('details.popover-trigger');
+    document.addEventListener('click', function(e) {
+      var j;
+      for (j = 0; j < allDetails.length; j += 1) {
+        if (!allDetails[j].contains(e.target)) {
+          allDetails[j].removeAttribute('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

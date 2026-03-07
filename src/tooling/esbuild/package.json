@@ -1,0 +1,15 @@
+{
+    "name": "@armoury/esbuild",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./base": "./base.js",
+        "./library": "./library.js",
+        "./service": "./service.js"
+    },
+    "dependencies": {
+        "browserslist-to-esbuild": "^2.1.1",
+        "esbuild": "^0.25.0"
+    }
+}

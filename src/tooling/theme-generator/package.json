@@ -1,0 +1,26 @@
+{
+    "name": "@armoury/theme-generator",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./src/types.d.ts",
+            "default": "./src/index.js"
+        },
+        "./generate": "./src/generate.js"
+    },
+    "bin": {
+        "generate-theme": "./src/generate.js"
+    },
+    "scripts": {
+        "generate:theme": "node --import=tsx src/generate.js",
+        "test": "vitest run --passWithNoTests",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@armoury/typescript": "*",
+        "@armoury/vitest": "*",
+        "vitest": "^4.0.0"
+    }
+}

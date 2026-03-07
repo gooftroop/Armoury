@@ -1,0 +1,11 @@
+{
+    "name": "@armoury/typescript",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./base.json": "./base.json",
+        "./test.json": "./test.json",
+        "./build.json": "./build.json"
+    }
+}
