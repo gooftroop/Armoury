@@ -1,0 +1,33 @@
+name: Web CI
+
+on:
+    workflow_call:
+
+jobs:
+    ci:
+        name: Build & Test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
+
+            - run: npm ci
+
+            - name: Build dependencies
+              run: npx turbo run build --filter=@armoury/web^...
+
+            - name: Typecheck
+              run: npx turbo run typecheck --filter=@armoury/web
+
+            - name: Lint
+              run: npm run lint -w @armoury/web
+
+            - name: Format check
+              run: npm run format:check -w @armoury/web
+
+            - name: Test
+              run: npx turbo run test --filter=@armoury/web
