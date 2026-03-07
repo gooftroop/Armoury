@@ -8,5 +8,8 @@
     },
     "peerDependencies": {
         "prettier": "^3.0.0"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"
     }
 }

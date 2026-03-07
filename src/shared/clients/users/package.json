@@ -34,5 +34,9 @@
     "dependencies": {
         "@tanstack/react-query": "^5.0.0",
         "ky": "^1.0.0"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
+        "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"
     }
 }
