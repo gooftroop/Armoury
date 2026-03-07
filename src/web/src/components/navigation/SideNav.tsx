@@ -29,7 +29,7 @@ const NAV_ITEMS = [
 
 /**
  * Sidebar navigation component for desktop and tablet screens.
- * 
+ *
  * @param props - Component props
  * @returns The SideNav component
  */
@@ -44,17 +44,25 @@ export function SideNav({ locale, gameSystem }: SideNavProps) {
         <aside
             className={cn(
                 'hidden h-[100dvh] flex-col border-r border-border-subtle bg-surface transition-all duration-300 md:flex',
-                collapsed ? 'w-16' : 'w-60'
+                collapsed ? 'w-16' : 'w-60',
             )}
         >
             <div className="flex h-16 shrink-0 items-center justify-between px-4">
                 {!collapsed && (
-                    <Link href="/" className="font-display text-lg font-bold tracking-wider text-primary truncate" title={t('switchSystem')}>
+                    <Link
+                        href="/"
+                        className="font-display text-lg font-bold tracking-wider text-primary truncate"
+                        title={t('switchSystem')}
+                    >
                         ARMOURY
                     </Link>
                 )}
                 {collapsed && (
-                    <Link href="/" className="mx-auto font-display text-lg font-bold tracking-wider text-primary" title={t('switchSystem')}>
+                    <Link
+                        href="/"
+                        className="mx-auto font-display text-lg font-bold tracking-wider text-primary"
+                        title={t('switchSystem')}
+                    >
                         A
                     </Link>
                 )}
@@ -72,16 +80,24 @@ export function SideNav({ locale, gameSystem }: SideNavProps) {
                         <Link
                             key={item.id}
                             href={href}
-                            title={collapsed ? t(item.id as "armies" | "matches" | "campaigns" | "social" | "references") : undefined}
+                            title={
+                                collapsed
+                                    ? t(item.id as 'armies' | 'matches' | 'campaigns' | 'social' | 'references')
+                                    : undefined
+                            }
                             className={cn(
                                 'group flex h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors hover:bg-hover',
                                 isActive
                                     ? 'bg-accent-primary-muted font-medium text-accent-primary'
-                                    : 'text-secondary hover:text-primary'
+                                    : 'text-secondary hover:text-primary',
                             )}
                         >
                             <Icon className="h-5 w-5 shrink-0" />
-                            {!collapsed && <span>{t(item.id as "armies" | "matches" | "campaigns" | "social" | "references")}</span>}
+                            {!collapsed && (
+                                <span>
+                                    {t(item.id as 'armies' | 'matches' | 'campaigns' | 'social' | 'references')}
+                                </span>
+                            )}
                             {isActive && !collapsed && (
                                 <div className="absolute left-0 h-8 w-[3px] rounded-r-full bg-accent-primary" />
                             )}
@@ -98,7 +114,12 @@ export function SideNav({ locale, gameSystem }: SideNavProps) {
                 >
                     {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
                 </button>
-                <div className={cn("flex items-center rounded-md p-2 hover:bg-hover cursor-pointer", collapsed ? "justify-center" : "gap-3 px-3")}>
+                <div
+                    className={cn(
+                        'flex items-center rounded-md p-2 hover:bg-hover cursor-pointer',
+                        collapsed ? 'justify-center' : 'gap-3 px-3',
+                    )}
+                >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-border">
                         <span className="text-xs font-medium">U</span>
                     </div>

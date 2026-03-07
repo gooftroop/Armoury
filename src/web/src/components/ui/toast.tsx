@@ -31,8 +31,7 @@ const toastVariants = cva(
         variants: {
             variant: {
                 default: 'border bg-background text-foreground',
-                destructive:
-                    'destructive group border-destructive bg-destructive text-destructive-foreground',
+                destructive: 'destructive group border-destructive bg-destructive text-destructive-foreground',
             },
         },
         defaultVariants: {
@@ -45,8 +44,7 @@ const toastVariants = cva(
  * Props for the Toast component.
  */
 export interface ToastProps
-    extends React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root>,
-        VariantProps<typeof toastVariants> {}
+    extends React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root>, VariantProps<typeof toastVariants> {}
 
 /**
  * Props for the ToastAction component.
@@ -109,13 +107,7 @@ function Toast(
     { className, variant, ...props }: ToastProps,
     ref: React.ForwardedRef<HTMLLIElement>,
 ): React.ReactElement {
-    return (
-        <ToastPrimitive.Root
-            className={cn(toastVariants({ variant }), className)}
-            ref={ref}
-            {...props}
-        />
-    );
+    return <ToastPrimitive.Root className={cn(toastVariants({ variant }), className)} ref={ref} {...props} />;
 }
 
 Toast.displayName = 'Toast';
@@ -185,11 +177,7 @@ function ToastTitle(
     ref: React.ForwardedRef<HTMLDivElement>,
 ): React.ReactElement {
     return (
-        <ToastPrimitive.Title
-            className={cn('text-sm font-semibold [&+div]:text-xs', className)}
-            ref={ref}
-            {...props}
-        />
+        <ToastPrimitive.Title className={cn('text-sm font-semibold [&+div]:text-xs', className)} ref={ref} {...props} />
     );
 }
 
@@ -206,23 +194,9 @@ function ToastDescription(
     { className, ...props }: ToastDescriptionProps,
     ref: React.ForwardedRef<HTMLDivElement>,
 ): React.ReactElement {
-    return (
-        <ToastPrimitive.Description
-            className={cn('text-sm opacity-90', className)}
-            ref={ref}
-            {...props}
-        />
-    );
+    return <ToastPrimitive.Description className={cn('text-sm opacity-90', className)} ref={ref} {...props} />;
 }
 
 ToastDescription.displayName = 'ToastDescription';
 
-export {
-    ToastProvider,
-    ToastViewport,
-    Toast,
-    ToastTitle,
-    ToastDescription,
-    ToastClose,
-    ToastAction,
-};
+export { ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastClose, ToastAction };

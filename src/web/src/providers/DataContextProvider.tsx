@@ -139,10 +139,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const { DataContext: DC } = await import('@armoury/data');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
-            const dc = await DC.builder()
-                .system(system)
-                .adapter(adapter)
-                .build();
+            const dc = await DC.builder().system(system).adapter(adapter).build();
             dataContextRef.current = dc;
             setDataContext(dc);
             setStatus('ready');

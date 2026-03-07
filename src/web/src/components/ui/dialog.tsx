@@ -127,12 +127,7 @@ DialogContent.displayName = 'DialogContent';
  * @returns The rendered DialogHeader component.
  */
 function DialogHeader({ className, ...props }: DialogHeaderProps): React.ReactElement {
-    return (
-        <div
-            className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)}
-            {...props}
-        />
-    );
+    return <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />;
 }
 
 DialogHeader.displayName = 'DialogHeader';
@@ -145,10 +140,7 @@ DialogHeader.displayName = 'DialogHeader';
  */
 function DialogFooter({ className, ...props }: DialogFooterProps): React.ReactElement {
     return (
-        <div
-            className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
-            {...props}
-        />
+        <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
     );
 }
 
@@ -161,12 +153,7 @@ DialogFooter.displayName = 'DialogFooter';
  * @returns The rendered DialogTitle component.
  */
 function DialogTitle({ className, ...props }: DialogTitleProps): React.ReactElement {
-    return (
-        <Dialog.Title
-            className={cn('text-lg font-semibold leading-none tracking-tight', className)}
-            {...props}
-        />
-    );
+    return <Dialog.Title className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />;
 }
 
 DialogTitle.displayName = 'DialogTitle';
@@ -178,12 +165,7 @@ DialogTitle.displayName = 'DialogTitle';
  * @returns The rendered DialogDescription component.
  */
 function DialogDescription({ className, ...props }: DialogDescriptionProps): React.ReactElement {
-    return (
-        <Dialog.Description
-            className={cn('text-sm text-muted-foreground', className)}
-            {...props}
-        />
-    );
+    return <Dialog.Description className={cn('text-sm text-muted-foreground', className)} {...props} />;
 }
 
 DialogDescription.displayName = 'DialogDescription';

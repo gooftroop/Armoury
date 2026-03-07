@@ -45,9 +45,7 @@ const Tabs = TabsPrimitive.Root;
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered TabsList component.
  */
-function TabsList(
-    { className, ref, ...props }: TabsListProps,
-): React.ReactElement {
+function TabsList({ className, ref, ...props }: TabsListProps): React.ReactElement {
     return (
         <TabsPrimitive.List
             className={cn(
@@ -69,9 +67,7 @@ TabsList.displayName = 'TabsList';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered TabsTrigger component.
  */
-function TabsTrigger(
-    { className, ref, ...props }: TabsTriggerProps,
-): React.ReactElement {
+function TabsTrigger({ className, ref, ...props }: TabsTriggerProps): React.ReactElement {
     return (
         <TabsPrimitive.Trigger
             className={cn(
@@ -93,9 +89,7 @@ TabsTrigger.displayName = 'TabsTrigger';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered TabsContent component.
  */
-function TabsContent(
-    { className, ref, ...props }: TabsContentProps,
-): React.ReactElement {
+function TabsContent({ className, ref, ...props }: TabsContentProps): React.ReactElement {
     return (
         <TabsPrimitive.Content
             className={cn(

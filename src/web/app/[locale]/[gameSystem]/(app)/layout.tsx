@@ -19,7 +19,7 @@ export interface AppLayoutProps {
 /**
  * The main application shell layout.
  * Renders the responsive navigation around the main content area.
- * 
+ *
  * @param props - Layout props
  * @returns The wrapped React tree
  */
@@ -34,9 +34,7 @@ export default async function AppLayout({ children, params }: AppLayoutProps) {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex-col pb-14 md:pb-0 relative min-h-0 min-w-0">
-                {children}
-            </div>
+            <div className="flex-1 flex-col pb-14 md:pb-0 relative min-h-0 min-w-0">{children}</div>
 
             {/* Mobile Bottom Navigation */}
             <div className="md:hidden">

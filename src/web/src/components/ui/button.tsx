@@ -30,17 +30,14 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                primary:
-                    'bg-primary text-primary-foreground shadow hover:bg-primary/90 active:bg-primary/80',
+                primary: 'bg-primary text-primary-foreground shadow hover:bg-primary/90 active:bg-primary/80',
                 secondary:
                     'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 active:bg-secondary/70',
-                highlight:
-                    'bg-highlight text-highlight-foreground shadow hover:bg-highlight/90 active:bg-highlight/80',
+                highlight: 'bg-highlight text-highlight-foreground shadow hover:bg-highlight/90 active:bg-highlight/80',
                 ghost: 'hover:bg-accent hover:text-accent-foreground',
                 destructive:
                     'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:bg-destructive/80',
-                outline:
-                    'border border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
+                outline: 'border border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
             },
             size: {
                 sm: 'h-8 px-3 text-xs',
@@ -72,18 +69,10 @@ export interface ButtonProps extends React.ComponentPropsWithRef<'button'>, Vari
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered Button component.
  */
-function Button(
-    { className, variant, size, asChild = false, ref, ...props }: ButtonProps,
-): React.ReactElement {
+function Button({ className, variant, size, asChild = false, ref, ...props }: ButtonProps): React.ReactElement {
     const Comp = asChild ? Slot : 'button';
 
-    return (
-        <Comp
-            className={cn(buttonVariants({ variant, size, className }))}
-            ref={ref}
-            {...props}
-        />
-    );
+    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
 }
 
 Button.displayName = 'Button';

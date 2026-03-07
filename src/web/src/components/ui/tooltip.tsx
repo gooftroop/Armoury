@@ -51,9 +51,7 @@ const Tooltip = TooltipPrimitive.Root;
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered TooltipTrigger component.
  */
-function TooltipTrigger(
-    { ref, ...props }: TooltipTriggerProps,
-): React.ReactElement {
+function TooltipTrigger({ ref, ...props }: TooltipTriggerProps): React.ReactElement {
     return <TooltipPrimitive.Trigger ref={ref} {...props} />;
 }
 
@@ -66,9 +64,7 @@ TooltipTrigger.displayName = 'TooltipTrigger';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered TooltipContent component.
  */
-function TooltipContent(
-    { className, sideOffset = 4, ref, ...props }: TooltipContentProps,
-): React.ReactElement {
+function TooltipContent({ className, sideOffset = 4, ref, ...props }: TooltipContentProps): React.ReactElement {
     return (
         <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content

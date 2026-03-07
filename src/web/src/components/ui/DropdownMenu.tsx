@@ -317,13 +317,7 @@ function DropdownMenuSeparator(
     { className, ...props }: DropdownMenuSeparatorProps,
     ref: React.ForwardedRef<HTMLDivElement>,
 ): React.ReactElement {
-    return (
-        <DropdownMenu.Separator
-            className={cn('-mx-1 my-1 h-px bg-muted', className)}
-            ref={ref}
-            {...props}
-        />
-    );
+    return <DropdownMenu.Separator className={cn('-mx-1 my-1 h-px bg-muted', className)} ref={ref} {...props} />;
 }
 
 DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';
@@ -339,13 +333,7 @@ function DropdownMenuShortcut(
     { className, ...props }: DropdownMenuShortcutProps,
     ref: React.ForwardedRef<HTMLSpanElement>,
 ): React.ReactElement {
-    return (
-        <span
-            className={cn('ml-auto text-xs tracking-widest opacity-60', className)}
-            ref={ref}
-            {...props}
-        />
-    );
+    return <span className={cn('ml-auto text-xs tracking-widest opacity-60', className)} ref={ref} {...props} />;
 }
 
 DropdownMenuShortcut.displayName = 'DropdownMenuShortcut';

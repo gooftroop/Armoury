@@ -33,7 +33,9 @@ const SYSTEMS_DIR = join(process.cwd(), 'public', 'systems');
  * @returns True if the value satisfies the minimum manifest shape.
  */
 function isValidManifest(value: unknown): value is GameSystemManifest {
-    if (typeof value !== 'object' || value === null) {return false;}
+    if (typeof value !== 'object' || value === null) {
+        return false;
+    }
 
     const record = value as Record<string, unknown>;
 

@@ -112,7 +112,9 @@ export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): Rea
 
             const status = getSyncStatus(manifest.id, systemSyncStates);
 
-            if (status === 'syncing') {return;}
+            if (status === 'syncing') {
+                return;
+            }
 
             setActivatingId(manifest.id);
             const system = await resolveGameSystem(manifest.id);
@@ -218,8 +220,7 @@ function SystemTile({
             <div
                 className="absolute left-0 right-0 top-0 h-1"
                 style={{
-                    background:
-                        manifest.accent === 'gold' ? 'var(--accent-primary)' : 'oklch(1 0 0 / 12%)',
+                    background: manifest.accent === 'gold' ? 'var(--accent-primary)' : 'oklch(1 0 0 / 12%)',
                 }}
             />
 
@@ -275,12 +276,8 @@ function SystemTile({
             </div>
 
             <div className="flex flex-col gap-2 p-5 pt-4">
-                <h2 className="text-lg font-semibold leading-tight text-primary">
-                    {manifest.splashText}
-                </h2>
-                <p className="text-xs leading-relaxed text-secondary/70">
-                    {manifest.id}
-                </p>
+                <h2 className="text-lg font-semibold leading-tight text-primary">{manifest.splashText}</h2>
+                <p className="text-xs leading-relaxed text-secondary/70">{manifest.id}</p>
             </div>
         </div>
     );

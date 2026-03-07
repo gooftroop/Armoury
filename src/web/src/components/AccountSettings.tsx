@@ -26,11 +26,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
 
-import {
-    queryAccount,
-    mutationUpdateAccount,
-    mutationDeleteAccount,
-} from '@armoury/clients-users';
+import { queryAccount, mutationUpdateAccount, mutationDeleteAccount } from '@armoury/clients-users';
 import type { UserPreferences, Account } from '@armoury/clients-users';
 
 import {
@@ -189,7 +185,9 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
     const systemKeys: string[] = React.useMemo(() => {
         const account = accountQuery.data as (Account & { systems?: Record<string, unknown> }) | undefined;
 
-        if (!account?.systems) {return [];}
+        if (!account?.systems) {
+            return [];
+        }
 
         return Object.keys(account.systems);
     }, [accountQuery.data]);
@@ -243,9 +241,7 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                                     <SelectItem value="auto">Auto</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <p className="text-xs text-secondary">
-                                {t('preferences.themeDisabledNote')}
-                            </p>
+                            <p className="text-xs text-secondary">{t('preferences.themeDisabledNote')}</p>
                         </div>
 
                         {/* Language — disabled in V1 */}
@@ -259,9 +255,7 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                                     <SelectItem value="en">English</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <p className="text-xs text-secondary">
-                                {t('preferences.languageDisabledNote')}
-                            </p>
+                            <p className="text-xs text-secondary">{t('preferences.languageDisabledNote')}</p>
                         </div>
 
                         <Separator />
@@ -270,9 +264,7 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col gap-1">
                                 <Label>{t('preferences.notifications')}</Label>
-                                <p className="text-xs text-secondary">
-                                    {t('preferences.notificationsDescription')}
-                                </p>
+                                <p className="text-xs text-secondary">{t('preferences.notificationsDescription')}</p>
                             </div>
                             <Switch
                                 checked={localPreferences.notificationsEnabled}
@@ -329,9 +321,7 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>{t('danger.deleteConfirmTitle')}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {t('danger.deleteConfirmDescription')}
-                                </AlertDialogDescription>
+                                <AlertDialogDescription>{t('danger.deleteConfirmDescription')}</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>{t('danger.deleteCancel')}</AlertDialogCancel>
