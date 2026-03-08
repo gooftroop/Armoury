@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 import { existsSync, readdirSync, statSync } from 'fs';
-import { resolve, join } from 'path';
+import { resolve, join, dirname } from 'path';
 
 /**
  * Resolves the monorepo root directory (contains turbo.json).
@@ -22,45 +22,57 @@ function getRepoRoot(): string {
 
 /**
  * Discovers all per-service docker-compose.yml files under src/services/.
- * Returns the `-f` flags for `docker compose` to merge them all.
+ * Returns an array of absolute paths.
  */
-function getComposeFlags(repoRoot: string): string {
+function getComposeFiles(repoRoot: string): string[] {
     const servicesDir = join(repoRoot, 'src', 'services');
-    const flags: string[] = [];
+    const files: string[] = [];
 
     for (const entry of readdirSync(servicesDir)) {
-        const composePath = join(servicesDir, entry, 'docker-compose.yml');
+        const entryPath = join(servicesDir, entry);
+        const composePath = join(entryPath, 'docker-compose.yml');
 
-        if (statSync(join(servicesDir, entry)).isDirectory() && existsSync(composePath)) {
-            flags.push(`-f ${composePath}`);
+        if (statSync(entryPath).isDirectory() && existsSync(composePath)) {
+            files.push(composePath);
         }
     }
 
-    if (flags.length === 0) {
+    if (files.length === 0) {
         throw new Error('No docker-compose.yml files found under src/services/');
     }
 
-    return flags.join(' ');
+    return files;
 }
 
 /**
  * Vitest globalSetup — starts Docker Compose e2e containers before all tests.
- * Dynamically discovers per-service compose files so adding a new service
- * automatically includes it in the e2e environment.
+ *
+ * Each service's docker-compose.yml is launched independently with
+ * `--project-directory` set to its own directory. This ensures relative
+ * paths (e.g. volume mounts for seed.sql) resolve correctly per-service,
+ * avoiding the Docker Compose bug where multiple `-f` flags cause all
+ * relative paths to resolve relative to the first file's directory.
  */
 export async function setup(): Promise<void> {
     const cwd = getRepoRoot();
-    const flags = getComposeFlags(cwd);
+    const files = getComposeFiles(cwd);
 
-    console.log('[e2e] Starting Docker containers...');
+    console.log(`[e2e] Starting ${files.length} Docker Compose services...`);
 
-    execSync(`docker compose ${flags} up -d --wait`, {
-        cwd,
-        stdio: 'inherit',
-        timeout: 120_000,
-    });
+    for (const file of files) {
+        const projectDir = dirname(file);
+        const serviceName = projectDir.split('/').pop() ?? projectDir;
 
-    console.log('[e2e] Docker containers ready.');
+        console.log(`[e2e] Starting ${serviceName}...`);
+
+        execSync(`docker compose -f "${file}" --project-directory "${projectDir}" up -d --wait`, {
+            cwd,
+            stdio: 'inherit',
+            timeout: 120_000,
+        });
+    }
+
+    console.log('[e2e] All Docker containers ready.');
 }
 
 /**
@@ -69,15 +81,19 @@ export async function setup(): Promise<void> {
  */
 export async function teardown(): Promise<void> {
     const cwd = getRepoRoot();
-    const flags = getComposeFlags(cwd);
+    const files = getComposeFiles(cwd);
 
     console.log('[e2e] Stopping Docker containers...');
 
-    execSync(`docker compose ${flags} down -v`, {
-        cwd,
-        stdio: 'inherit',
-        timeout: 30_000,
-    });
+    for (const file of files) {
+        const projectDir = dirname(file);
+
+        execSync(`docker compose -f "${file}" --project-directory "${projectDir}" down -v`, {
+            cwd,
+            stdio: 'inherit',
+            timeout: 30_000,
+        });
+    }
 
     console.log('[e2e] Docker containers stopped.');
 }

@@ -135,14 +135,22 @@ jobs:
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Ensure clean Docker state
-              run: docker compose $(for f in src/services/*/docker-compose.yml; do echo "-f $f"; done) down -v --remove-orphans 2>/dev/null || true
+              run: |
+                  for f in src/services/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
+                  done
 
             - name: Run e2e tests
               run: npm run test:e2e
 
             - name: Cleanup Docker containers
               if: always()
-              run: docker compose $(for f in src/services/*/docker-compose.yml; do echo "-f $f"; done) down -v --remove-orphans 2>/dev/null || true
+              run: |
+                  for f in src/services/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
+                  done
 
     build-web:
         name: Build web
