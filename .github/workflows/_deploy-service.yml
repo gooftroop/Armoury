@@ -38,10 +38,10 @@ jobs:
 
             - name: Build dependencies
               if: inputs.needs-shared-build
-              run: npx turbo run build --filter=${{ inputs.service-name }}^...
+              run: npx turbo run build generate:types --filter=${{ inputs.service-name }}^...
 
             - name: Typecheck
-              run: npm run typecheck -w ${{ inputs.service-name }}
+              run: npx turbo run typecheck --filter=${{ inputs.service-name }}
 
             - name: Lint
               run: npm run lint -w ${{ inputs.service-name }}
@@ -50,7 +50,7 @@ jobs:
               run: npm run format:check -w ${{ inputs.service-name }}
 
             - name: Test
-              run: npm test -w ${{ inputs.service-name }}
+              run: npx turbo run test --filter=${{ inputs.service-name }}
 
     deploy-sandbox:
         name: Deploy Sandbox
