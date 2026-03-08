@@ -11,7 +11,9 @@ export default mergeConfig(
         resolve: {
             alias: {
                 '@campaigns': path.resolve(__dirname),
-                '@shared': path.resolve(__dirname, '../../shared'),
+                '@data': path.resolve(__dirname, '../../shared/data/src'),
+                '@models': path.resolve(__dirname, '../../shared/models/src'),
+                '@adapters-pglite': path.resolve(__dirname, '../../shared/adapters/pglite/src'),
             },
         },
         test: {
