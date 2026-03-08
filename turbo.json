@@ -10,9 +10,10 @@
             "cache": false
         },
         "build": {
-            "dependsOn": ["^build", "copy:systems"],
+            "dependsOn": ["^build", "^generate:types", "copy:systems"],
             "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-            "env": ["SENTRY_DSN", "SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT", "NEXT_PUBLIC_SENTRY_DSN"]
+            "env": ["SENTRY_DSN", "SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT", "NEXT_PUBLIC_SENTRY_DSN"],
+            "passThroughEnv": ["SENTRY_AUTH_TOKEN"]
         },
         "generate:types": {
             "dependsOn": ["^generate:types"],

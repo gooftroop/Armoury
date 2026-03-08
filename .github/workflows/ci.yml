@@ -69,7 +69,7 @@ jobs:
               run: npm run test
 
     lint:
-        name: Lint
+        name: Lint & Format
         runs-on: ubuntu-latest
         needs: install
         steps:
@@ -88,8 +88,8 @@ jobs:
                       src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
-            - name: Run lint
-              run: npm run lint
+            - name: Run lint and format check
+              run: npx turbo run lint format:check
 
     typecheck:
         name: Typecheck
