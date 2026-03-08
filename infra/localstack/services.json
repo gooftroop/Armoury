@@ -1,0 +1,46 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Service manifest for LocalStack provisioning. Add a new entry when onboarding a service.",
+    "services": [
+        {
+            "name": "campaigns",
+            "secretPath": "armoury/campaigns/config",
+            "restApiId": "campaigns-api",
+            "handler": "src/handler.handler",
+            "dbPort": 5432,
+            "hasLambda": true
+        },
+        {
+            "name": "users",
+            "secretPath": "armoury/users/config",
+            "restApiId": "users-api",
+            "handler": "src/handler.handler",
+            "dbPort": 5432,
+            "hasLambda": true
+        },
+        {
+            "name": "matches",
+            "secretPath": "armoury/matches/config",
+            "restApiId": "matches-api",
+            "handler": "src/handler.handler",
+            "dbPort": 5433,
+            "hasLambda": true
+        },
+        {
+            "name": "friends",
+            "secretPath": "armoury/friends/config",
+            "restApiId": "friends-api",
+            "handler": "src/handler.handler",
+            "dbPort": 5434,
+            "hasLambda": true
+        },
+        {
+            "name": "authorizer",
+            "secretPath": null,
+            "restApiId": null,
+            "handler": "src/handler.handler",
+            "dbPort": null,
+            "hasLambda": true
+        }
+    ]
+}
