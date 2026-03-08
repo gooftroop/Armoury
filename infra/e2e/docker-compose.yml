@@ -9,7 +9,7 @@ services:
             POSTGRES_USER: armoury
             POSTGRES_PASSWORD: armoury_local
         volumes:
-            - ./src/services/matches/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+            - ../../src/services/matches/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_matches']
             interval: 3s
@@ -26,7 +26,7 @@ services:
             POSTGRES_USER: armoury
             POSTGRES_PASSWORD: armoury_local
         volumes:
-            - ./src/services/friends/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+            - ../../src/services/friends/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_friends']
             interval: 3s
@@ -43,7 +43,7 @@ services:
             POSTGRES_USER: armoury
             POSTGRES_PASSWORD: armoury_local
         volumes:
-            - ./src/services/campaigns/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+            - ../../src/services/campaigns/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_campaigns']
             interval: 3s
@@ -60,7 +60,7 @@ services:
             POSTGRES_USER: armoury
             POSTGRES_PASSWORD: armoury_local
         volumes:
-            - ./src/services/users/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+            - ../../src/services/users/__fixtures__/seed.sql:/docker-entrypoint-initdb.d/seed.sql
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready -U armoury -d armoury_users']
             interval: 3s

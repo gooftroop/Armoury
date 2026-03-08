@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
  * - REQ-TEARDOWN-SCOPE: Only tear down per-service DB; leave LocalStack running for dev workflow
  */
 
-/** Name assigned to the LocalStack container via docker-compose.localstack.yml. */
+/** Name assigned to the LocalStack container via infra/localstack/docker-compose.yml. */
 const LOCALSTACK_CONTAINER = 'localstack-main';
 
 /** LocalStack health endpoint. */
@@ -39,7 +39,7 @@ function getServiceComposeFile(): string | null {
 
 /**
  * Finds the monorepo root by walking up from this file's directory
- * until `docker-compose.localstack.yml` is found.
+ * until `infra/localstack/docker-compose.yml` is found.
  *
  * @returns Absolute path to the repo root, or `null` if not found.
  */
@@ -49,7 +49,7 @@ function findRepoRoot(): string | null {
 
     // Walk up at most 10 levels to avoid infinite loop on misconfigured systems.
     for (let i = 0; i < 10; i++) {
-        if (existsSync(join(dir, 'docker-compose.localstack.yml'))) {
+        if (existsSync(join(dir, 'infra', 'localstack', 'docker-compose.yml'))) {
             return dir;
         }
 
@@ -124,7 +124,7 @@ async function waitForLocalStackReady(): Promise<void> {
 /**
  * Ensures LocalStack is running. If already running (e.g. another turbo
  * task started it), skips the startup. Otherwise starts it via
- * docker-compose.localstack.yml and waits for init hooks to complete.
+ * docker-compose file at infra/localstack/docker-compose.yml and waits for init hooks to complete.
  *
  * @param repoRoot - Absolute path to the monorepo root.
  */
@@ -136,7 +136,7 @@ async function ensureLocalStack(repoRoot: string): Promise<void> {
         return;
     }
 
-    const composeFile = join(repoRoot, 'docker-compose.localstack.yml');
+    const composeFile = join(repoRoot, 'infra', 'localstack', 'docker-compose.yml');
 
     console.log('[e2e] Starting LocalStack...');
 
@@ -174,7 +174,7 @@ export async function setup(): Promise<void> {
         await ensureLocalStack(repoRoot);
     } else {
         console.warn(
-            '[e2e] Could not locate docker-compose.localstack.yml — ' +
+            '[e2e] Could not locate infra/localstack/docker-compose.yml — ' +
                 'LocalStack will not be started. AWS-dependent tests may fail.',
         );
     }

@@ -1,10 +1,10 @@
-# docker-compose.localstack.yml
+# docker-compose.yml
 #
 # LocalStack container for local AWS emulation in e2e tests.
 # Provides: Lambda, Secrets Manager, API Gateway REST, IAM.
 #
 # Usage:
-#   docker compose -f docker-compose.localstack.yml up -d --wait
+#   docker compose -f infra/localstack/docker-compose.yml up -d --wait
 #
 # The init hook at infra/localstack/seed.sh seeds Secrets Manager
 # secrets after LocalStack reaches the "ready" state.
@@ -25,7 +25,7 @@ services:
         volumes:
             - localstack-cache:/var/lib/localstack
             - /var/run/docker.sock:/var/run/docker.sock
-            - ./infra/localstack/seed.sh:/etc/localstack/init/ready.d/seed.sh
+            - ./seed.sh:/etc/localstack/init/ready.d/seed.sh
         healthcheck:
             test:
                 [

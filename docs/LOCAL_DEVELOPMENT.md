@@ -87,7 +87,7 @@ When `.env.local` is present, the clients automatically connect to the LocalStac
 
 ## Architecture
 
-`docker-compose.localstack.yml` starts the LocalStack container with an init hook. On startup, `infra/localstack/seed.sh` runs inside the container and seeds Secrets Manager with dummy config for each service.
+`infra/localstack/docker-compose.yml` starts the LocalStack container with an init hook. On startup, `infra/localstack/seed.sh` runs inside the container and seeds Secrets Manager with dummy config for each service.
 
 `infra/localstack/bootstrap.sh` runs from the host. It builds, packages, and deploys Lambdas and API Gateways. `infra/localstack/services.json` is the single source of truth for all service metadata.
 
@@ -119,5 +119,7 @@ apps read *_BASE_URL env vars
 - `infra/localstack/services.json` — Service manifest
 - `infra/localstack/bootstrap.sh` — Lambda deployment script
 - `infra/localstack/seed.sh` — Secrets Manager seeding script
-- `docker-compose.localstack.yml` — LocalStack container configuration
+- `infra/localstack/docker-compose.yml` — LocalStack container configuration
+- `infra/e2e/docker-compose.yml` — E2E database containers
+- `infra/dsql-mock/docker-compose.yml` — Trust-auth PostgreSQL mock for IAM testing
 - `src/services/__testing__/e2eEnv.ts` — Shared e2e test environment variables
