@@ -1,99 +1,77 @@
 import { execSync } from 'child_process';
-import { existsSync, readdirSync, statSync } from 'fs';
-import { resolve, join, dirname } from 'path';
+import { existsSync } from 'fs';
+import { join, dirname } from 'path';
 
 /**
- * Resolves the monorepo root directory (contains turbo.json).
- * Walks up from the current file until it finds the marker.
- */
-function getRepoRoot(): string {
-    let dir = resolve(import.meta.dirname ?? __dirname);
-
-    for (let i = 0; i < 10; i++) {
-        if (existsSync(join(dir, 'turbo.json'))) {
-            return dir;
-        }
-
-        dir = resolve(dir, '..');
-    }
-
-    throw new Error('Could not find monorepo root (turbo.json) in any parent directory');
-}
-
-/**
- * Discovers all per-service docker-compose.yml files under src/services/.
- * Returns an array of absolute paths.
- */
-function getComposeFiles(repoRoot: string): string[] {
-    const servicesDir = join(repoRoot, 'src', 'services');
-    const files: string[] = [];
-
-    for (const entry of readdirSync(servicesDir)) {
-        const entryPath = join(servicesDir, entry);
-        const composePath = join(entryPath, 'docker-compose.yml');
-
-        if (statSync(entryPath).isDirectory() && existsSync(composePath)) {
-            files.push(composePath);
-        }
-    }
-
-    if (files.length === 0) {
-        throw new Error('No docker-compose.yml files found under src/services/');
-    }
-
-    return files;
-}
-
-/**
- * Vitest globalSetup — starts Docker Compose e2e containers before all tests.
+ * Resolves the compose file for the calling service.
  *
- * Each service's docker-compose.yml is launched independently with
- * `--project-directory` set to its own directory. This ensures relative
- * paths (e.g. volume mounts for seed.sql) resolve correctly per-service,
- * avoiding the Docker Compose bug where multiple `-f` flags cause all
- * relative paths to resolve relative to the first file's directory.
+ * Uses `process.cwd()` which vitest/turbo sets to the service workspace
+ * directory (e.g. src/services/users). If no docker-compose.yml exists
+ * in the cwd, the service is assumed to not need Docker (e.g. PGlite).
+ */
+function getServiceComposeFile(): string | null {
+    const composePath = join(process.cwd(), 'docker-compose.yml');
+
+    return existsSync(composePath) ? composePath : null;
+}
+
+/**
+ * Vitest globalSetup — starts the Docker Compose container for the
+ * calling service only.
+ *
+ * Each service's vitest.e2e.config.ts references this shared globalSetup.
+ * When turbo runs `test:e2e` in parallel across services, each vitest
+ * instance only starts its own container, avoiding race conditions from
+ * multiple processes managing the same Docker resources.
+ *
+ * `--project-directory` is set to the compose file's parent so that
+ * relative volume mounts (e.g. `./__fixtures__/seed.sql`) resolve
+ * correctly.
  */
 export async function setup(): Promise<void> {
-    const cwd = getRepoRoot();
-    const files = getComposeFiles(cwd);
+    const composeFile = getServiceComposeFile();
 
-    console.log(`[e2e] Starting ${files.length} Docker Compose services...`);
+    if (!composeFile) {
+        console.log('[e2e] No docker-compose.yml found in cwd — skipping Docker setup.');
 
-    for (const file of files) {
-        const projectDir = dirname(file);
-        const serviceName = projectDir.split('/').pop() ?? projectDir;
-
-        console.log(`[e2e] Starting ${serviceName}...`);
-
-        execSync(`docker compose -f "${file}" --project-directory "${projectDir}" up -d --wait`, {
-            cwd,
-            stdio: 'inherit',
-            timeout: 120_000,
-        });
+        return;
     }
 
-    console.log('[e2e] All Docker containers ready.');
+    const projectDir = dirname(composeFile);
+    const serviceName = projectDir.split('/').pop() ?? projectDir;
+
+    console.log(`[e2e] Starting Docker for ${serviceName}...`);
+
+    execSync(`docker compose -f "${composeFile}" --project-directory "${projectDir}" up -d --wait`, {
+        cwd: projectDir,
+        stdio: 'inherit',
+        timeout: 120_000,
+    });
+
+    console.log(`[e2e] Docker container for ${serviceName} ready.`);
 }
 
 /**
- * Vitest globalTeardown — stops and removes Docker Compose e2e containers.
- * Uses `-v` flag to remove volumes for clean state.
+ * Vitest globalTeardown — stops and removes the Docker Compose container
+ * for the calling service. Uses `-v` to remove volumes for clean state.
  */
 export async function teardown(): Promise<void> {
-    const cwd = getRepoRoot();
-    const files = getComposeFiles(cwd);
+    const composeFile = getServiceComposeFile();
 
-    console.log('[e2e] Stopping Docker containers...');
-
-    for (const file of files) {
-        const projectDir = dirname(file);
-
-        execSync(`docker compose -f "${file}" --project-directory "${projectDir}" down -v`, {
-            cwd,
-            stdio: 'inherit',
-            timeout: 30_000,
-        });
+    if (!composeFile) {
+        return;
     }
 
-    console.log('[e2e] Docker containers stopped.');
+    const projectDir = dirname(composeFile);
+    const serviceName = projectDir.split('/').pop() ?? projectDir;
+
+    console.log(`[e2e] Stopping Docker for ${serviceName}...`);
+
+    execSync(`docker compose -f "${composeFile}" --project-directory "${projectDir}" down -v`, {
+        cwd: projectDir,
+        stdio: 'inherit',
+        timeout: 30_000,
+    });
+
+    console.log(`[e2e] Docker container for ${serviceName} stopped.`);
 }

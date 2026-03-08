@@ -44,14 +44,17 @@ function messageEvent(connectionId: string, body: unknown): WebSocketEvent {
     });
 }
 
-async function seedMatch(matchAdapter: LocalDatabaseAdapter, playerId: string): Promise<Match> {
+async function seedMatch(matchAdapter: LocalDatabaseAdapter, ...playerIds: string[]): Promise<Match> {
     const match: Match = {
         id: `match-${Date.now()}`,
         systemId: 'wh40k10e',
-        players: [{ playerId, campaignParticipantId: null }],
-        turn: { activePlayerId: playerId, turnOrder: [playerId], turnNumber: 1 },
+        players: playerIds.map((id) => ({ playerId: id, campaignParticipantId: null })),
+        turn: { activePlayerId: playerIds[0], turnOrder: playerIds, turnNumber: 1 },
         score: null,
-        outcome: { status: 'setup', resultsByPlayerId: { [playerId]: 'draw' } },
+        outcome: {
+            status: 'setup',
+            resultsByPlayerId: Object.fromEntries(playerIds.map((id) => [id, 'draw'])),
+        },
         campaignId: null,
         notes: '',
         playedAt: null,
@@ -142,7 +145,7 @@ describe('matches WebSocket e2e', () => {
         await wsRouter(connectEvent('conn-a', userA), adapter, userA);
         await wsRouter(connectEvent('conn-b', userB), adapter, userB);
 
-        const match = await seedMatch(adapter, userA.sub);
+        const match = await seedMatch(adapter, userA.sub, userB.sub);
 
         await wsRouter(messageEvent('conn-b', { action: 'subscribeMatch', matchId: match.id }), adapter, null);
         mockBroadcast.reset();
