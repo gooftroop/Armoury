@@ -1,0 +1,24 @@
+# docker-compose.dsql-mock.yml
+#
+# Trust-auth PostgreSQL container for testing the DSQLAdapter IAM code path.
+# Uses POSTGRES_HOST_AUTH_METHOD=trust so any password (including the mock
+# DsqlSigner token) is accepted — no real IAM credentials required.
+#
+# Usage:
+#   docker compose -f docker-compose.dsql-mock.yml up -d --wait
+
+services:
+    dsql-mock-db:
+        image: postgres:16-alpine
+        container_name: armoury-dsql-mock
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: admin
+            POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+            - '5440:5432'
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U admin -d postgres']
+            interval: 3s
+            timeout: 3s
+            retries: 10

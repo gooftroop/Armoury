@@ -120,14 +120,14 @@ type EqBuilder = (column: unknown, value: unknown) => unknown;
  */
 type OrderByFn = (column: unknown) => unknown;
 
-const { DsqlSigner } = await import('@aws-sdk/dsql-signer') as unknown as { DsqlSigner: DsqlSignerConstructor };
-const { Client } = await import('pg') as unknown as { Client: PgClientConstructor };
-const { drizzle } = await import('drizzle-orm/node-postgres') as unknown as { drizzle: DrizzleFactory };
+const { DsqlSigner } = (await import('@aws-sdk/dsql-signer')) as unknown as { DsqlSigner: DsqlSignerConstructor };
+const { Client } = (await import('pg')) as unknown as { Client: PgClientConstructor };
+const { drizzle } = (await import('drizzle-orm/node-postgres')) as unknown as { drizzle: DrizzleFactory };
 const {
     eq,
     asc: drizzleAsc,
     desc: drizzleDesc,
-} = await import('drizzle-orm') as unknown as {
+} = (await import('drizzle-orm')) as unknown as {
     eq: EqBuilder;
     asc: OrderByFn;
     desc: OrderByFn;
@@ -141,6 +141,10 @@ export interface DSQLIAMConfig {
     clusterEndpoint: string;
     /** The AWS region of the DSQL cluster. */
     region: string;
+    /** Override the default PostgreSQL port (5432). Useful for local testing with non-standard port mappings. */
+    port?: number;
+    /** Whether to use SSL for the connection. Defaults to `true` for production DSQL. */
+    ssl?: boolean;
 }
 
 /**
@@ -231,8 +235,8 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                     user: 'admin',
                     password: token,
                     database: 'postgres',
-                    port: 5432,
-                    ssl: true,
+                    port: this.config.port ?? 5432,
+                    ssl: this.config.ssl ?? true,
                 });
             } else {
                 client = new Client({
