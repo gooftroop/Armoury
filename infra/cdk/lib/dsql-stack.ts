@@ -131,13 +131,13 @@ export class DsqlStack extends cdk.Stack {
             }),
         );
 
-        // All sandbox-only CI permissions consolidated into a single managed policy.
+        // CI deploy permissions consolidated into a single managed policy per environment.
         // Inline policies have a 2048-byte total limit for IAM users; managed policies
         // support up to 6144 bytes each, so we consolidate here to avoid the limit.
-        // Guarded by environment to avoid CloudFormation ownership conflicts across stacks.
-        if (environment === 'sandbox') {
-            const ciDeployPolicy = new iam.ManagedPolicy(this, 'CiDeployPolicy', {
-                managedPolicyName: 'armoury-ci-deploy',
+        // Each environment gets a distinctly-named policy to avoid CloudFormation
+        // ownership conflicts across stacks.
+        const ciDeployPolicy = new iam.ManagedPolicy(this, 'CiDeployPolicy', {
+            managedPolicyName: `armoury-ci-deploy-${environment}`,
                 description:
                     'CI user permissions for Serverless Framework deployments, custom domains, and infrastructure',
                 statements: [
@@ -335,8 +335,7 @@ export class DsqlStack extends cdk.Stack {
                 ],
             });
 
-            ciDeployPolicy.attachToUser(ciUser);
-        }
+        ciDeployPolicy.attachToUser(ciUser);
 
         // -----------------------------------------------------------------
         // Stack Outputs
