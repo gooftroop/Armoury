@@ -52,7 +52,7 @@ concurrency:
 
 env:
     CDK_DIR: infra/cdk
-    AWS_REGION: us-east-1
+    AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
     NODE_OPTIONS: '--max-old-space-size=4096'
 
 jobs:

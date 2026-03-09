@@ -9,7 +9,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as dsql from 'aws-cdk-lib/aws-dsql';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import { Construct } from 'constructs';
+import { Construct, type IConstruct } from 'constructs';
 
 /**
  * @requirements
@@ -26,7 +26,7 @@ const DSQL_CONNECT_ADMIN_ACTIONS = ['dsql:DbConnectAdmin'];
 /**
  * Contract for a DSQL cluster reference, usable for cross-stack sharing.
  */
-export interface IDsqlCluster {
+export interface IDsqlCluster extends IConstruct {
     /** The unique cluster identifier assigned by DSQL. */
     readonly clusterIdentifier: string;
 

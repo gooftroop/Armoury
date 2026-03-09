@@ -162,10 +162,21 @@ export class DsqlStack extends cdk.Stack {
                             'cloudformation:DescribeStackResources',
                             'cloudformation:DescribeStackEvents',
                             'cloudformation:GetTemplate',
+                            'cloudformation:GetTemplateSummary',
                             'cloudformation:ListStackResources',
-                            'cloudformation:ValidateTemplate',
+                            'cloudformation:CreateChangeSet',
+                            'cloudformation:ExecuteChangeSet',
+                            'cloudformation:DescribeChangeSet',
+                            'cloudformation:DeleteChangeSet',
                         ],
                         resources: [`arn:aws:cloudformation:${this.region}:${this.account}:stack/armoury-*/*`],
+                    }),
+                    // CloudFormation: ValidateTemplate is a non-resource-level action
+                    // that requires Resource: "*" — it cannot be scoped to a stack ARN.
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['cloudformation:ValidateTemplate'],
+                        resources: ['*'],
                     }),
                     // S3: Serverless Framework deployment bucket
                     new iam.PolicyStatement({
@@ -243,10 +254,11 @@ export class DsqlStack extends cdk.Stack {
                             'iam:ListAttachedRolePolicies',
                             'iam:TagRole',
                             'iam:UntagRole',
+                            'iam:UpdateAssumeRolePolicy',
                         ],
                         resources: [`arn:aws:iam::${this.account}:role/armoury-*`],
                     }),
-                    // API Gateway: create/manage REST APIs
+                    // API Gateway: create/manage REST APIs (API Gateway v1)
                     new iam.PolicyStatement({
                         effect: iam.Effect.ALLOW,
                         actions: [
@@ -264,13 +276,19 @@ export class DsqlStack extends cdk.Stack {
                         actions: [
                             'logs:CreateLogGroup',
                             'logs:DeleteLogGroup',
-                            'logs:DescribeLogGroups',
                             'logs:PutRetentionPolicy',
                             'logs:DeleteRetentionPolicy',
                             'logs:TagResource',
                             'logs:UntagResource',
                         ],
                         resources: [`arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/armoury-*`],
+                    }),
+                    // CloudWatch Logs: DescribeLogGroups is a non-resource-level action
+                    // that requires Resource: "*" — it cannot be scoped to a log group ARN.
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['logs:DescribeLogGroups'],
+                        resources: ['*'],
                     }),
                     // Route 53: manage DNS records in the armoury-app.com hosted zone
                     new iam.PolicyStatement({
@@ -279,8 +297,12 @@ export class DsqlStack extends cdk.Stack {
                             'route53:ChangeResourceRecordSets',
                             'route53:GetHostedZone',
                             'route53:ListResourceRecordSets',
+                            'route53:GetChange',
                         ],
-                        resources: ['arn:aws:route53:::hostedzone/Z09361641Z6OI455J4GGH'],
+                        resources: [
+                            'arn:aws:route53:::hostedzone/Z09361641Z6OI455J4GGH',
+                            'arn:aws:route53:::change/*',
+                        ],
                     }),
                     new iam.PolicyStatement({
                         effect: iam.Effect.ALLOW,
@@ -293,16 +315,22 @@ export class DsqlStack extends cdk.Stack {
                         actions: ['acm:ListCertificates', 'acm:DescribeCertificate'],
                         resources: ['*'],
                     }),
-                    // API Gateway: custom domain management (REST + WebSocket)
+                    // API Gateway: custom domain + WebSocket API management (API Gateway v2)
                     new iam.PolicyStatement({
                         effect: iam.Effect.ALLOW,
-                        actions: ['apigateway:POST', 'apigateway:GET', 'apigateway:DELETE', 'apigateway:PATCH'],
+                        actions: ['apigateway:POST', 'apigateway:GET', 'apigateway:PUT', 'apigateway:DELETE', 'apigateway:PATCH'],
                         resources: [
                             `arn:aws:apigateway:${this.region}::/domainnames`,
                             `arn:aws:apigateway:${this.region}::/domainnames/*`,
                             `arn:aws:apigateway:${this.region}::/apis`,
                             `arn:aws:apigateway:${this.region}::/apis/*`,
                         ],
+                    }),
+                    // STS: Serverless Framework resolves ${aws:accountId} via GetCallerIdentity
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['sts:GetCallerIdentity'],
+                        resources: ['*'],
                     }),
                 ],
             });

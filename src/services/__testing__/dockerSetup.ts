@@ -1,6 +1,21 @@
+/**
+ * Shared Docker Compose lifecycle for E2E integration tests.
+ *
+ * Provides Vitest globalSetup/globalTeardown hooks that start and stop
+ * the Docker Compose container for the calling service. Each service's
+ * vitest.e2e.config.ts references these hooks so that turbo can run
+ * `test:e2e` in parallel without race conditions.
+ *
+ * @requirements
+ * - REQ-DOCKER-ISOLATION: Each service starts only its own Docker container
+ * - REQ-DOCKER-DISCOVERY: Compose file resolved from the service workspace cwd
+ * - REQ-DOCKER-OPTIONAL: Services without docker-compose.yml skip Docker setup gracefully
+ * - REQ-DOCKER-CLEANUP: Teardown removes containers and volumes for clean state
+ * - REQ-CROSS-PLATFORM: Path handling must work on both Unix and Windows
+ */
 import { execSync } from 'child_process';
 import { existsSync } from 'fs';
-import { join, dirname } from 'path';
+import { basename, join, dirname } from 'path';
 
 /**
  * Resolves the compose file for the calling service.
@@ -38,7 +53,7 @@ export async function setup(): Promise<void> {
     }
 
     const projectDir = dirname(composeFile);
-    const serviceName = projectDir.split('/').pop() ?? projectDir;
+    const serviceName = basename(projectDir);
 
     console.log(`[e2e] Starting Docker for ${serviceName}...`);
 
@@ -63,7 +78,7 @@ export async function teardown(): Promise<void> {
     }
 
     const projectDir = dirname(composeFile);
-    const serviceName = projectDir.split('/').pop() ?? projectDir;
+    const serviceName = basename(projectDir);
 
     console.log(`[e2e] Stopping Docker for ${serviceName}...`);
 

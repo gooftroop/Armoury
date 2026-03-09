@@ -2,6 +2,7 @@
     "name": "@armoury/cdk",
     "version": "0.1.0",
     "private": true,
+    "description": "AWS CDK infrastructure — intentionally outside root npm workspaces (separate dependency tree, installed by infra.yml workflow)",
     "type": "module",
     "scripts": {
         "build": "tsc",
