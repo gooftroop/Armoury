@@ -1,7 +1,7 @@
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 
 /**
- * Service configuration retrieved from AWS Secrets Manager.
+ * Service configuration retrieved from AWS SSM Parameter Store.
  */
 export interface UsersServiceConfig {
     /** Aurora DSQL cluster endpoint hostname. */
@@ -14,9 +14,9 @@ export interface UsersServiceConfig {
 let cachedConfig: UsersServiceConfig | null = null;
 
 /**
- * Retrieves the users service configuration from Secrets Manager.
+ * Retrieves the users service configuration from SSM Parameter Store.
  *
- * Fetches the secret on first invocation and caches for warm reuse.
+ * Fetches the DSQL cluster endpoint on first invocation and caches for warm reuse.
  * Falls back to environment variables when running offline.
  *
  * @returns Service configuration with DSQL connection details.
@@ -37,27 +37,23 @@ export async function getServiceConfig(): Promise<UsersServiceConfig> {
         return cachedConfig;
     }
 
-    const secretName = process.env['SECRET_NAME'];
+    const paramName = process.env['DSQL_ENDPOINT_PARAM'];
 
-    if (!secretName) {
-        throw new Error('SECRET_NAME environment variable is required');
+    if (!paramName) {
+        throw new Error('DSQL_ENDPOINT_PARAM environment variable is required');
     }
 
-    const client = new SecretsManagerClient({});
-    const command = new GetSecretValueCommand({ SecretId: secretName });
+    const client = new SSMClient({});
+    const command = new GetParameterCommand({ Name: paramName });
     const response = await client.send(command);
 
-    if (!response.SecretString) {
-        throw new Error('Secret value is empty');
+    const dsqlClusterEndpoint = response.Parameter?.Value;
+
+    if (!dsqlClusterEndpoint) {
+        throw new Error(`SSM parameter ${paramName} has no value`);
     }
 
-    const parsed = JSON.parse(response.SecretString) as Record<string, unknown>;
-    const dsqlClusterEndpoint = parsed['dsqlClusterEndpoint'];
-    const dsqlRegion = parsed['dsqlRegion'];
-
-    if (typeof dsqlClusterEndpoint !== 'string' || typeof dsqlRegion !== 'string') {
-        throw new Error('Secret must contain dsqlClusterEndpoint and dsqlRegion string fields');
-    }
+    const dsqlRegion = process.env['AWS_REGION'] ?? 'us-east-1';
 
     cachedConfig = { dsqlClusterEndpoint, dsqlRegion };
 

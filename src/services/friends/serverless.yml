@@ -9,21 +9,22 @@ provider:
     memorySize: 256
     timeout: 29
     environment:
-        SECRET_NAME: armoury/${self:provider.stage}/friends
+        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/friends/dsql-cluster-endpoint'}
         NODE_OPTIONS: '--import ./src/instrument.js'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
+        DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
     iam:
         role:
             statements:
                 - Effect: Allow
                   Action:
                       - dsql:DbConnectAdmin
-                  Resource: '*'
+                  Resource: 'arn:aws:dsql:${self:provider.region}:040663841500:cluster/*'
                 - Effect: Allow
                   Action:
-                      - secretsmanager:GetSecretValue
-                  Resource: '*'
+                      - ssm:GetParameter
+                  Resource: 'arn:aws:ssm:${self:provider.region}:040663841500:parameter/armoury/${self:provider.stage}/*'
                 - Effect: Allow
                   Action:
                       - execute-api:ManageConnections
@@ -44,7 +45,7 @@ build:
             js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
         external:
             - '@aws-sdk/dsql-signer'
-            - '@aws-sdk/client-secrets-manager'
+            - '@aws-sdk/client-ssm'
             - '@aws-sdk/client-apigatewaymanagementapi'
             - pg
 

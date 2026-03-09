@@ -45,6 +45,7 @@
         "test:e2e": "turbo run test:e2e",
         "test:e2e:services": "turbo run test:e2e --filter='./src/services/*'",
         "test:e2e:shared": "turbo run test:e2e --filter='@armoury/data'",
+        "e2e:cleanup": "docker compose -f docker-compose.localstack.yml down -v 2>/dev/null || true; docker compose -f docker-compose.dsql-mock.yml down -v 2>/dev/null || true; for f in src/services/*/docker-compose.yml; do dir=$(dirname \"$f\"); docker compose -f \"$f\" --project-directory \"$dir\" down -v --remove-orphans 2>/dev/null || true; done",
         "generate:theme": "node --import=tsx src/tooling/theme-generator/src/generate.js",
         "postinstall": "node -e \"const fs=require('fs'),shim='node_modules/drizzle-kit/index.js';fs.existsSync('node_modules/drizzle-kit')&&!fs.existsSync(shim)&&fs.writeFileSync(shim,'module.exports=require(\\\"./index.mjs\\\");')\""
     },

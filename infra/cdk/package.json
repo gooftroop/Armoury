@@ -1,0 +1,22 @@
+{
+    "name": "@armoury/cdk",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "cdk": "cdk",
+        "synth": "cdk synth",
+        "diff": "cdk diff",
+        "deploy": "cdk deploy"
+    },
+    "dependencies": {
+        "aws-cdk-lib": "^2.200.0",
+        "constructs": "^10.4.2"
+    },
+    "devDependencies": {
+        "aws-cdk": "^2.200.0",
+        "tsx": "^4.21.0",
+        "typescript": "^5.8.3"
+    }
+}

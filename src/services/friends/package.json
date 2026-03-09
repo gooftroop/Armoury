@@ -19,16 +19,19 @@
         "typecheck": "tsc --noEmit",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "generate:types": "tsc -p tsconfig.build.json"
+        "generate:types": "tsc -p tsconfig.build.json",
+        "db:generate": "TSX_TSCONFIG_PATH=tsconfig.drizzle.json NODE_OPTIONS='--import tsx' drizzle-kit generate",
+        "db:migrate": "TSX_TSCONFIG_PATH=tsconfig.drizzle.json NODE_OPTIONS='--import tsx' drizzle-kit migrate"
     },
     "dependencies": {
         "@armoury/data": "*",
         "@armoury/models": "*",
         "@aws-sdk/client-apigatewaymanagementapi": "^3.0.0",
-        "@aws-sdk/client-secrets-manager": "^3.0.0",
+        "@aws-sdk/client-ssm": "^3.0.0",
         "@sentry/aws-serverless": "^10.38.0"
     },
     "devDependencies": {
+        "drizzle-kit": "^0.31.9",
         "@armoury/eslint": "*",
         "@armoury/prettier": "*",
         "@armoury/typescript": "*",

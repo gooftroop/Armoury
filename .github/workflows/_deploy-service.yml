@@ -79,8 +79,39 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch DSQL config from SSM
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
+
+            - name: Create PR schema
+              if: inputs.has-migrations && github.event_name == 'pull_request'
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: node --import=tsx src/services/__testing__/dbSchema.ts create "${DB_SCHEMA}"
+
+            - name: Generate DATABASE_URL for PR migrations
+              id: db-url
+              if: inputs.has-migrations && github.event_name == 'pull_request'
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: |
+                  DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "${DB_SCHEMA}")
+                  {
+                    echo "DATABASE_URL<<DBURL_EOF"
+                    echo "${DATABASE_URL}"
+                    echo "DBURL_EOF"
+                  } >> "${GITHUB_OUTPUT}"
+
             - name: Run migrations
               if: inputs.has-migrations
+              env:
+                  DB_SCHEMA: ${{ github.event_name == 'pull_request' && format('pr_{0}', github.event.pull_request.number) || 'public' }}
+                  DATABASE_URL: ${{ steps.db-url.outputs.DATABASE_URL || '' }}
               run: npm run db:migrate -w ${{ inputs.service-name }}
 
             - name: Install Serverless Framework
@@ -88,7 +119,12 @@ jobs:
 
             - name: Deploy
               working-directory: ${{ inputs.working-directory }}
-              run: serverless deploy --stage pr-${{ github.event.pull_request.number }}
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
+                  serverless deploy --stage pr-${{ github.event.pull_request.number }}
 
     deploy-production:
         name: Deploy Production
@@ -117,8 +153,31 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch DSQL config from SSM
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/production/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
+
+            - name: Generate DATABASE_URL for production migrations
+              id: db-url-prod
+              if: inputs.has-migrations
+              run: |
+                  DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "public")
+                  {
+                    echo "DATABASE_URL<<DBURL_EOF"
+                    echo "${DATABASE_URL}"
+                    echo "DBURL_EOF"
+                  } >> "${GITHUB_OUTPUT}"
+
             - name: Run migrations
               if: inputs.has-migrations
+              env:
+                  DB_SCHEMA: public
+                  DATABASE_URL: ${{ steps.db-url-prod.outputs.DATABASE_URL || '' }}
               run: npm run db:migrate -w ${{ inputs.service-name }}
 
             - name: Install Serverless Framework

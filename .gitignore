@@ -52,3 +52,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .opencode/plans/
 .opencode/scratch/
 .sisyphus/
+
+# localstack CI artifacts
+localstack.log
+
+# CDK build output
+infra/cdk/cdk.out

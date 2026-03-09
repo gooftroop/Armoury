@@ -7,6 +7,11 @@ on:
                 description: 'Path to the service directory (e.g. src/services/campaigns)'
                 required: true
                 type: string
+            has-migrations:
+                description: 'Whether the service has database migrations (and thus a PR schema to drop)'
+                required: false
+                type: boolean
+                default: false
 
 jobs:
     teardown:
@@ -31,8 +36,20 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
-            - name: Install Serverless Framework
-              run: npm install -g serverless
+            - name: Fetch DSQL config from SSM
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
+
+            - name: Drop PR schema
+              if: inputs.has-migrations
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: node --import=tsx src/services/__testing__/dbSchema.ts drop "${DB_SCHEMA}"
 
             - name: Remove stage
               working-directory: ${{ inputs.working-directory }}

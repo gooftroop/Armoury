@@ -20,13 +20,14 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "db:generate": "TSX_TSCONFIG_PATH=tsconfig.drizzle.json NODE_OPTIONS='--import tsx' drizzle-kit generate",
+        "db:migrate": "TSX_TSCONFIG_PATH=tsconfig.drizzle.json NODE_OPTIONS='--import tsx' drizzle-kit migrate",
         "generate:types": "tsc -p tsconfig.build.json"
     },
     "dependencies": {
         "@armoury/data": "*",
         "@armoury/adapters-pglite": "*",
         "@armoury/models": "*",
-        "@aws-sdk/client-secrets-manager": "^3.0.0",
+        "@aws-sdk/client-ssm": "^3.0.0",
         "@sentry/aws-serverless": "^10.38.0"
     },
     "devDependencies": {
