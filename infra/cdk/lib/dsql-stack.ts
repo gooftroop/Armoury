@@ -23,6 +23,7 @@ import type { IDsqlCluster } from './dsql-cluster.js';
  * - REQ-DSQL-005: Export cluster endpoint, ARN, identifier, and IAM role ARN as stack outputs.
  * - REQ-DSQL-006: Create SSM Parameter Store entries for each service with the cluster endpoint.
  * - REQ-DSQL-007: Grant the CI IAM user read access to SSM parameters for deployment workflows.
+ * - REQ-DSQL-008: Grant the CI IAM user dsql:DbConnectAdmin for running migrations during deploy.
  */
 
 /** Configuration for a DSQL environment stack. */
@@ -107,15 +108,21 @@ export class DsqlStack extends cdk.Stack {
         }
 
         // -----------------------------------------------------------------
-        // CI IAM User — SSM read access for deployment workflows
+        // CI IAM User — permissions for deployment workflows
+        // -----------------------------------------------------------------
+
+        const ciUser = iam.User.fromUserName(this, 'CiUser', 'armoury-ci');
+
+        // Grant dsql:DbConnectAdmin so CI can run migrations via DsqlSigner.
+        // Each stack grants access to its own cluster; policy names are unique
+        // per environment to avoid CloudFormation ownership conflicts.
+        this.cluster.grantConnectAdmin(ciUser);
+
+        // SSM read access for fetching DSQL endpoint parameters during deploy.
         // The resource pattern `/armoury/*` covers both sandbox and production,
         // so the policy only needs to be attached once. Guard with environment
         // check to avoid CloudFormation ownership conflicts across stacks.
-        // -----------------------------------------------------------------
-
         if (environment === 'sandbox') {
-            const ciUser = iam.User.fromUserName(this, 'CiUser', 'armoury-ci');
-
             ciUser.attachInlinePolicy(
                 new iam.Policy(this, 'CiSsmReadPolicy', {
                     statements: [

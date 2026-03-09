@@ -8,8 +8,6 @@
  * under the key `armoury:environments`.
  */
 
-import 'source-map-support/register.js';
-
 import * as cdk from 'aws-cdk-lib';
 
 import { DsqlStack } from '../lib/dsql-stack.js';
