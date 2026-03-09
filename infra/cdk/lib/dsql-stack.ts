@@ -96,7 +96,7 @@ export class DsqlStack extends cdk.Stack {
         // SSM Parameters — DSQL endpoint for each Lambda service
         // -----------------------------------------------------------------
 
-        const services = ['campaigns', 'users', 'friends', 'matches'] as const;
+        const services = ['authorizer', 'campaigns', 'users', 'friends', 'matches'] as const;
 
         for (const service of services) {
             new ssm.StringParameter(this, `DsqlEndpoint-${service}`, {
@@ -114,9 +114,22 @@ export class DsqlStack extends cdk.Stack {
         const ciUser = iam.User.fromUserName(this, 'CiUser', 'armoury-ci');
 
         // Grant dsql:DbConnectAdmin so CI can run migrations via DsqlSigner.
-        // Each stack grants access to its own cluster; policy names are unique
-        // per environment to avoid CloudFormation ownership conflicts.
-        this.cluster.grantConnectAdmin(ciUser);
+        // Use an explicit inline policy with an environment-scoped name so that
+        // sandbox and production stacks each own a distinct policy on the IAM user.
+        // The CDK-generated grantConnectAdmin() helper produces the same logical ID
+        // in both stacks, causing CloudFormation ownership conflicts.
+        ciUser.attachInlinePolicy(
+            new iam.Policy(this, `CiDsqlPolicy-${environment}`, {
+                policyName: `armoury-ci-dsql-${environment}`,
+                statements: [
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['dsql:DbConnectAdmin'],
+                        resources: [this.cluster.clusterArn],
+                    }),
+                ],
+            }),
+        );
 
         // SSM read access for fetching DSQL endpoint parameters during deploy.
         // The resource pattern `/armoury/*` covers both sandbox and production,
