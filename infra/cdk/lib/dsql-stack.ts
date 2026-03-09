@@ -186,6 +186,8 @@ export class DsqlStack extends cdk.Stack {
                             's3:PutLifecycleConfiguration',
                             's3:PutObject',
                             's3:DeleteObject',
+                            's3:GetBucketVersioning',
+                            's3:PutBucketVersioning',
                         ],
                         resources: [
                             'arn:aws:s3:::serverless-framework-deployments-*',
