@@ -44,7 +44,7 @@ export interface DsqlStackProps extends cdk.StackProps {
  * - `ClusterArn` — The ARN of the DSQL cluster.
  * - `LambdaDsqlRoleArn` — The ARN of the IAM role for Lambda DSQL access.
  * - SSM Parameters `/armoury/{env}/{service}/dsql-cluster-endpoint` for each service.
- * - Inline policy on CI user for `ssm:GetParameter` on `/armoury/*` parameters.
+ * - Inline policy on CI user for `ssm:GetParameter` on `/armoury/*` and `/serverless-framework/*` parameters.
  */
 export class DsqlStack extends cdk.Stack {
     /** The DSQL cluster construct instance. */
@@ -132,17 +132,21 @@ export class DsqlStack extends cdk.Stack {
         );
 
         // SSM read access for fetching DSQL endpoint parameters during deploy.
-        // The resource pattern `/armoury/*` covers both sandbox and production,
-        // so the policy only needs to be attached once. Guard with environment
-        // check to avoid CloudFormation ownership conflicts across stacks.
+        // Also includes Serverless Framework v4 deployment parameters.
+        // The resource patterns cover both sandbox and production, so the policy
+        // only needs to be attached once. Guard with environment check to avoid
+        // CloudFormation ownership conflicts across stacks.
         if (environment === 'sandbox') {
             ciUser.attachInlinePolicy(
                 new iam.Policy(this, 'CiSsmReadPolicy', {
                     statements: [
                         new iam.PolicyStatement({
                             effect: iam.Effect.ALLOW,
-                            actions: ['ssm:GetParameter'],
-                            resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/armoury/*`],
+                            actions: ['ssm:GetParameter', 'ssm:PutParameter'],
+                            resources: [
+                                `arn:aws:ssm:${this.region}:${this.account}:parameter/armoury/*`,
+                                `arn:aws:ssm:${this.region}:${this.account}:parameter/serverless-framework/*`,
+                            ],
                         }),
                     ],
                 }),
