@@ -20,11 +20,11 @@ provider:
                 - Effect: Allow
                   Action:
                       - dsql:DbConnectAdmin
-                  Resource: 'arn:aws:dsql:${self:provider.region}:040663841500:cluster/*'
+                  Resource: 'arn:aws:dsql:${self:provider.region}:${env:AWS_ACCOUNT_ID}:cluster/*'
                 - Effect: Allow
                   Action:
                       - ssm:GetParameter
-                  Resource: 'arn:aws:ssm:${self:provider.region}:040663841500:parameter/armoury/${self:provider.stage}/*'
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${env:AWS_ACCOUNT_ID}:parameter/armoury/${self:provider.stage}/*'
 
 build:
     esbuild:

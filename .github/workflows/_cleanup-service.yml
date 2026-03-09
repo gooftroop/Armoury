@@ -53,4 +53,6 @@ jobs:
 
             - name: Remove stage
               working-directory: ${{ inputs.working-directory }}
+              env:
+                  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
               run: serverless remove --stage pr-${{ github.event.pull_request.number }}
