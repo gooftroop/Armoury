@@ -124,12 +124,16 @@ jobs:
               if: inputs.needs-authorizer
               run: |
                   AUTHORIZER_STACK="armoury-authorizer-pr-${{ github.event.pull_request.number }}"
-                  AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
-                    --stack-name "${AUTHORIZER_STACK}" \
-                    --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
-                    --output text)
-                  echo "Resolved Authorizer ARN from stack ${AUTHORIZER_STACK}"
-                  echo "AUTHORIZER_ARN=${AUTHORIZER_ARN}" >> "${GITHUB_ENV}"
+                  if aws cloudformation describe-stacks --stack-name "${AUTHORIZER_STACK}" > /dev/null 2>&1; then
+                    AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
+                      --stack-name "${AUTHORIZER_STACK}" \
+                      --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
+                      --output text)
+                    echo "Resolved Authorizer ARN from stack ${AUTHORIZER_STACK}"
+                    echo "AUTHORIZER_ARN=${AUTHORIZER_ARN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Authorizer stack ${AUTHORIZER_STACK} not found. Deploying without authorizer integration."
+                  fi
 
             - name: Install Serverless Framework
               run: npm install -g serverless
