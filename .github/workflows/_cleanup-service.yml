@@ -51,6 +51,25 @@ jobs:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
               run: node --import=tsx src/services/__testing__/dbSchema.ts drop "${DB_SCHEMA}"
 
+            - name: Install Serverless Framework
+              run: npm install -g serverless
+
+            - name: Delete custom domain
+              working-directory: ${{ inputs.working-directory }}
+              env:
+                  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  serverless delete_domain \
+                    --stage pr-${{ github.event.pull_request.number }} \
+                    --param="domainPrefix=${SERVICE_SHORT_NAME}-pr-${{ github.event.pull_request.number }}-sandbox" \
+                    --param="domainName=${{ vars.DOMAIN_NAME }}" \
+                    --param="certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}" \
+                    --param="hostedZoneId=${{ vars.ROUTE53_HOSTED_ZONE_ID }}" \
+                    --param="customDomainEnabled=true"
+
             - name: Remove stage
               working-directory: ${{ inputs.working-directory }}
+              env:
+                  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
               run: serverless remove --stage pr-${{ github.event.pull_request.number }}

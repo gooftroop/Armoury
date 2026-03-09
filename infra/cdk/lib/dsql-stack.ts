@@ -131,56 +131,181 @@ export class DsqlStack extends cdk.Stack {
             }),
         );
 
-        // SSM read access for fetching DSQL endpoint parameters during deploy.
-        // Also includes Serverless Framework v4 deployment parameters.
-        // The resource patterns cover both sandbox and production, so the policy
-        // only needs to be attached once. Guard with environment check to avoid
-        // CloudFormation ownership conflicts across stacks.
+        // All sandbox-only CI permissions consolidated into a single managed policy.
+        // Inline policies have a 2048-byte total limit for IAM users; managed policies
+        // support up to 6144 bytes each, so we consolidate here to avoid the limit.
+        // Guarded by environment to avoid CloudFormation ownership conflicts across stacks.
         if (environment === 'sandbox') {
-            ciUser.attachInlinePolicy(
-                new iam.Policy(this, 'CiSsmReadPolicy', {
-                    statements: [
-                        new iam.PolicyStatement({
-                            effect: iam.Effect.ALLOW,
-                            actions: ['ssm:GetParameter', 'ssm:PutParameter'],
-                            resources: [
-                                `arn:aws:ssm:${this.region}:${this.account}:parameter/armoury/*`,
-                                `arn:aws:ssm:${this.region}:${this.account}:parameter/serverless-framework/*`,
-                            ],
-                        }),
-                    ],
-                }),
-            );
-        }
+            const ciDeployPolicy = new iam.ManagedPolicy(this, 'CiDeployPolicy', {
+                managedPolicyName: 'armoury-ci-deploy',
+                description:
+                    'CI user permissions for Serverless Framework deployments, custom domains, and infrastructure',
+                statements: [
+                    // SSM: read/write deployment parameters
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['ssm:GetParameter', 'ssm:PutParameter'],
+                        resources: [
+                            `arn:aws:ssm:${this.region}:${this.account}:parameter/armoury/*`,
+                            `arn:aws:ssm:${this.region}:${this.account}:parameter/serverless-framework/*`,
+                        ],
+                    }),
+                    // CloudFormation: manage Serverless Framework stacks
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: [
+                            'cloudformation:CreateStack',
+                            'cloudformation:UpdateStack',
+                            'cloudformation:DeleteStack',
+                            'cloudformation:DescribeStacks',
+                            'cloudformation:DescribeStackResource',
+                            'cloudformation:DescribeStackResources',
+                            'cloudformation:DescribeStackEvents',
+                            'cloudformation:GetTemplate',
+                            'cloudformation:ListStackResources',
+                            'cloudformation:ValidateTemplate',
+                        ],
+                        resources: [`arn:aws:cloudformation:${this.region}:${this.account}:stack/armoury-*/*`],
+                    }),
+                    // S3: Serverless Framework deployment bucket
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: [
+                            's3:CreateBucket',
+                            's3:DeleteBucket',
+                            's3:GetBucketLocation',
+                            's3:GetBucketPolicy',
+                            's3:GetBucketTagging',
+                            's3:GetEncryptionConfiguration',
+                            's3:GetLifecycleConfiguration',
+                            's3:GetObject',
+                            's3:ListBucket',
+                            's3:PutBucketPolicy',
+                            's3:PutBucketTagging',
+                            's3:PutEncryptionConfiguration',
+                            's3:PutLifecycleConfiguration',
+                            's3:PutObject',
+                            's3:DeleteObject',
+                        ],
+                        resources: [
+                            'arn:aws:s3:::serverless-framework-deployments-*',
+                            'arn:aws:s3:::serverless-framework-deployments-*/*',
+                        ],
+                    }),
+                    // Lambda: create/update/delete functions
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: [
+                            'lambda:CreateFunction',
+                            'lambda:DeleteFunction',
+                            'lambda:GetFunction',
+                            'lambda:GetFunctionConfiguration',
+                            'lambda:UpdateFunctionCode',
+                            'lambda:UpdateFunctionConfiguration',
+                            'lambda:ListVersionsByFunction',
+                            'lambda:PublishVersion',
+                            'lambda:CreateAlias',
+                            'lambda:DeleteAlias',
+                            'lambda:UpdateAlias',
+                            'lambda:GetAlias',
+                            'lambda:AddPermission',
+                            'lambda:RemovePermission',
+                            'lambda:InvokeFunction',
+                            'lambda:ListTags',
+                            'lambda:TagResource',
+                            'lambda:UntagResource',
+                            'lambda:PutFunctionEventInvokeConfig',
+                            'lambda:DeleteFunctionEventInvokeConfig',
+                        ],
+                        resources: [`arn:aws:lambda:${this.region}:${this.account}:function:armoury-*`],
+                    }),
+                    // IAM: pass role to Lambda
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['iam:PassRole'],
+                        resources: [`arn:aws:iam::${this.account}:role/armoury-*`],
+                    }),
+                    // IAM: manage Lambda execution roles created by Serverless Framework
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: [
+                            'iam:CreateRole',
+                            'iam:DeleteRole',
+                            'iam:GetRole',
+                            'iam:PutRolePolicy',
+                            'iam:DeleteRolePolicy',
+                            'iam:GetRolePolicy',
+                            'iam:AttachRolePolicy',
+                            'iam:DetachRolePolicy',
+                            'iam:ListRolePolicies',
+                            'iam:ListAttachedRolePolicies',
+                            'iam:TagRole',
+                            'iam:UntagRole',
+                        ],
+                        resources: [`arn:aws:iam::${this.account}:role/armoury-*`],
+                    }),
+                    // API Gateway: create/manage REST APIs
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: [
+                            'apigateway:GET',
+                            'apigateway:POST',
+                            'apigateway:PUT',
+                            'apigateway:PATCH',
+                            'apigateway:DELETE',
+                        ],
+                        resources: [`arn:aws:apigateway:${this.region}::/restapis*`],
+                    }),
+                    // CloudWatch Logs: manage log groups for Lambda
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: [
+                            'logs:CreateLogGroup',
+                            'logs:DeleteLogGroup',
+                            'logs:DescribeLogGroups',
+                            'logs:PutRetentionPolicy',
+                            'logs:DeleteRetentionPolicy',
+                            'logs:TagResource',
+                            'logs:UntagResource',
+                        ],
+                        resources: [`arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/armoury-*`],
+                    }),
+                    // Route 53: manage DNS records in the armoury-app.com hosted zone
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: [
+                            'route53:ChangeResourceRecordSets',
+                            'route53:GetHostedZone',
+                            'route53:ListResourceRecordSets',
+                        ],
+                        resources: ['arn:aws:route53:::hostedzone/Z09361641Z6OI455J4GGH'],
+                    }),
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['route53:ListHostedZones'],
+                        resources: ['*'],
+                    }),
+                    // ACM: read certificate details for domain validation
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['acm:ListCertificates', 'acm:DescribeCertificate'],
+                        resources: ['*'],
+                    }),
+                    // API Gateway: custom domain management (REST + WebSocket)
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ['apigateway:POST', 'apigateway:GET', 'apigateway:DELETE', 'apigateway:PATCH'],
+                        resources: [
+                            `arn:aws:apigateway:${this.region}::/domainnames`,
+                            `arn:aws:apigateway:${this.region}::/domainnames/*`,
+                            `arn:aws:apigateway:${this.region}::/apis`,
+                            `arn:aws:apigateway:${this.region}::/apis/*`,
+                        ],
+                    }),
+                ],
+            });
 
-        // CloudFormation permissions for Serverless Framework deployments.
-        // Serverless v4 manages Lambda stacks via CloudFormation — the CI user
-        // needs create/update/describe/delete on armoury-* stacks.
-        // Attached once (sandbox guard) to avoid CloudFormation ownership conflicts.
-        if (environment === 'sandbox') {
-            ciUser.attachInlinePolicy(
-                new iam.Policy(this, 'CiCfnPolicy', {
-                    policyName: 'armoury-ci-cfn-operations',
-                    statements: [
-                        new iam.PolicyStatement({
-                            effect: iam.Effect.ALLOW,
-                            actions: [
-                                'cloudformation:CreateStack',
-                                'cloudformation:UpdateStack',
-                                'cloudformation:DeleteStack',
-                                'cloudformation:DescribeStacks',
-                                'cloudformation:DescribeStackResource',
-                                'cloudformation:DescribeStackResources',
-                                'cloudformation:DescribeStackEvents',
-                                'cloudformation:GetTemplate',
-                                'cloudformation:ListStackResources',
-                                'cloudformation:ValidateTemplate',
-                            ],
-                            resources: [`arn:aws:cloudformation:${this.region}:${this.account}:stack/armoury-*/*`],
-                        }),
-                    ],
-                }),
-            );
+            ciDeployPolicy.attachToUser(ciUser);
         }
 
         // -----------------------------------------------------------------

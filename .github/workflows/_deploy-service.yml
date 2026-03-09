@@ -100,12 +100,30 @@ jobs:
                   DB_SCHEMA: ${{ github.event_name == 'pull_request' && format('pr_{0}', github.event.pull_request.number) || 'public' }}
               run: |
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
-                    export DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "${DB_SCHEMA}")
+                    DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "${DB_SCHEMA}")
+                    export DATABASE_URL
+                    echo "DATABASE_URL length: ${#DATABASE_URL}"
+                    echo "DATABASE_URL prefix: ${DATABASE_URL:0:30}..."
                   fi
+                  echo "DATABASE_URL set: ${DATABASE_URL:+yes}"
                   npm run db:migrate -w ${{ inputs.service-name }}
 
             - name: Install Serverless Framework
               run: npm install -g serverless
+
+            - name: Create custom domain
+              working-directory: ${{ inputs.working-directory }}
+              env:
+                  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  serverless create_domain \
+                    --stage pr-${{ github.event.pull_request.number }} \
+                    --param="domainPrefix=${SERVICE_SHORT_NAME}-pr-${{ github.event.pull_request.number }}-sandbox" \
+                    --param="domainName=${{ vars.DOMAIN_NAME }}" \
+                    --param="certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}" \
+                    --param="hostedZoneId=${{ vars.ROUTE53_HOSTED_ZONE_ID }}" \
+                    --param="customDomainEnabled=true"
 
             - name: Deploy
               working-directory: ${{ inputs.working-directory }}
@@ -115,7 +133,13 @@ jobs:
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
-                  serverless deploy --stage pr-${{ github.event.pull_request.number }}
+                  serverless deploy \
+                    --stage pr-${{ github.event.pull_request.number }} \
+                    --param="domainPrefix=${SERVICE_SHORT_NAME}-pr-${{ github.event.pull_request.number }}-sandbox" \
+                    --param="domainName=${{ vars.DOMAIN_NAME }}" \
+                    --param="certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}" \
+                    --param="hostedZoneId=${{ vars.ROUTE53_HOSTED_ZONE_ID }}" \
+                    --param="customDomainEnabled=true"
 
     deploy-production:
         name: Deploy Production

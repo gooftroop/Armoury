@@ -51,7 +51,7 @@ plugins:
 custom:
     customDomain:
         rest:
-            domainName: campaigns.${param:domainName}
+            domainName: ${param:domainPrefix}.${param:domainName}
             certificateArn: ${param:certificateArn}
             hostedZoneId: ${param:hostedZoneId}
             basePath: ''
@@ -60,7 +60,7 @@ custom:
             securityPolicy: tls_1_2
             createRoute53Record: true
             createRoute53IPv6Record: true
-            autoDomain: true
+            autoDomain: false
             enabled: ${param:customDomainEnabled}
     serverless-offline:
         httpPort: 3000
