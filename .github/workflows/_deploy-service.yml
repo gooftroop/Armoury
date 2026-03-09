@@ -95,23 +95,17 @@ jobs:
               run: node --import=tsx src/services/__testing__/dbSchema.ts create "${DB_SCHEMA}"
 
             - name: Generate DATABASE_URL for PR migrations
-              id: db-url
               if: inputs.has-migrations && github.event_name == 'pull_request'
               env:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
               run: |
                   DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "${DB_SCHEMA}")
-                  {
-                    echo "DATABASE_URL<<DBURL_EOF"
-                    echo "${DATABASE_URL}"
-                    echo "DBURL_EOF"
-                  } >> "${GITHUB_OUTPUT}"
+                  echo "DATABASE_URL=${DATABASE_URL}" >> "${GITHUB_ENV}"
 
             - name: Run migrations
               if: inputs.has-migrations
               env:
                   DB_SCHEMA: ${{ github.event_name == 'pull_request' && format('pr_{0}', github.event.pull_request.number) || 'public' }}
-                  DATABASE_URL: ${{ steps.db-url.outputs.DATABASE_URL || '' }}
               run: npm run db:migrate -w ${{ inputs.service-name }}
 
             - name: Install Serverless Framework
@@ -164,21 +158,15 @@ jobs:
                   echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
 
             - name: Generate DATABASE_URL for production migrations
-              id: db-url-prod
               if: inputs.has-migrations
               run: |
                   DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "public")
-                  {
-                    echo "DATABASE_URL<<DBURL_EOF"
-                    echo "${DATABASE_URL}"
-                    echo "DBURL_EOF"
-                  } >> "${GITHUB_OUTPUT}"
+                  echo "DATABASE_URL=${DATABASE_URL}" >> "${GITHUB_ENV}"
 
             - name: Run migrations
               if: inputs.has-migrations
               env:
                   DB_SCHEMA: public
-                  DATABASE_URL: ${{ steps.db-url-prod.outputs.DATABASE_URL || '' }}
               run: npm run db:migrate -w ${{ inputs.service-name }}
 
             - name: Install Serverless Framework

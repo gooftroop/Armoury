@@ -149,6 +149,36 @@ export class DsqlStack extends cdk.Stack {
             );
         }
 
+        // CloudFormation permissions for Serverless Framework deployments.
+        // Serverless v4 manages Lambda stacks via CloudFormation — the CI user
+        // needs create/update/describe/delete on armoury-* stacks.
+        // Attached once (sandbox guard) to avoid CloudFormation ownership conflicts.
+        if (environment === 'sandbox') {
+            ciUser.attachInlinePolicy(
+                new iam.Policy(this, 'CiCfnPolicy', {
+                    policyName: 'armoury-ci-cfn-operations',
+                    statements: [
+                        new iam.PolicyStatement({
+                            effect: iam.Effect.ALLOW,
+                            actions: [
+                                'cloudformation:CreateStack',
+                                'cloudformation:UpdateStack',
+                                'cloudformation:DeleteStack',
+                                'cloudformation:DescribeStacks',
+                                'cloudformation:DescribeStackResource',
+                                'cloudformation:DescribeStackResources',
+                                'cloudformation:DescribeStackEvents',
+                                'cloudformation:GetTemplate',
+                                'cloudformation:ListStackResources',
+                                'cloudformation:ValidateTemplate',
+                            ],
+                            resources: [`arn:aws:cloudformation:${this.region}:${this.account}:stack/armoury-*/*`],
+                        }),
+                    ],
+                }),
+            );
+        }
+
         // -----------------------------------------------------------------
         // Stack Outputs
         // -----------------------------------------------------------------
