@@ -22,4 +22,5 @@ jobs:
             working-directory: src/services/authorizer
             needs-shared-build: false
             has-migrations: false
+            has-custom-domain: false
         secrets: inherit

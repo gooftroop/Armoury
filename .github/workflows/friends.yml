@@ -24,4 +24,5 @@ jobs:
             working-directory: src/services/friends
             needs-shared-build: true
             has-migrations: false
+            needs-authorizer: true
         secrets: inherit

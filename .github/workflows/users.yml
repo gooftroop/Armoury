@@ -24,4 +24,5 @@ jobs:
             working-directory: src/services/users
             needs-shared-build: true
             has-migrations: true
+            needs-authorizer: true
         secrets: inherit
