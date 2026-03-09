@@ -104,16 +104,6 @@ jobs:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
               run: node --import=tsx src/services/__testing__/dbSchema.ts create "${DB_SCHEMA}"
 
-            - name: Compute DATABASE_URL
-              if: inputs.has-migrations && github.event_name == 'pull_request'
-              env:
-                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
-              run: |
-                  DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "${DB_SCHEMA}")
-                  echo "DATABASE_URL length: ${#DATABASE_URL}"
-                  echo "DATABASE_URL prefix: ${DATABASE_URL:0:30}..."
-                  echo "DATABASE_URL=${DATABASE_URL}" >> "${GITHUB_ENV}"
-
             - name: Run migrations
               if: inputs.has-migrations
               env:
@@ -206,14 +196,6 @@ jobs:
                     --query 'Parameter.Value' --output text)
                   echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
                   echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
-
-            - name: Compute DATABASE_URL
-              if: inputs.has-migrations
-              env:
-                  DB_SCHEMA: public
-              run: |
-                  DATABASE_URL=$(node --import=tsx src/services/__testing__/dbSchema.ts url "${DB_SCHEMA}")
-                  echo "DATABASE_URL=${DATABASE_URL}" >> "${GITHUB_ENV}"
 
             - name: Run migrations
               if: inputs.has-migrations
