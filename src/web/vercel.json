@@ -1,10 +1,5 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "framework": "nextjs",
-    "buildCommand": "npx turbo run build --filter=@armoury/web",
-    "build": {
-        "env": {
-            "NODE_OPTIONS": "--max-old-space-size=7168"
-        }
-    }
+    "buildCommand": "NODE_OPTIONS=--max-old-space-size=7168 npx turbo run build --filter=@armoury/web"
 }
