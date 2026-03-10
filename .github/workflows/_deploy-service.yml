@@ -89,14 +89,19 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
-            - name: Fetch DSQL config from SSM
+            - name: Fetch DSQL config and generate token
+              if: inputs.has-migrations
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
                     --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
                     --query 'Parameter.Value' --output text)
+                  DSQL_REGION="${{ vars.AWS_REGION || 'us-east-1' }}"
+                  DSQL_TOKEN=$(node --import=tsx src/services/__testing__/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
                   echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
-                  echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${DSQL_REGION}" >> "${GITHUB_ENV}"
+                  echo "::add-mask::${DSQL_TOKEN}"
+                  echo "DSQL_TOKEN=${DSQL_TOKEN}" >> "${GITHUB_ENV}"
 
             - name: Create PR schema
               if: inputs.has-migrations && github.event_name == 'pull_request'
@@ -188,14 +193,19 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
-            - name: Fetch DSQL config from SSM
+            - name: Fetch DSQL config and generate token
+              if: inputs.has-migrations
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
                     --name "/armoury/production/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
                     --query 'Parameter.Value' --output text)
+                  DSQL_REGION="${{ vars.AWS_REGION || 'us-east-1' }}"
+                  DSQL_TOKEN=$(node --import=tsx src/services/__testing__/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
                   echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
-                  echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${DSQL_REGION}" >> "${GITHUB_ENV}"
+                  echo "::add-mask::${DSQL_TOKEN}"
+                  echo "DSQL_TOKEN=${DSQL_TOKEN}" >> "${GITHUB_ENV}"
 
             - name: Run migrations
               if: inputs.has-migrations

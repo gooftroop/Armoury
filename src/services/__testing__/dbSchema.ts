@@ -153,6 +153,21 @@ async function dropSchema(schemaName: string): Promise<void> {
 }
 
 /**
+ * Generates a fresh IAM authentication token for DSQL.
+ * Outputs the raw token to stdout for use as an environment variable.
+ *
+ * @param region - AWS region of the DSQL cluster.
+ * @param hostname - Aurora DSQL cluster endpoint hostname.
+ */
+async function generateToken(region: string, hostname: string): Promise<void> {
+    const signer = new DsqlSigner({ hostname, region });
+    const token = await signer.getDbConnectAdminAuthToken();
+
+    // Output raw token to stdout for shell capture
+    process.stdout.write(token);
+}
+
+/**
  * Generates a DATABASE_URL for connecting to DSQL with a specific search_path.
  * Outputs the URL to stdout for use in shell scripts.
  *
@@ -178,24 +193,40 @@ const args = process.argv.slice(2);
 const command = args[0];
 const schemaName = args[1];
 
-if (!command || !schemaName) {
-    console.error('Usage: node dbSchema.js <create|drop|url> <SCHEMA_NAME>');
+if (!command) {
+    console.error('Usage: node dbSchema.js <create|drop|url|token> <SCHEMA_NAME|REGION HOSTNAME>');
     console.error('');
-    console.error('DSQL config is read from DSQL_CLUSTER_ENDPOINT and DSQL_REGION env vars.');
+    console.error('Commands:');
+    console.error('  create <SCHEMA_NAME>    Create a PR schema');
+    console.error('  drop <SCHEMA_NAME>      Drop a PR schema');
+    console.error('  url <SCHEMA_NAME>       Generate a DATABASE_URL with search_path');
+    console.error('  token <REGION> <HOST>   Generate a fresh IAM auth token');
+    console.error('');
+    console.error('DSQL config is read from DSQL_CLUSTER_ENDPOINT and DSQL_REGION env vars (except token).');
     process.exit(1);
 }
 
 switch (command) {
     case 'create':
+        if (!schemaName) { console.error('Missing schema name.'); process.exit(1); }
         await createSchema(schemaName);
         break;
     case 'drop':
+        if (!schemaName) { console.error('Missing schema name.'); process.exit(1); }
         await dropSchema(schemaName);
         break;
     case 'url':
+        if (!schemaName) { console.error('Missing schema name.'); process.exit(1); }
         await generateDatabaseUrl(schemaName);
         break;
+    case 'token': {
+        const region = args[1];
+        const hostname = args[2];
+        if (!region || !hostname) { console.error('Usage: token <REGION> <HOSTNAME>'); process.exit(1); }
+        await generateToken(region, hostname);
+        break;
+    }
     default:
-        console.error(`Unknown command: ${command}. Use "create", "drop", or "url".`);
+        console.error(`Unknown command: ${command}. Use "create", "drop", "url", or "token".`);
         process.exit(1);
 }
