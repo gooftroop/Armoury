@@ -338,6 +338,16 @@ export class DsqlStack extends cdk.Stack {
                         `arn:aws:apigateway:${this.region}::/apis/*`,
                     ],
                 }),
+                // API Gateway: routing rules for per-PR sandbox domain routing
+                new iam.PolicyStatement({
+                    effect: iam.Effect.ALLOW,
+                    actions: [
+                        'apigateway:CreateRoutingRule',
+                        'apigateway:DeleteRoutingRule',
+                        'apigateway:ListRoutingRules',
+                    ],
+                    resources: [`arn:aws:apigateway:${this.region}:${this.account}:/domainnames/*/routingrules/*`],
+                }),
                 // STS: Serverless Framework resolves ${aws:accountId} via GetCallerIdentity
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
