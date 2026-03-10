@@ -108,18 +108,18 @@ jobs:
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  WS_WILDCARD_DOMAIN: '*.ws-sandbox.armoury-app.com'
+                  WS_DOMAIN: 'ws-sandbox.armoury-app.com'
               run: |
                   # Find and delete the WS API mapping for this PR+service (keyed by pr-{N}-{service})
                   MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
-                    --domain-name "${WS_WILDCARD_DOMAIN}" \
+                    --domain-name "${WS_DOMAIN}" \
                     --query "Items[?ApiMappingKey=='pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}'].ApiMappingId" \
                     --output text 2>/dev/null || true)
 
                   if [ -n "${MAPPING_ID}" ] && [ "${MAPPING_ID}" != "None" ]; then
                     echo "Deleting WS API mapping ${MAPPING_ID} for pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}"
                     aws apigatewayv2 delete-api-mapping \
-                      --domain-name "${WS_WILDCARD_DOMAIN}" \
+                      --domain-name "${WS_DOMAIN}" \
                       --api-mapping-id "${MAPPING_ID}"
                     echo "WS API mapping deleted."
                   else

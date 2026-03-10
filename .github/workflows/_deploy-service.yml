@@ -32,7 +32,7 @@ on:
                 type: string
                 default: ''
             has-websocket:
-                description: 'Whether the service has a WebSocket API that needs a per-PR WS domain mapping'
+                description: 'Whether the service has a WebSocket API that needs a WS domain mapping'
                 required: false
                 type: boolean
                 default: false
@@ -232,7 +232,7 @@ jobs:
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  WS_WILDCARD_DOMAIN: '*.ws-sandbox.armoury-app.com'
+                  WS_DOMAIN: 'ws-sandbox.armoury-app.com'
               run: |
                   STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
 
@@ -250,15 +250,15 @@ jobs:
                   # Sleep briefly to respect the rate limit window from any prior creation.
                   sleep 5
 
-                  # Create API mapping: pr-{N}.ws-sandbox.armoury-app.com/pr-{N}-{service} -> WS API
+                  # Create API mapping: ws-sandbox.armoury-app.com/pr-{N}-{service} -> WS API
                   # Include PR number in mapping key to avoid collisions between concurrent PRs.
                   aws apigatewayv2 create-api-mapping \
-                    --domain-name "${WS_WILDCARD_DOMAIN}" \
+                    --domain-name "${WS_DOMAIN}" \
                     --api-id "${WS_API_ID}" \
                     --stage "pr-${PR_NUMBER}" \
                     --api-mapping-key "pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}" || echo "::warning::WS API mapping creation failed (may already exist)"
 
-                  echo "Created WS API mapping for pr-${PR_NUMBER}.ws-sandbox.armoury-app.com/pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} -> ${WS_API_ID}"
+                  echo "Created WS API mapping for ws-sandbox.armoury-app.com/pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} -> ${WS_API_ID}"
 
     deploy-production:
         name: Deploy Production
