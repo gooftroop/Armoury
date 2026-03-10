@@ -1,8 +1,10 @@
 /**
- * Shared AWS/LocalStack environment variables for e2e tests.
+ * Shared AWS/LocalStack environment variables for e2e test configurations.
  *
- * This file centralizes environment configuration used across all service e2e test suites
- * to avoid duplication and ensure consistency when environment variables change.
+ * Centralizes the env block that every service vitest.e2e.config.ts needs,
+ * so new variables are added in one place instead of duplicated per service.
+ *
+ * @module e2eEnv
  */
 
 /**

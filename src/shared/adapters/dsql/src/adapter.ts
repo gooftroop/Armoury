@@ -141,9 +141,9 @@ export interface DSQLIAMConfig {
     clusterEndpoint: string;
     /** The AWS region of the DSQL cluster. */
     region: string;
-    /** Override the default port (5432). Useful for local DSQL mocks. */
+    /** Override the default PostgreSQL port (5432). Useful for local testing with non-standard port mappings. */
     port?: number;
-    /** Override SSL (defaults to true). Set false for local mocks. */
+    /** Whether to use SSL for the connection. Defaults to `true` for production DSQL. */
     ssl?: boolean;
 }
 
