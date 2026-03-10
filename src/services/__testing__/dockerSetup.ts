@@ -157,15 +157,23 @@ async function ensureLocalStack(repoRoot: string): Promise<void> {
     try {
         execSync(`docker compose -f "${composeFile}" up -d`, {
             cwd: repoRoot,
-            stdio: 'inherit',
+            stdio: ['inherit', 'inherit', 'pipe'],
             timeout: LOCALSTACK_STARTUP_TIMEOUT,
         });
     } catch (error: unknown) {
         // When turbo runs multiple test:e2e tasks in parallel, another process
         // may have already created the container. If so, fall through to polling.
+        const stderr =
+            error !== null &&
+            typeof error === 'object' &&
+            'stderr' in error &&
+            Buffer.isBuffer(error.stderr)
+                ? error.stderr.toString()
+                : '';
         const message = error instanceof Error ? error.message : String(error);
+        const combined = `${message} ${stderr}`;
 
-        if (message.includes('already in use') || message.includes('Conflict')) {
+        if (combined.includes('already in use') || combined.includes('Conflict')) {
             console.log('[e2e] LocalStack container created by another process — waiting for it...');
         } else {
             throw error;
