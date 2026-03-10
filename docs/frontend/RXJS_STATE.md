@@ -201,13 +201,13 @@ export function ArmySearch(): JSX.Element {
 
                     setIsSearching(true);
 
-                    return dc.armies.search(q);
-                }),
-                catchError((_err, source$) => {
-                    // Recover from error by continuing the stream
-                    setIsSearching(false);
+                    return dc.armies.search(q).pipe(
+                        catchError(() => {
+                            setIsSearching(false);
 
-                    return source$;
+                            return of([] as ArmySearchResult[]);
+                        }),
+                    );
                 }),
             )
             .subscribe((res) => {
@@ -255,8 +255,8 @@ The preferred integration point between RxJS streams and React components in Rea
 #### `useSyncExternalStore` — Preferred (React 18+/19)
 
 ```typescript
-// src/shared/frontend/hooks/useObservable.ts
-// Pure TypeScript utility — usable in both web and mobile
+// src/web/src/hooks/useObservable.ts
+// React hook — place in platform workspace (web or mobile), NOT in src/shared/frontend/
 // @requirements FE-052, FE-059
 
 import { useSyncExternalStore } from 'react';

@@ -316,32 +316,17 @@ Each stack exports four values:
 | `ClusterArn`        | `armoury-<env>-dsql-cluster-arn`     | Cluster ARN (used in IAM policies)                   |
 | `LambdaDsqlRoleArn` | `armoury-<env>-lambda-dsql-role-arn` | IAM role ARN for Lambda DSQL access                  |
 
-### GitHub OIDC Setup
+### AWS Credential Configuration
 
-The CDK workflow authenticates to AWS using OpenID Connect (OIDC) federation — no static access keys are stored in GitHub. This requires a one-time IAM setup in the AWS account:
+The CDK workflow authenticates to AWS using static access keys stored as GitHub secrets (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`). A future improvement is to migrate to OpenID Connect (OIDC) federation for keyless authentication.
 
-1. **Create an OIDC identity provider** for `token.actions.githubusercontent.com` in IAM.
-2. **Create an IAM role** (`armoury-github-cdk-deploy` or similar) that trusts the GitHub OIDC provider, scoped to your repository:
-    ```json
-    {
-        "Effect": "Allow",
-        "Principal": {
-            "Federated": "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
-        },
-        "Action": "sts:AssumeRoleWithWebIdentity",
-        "Condition": {
-            "StringEquals": {
-                "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-            },
-            "StringLike": {
-                "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPO>:*"
-            }
-        }
-    }
-    ```
-3. **Attach permissions** to the role: CloudFormation, DSQL, IAM, and `sts:AssumeRole` for CDK bootstrap roles.
-4. **Set `CDK_DEPLOY_ROLE_ARN`** as an environment variable in GitHub Environments (Settings > Environments > sandbox/production) — not as a repository secret.
+The following GitHub secrets are required:
 
+- `AWS_ACCESS_KEY_ID` — IAM user access key with CDK deployment permissions
+- `AWS_SECRET_ACCESS_KEY` — Corresponding secret key
+- `CDK_DEPLOY_ROLE_ARN` — (optional) Set as an environment variable in GitHub Environments (Settings > Environments > sandbox/production) if using cross-account role assumption
+
+> **TODO:** Migrate to OpenID Connect (OIDC) federation via `aws-actions/configure-aws-credentials@v4` with `permissions: id-token: write` for keyless authentication. This eliminates static key rotation and reduces secret sprawl.
 ### CI/CD Workflow
 
 CDK changes are handled by `.github/workflows/infra.yml`. The workflow triggers **only** when files under `infra/cdk/**` change (or via manual dispatch).
@@ -354,7 +339,7 @@ CDK changes are handled by `.github/workflows/infra.yml`. The workflow triggers 
 
 **Security features:**
 
-- OIDC authentication via `aws-actions/configure-aws-credentials@v4` (no static keys).
+- Static access key authentication via `aws-actions/configure-aws-credentials@v4` (OIDC migration planned).
 - Minimal job-level permissions (`contents: read`, `id-token: write`, `pull-requests: write` for diff only).
 - Concurrency group `infra-cdk-${{ github.ref }}` with `cancel-in-progress: false` (never abort a running deploy).
 - Timeout: 15 min for diff, 30 min for deploy.

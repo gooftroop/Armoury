@@ -299,7 +299,7 @@ RxJS stream classes are pure TypeScript — they require no React, no DOM, and n
 
 ```typescript
 // src/shared/streams/src/matches/__tests__/MatchStream.test.ts
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Subject } from 'rxjs';
 import { MatchStream } from '@streams/matches/MatchStream.js';
 import type { IMatchesRealtimeClient } from '@streams/matches/types.js';
@@ -452,7 +452,7 @@ Test Context through rendered component trees with the provider. Test the `useXx
 
 ```typescript
 // src/web/src/providers/__tests__/DataContextProvider.test.tsx
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import {
     DataContextProvider,

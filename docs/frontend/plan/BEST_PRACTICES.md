@@ -10,7 +10,7 @@
 - [`docs/frontend/REQUIREMENTS.md`](../REQUIREMENTS.md) (frontend requirements)
 - [`docs/CODING_STANDARDS.md`](../../CODING_STANDARDS.md) (general coding standards)
 - [`docs/backend/BEST_PRACTICES.md`](../../backend/BEST_PRACTICES.md) (backend best practices)
-- [`docs/frontend/STATE_MANAGEMENT.md`](../STATE_MANAGEMENT.md) — Canonical state management architecture (↗ §4)
+- [`docs/frontend/STATE_MANAGEMENT.md`](./STATE_MANAGEMENT.md) — Canonical state management architecture (↗ §4)
 - [`docs/frontend/REACT_QUERY.md`](../REACT_QUERY.md) — Server state patterns via React Query (↗ §10, §11)
 - [`docs/frontend/RXJS_STATE.md`](../RXJS_STATE.md) — Global/reactive state via RxJS (↗ §12)
 - [`docs/frontend/DERIVED_STATE.md`](../DERIVED_STATE.md) — Derived state patterns
