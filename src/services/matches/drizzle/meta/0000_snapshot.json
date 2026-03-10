@@ -8,7 +8,13 @@
             "name": "matches",
             "schema": "",
             "columns": {
-                "id": { "name": "id", "type": "text", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+                "id": {
+                    "name": "id",
+                    "type": "text",
+                    "primaryKey": true,
+                    "notNull": true,
+                    "default": "gen_random_uuid()"
+                },
                 "system_id": { "name": "system_id", "type": "text", "primaryKey": false, "notNull": true },
                 "players": { "name": "players", "type": "text", "primaryKey": false, "notNull": true },
                 "turn": { "name": "turn", "type": "text", "primaryKey": false, "notNull": true },

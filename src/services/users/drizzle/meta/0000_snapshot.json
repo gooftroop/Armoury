@@ -8,7 +8,13 @@
             "name": "users",
             "schema": "",
             "columns": {
-                "id": { "name": "id", "type": "text", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+                "id": {
+                    "name": "id",
+                    "type": "text",
+                    "primaryKey": true,
+                    "notNull": true,
+                    "default": "gen_random_uuid()"
+                },
                 "sub": { "name": "sub", "type": "text", "primaryKey": false, "notNull": true },
                 "email": { "name": "email", "type": "text", "primaryKey": false, "notNull": true },
                 "name": { "name": "name", "type": "text", "primaryKey": false, "notNull": true },
@@ -32,7 +38,13 @@
             "name": "accounts",
             "schema": "",
             "columns": {
-                "id": { "name": "id", "type": "text", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+                "id": {
+                    "name": "id",
+                    "type": "text",
+                    "primaryKey": true,
+                    "notNull": true,
+                    "default": "gen_random_uuid()"
+                },
                 "user_id": { "name": "user_id", "type": "text", "primaryKey": false, "notNull": true },
                 "preferences": { "name": "preferences", "type": "text", "primaryKey": false, "notNull": false },
                 "systems": { "name": "systems", "type": "text", "primaryKey": false, "notNull": false },
