@@ -434,7 +434,7 @@ export const armyDetailOptions = (id: string) =>
 
 ## 5. Cache Configuration
 
-The global `QueryClient` at `src/web/src/lib/queryClient.ts` sets `staleTime: 3_600_000` (1 hour) as the application-wide default. Individual `queryOptions` factories **override this per query** when a shorter freshness window is appropriate.
+The global `QueryClient` at `src/web/src/lib/queryClient.ts` sets `staleTime: 3_600_000` (1 hour) as a conservative application-wide fallback for data types that do not define a per-query override. Individual `queryOptions` factories **must override this** for their data category according to the table below (e.g. FE-070 requires 60 s for user data).
 
 > **FE-070**: User data: staleTime 60s, gcTime 5min.
 > **FE-071**: Static reference data: staleTime Infinity, gcTime 24h.

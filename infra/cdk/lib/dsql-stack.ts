@@ -332,6 +332,8 @@ export class DsqlStack extends cdk.Stack {
                         'apigateway:PUT',
                         'apigateway:DELETE',
                         'apigateway:PATCH',
+                        'apigateway:TagResource',
+                        'apigateway:UntagResource',
                     ],
                     resources: [
                         `arn:aws:apigateway:${this.region}::/domainnames`,

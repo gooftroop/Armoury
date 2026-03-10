@@ -371,6 +371,10 @@ export function useObservableState<T>(observable: Observable<T>, initialValue: T
                 setValue(v);
                 setError(null); // Clear any prior error on successful emission
             },
+            // Store error in state rather than re-throwing — allows the
+            // consuming component to handle it (e.g. via error boundary throw
+            // during render, or inline fallback UI).
+
             error: (err: unknown) => {
                 setError(err);
             },
@@ -467,9 +471,9 @@ export class MatchEventProcessor {
         // Process event and return updated match
         return this.stream
             .match$(event.matchId)
-            .pipe
-            // ... transformation logic
-            ();
+            .pipe(
+                // ... transformation logic
+            );
     }
 
     /** Stop all internal subscriptions. Idempotent. */

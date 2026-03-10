@@ -103,7 +103,7 @@ export function useArmyPointTotal(armyId: string): number | undefined {
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
-import type { ArmyUnit } from '@shared/types/entities.js';
+import type { Army, ArmyUnit } from '@shared/types/entities.js';
 
 /**
  * Returns units whose point cost exceeds a given threshold.
