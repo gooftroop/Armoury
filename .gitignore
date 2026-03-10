@@ -58,3 +58,6 @@ localstack.log
 
 # CDK build output
 infra/cdk/cdk.out
+
+# serverless framework cache
+.serverless/

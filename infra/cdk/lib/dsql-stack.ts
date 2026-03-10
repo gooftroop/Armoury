@@ -273,6 +273,12 @@ export class DsqlStack extends cdk.Stack {
                     ],
                     resources: [`arn:aws:apigateway:${this.region}::/restapis*`],
                 }),
+                // API Gateway: tag resources (required by Serverless Framework during deploy)
+                new iam.PolicyStatement({
+                    effect: iam.Effect.ALLOW,
+                    actions: ['apigateway:PUT', 'apigateway:POST'],
+                    resources: [`arn:aws:apigateway:${this.region}::/tags/*`],
+                }),
                 // CloudWatch Logs: manage log groups for Lambda
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,

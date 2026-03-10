@@ -102,13 +102,17 @@ export class DsqlCluster extends Construct implements IDsqlCluster {
         super(scope, id);
 
         const removalPolicy = props.removalPolicy ?? cdk.RemovalPolicy.RETAIN;
-        const deletionProtection = removalPolicy === cdk.RemovalPolicy.RETAIN;
+        const deletionProtection = removalPolicy !== cdk.RemovalPolicy.DESTROY;
 
         this.cfnCluster = new dsql.CfnCluster(this, 'Resource', {
             deletionProtectionEnabled: deletionProtection,
         });
 
         this.cfnCluster.applyRemovalPolicy(removalPolicy);
+
+        // Apply standard Armoury tags (REQ-DSQL-CONSTRUCT-004).
+        cdk.Tags.of(this).add('Project', 'armoury');
+        cdk.Tags.of(this).add('ManagedBy', 'cdk');
 
         // CloudFormation-resolved attributes — typed from the L1 construct.
         this.clusterIdentifier = this.cfnCluster.attrIdentifier;

@@ -10,17 +10,19 @@ Every pull request gets its own isolated PostgreSQL schema in the Aurora DSQL sa
 
 Set these in your GitHub repository's **Environments** settings (Settings > Environments).
 
-| Variable                 | Environment         | Description                                                                                            | Example                        |
-| ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| `DEPLOY_ENABLED`         | sandbox, production | Gate flag. Must be `'true'` for any deploy job to run.                                                 | `true`                         |
-| `DSQL_CLUSTER_ENDPOINT`  | sandbox             | Aurora DSQL cluster endpoint hostname. Used by `dbSchema.ts` and passed to Lambda via Secrets Manager. | `abc123.dsql.us-east-1.on.aws` |
-| `AWS_REGION`             | sandbox, production | AWS region. Also used as `DSQL_REGION` during schema operations.                                       | `us-east-1`                    |
-| `DOMAIN_NAME`            | production          | Custom domain name for API Gateway.                                                                    | `api.armoury.example.com`      |
-| `ROUTE53_HOSTED_ZONE_ID` | production          | Route 53 hosted zone ID for custom domain DNS.                                                         | `Z1D633PJN98FT9`               |
+| Variable                 | Environment         | Description                                                                                                                         | Example                        |
+| ------------------------ | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `DEPLOY_ENABLED`         | sandbox, production | Gate flag. Must be `'true'` for any deploy job to run.                                                                              | `true`                         |
+| `DSQL_CLUSTER_ENDPOINT`  | sandbox             | Aurora DSQL cluster endpoint hostname. Sourced from CDK SSM parameters at deploy time. Used by `dbSchema.ts` for schema operations. | `abc123.dsql.us-east-1.on.aws` |
+| `AWS_REGION`             | sandbox, production | AWS region. Also used as `DSQL_REGION` during schema operations.                                                                    | `us-east-1`                    |
+| `DOMAIN_NAME`            | production          | Custom domain name for API Gateway.                                                                                                 | `api.armoury.example.com`      |
+| `ROUTE53_HOSTED_ZONE_ID` | production          | Route 53 hosted zone ID for custom domain DNS.                                                                                      | `Z1D633PJN98FT9`               |
 
 ### AWS Secrets Manager Secrets
 
-These secrets must exist in AWS Secrets Manager before deploying. Lambda reads them at runtime via `SECRET_NAME`.
+These secrets must exist in AWS Secrets Manager before deploying. Production Lambda functions read them at runtime via `SECRET_NAME`. Sandbox deploys use the shared `armoury/sandbox` secret.
+
+> **Note:** DSQL cluster endpoints are the source of truth in SSM Parameter Store (provisioned by CDK at `/armoury/{env}/{service}/dsql-cluster-endpoint`). Secrets Manager stores runtime credentials that Lambda reads at startup. For sandbox schema operations (create/drop), the pipeline uses `DSQL_CLUSTER_ENDPOINT` from GitHub Environment variables — not Secrets Manager.
 
 | Secret Name                     | Used By                        | Expected JSON Structure                               |
 | ------------------------------- | ------------------------------ | ----------------------------------------------------- |
@@ -115,10 +117,10 @@ This applies to both IAM token auth and raw credential branches. If `DB_SCHEMA` 
 
 `dbSchema.ts` and `DSQLAdapter` both resolve DSQL connection config in this order:
 
-1. Check `DSQL_CLUSTER_ENDPOINT` and `DSQL_REGION` environment variables.
-2. If those are absent and a `SECRET_NAME` is provided, fetch the secret from AWS Secrets Manager.
+1. Check `DSQL_CLUSTER_ENDPOINT` and `DSQL_REGION` environment variables (set from GitHub Environment variables for sandbox, sourced from CDK SSM parameters).
+2. If those are absent and a `SECRET_NAME` is provided, fetch the secret from AWS Secrets Manager (production runtime path).
 
-Sandbox deploys always have `DSQL_CLUSTER_ENDPOINT` and `DSQL_REGION` set from GitHub environment variables, so they never need Secrets Manager for schema operations. Production migrations omit those env vars and pass a `SECRET_NAME` to force the Secrets Manager path.
+Sandbox deploys always have `DSQL_CLUSTER_ENDPOINT` and `DSQL_REGION` set from GitHub environment variables, so they never need Secrets Manager for schema operations. Production Lambdas omit those env vars and use `SECRET_NAME` to read credentials from Secrets Manager at runtime.
 
 ## Sandbox Deploy Flow
 
