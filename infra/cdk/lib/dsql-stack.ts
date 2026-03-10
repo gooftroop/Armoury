@@ -132,9 +132,11 @@ export class DsqlStack extends cdk.Stack {
         );
 
         // CI deploy permissions consolidated into a single managed policy per environment.
-        // Inline policies have a 2 048-character size limit per IAM user (sum of all
-        // inline policy documents). Managed policies support up to 6 144 characters each
-        // (up to 10 per user by default), so we consolidate here to stay within limits.
+        // Inline policies are limited to 2 048 bytes each (up to 10 per user), with a
+        // combined maximum of 10 240 bytes across all inline policies on a single user.
+        // Managed policies support up to 6 144 bytes each (up to 10 per user by default),
+        // so a single managed policy gives us more room than multiple inline policies.
+        // See: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html
         // Each environment gets a distinctly-named policy to avoid CloudFormation
         // ownership conflicts across stacks.
         const ciDeployPolicy = new iam.ManagedPolicy(this, 'CiDeployPolicy', {

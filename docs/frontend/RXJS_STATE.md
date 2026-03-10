@@ -325,7 +325,7 @@ export function MatchPresence({ matchId }: Props): JSX.Element {
 
 #### `useEffect` Fallback — For Generic `Observable` (Not BehaviorSubject)
 
-When you have a generic `Observable` (not a `BehaviorSubject`), there is no synchronous `getValue()`, so `useSyncExternalStore` requires additional adaptation. Use the `useEffect` pattern as a fallback, but be aware it does not provide the same concurrent-safety guarantees.
+When you have a generic `Observable` (not a `BehaviorSubject`), there is no synchronous `getValue()`, so `useSyncExternalStore` requires additional adaptation. Use the `useEffect` pattern as a fallback, but be aware it does not provide the same concurrent-safety guarantees. Errors are exposed via the returned `error` field rather than thrown, giving consumers control over error presentation.
 
 ```typescript
 // src/web/src/hooks/useObservableState.ts
@@ -333,11 +333,24 @@ When you have a generic `Observable` (not a `BehaviorSubject`), there is no sync
 import { useEffect, useState } from 'react';
 import { type Observable } from 'rxjs';
 
+/** Result of subscribing to an Observable — exposes value and error separately. */
+export interface ObservableState<T> {
+    /** Latest emitted value (or the initial value if nothing has emitted yet). */
+    value: T;
+    /** The most recent error emitted by the Observable, or null if healthy. */
+    error: unknown;
+}
+
 /**
- * Subscribes to a generic Observable and returns its latest emitted value.
+ * Subscribes to a generic Observable and returns its latest emitted value
+ * alongside any error.
  *
  * NOTE: Prefer useObservableValue (useSyncExternalStore) for BehaviorSubjects.
  * Use this only when you have a non-behavior Observable with no initial value.
+ *
+ * Errors are exposed in the returned `error` field instead of being thrown,
+ * giving the consumer control over error presentation (inline message,
+ * toast, error boundary, etc.).
  *
  * Limitations:
  *   - Not concurrent-safe: the value may be "torn" across a concurrent re-render.
@@ -345,22 +358,28 @@ import { type Observable } from 'rxjs';
  *
  * @requirements FE-059 — cleanup via useEffect return
  */
-export function useObservableState<T>(observable: Observable<T>, initialValue: T): T {
+export function useObservableState<T>(observable: Observable<T>, initialValue: T): ObservableState<T> {
     const [value, setValue] = useState<T>(initialValue);
+    const [error, setError] = useState<unknown>(null);
 
     useEffect(() => {
+        // Reset error when the observable instance changes
+        setError(null);
+
         const subscription = observable.subscribe({
-            next: setValue,
-            // Do not swallow errors — let them propagate to an error boundary
+            next: (v) => {
+                setValue(v);
+                setError(null); // Clear any prior error on successful emission
+            },
             error: (err: unknown) => {
-                throw err;
+                setError(err);
             },
         });
 
         return () => subscription.unsubscribe();
     }, [observable]);
 
-    return value;
+    return { value, error };
 }
 ```
 

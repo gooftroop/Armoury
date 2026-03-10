@@ -217,10 +217,11 @@ What are you creating?
 │       └── src/{web|mobile}/src/components/{domain}/{ComponentName}/
 │
 ├── Custom Hook
-│   ├── Is it platform-agnostic (pure data/logic)?
-│   │   └── src/shared/frontend/hooks/
-│   ├── Is it web-specific?
+│   ├── Is it web-specific (or platform-agnostic)?
 │   │   └── src/web/src/hooks/
+│   │       (Hooks depend on React APIs and belong in platform workspaces.
+│   │        For hooks shared across web and mobile, duplicate or extract to
+│   │        a future @armoury/ui package.)
 │   └── Is it mobile-specific?
 │       └── src/mobile/src/hooks/
 │
