@@ -139,16 +139,38 @@ jobs:
               env:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
               run: |
-                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
-                  serverless create_domain \
-                    --stage pr-${{ github.event.pull_request.number }} \
-                    --param="domainPrefix=${SERVICE_SHORT_NAME}-pr-${{ github.event.pull_request.number }}-sandbox" \
-                    --param="domainName=${{ vars.DOMAIN_NAME }}" \
-                    --param="certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}" \
-                    --param="hostedZoneId=${{ vars.ROUTE53_HOSTED_ZONE_ID }}" \
-                    --param="customDomainEnabled=true" \
-                    ${{ inputs.needs-authorizer && '--param="authorizerArn=${AUTHORIZER_ARN}"' || '' }}
+                  # Stagger domain creation across parallel service deploys to avoid
+                  # API Gateway CreateDomainName rate limits (concurrent workflows).
+                  DELAY=$((RANDOM % 30))
+                  echo "Waiting ${DELAY}s to stagger domain creation..."
+                  sleep "${DELAY}"
 
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  MAX_ATTEMPTS=4
+                  ATTEMPT=1
+                  until [ "${ATTEMPT}" -gt "${MAX_ATTEMPTS}" ]; do
+                    echo "Attempt ${ATTEMPT}/${MAX_ATTEMPTS}: Creating custom domain..."
+                    serverless create_domain \
+                      --stage pr-${{ github.event.pull_request.number }} \
+                      --param="domainPrefix=${SERVICE_SHORT_NAME}-pr-${{ github.event.pull_request.number }}-sandbox" \
+                      --param="domainName=${{ vars.DOMAIN_NAME }}" \
+                      --param="certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}" \
+                      --param="hostedZoneId=${{ vars.ROUTE53_HOSTED_ZONE_ID }}" \
+                      --param="customDomainEnabled=true" \
+                      ${{ inputs.needs-authorizer && '--param="authorizerArn=${AUTHORIZER_ARN}"' || '' }} && break
+
+                    ATTEMPT=$((ATTEMPT + 1))
+                    if [ "${ATTEMPT}" -le "${MAX_ATTEMPTS}" ]; then
+                      BACKOFF=$(( (2 ** ATTEMPT) + (RANDOM % 10) ))
+                      echo "Domain creation failed. Retrying in ${BACKOFF}s..."
+                      sleep "${BACKOFF}"
+                    fi
+                  done
+
+                  if [ "${ATTEMPT}" -gt "${MAX_ATTEMPTS}" ]; then
+                    echo "::error::Failed to create custom domain after ${MAX_ATTEMPTS} attempts"
+                    exit 1
+                  fi
             - name: Deploy
               working-directory: ${{ inputs.working-directory }}
               env:
