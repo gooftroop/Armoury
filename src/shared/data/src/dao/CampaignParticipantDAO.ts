@@ -23,7 +23,6 @@ type PgCoreModule = {
     text: (...args: unknown[]) => ColumnBuilder;
     integer: (...args: unknown[]) => ColumnBuilder;
     boolean: (...args: unknown[]) => ColumnBuilder;
-    jsonb: (...args: unknown[]) => ColumnBuilder;
     timestamp: (...args: unknown[]) => ColumnBuilder;
     index: (...args: unknown[]) => IndexBuilder;
 };
@@ -36,7 +35,7 @@ type SqliteCoreModule = {
 };
 
 const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
-const { pgTable, text, integer, boolean, jsonb, timestamp, index } = pgCoreModule;
+const { pgTable, text, integer, boolean, timestamp, index } = pgCoreModule;
 const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 export const campaignParticipantsTable = pgTable(
@@ -53,8 +52,8 @@ export const campaignParticipantsTable = pgTable(
         armyName: text('army_name').notNull(),
         currentPhaseId: text('current_phase_id').notNull(),
         matchesInCurrentPhase: integer('matches_in_current_phase').notNull(),
-        participantData: jsonb('participant_data'),
-        matchIds: jsonb('match_ids'),
+        participantData: text('participant_data'),
+        matchIds: text('match_ids'),
         joinedAt: timestamp('joined_at', { mode: 'string' }).notNull(),
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },

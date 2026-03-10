@@ -23,7 +23,6 @@ type PgCoreModule = {
     text: (...args: unknown[]) => ColumnBuilder;
     integer: (...args: unknown[]) => ColumnBuilder;
     boolean: (...args: unknown[]) => ColumnBuilder;
-    jsonb: (...args: unknown[]) => ColumnBuilder;
     timestamp: (...args: unknown[]) => ColumnBuilder;
     index: (...args: unknown[]) => IndexBuilder;
 };

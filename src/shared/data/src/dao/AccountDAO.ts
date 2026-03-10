@@ -23,7 +23,6 @@ type PgCoreModule = {
     text: (...args: unknown[]) => ColumnBuilder;
     integer: (...args: unknown[]) => ColumnBuilder;
     boolean: (...args: unknown[]) => ColumnBuilder;
-    jsonb: (...args: unknown[]) => ColumnBuilder;
     timestamp: (...args: unknown[]) => ColumnBuilder;
     index: (...args: unknown[]) => IndexBuilder;
 };
@@ -36,7 +35,7 @@ type SqliteCoreModule = {
 };
 
 const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
-const { pgTable, text, jsonb, timestamp, index } = pgCoreModule;
+const { pgTable, text, timestamp, index } = pgCoreModule;
 const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for account entities. */
@@ -47,8 +46,8 @@ export const accountsTable = pgTable(
             .primaryKey()
             .$defaultFn(() => crypto.randomUUID()),
         userId: text('user_id').notNull(),
-        preferences: jsonb('preferences'),
-        systems: jsonb('systems'),
+        preferences: text('preferences'),
+        systems: text('systems'),
         createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },

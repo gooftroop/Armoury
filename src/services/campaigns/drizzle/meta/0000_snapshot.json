@@ -1,5 +1,5 @@
 {
-    "id": "295b0e7f-253c-4d3b-a759-86493e6b9235",
+    "id": "00000000-0000-0000-0000-000000000001",
     "prevId": "00000000-0000-0000-0000-000000000000",
     "version": "7",
     "dialect": "postgresql",
@@ -8,140 +8,26 @@
             "name": "campaigns",
             "schema": "",
             "columns": {
-                "id": {
-                    "name": "id",
-                    "type": "text",
-                    "primaryKey": true,
-                    "notNull": true
-                },
-                "name": {
-                    "name": "name",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "campaign_type_id": {
-                    "name": "campaign_type_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "organizer_id": {
-                    "name": "organizer_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "organizer_name": {
-                    "name": "organizer_name",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "narrative": {
-                    "name": "narrative",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "start_date": {
-                    "name": "start_date",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "end_date": {
-                    "name": "end_date",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "status": {
-                    "name": "status",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "phases": {
-                    "name": "phases",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "custom_rules": {
-                    "name": "custom_rules",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "rankings": {
-                    "name": "rankings",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "participant_ids": {
-                    "name": "participant_ids",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "match_ids": {
-                    "name": "match_ids",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "crusade_rules_id": {
-                    "name": "crusade_rules_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "created_at": {
-                    "name": "created_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "updated_at": {
-                    "name": "updated_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": true
-                }
+                "id": { "name": "id", "type": "text", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+                "name": { "name": "name", "type": "text", "primaryKey": false, "notNull": true },
+                "type": { "name": "type", "type": "text", "primaryKey": false, "notNull": true },
+                "organizer_id": { "name": "organizer_id", "type": "text", "primaryKey": false, "notNull": true },
+                "narrative": { "name": "narrative", "type": "text", "primaryKey": false, "notNull": false },
+                "campaign_data": { "name": "campaign_data", "type": "text", "primaryKey": false, "notNull": false },
+                "start_date": { "name": "start_date", "type": "text", "primaryKey": false, "notNull": true },
+                "end_date": { "name": "end_date", "type": "text", "primaryKey": false, "notNull": false },
+                "status": { "name": "status", "type": "text", "primaryKey": false, "notNull": true },
+                "phases": { "name": "phases", "type": "text", "primaryKey": false, "notNull": false },
+                "custom_rules": { "name": "custom_rules", "type": "text", "primaryKey": false, "notNull": false },
+                "rankings": { "name": "rankings", "type": "text", "primaryKey": false, "notNull": false },
+                "participant_ids": { "name": "participant_ids", "type": "text", "primaryKey": false, "notNull": false },
+                "match_ids": { "name": "match_ids", "type": "text", "primaryKey": false, "notNull": false },
+                "created_at": { "name": "created_at", "type": "timestamp", "primaryKey": false, "notNull": true },
+                "updated_at": { "name": "updated_at", "type": "timestamp", "primaryKey": false, "notNull": true }
             },
             "indexes": {
-                "idx_campaigns_organizer_id": {
-                    "name": "idx_campaigns_organizer_id",
-                    "columns": [
-                        {
-                            "expression": "organizer_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                },
-                "idx_campaigns_campaign_type_id": {
-                    "name": "idx_campaigns_campaign_type_id",
-                    "columns": [
-                        {
-                            "expression": "campaign_type_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                }
+                "idx_campaigns_organizer_id": { "name": "idx_campaigns_organizer_id", "columns": ["organizer_id"], "isUnique": false },
+                "idx_campaigns_type": { "name": "idx_campaigns_type", "columns": ["type"], "isUnique": false }
             },
             "foreignKeys": {},
             "compositePrimaryKeys": {},
@@ -154,173 +40,24 @@
             "name": "campaign_participants",
             "schema": "",
             "columns": {
-                "id": {
-                    "name": "id",
-                    "type": "text",
-                    "primaryKey": true,
-                    "notNull": true
-                },
-                "campaign_id": {
-                    "name": "campaign_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "user_id": {
-                    "name": "user_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "display_name": {
-                    "name": "display_name",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "is_organizer": {
-                    "name": "is_organizer",
-                    "type": "boolean",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "army_id": {
-                    "name": "army_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "army_name": {
-                    "name": "army_name",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "current_phase_id": {
-                    "name": "current_phase_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "matches_in_current_phase": {
-                    "name": "matches_in_current_phase",
-                    "type": "integer",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "crusade_data": {
-                    "name": "crusade_data",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "match_ids": {
-                    "name": "match_ids",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "joined_at": {
-                    "name": "joined_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "updated_at": {
-                    "name": "updated_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": true
-                }
+                "id": { "name": "id", "type": "text", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+                "campaign_id": { "name": "campaign_id", "type": "text", "primaryKey": false, "notNull": true },
+                "user_id": { "name": "user_id", "type": "text", "primaryKey": false, "notNull": true },
+                "display_name": { "name": "display_name", "type": "text", "primaryKey": false, "notNull": true },
+                "is_organizer": { "name": "is_organizer", "type": "boolean", "primaryKey": false, "notNull": true },
+                "army_id": { "name": "army_id", "type": "text", "primaryKey": false, "notNull": true },
+                "army_name": { "name": "army_name", "type": "text", "primaryKey": false, "notNull": true },
+                "current_phase_id": { "name": "current_phase_id", "type": "text", "primaryKey": false, "notNull": true },
+                "matches_in_current_phase": { "name": "matches_in_current_phase", "type": "integer", "primaryKey": false, "notNull": true },
+                "participant_data": { "name": "participant_data", "type": "text", "primaryKey": false, "notNull": false },
+                "match_ids": { "name": "match_ids", "type": "text", "primaryKey": false, "notNull": false },
+                "joined_at": { "name": "joined_at", "type": "timestamp", "primaryKey": false, "notNull": true },
+                "updated_at": { "name": "updated_at", "type": "timestamp", "primaryKey": false, "notNull": true }
             },
             "indexes": {
-                "idx_campaign_participants_campaign_id": {
-                    "name": "idx_campaign_participants_campaign_id",
-                    "columns": [
-                        {
-                            "expression": "campaign_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                },
-                "idx_campaign_participants_user_id": {
-                    "name": "idx_campaign_participants_user_id",
-                    "columns": [
-                        {
-                            "expression": "user_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                }
+                "idx_campaign_participants_campaign_id": { "name": "idx_campaign_participants_campaign_id", "columns": ["campaign_id"], "isUnique": false },
+                "idx_campaign_participants_user_id": { "name": "idx_campaign_participants_user_id", "columns": ["user_id"], "isUnique": false }
             },
-            "foreignKeys": {},
-            "compositePrimaryKeys": {},
-            "uniqueConstraints": {},
-            "policies": {},
-            "checkConstraints": {},
-            "isRLSEnabled": false
-        },
-        "public.campaign_types": {
-            "name": "campaign_types",
-            "schema": "",
-            "columns": {
-                "id": {
-                    "name": "id",
-                    "type": "text",
-                    "primaryKey": true,
-                    "notNull": true
-                },
-                "name": {
-                    "name": "name",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "source": {
-                    "name": "source",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                }
-            },
-            "indexes": {},
-            "foreignKeys": {},
-            "compositePrimaryKeys": {},
-            "uniqueConstraints": {},
-            "policies": {},
-            "checkConstraints": {},
-            "isRLSEnabled": false
-        },
-        "public.custom_campaigns": {
-            "name": "custom_campaigns",
-            "schema": "",
-            "columns": {
-                "id": {
-                    "name": "id",
-                    "type": "text",
-                    "primaryKey": true,
-                    "notNull": true
-                },
-                "phases": {
-                    "name": "phases",
-                    "type": "jsonb",
-                    "primaryKey": false,
-                    "notNull": true
-                }
-            },
-            "indexes": {},
             "foreignKeys": {},
             "compositePrimaryKeys": {},
             "uniqueConstraints": {},
@@ -336,8 +73,8 @@
     "policies": {},
     "views": {},
     "_meta": {
-        "columns": {},
         "schemas": {},
-        "tables": {}
+        "tables": {},
+        "columns": {}
     }
 }
