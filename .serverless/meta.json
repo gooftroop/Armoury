@@ -1,0 +1,75 @@
+{
+    "/mnt/c/Users/webbc/Development/Armoury/serverless-compose.yml": {
+        "versionFramework": "4.33.0",
+        "servicePath": "/mnt/c/Users/webbc/Development/Armoury/serverless-compose.yml",
+        "serviceConfigFileName": "serverless-compose.yml",
+        "service": {
+            "services": {
+                "authorizer": {
+                    "path": "src/services/authorizer"
+                },
+                "campaigns": {
+                    "path": "src/services/campaigns",
+                    "params": {
+                        "authorizerArn": "${authorizer.AuthorizerArn}",
+                        "domainName": "${env:DOMAIN_NAME, 'localhost'}",
+                        "certificateArn": "${env:ACM_CERTIFICATE_ARN, ''}",
+                        "hostedZoneId": "${env:ROUTE53_HOSTED_ZONE_ID, ''}",
+                        "customDomainEnabled": "${env:CUSTOM_DOMAIN_ENABLED, 'false'}"
+                    }
+                },
+                "matches": {
+                    "path": "src/services/matches",
+                    "params": {
+                        "authorizerArn": "${authorizer.AuthorizerArn}",
+                        "domainName": "${env:DOMAIN_NAME, 'localhost'}",
+                        "certificateArn": "${env:ACM_CERTIFICATE_ARN, ''}",
+                        "hostedZoneId": "${env:ROUTE53_HOSTED_ZONE_ID, ''}",
+                        "customDomainEnabled": "${env:CUSTOM_DOMAIN_ENABLED, 'false'}"
+                    }
+                },
+                "friends": {
+                    "path": "src/services/friends",
+                    "params": {
+                        "authorizerArn": "${authorizer.AuthorizerArn}",
+                        "domainName": "${env:DOMAIN_NAME, 'localhost'}",
+                        "certificateArn": "${env:ACM_CERTIFICATE_ARN, ''}",
+                        "hostedZoneId": "${env:ROUTE53_HOSTED_ZONE_ID, ''}",
+                        "customDomainEnabled": "${env:CUSTOM_DOMAIN_ENABLED, 'false'}"
+                    }
+                },
+                "users": {
+                    "path": "src/services/users",
+                    "params": {
+                        "authorizerArn": "${authorizer.AuthorizerArn}",
+                        "domainName": "${env:DOMAIN_NAME, 'localhost'}",
+                        "certificateArn": "${env:ACM_CERTIFICATE_ARN, ''}",
+                        "hostedZoneId": "${env:ROUTE53_HOSTED_ZONE_ID, ''}",
+                        "customDomainEnabled": "${env:CUSTOM_DOMAIN_ENABLED, 'false'}"
+                    }
+                }
+            }
+        },
+        "dashboard": {
+            "isEnabledForService": false,
+            "requiredAuthentication": true,
+            "orgFeaturesInUse": null,
+            "orgObservabilityIntegrations": null,
+            "serviceAppId": null,
+            "serviceProvider": null,
+            "instanceParameters": null
+        },
+        "serviceRawFile": "services:\n    authorizer:\n        path: src/services/authorizer\n    campaigns:\n        path: src/services/campaigns\n        params:\n            authorizerArn: ${authorizer.AuthorizerArn}\n            domainName: ${env:DOMAIN_NAME, 'localhost'}\n            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}\n            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}\n            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}\n    matches:\n        path: src/services/matches\n        params:\n            authorizerArn: ${authorizer.AuthorizerArn}\n            domainName: ${env:DOMAIN_NAME, 'localhost'}\n            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}\n            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}\n            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}\n    friends:\n        path: src/services/friends\n        params:\n            authorizerArn: ${authorizer.AuthorizerArn}\n            domainName: ${env:DOMAIN_NAME, 'localhost'}\n            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}\n            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}\n            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}\n    users:\n        path: src/services/users\n        params:\n            authorizerArn: ${authorizer.AuthorizerArn}\n            domainName: ${env:DOMAIN_NAME, 'localhost'}\n            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}\n            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}\n            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}\n",
+        "command": ["login"],
+        "options": {},
+        "orgId": "fTs3TnQ74bqYwdcNQF",
+        "orgName": "goodfellow",
+        "userId": "yYz0SL24CDWcpV4VFd",
+        "userName": "goodfellow",
+        "serviceProviderAwsCfStackId": null,
+        "serviceProviderAwsCfStackCreated": null,
+        "serviceProviderAwsCfStackUpdated": null,
+        "serviceProviderAwsCfStackStatus": null,
+        "serviceProviderAwsCfStackOutputs": null
+    }
+}
