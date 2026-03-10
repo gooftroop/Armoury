@@ -19,9 +19,9 @@
  * - REQ-TEARDOWN-SCOPE: Only tear down per-service DB; leave LocalStack running for dev workflow
  */
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, rmSync } from 'fs';
+import { existsSync } from 'fs';
 import { join, dirname, basename, resolve } from 'path';
-import { tmpdir } from 'os';
+
 import { fileURLToPath } from 'url';
 
 /** Name assigned to the LocalStack container via infra/localstack/docker-compose.yml. */
@@ -31,17 +31,13 @@ const LOCALSTACK_CONTAINER = 'localstack-main';
 const LOCALSTACK_HEALTH_URL = 'http://localhost:4566/_localstack/health';
 
 /** Maximum time (ms) to wait for LocalStack to become healthy and complete init hooks. */
-const LOCALSTACK_STARTUP_TIMEOUT = 180_000;
+const LOCALSTACK_STARTUP_TIMEOUT = 120_000;
 
 /** Polling interval (ms) when waiting for LocalStack health/init. */
 const POLL_INTERVAL = 2_000;
 
 /**
- * Directory-based lock to prevent concurrent LocalStack startup attempts.
- * Uses `mkdirSync` with `recursive: false` as an atomic cross-platform mutex:
- * only the first caller succeeds; others get EEXIST.
  */
-const LOCALSTACK_LOCK_DIR = join(tmpdir(), 'armoury-localstack-startup.lock');
 
 /**
  * Resolves the compose file for the calling service.
@@ -138,46 +134,11 @@ async function waitForLocalStackReady(): Promise<void> {
     throw new Error(`[e2e] LocalStack did not become healthy within ${LOCALSTACK_STARTUP_TIMEOUT}ms.`);
 }
 
-/**
- * Acquires a directory-based lock for LocalStack startup.
- *
- * Uses `mkdirSync` with `recursive: false` as an atomic operation:
- * only the first process to create the directory succeeds.
- *
- * @returns `true` if the lock was acquired, `false` if another process holds it.
- */
-function acquireStartupLock(): boolean {
-    try {
-        mkdirSync(LOCALSTACK_LOCK_DIR, { recursive: false });
-
-        return true;
-    } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'EEXIST') {
-            return false;
-        }
-
-        // Unexpected error — let it propagate.
-        throw error;
-    }
-}
 
 /**
- * Releases the directory-based lock after LocalStack startup completes.
- */
-function releaseStartupLock(): void {
-    try {
-        rmSync(LOCALSTACK_LOCK_DIR, { recursive: true, force: true });
-    } catch {
-        // Best-effort cleanup. Lock dir in tmpdir will be cleaned on reboot regardless.
-    }
-}
-
-/**
- * Ensures LocalStack is running. Uses a directory-based lock to prevent
- * concurrent startup attempts when turbo runs multiple test:e2e tasks in parallel.
- *
- * - First caller: acquires lock → starts LocalStack → releases lock
- * - Other callers: skip startup → poll until LocalStack is healthy
+ * Ensures LocalStack is running. If already running (e.g. another turbo
+ * task started it), skips the startup. Otherwise starts it via
+ * docker-compose file at infra/localstack/docker-compose.yml and waits for init hooks to complete.
  *
  * @param repoRoot - Absolute path to the monorepo root.
  */
@@ -189,58 +150,22 @@ async function ensureLocalStack(repoRoot: string): Promise<void> {
         return;
     }
 
-    if (acquireStartupLock()) {
-        // This process is responsible for starting LocalStack.
-        try {
-            // Re-check after acquiring lock — another process may have
-            // started LocalStack between our first check and lock acquisition.
-            if (isLocalStackRunning()) {
-                console.log('[e2e] LocalStack started by another process — skipping startup.');
-                await waitForLocalStackReady();
+    const composeFile = join(repoRoot, 'infra', 'localstack', 'docker-compose.yml');
 
-                return;
-            }
+    console.log('[e2e] Starting LocalStack...');
 
-            const composeFile = join(repoRoot, 'infra', 'localstack', 'docker-compose.yml');
+    execSync(`docker compose -f "${composeFile}" up -d --wait`, {
+        cwd: repoRoot,
+        stdio: 'inherit',
+        timeout: LOCALSTACK_STARTUP_TIMEOUT,
+    });
 
-            console.log('[e2e] Starting LocalStack (lock acquired)...');
+    console.log('[e2e] LocalStack container started. Waiting for init hooks...');
 
-            execSync(`docker compose -f "${composeFile}" up -d`, {
-                cwd: repoRoot,
-                stdio: 'inherit',
-                timeout: 60_000,
-            });
+    await waitForLocalStackReady();
 
-            console.log('[e2e] LocalStack container started. Waiting for init hooks...');
-
-            await waitForLocalStackReady();
-
-            console.log('[e2e] LocalStack healthy and init hooks complete.');
-        } finally {
-            releaseStartupLock();
-        }
-    } else {
-        // Another process holds the lock — it is starting LocalStack.
-        // Poll until LocalStack is running and healthy.
-        console.log('[e2e] Another process is starting LocalStack — waiting...');
-
-        const deadline = Date.now() + LOCALSTACK_STARTUP_TIMEOUT;
-
-        while (Date.now() < deadline) {
-            if (isLocalStackRunning()) {
-                console.log('[e2e] LocalStack is now running. Waiting for init hooks...');
-                await waitForLocalStackReady();
-
-                return;
-            }
-
-            await new Promise((r) => setTimeout(r, POLL_INTERVAL));
-        }
-
-        throw new Error('[e2e] Timed out waiting for another process to start LocalStack.');
-    }
+    console.log('[e2e] LocalStack healthy and init hooks complete.');
 }
-
 /**
  * Vitest globalSetup — starts LocalStack (once, shared) then the Docker
  * Compose container for the calling service.
