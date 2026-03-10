@@ -185,10 +185,10 @@ jobs:
                   echo "REST API ID: ${REST_API_ID}"
 
                   # Delete existing routing rule for this PR+service if it exists
-                  EXISTING_RULE_ARN=$(aws apigatewayv2 get-routing-rules \
+                  EXISTING_RULE_ARN=$(aws apigatewayv2 list-routing-rules \
                     --domain-name "${WILDCARD_DOMAIN}" \
-                    --output json 2>/dev/null \
-                    | jq -r ".Items[] | select(.Priority == ${PRIORITY} or (.Priority | tostring) == \"${PRIORITY}\") | .RoutingRuleArn" 2>/dev/null || true)
+                    --output json \
+                    | jq -r ".RoutingRules[] | select(.Priority == ${PRIORITY}) | .RoutingRuleArn" || true)
 
                   if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ] && [ "${EXISTING_RULE_ARN}" != "null" ]; then
                     EXISTING_RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
