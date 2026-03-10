@@ -31,7 +31,7 @@ const LOCALSTACK_CONTAINER = 'localstack-main';
 const LOCALSTACK_HEALTH_URL = 'http://localhost:4566/_localstack/health';
 
 /** Maximum time (ms) to wait for LocalStack to become healthy and complete init hooks. */
-const LOCALSTACK_STARTUP_TIMEOUT = 120_000;
+const LOCALSTACK_STARTUP_TIMEOUT = 180_000;
 
 /** Polling interval (ms) when waiting for LocalStack health/init. */
 const POLL_INTERVAL = 2_000;
@@ -205,10 +205,10 @@ async function ensureLocalStack(repoRoot: string): Promise<void> {
 
             console.log('[e2e] Starting LocalStack (lock acquired)...');
 
-            execSync(`docker compose -f "${composeFile}" up -d --wait`, {
+            execSync(`docker compose -f "${composeFile}" up -d`, {
                 cwd: repoRoot,
                 stdio: 'inherit',
-                timeout: LOCALSTACK_STARTUP_TIMEOUT,
+                timeout: 60_000,
             });
 
             console.log('[e2e] LocalStack container started. Waiting for init hooks...');

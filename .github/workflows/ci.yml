@@ -136,6 +136,7 @@ jobs:
 
             - name: Ensure clean Docker state
               run: |
+                  docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
                   shopt -s nullglob
                   for f in src/services/*/docker-compose.yml; do
                       dir=$(dirname "$f")
@@ -149,6 +150,7 @@ jobs:
             - name: Cleanup Docker containers
               if: always()
               run: |
+                  docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
                   shopt -s nullglob
                   for f in src/services/*/docker-compose.yml; do
                       dir=$(dirname "$f")
