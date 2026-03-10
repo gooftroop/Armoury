@@ -5,10 +5,17 @@
 **Scope:** `@armoury/web` (Next.js 15), `@armoury/mobile` (Expo/React Native), and `src/shared/frontend/` (pure TypeScript shared modules).
 
 **Related Documents:**
+
 - `AGENTS.md` (agent behavioral instructions)
 - `docs/frontend/REQUIREMENTS.md` (frontend requirements)
 - `docs/CODING_STANDARDS.md` (general coding standards)
 - `docs/backend/BEST_PRACTICES.md` (backend best practices)
+- `docs/frontend/STATE_MANAGEMENT.md` — Canonical state management architecture (↗ §4)
+- `docs/frontend/REACT_QUERY.md` — Server state patterns via React Query (↗ §10, §11)
+- `docs/frontend/RXJS_STATE.md` — Global/reactive state via RxJS (↗ §12)
+- `docs/frontend/DERIVED_STATE.md` — Derived state patterns
+- `docs/frontend/STATE_TESTING.md` — State management testing strategy
+- `docs/frontend/COMPONENT_ARCHITECTURE.md` — Component composition patterns, hook design, colocation, cross-platform sharing, error boundaries, testing strategies
 
 ---
 
@@ -17,15 +24,15 @@
 1. [General Coding Standards](#1-general-coding-standards)
 2. [Frontend Architecture](#2-frontend-architecture)
 3. [Cross-Platform Code Sharing](#3-cross-platform-code-sharing)
-4. [State Management](#4-state-management)
+4. [State Management](#4-state-management) ↗
 5. [React Component Design](#5-react-component-design)
 6. [React Hooks](#6-react-hooks)
 7. [Orchestrational / Render Component Pattern](#7-orchestrational--render-component-pattern)
 8. [Next.js 15 App Router](#8-nextjs-15-app-router)
 9. [Server Components vs Client Components](#9-server-components-vs-client-components)
-10. [Data Fetching & Caching](#10-data-fetching--caching)
-11. [React Query (TanStack Query v5)](#11-react-query-tanstack-query-v5)
-12. [RxJS Guidelines](#12-rxjs-guidelines)
+10. [Data Fetching & Caching](#10-data-fetching--caching) ↗
+11. [React Query (TanStack Query v5)](#11-react-query-tanstack-query-v5) ↗
+12. [RxJS Guidelines](#12-rxjs-guidelines) ↗
 13. [Routing & Navigation](#13-routing--navigation)
 14. [Error Handling](#14-error-handling)
 15. [Metadata & SEO](#15-metadata--seo)
@@ -35,6 +42,7 @@
 19. [Testing](#19-testing)
 20. [Performance](#20-performance)
 21. [Anti-Patterns](#21-anti-patterns)
+22. [Component Architecture ↗](../COMPONENT_ARCHITECTURE.md) — Composition patterns, hook design, colocation, cross-platform, error handling, testing, TypeScript APIs, performance
 
 ---
 
@@ -100,22 +108,24 @@ Prefer pure functions that avoid side effects. When side effects are necessary (
 
 Frontend code must maintain strict separation between four concerns:
 
-| Layer | Responsibility | Examples |
-|-------|---------------|----------|
-| **UI** | Visual rendering, layout, styling, animations | Render components, design system primitives |
-| **Business Logic** | Domain rules, data transformations, computations | Pure functions, validators, formatters |
-| **Global State** | Client-side application state shared across components | RxJS stores, user preferences, UI mode |
-| **Remote State** | Server/async data — fetching, caching, synchronization | @tanstack/react-query queries and mutations |
+| Layer              | Responsibility                                         | Examples                                    |
+| ------------------ | ------------------------------------------------------ | ------------------------------------------- |
+| **UI**             | Visual rendering, layout, styling, animations          | Render components, design system primitives |
+| **Business Logic** | Domain rules, data transformations, computations       | Pure functions, validators, formatters      |
+| **Global State**   | Client-side application state shared across components | RxJS stores, user preferences, UI mode      |
+| **Remote State**   | Server/async data — fetching, caching, synchronization | @tanstack/react-query queries and mutations |
 
 These layers must not bleed into each other. A render component should never fetch data. A business logic function should never import React. Global state should never duplicate remote state.
 
+> 📖 **Structuring business logic:** For extraction signals, pattern selection (pure function → strategy → state machine → decision engine), and concrete examples, see [FRONTEND_PLAN.md §4 "Business Logic Architecture"](../FRONTEND_PLAN.md#4-business-logic-architecture).
+
 ### Workspace Boundaries
 
-| Location | Contains |
-|----------|----------|
-| `src/shared/frontend/` | Pure TypeScript modules only: business logic, query/mutation factories, types, utilities |
-| `src/web/` | Next.js pages/routes, React components, SSR/RSC logic, web-specific hooks, web-only integrations |
-| `src/mobile/` | Expo screens/navigation, React Native components, native modules, mobile-specific hooks, mobile-only integrations |
+| Location               | Contains                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `src/shared/frontend/` | Pure TypeScript modules only: business logic, query/mutation factories, types, utilities                          |
+| `src/web/`             | Next.js pages/routes, React components, SSR/RSC logic, web-specific hooks, web-only integrations                  |
+| `src/mobile/`          | Expo screens/navigation, React Native components, native modules, mobile-specific hooks, mobile-only integrations |
 
 **Critical Rule:** `src/shared/frontend/` must contain **only pure TypeScript** — no React components, no React Native components, no React hooks, no JSX. React components live in `src/web/`, React Native components live in `src/mobile/`.
 
@@ -146,13 +156,13 @@ Share pure TypeScript frontend logic (business logic, query/mutation factories, 
 
 Use platform-specific file extensions for code that differs by platform:
 
-| Extension | Resolved On |
-|-----------|-------------|
+| Extension      | Resolved On             |
+| -------------- | ----------------------- |
 | `.ts` / `.tsx` | All platforms (default) |
-| `.native.ts` | iOS + Android only |
-| `.web.ts` | Web only |
-| `.ios.ts` | iOS only |
-| `.android.ts` | Android only |
+| `.native.ts`   | iOS + Android only      |
+| `.web.ts`      | Web only                |
+| `.ios.ts`      | iOS only                |
+| `.android.ts`  | Android only            |
 
 ```typescript
 // storage.ts        → shared interface
@@ -179,34 +189,9 @@ const hitSlop = Platform.select({
 
 ## 4. State Management
 
-### State Management Hierarchy
+Covers the 5-tier state management hierarchy (local → URL → React Query → RxJS → Context), core rules (derive don't store, URL is state, lift appropriately, Query is your remote state, RxJS over Context), and `useState` decision criteria.
 
-Choose the simplest tool that fits the requirement. In order of preference:
-
-| Priority | Tool | Use Case |
-|----------|------|----------|
-| **1st** | Local state (`useState` / `useReducer`) | Component-scoped UI state (open/closed, form fields, local toggles) |
-| **2nd** | URL state (search params, path segments) | Filters, pagination, sort order, selected tabs — anything shareable or bookmark-worthy |
-| **3rd** | React Query (`@tanstack/react-query`) | All remote/async state — fetching, caching, synchronization |
-| **4th** | RxJS (BehaviorSubject / Observable) | Global or reactive client state shared across components (auth status, feature flags, real-time streams) |
-| **5th** | React Context | Last resort — only when a third-party library requires it or for true dependency-injection scenarios |
-
-### Rules
-
-- **Derive, don't store.** If a value can be computed from existing state or props, compute it inline or with `useMemo`. Never store derived state in `useState`.
-- **URL is state.** Anything that should survive a page refresh or be shareable belongs in the URL, not in React state.
-- **Lift state only as high as needed.** If two siblings need the same state, lift to their parent. If the whole app needs it, use RxJS.
-- **React Query IS your remote state.** Never duplicate server data in `useState` or RxJS — the query result is the state.
-- **RxJS is preferred over React Context** for global/reactive state. Context causes unnecessary re-renders, couples components to providers, and makes cross-platform sharing harder.
-- **React Context** is permitted only when a third-party library requires it (e.g., theme providers) or for true dependency-injection scenarios. Any use of Context must include a comment justifying why RxJS is insufficient.
-
-### useState vs useReducer
-
-| Use `useState` | Use `useReducer` |
-|----------------|------------------|
-| 1–2 independent state values | 3+ interrelated state values |
-| Simple updates (set value) | Complex transitions (state machine) |
-| Primitive types | Object/array state with multiple update actions |
+> 📖 **Canonical reference:** [STATE_MANAGEMENT.md](./STATE_MANAGEMENT.md) — Full architecture, decision trees, and code examples for all 5 tiers (§1–§5).
 
 ---
 
@@ -263,10 +248,10 @@ useEffect(() => {
 
 // Bad — derived state in effect
 useEffect(() => {
-    setFilteredItems(items.filter(i => i.active));
+    setFilteredItems(items.filter((i) => i.active));
 }, [items]);
 // Fix: compute inline
-const filteredItems = items.filter(i => i.active);
+const filteredItems = items.filter((i) => i.active);
 ```
 
 ### useCallback / useMemo
@@ -287,10 +272,10 @@ const filteredItems = items.filter(i => i.active);
 
 Every feature component splits into two:
 
-| Type | Role | Rules |
-|------|------|-------|
+| Type                            | Role                                                                                 | Rules                                                                                                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Orchestrational** (container) | Owns data fetching, state subscriptions, event handlers, business logic coordination | May use hooks, call stores, invoke mutations. Passes everything to render components via props. Contains **zero** visual markup beyond composing render components. |
-| **Render** (presentational) | Pure visual output from props | No hooks for data/state (`useState` for local UI state like open/closed is fine). No direct store/query access. Fully testable by passing props. |
+| **Render** (presentational)     | Pure visual output from props                                                        | No hooks for data/state (`useState` for local UI state like open/closed is fine). No direct store/query access. Fully testable by passing props.                    |
 
 ```typescript
 // Orchestrational — lives in src/web/ (web-specific)
@@ -312,6 +297,7 @@ function ArmyListView({ armies, isLoading, onDelete }: ArmyListViewProps) {
 ```
 
 **Why this split matters:**
+
 - Render components are platform-specific (web uses `<ul>`, mobile uses `<FlatList>`) — both the orchestrational and render components live in their respective platform workspaces
 - Business logic (pure TS in `src/shared/frontend/`) is testable without rendering
 - UI is testable without mocking data layers
@@ -321,18 +307,20 @@ function ArmyListView({ armies, isLoading, onDelete }: ArmyListViewProps) {
 
 ## 8. Next.js 15 App Router
 
+> 📖 **Canonical reference:** [NEXTJS_RENDERING_STRATEGY.md](../NEXTJS_RENDERING_STRATEGY.md) — Route-level rendering decisions (SSR vs SSG vs ISR vs PPR), streaming patterns, and performance tradeoffs for each page type.
+
 ### File Conventions
 
-| File | Purpose |
-|------|---------|
-| `page.tsx` | Route UI — renders the page content |
-| `layout.tsx` | Shared layout wrapping child routes (persistent across navigation) |
-| `loading.tsx` | Instant loading UI (React Suspense boundary) |
-| `error.tsx` | Error boundary for the route segment (must be a Client Component) |
-| `not-found.tsx` | UI for `notFound()` calls or unmatched routes |
-| `template.tsx` | Like layout but re-mounts on navigation (rare) |
-| `default.tsx` | Fallback for parallel routes |
-| `global-error.tsx` | Root-level error boundary (catches errors in root layout) |
+| File               | Purpose                                                            |
+| ------------------ | ------------------------------------------------------------------ |
+| `page.tsx`         | Route UI — renders the page content                                |
+| `layout.tsx`       | Shared layout wrapping child routes (persistent across navigation) |
+| `loading.tsx`      | Instant loading UI (React Suspense boundary)                       |
+| `error.tsx`        | Error boundary for the route segment (must be a Client Component)  |
+| `not-found.tsx`    | UI for `notFound()` calls or unmatched routes                      |
+| `template.tsx`     | Like layout but re-mounts on navigation (rare)                     |
+| `default.tsx`      | Fallback for parallel routes                                       |
+| `global-error.tsx` | Root-level error boundary (catches errors in root layout)          |
 
 ### Route Organization
 
@@ -454,7 +442,7 @@ PPR combines static and dynamic rendering in a single route. The static shell is
 // next.config.ts
 const nextConfig = {
     experimental: {
-        ppr: true,  // Enable Partial Prerendering
+        ppr: true, // Enable Partial Prerendering
     },
 };
 ```
@@ -465,16 +453,18 @@ Static parts of the page render at build time; dynamic parts (wrapped in `<Suspe
 
 ## 9. Server Components vs Client Components
 
+> 📖 **See also:** [NEXTJS_RENDERING_STRATEGY.md](../NEXTJS_RENDERING_STRATEGY.md) — How rendering strategy (SSR/SSG/ISR/PPR) interacts with the Server/Client Component boundary for each route.
+
 ### Decision Matrix
 
-| Use Server Component (default) | Use Client Component (`'use client'`) |
-|--------------------------------|---------------------------------------|
-| Data fetching with secrets/tokens | `useState`, `useEffect`, or any hooks |
-| Static rendering, no JS shipped to client | Event handlers (`onClick`, `onChange`) |
-| Accessing backend resources directly | Browser APIs (`localStorage`, `window`) |
-| Rendering Markdown, heavy transforms | Animations, real-time updates |
-| Metadata exports (`export const metadata`) | Form inputs, controlled components |
-| Reading cookies, headers for auth | Third-party client-side libraries |
+| Use Server Component (default)             | Use Client Component (`'use client'`)   |
+| ------------------------------------------ | --------------------------------------- |
+| Data fetching with secrets/tokens          | `useState`, `useEffect`, or any hooks   |
+| Static rendering, no JS shipped to client  | Event handlers (`onClick`, `onChange`)  |
+| Accessing backend resources directly       | Browser APIs (`localStorage`, `window`) |
+| Rendering Markdown, heavy transforms       | Animations, real-time updates           |
+| Metadata exports (`export const metadata`) | Form inputs, controlled components      |
+| Reading cookies, headers for auth          | Third-party client-side libraries       |
 
 ### Boundary Rules
 
@@ -540,368 +530,28 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 ## 10. Data Fetching & Caching
 
-### Server-Side Data Fetching
+> 📖 **See also:** [NEXTJS_RENDERING_STRATEGY.md](../NEXTJS_RENDERING_STRATEGY.md) — Rendering strategy per route affects which caching approach applies (static cache vs request-time fetch vs streaming).
 
-In Server Components, fetch data directly using `async`/`await`:
+Covers server-side data fetching in Server Components (`async`/`await`), React Query hydration for SSR (`dehydrate` / `HydrationBoundary`), `staleTime` configuration to avoid double-fetching, and Next.js `fetch` caching options (`force-cache`, `revalidate`, `no-store`, `cache()`).
 
-```typescript
-// app/armies/page.tsx (Server Component)
-export default async function ArmiesPage() {
-    const armies = await dc.armies.list({ status: 'active' });
-
-    return <ArmyListView armies={armies} />;
-}
-```
-
-### React Query Hydration for SSR
-
-Prefetch data on the server and hydrate the React Query cache on the client to avoid loading waterfalls:
-
-```typescript
-// app/armies/page.tsx (Server Component)
-import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
-import { armyListOptions } from '@shared/frontend/armies/queries.js';
-
-export default async function ArmiesPage() {
-    const queryClient = new QueryClient();
-    await queryClient.prefetchQuery(armyListOptions({ status: 'active' }));
-
-    return (
-        <HydrationBoundary state={dehydrate(queryClient)}>
-            <ArmyListContainer />
-        </HydrationBoundary>
-    );
-}
-```
-
-Set `staleTime` above 0 to prevent the client from immediately refetching data that was just prefetched on the server.
-
-### Fetch Caching
-
-Next.js extends `fetch` with caching options:
-
-```typescript
-// Cache indefinitely (static data)
-const data = await fetch(url, { cache: 'force-cache' });
-
-// Revalidate every 60 seconds
-const data = await fetch(url, { next: { revalidate: 60 } });
-
-// Never cache (always fresh)
-const data = await fetch(url, { cache: 'no-store' });
-```
-
-For non-fetch data sources (database, ORM), use `unstable_cache` or React's `cache()` function:
-
-```typescript
-import { cache } from 'react';
-
-/** Memoizes army fetching per request lifecycle. */
-const getArmies = cache(async (filters: ArmyFilters) => {
-    return dc.armies.list(filters);
-});
-```
+> 📖 **Canonical reference:** [REACT_QUERY.md](../REACT_QUERY.md) — SSR/RSC integration patterns (§4), cache configuration tiers (§5), and prefetch strategies.
 
 ---
 
 ## 11. React Query (TanStack Query v5)
 
-### Query Key Factories
+Covers query key factories (`queryOptions` helper, hierarchical key structure), custom hooks (platform-specific wrappers in `src/web/` or `src/mobile/`), mutations and cache invalidation (simple invalidation and optimistic update patterns), stale/cache time configuration by data type, and common anti-patterns.
 
-Co-locate query keys with query functions using the `queryOptions` helper. Never define keys in a separate global file — keep them next to the feature they serve.
-
-Structure keys from most generic to most specific:
-
-```typescript
-// src/shared/frontend/armies/queries.ts (pure TypeScript — no React)
-import { queryOptions } from '@tanstack/react-query';
-
-/** Query key factory for army-related queries. */
-const armyKeys = {
-    all: () => ['armies'] as const,
-    lists: () => [...armyKeys.all(), 'list'] as const,
-    list: (filters: ArmyFilters) => [...armyKeys.lists(), filters] as const,
-    details: () => [...armyKeys.all(), 'detail'] as const,
-    detail: (id: string) => [...armyKeys.details(), id] as const,
-};
-
-/** Fetches all armies with optional filters. */
-export const armyListOptions = (filters: ArmyFilters) =>
-    queryOptions({
-        queryKey: armyKeys.list(filters),
-        queryFn: () => dc.armies.list(filters),
-    });
-
-/** Fetches a single army by ID. */
-export const armyDetailOptions = (id: string) =>
-    queryOptions({
-        queryKey: armyKeys.detail(id),
-        queryFn: () => dc.armies.get(id),
-        staleTime: 5 * 60 * 1000,
-    });
-```
-
-This pattern provides:
-- Type-safe keys via `as const`
-- Hierarchical invalidation (`armyKeys.all()` invalidates everything, `armyKeys.lists()` invalidates only lists)
-- Co-located `queryKey` + `queryFn` via `queryOptions` — enables type inference across `useQuery`, `prefetchQuery`, `getQueryData`, and `setQueryData`
-- **Lives in `src/shared/frontend/`** because `queryOptions` is pure TypeScript (no React hooks)
-
-### Custom Hooks (Platform-Specific)
-
-Custom hooks wrap `useQuery` and live in the platform workspace (`src/web/` or `src/mobile/`), not in shared:
-
-```typescript
-// src/web/hooks/useArmy.ts (web-specific hook)
-import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
-
-/** Returns the current army with loading/error state. */
-export function useArmy(id: string) {
-    return useQuery(armyDetailOptions(id));
-}
-```
-
-Create a custom hook when it adds value (memoization, transformation, combining multiple queries). If the hook would be a passthrough, call `useQuery(armyListOptions(filters))` directly in the component.
-
-### Mutations & Cache Invalidation
-
-**Simple pattern** (most mutations): Invalidate on success. Let React Query refetch the fresh data.
-
-```typescript
-// src/shared/frontend/armies/mutations.ts (pure TypeScript)
-import type { MutationOptions } from '@tanstack/react-query';
-
-/** Mutation options factory for deleting an army. */
-export const deleteArmyOptions = (): MutationOptions<void, Error, string> => ({
-    mutationFn: (id: string) => dc.armies.delete(id),
-});
-```
-
-```typescript
-// src/web/hooks/useDeleteArmy.ts (web-specific hook with cache management)
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteArmyOptions } from '@shared/frontend/armies/mutations.js';
-
-export function useDeleteArmy() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        ...deleteArmyOptions(),
-        onSettled: () => queryClient.invalidateQueries({ queryKey: armyKeys.lists() }),
-    });
-}
-```
-
-**Optimistic updates** (latency-sensitive UI): Cancel queries, snapshot, update cache, rollback on error.
-
-```typescript
-export function useSaveArmy() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (army: Army) => dc.armies.save(army),
-        onMutate: async (army) => {
-            await queryClient.cancelQueries({ queryKey: armyKeys.detail(army.id) });
-            const previous = queryClient.getQueryData(armyDetailOptions(army.id).queryKey);
-            queryClient.setQueryData(armyDetailOptions(army.id).queryKey, army);
-
-            return { previous };
-        },
-        onError: (_err, army, context) => {
-            if (context?.previous) {
-                queryClient.setQueryData(armyDetailOptions(army.id).queryKey, context.previous);
-            }
-        },
-        onSettled: (_data, _err, army) => {
-            queryClient.invalidateQueries({ queryKey: armyKeys.detail(army.id) });
-            queryClient.invalidateQueries({ queryKey: armyKeys.lists() });
-        },
-    });
-}
-```
-
-Prefer `onSettled` (runs on both success and error) over `onSuccess` for invalidation — ensures cache stays fresh even when errors occur.
-
-### Stale / Cache Time Configuration
-
-| Data Type | staleTime | gcTime | Rationale |
-|-----------|-----------|--------|-----------|
-| User-specific data (armies, campaigns) | 60s (default) | 5min | Changes from user actions; refetch on focus |
-| Static reference data (faction rules, unit stats) | `Infinity` | 24h | Changes only on BSData sync; never auto-refetch |
-| Session/auth data | 0 | 30min | Always verify freshness |
-| List with filters | 30s | 5min | Stale quickly as filters change |
-
-### React Query Anti-Patterns
-
-| Never Do This | Do This Instead |
-|---------------|-----------------|
-| String query keys (`'todos'`) | Array keys (`['todos']`) |
-| Separate query key from query function | Use `queryOptions()` to co-locate them |
-| Call `refetch` with new parameters | Put parameters in the query key — let React Query refetch automatically |
-| Duplicate server state in `useState` | Use the query result directly (it IS your state) |
-| `staleTime: 0` on static data | Set `staleTime: Infinity` for data that rarely changes |
-| Manual fetching in `useEffect` | Use `useQuery` with `enabled` option for conditional fetching |
+> 📖 **Canonical reference:** [REACT_QUERY.md](../REACT_QUERY.md) — Complete patterns for query keys (§1), mutations (§2), optimistic updates (§3), SSR/RSC (§4), cache configuration (§5), and mobile-specific concerns (§6).
 
 ---
 
 ## 12. RxJS Guidelines
 
-### When to Use RxJS
+Covers when to use RxJS vs simpler alternatives, higher-order mapping operators (`switchMap` for reads, `concatMap` for writes), Subject types (`BehaviorSubject` for state, `Subject` for events), memory management (`takeUntil` last in pipe, `useEffect` cleanup), error handling (`catchError` inside inner observables), and the `@armoury/streams` reactive WebSocket facade pattern.
 
-RxJS is used for **global or reactive client-side state** that needs to be shared across components. It is preferred over React Context for this purpose.
+> 📖 **Canonical reference:** [RXJS_STATE.md](../RXJS_STATE.md) — Complete RxJS patterns for BehaviorSubject state stores (§1), `useSyncExternalStore` bridge (§2), higher-order operators (§3), error handling (§4), testing (§5), performance (§6), and the `@armoury/streams` package (§7).
 
-Before reaching for RxJS, evaluate simpler alternatives:
-
-| Scenario | Preferred Tool | Why |
-|----------|---------------|-----|
-| Fetching server data, caching, refetching | @tanstack/react-query | Built-in cache, dedup, background refetch, SSR support |
-| Single async operation (fetch, save) | `async`/`await` with `Promise` | Simpler, universally understood |
-| Debouncing a single input | `setTimeout` / lodash `debounce` | No need for an observable pipeline |
-| Component-local UI state | `useState` / `useReducer` | Simplest solution |
-| Complex event composition (drag-and-drop with multi-touch + scroll) | **RxJS** | Combines multiple event streams declaratively |
-| Real-time data streams (WebSocket, SSE) with retry and backoff | **RxJS** | Operators like `retry`, `switchMap`, `shareReplay` handle this natively |
-| Orchestrating concurrent async operations with cancellation | **RxJS** | `switchMap` cancels previous, `exhaustMap` ignores new during active |
-| Global state shared across unrelated components | **RxJS** (`BehaviorSubject`) | Subscribable, React-independent, testable without component trees |
-| Polling with pause/resume and exponential backoff | **RxJS** | `timer` + `switchMap` + `retryWhen` composes cleanly |
-
-**Rule of thumb:** If your problem involves a single request-response cycle, use Promises. If it involves streams of events over time with composition, cancellation, or retry — use RxJS. If it's global client state — use RxJS (`BehaviorSubject`).
-
-### Higher-Order Mapping Operators
-
-| Operator | Inner Observable Strategy | Use When |
-|----------|--------------------------|----------|
-| `switchMap` | Cancels previous inner, subscribes to new | **Reads.** Search typeahead, autocomplete, navigation. "Only the latest matters." |
-| `concatMap` | Queues. Waits for previous to complete. | **Ordered writes.** Sequential saves, file uploads. "Order matters, nothing lost." |
-| `exhaustMap` | Ignores new emissions while inner is active. | **Idempotent triggers.** Login button, refresh button. "Ignore spam clicks." |
-| `mergeMap` | Runs all inner observables concurrently. | **Independent parallel work.** Logging, analytics, notifications. "Fire and forget." |
-
-**Default to `switchMap` for reads, `concatMap` for writes.** Never use `switchMap` for mutations — it cancels in-flight saves.
-
-### Subjects
-
-| Type | Behavior | Use Case |
-|------|----------|----------|
-| `Subject` | No initial value. Emits only to current subscribers. | Event bus, action dispatcher |
-| `BehaviorSubject` | Has initial value. New subscribers get current value immediately. | State container, "current value" store |
-| `ReplaySubject(n)` | Replays last `n` values to new subscribers. | Caching recent emissions, late subscriber catch-up |
-
-Use `BehaviorSubject` as the default for global state. Use plain `Subject` for events/actions.
-
-### Memory Management
-
-Every subscription must have a cleanup strategy. Leaked subscriptions are the #1 RxJS bug.
-
-**In React (`useEffect` pattern):**
-
-```typescript
-/** Hook that subscribes to an observable and returns the latest value. */
-function useObservable<T>(observable$: Observable<T>, initialValue: T): T {
-    const [value, setValue] = useState(initialValue);
-
-    useEffect(() => {
-        const subscription = observable$.subscribe(setValue);
-
-        return () => subscription.unsubscribe();
-    }, [observable$]);
-
-    return value;
-}
-```
-
-**In services/classes (`takeUntil` pattern):**
-
-```typescript
-private destroy$ = new Subject<void>();
-
-initialize() {
-    this.dataStream$.pipe(
-        takeUntil(this.destroy$) // MUST be the last operator in the pipe
-    ).subscribe(data => this.handleData(data));
-}
-
-dispose() {
-    this.destroy$.next();
-    this.destroy$.complete();
-}
-```
-
-**Critical:** `takeUntil` must be the **last** operator in the pipe. Placing it before `switchMap` or other operators that create inner subscriptions will leak those inner subscriptions.
-
-### Error Handling in RxJS
-
-- Place `catchError` inside the inner observable (inside `switchMap`/`concatMap`) to recover without killing the outer stream.
-- Use `retry({ count: 3, delay: 1000 })` for transient failures (network errors).
-- Always provide a fallback value in `catchError` — never return `EMPTY` unless you genuinely want to silently swallow the error.
-
-```typescript
-searchInput$.pipe(
-    debounceTime(300),
-    distinctUntilChanged(),
-    switchMap(query =>
-        searchAPI(query).pipe(
-            retry({ count: 2, delay: 1000 }),
-            catchError(err => {
-                console.error('Search failed:', err);
-
-                return of([]); // fallback to empty results
-            })
-        )
-    )
-);
-```
-
-### RxJS Anti-Patterns
-
-| Never Do This | Do This Instead |
-|---------------|-----------------|
-| Nested `.subscribe()` inside `.subscribe()` | Use a higher-order mapping operator |
-| Forget to unsubscribe | Use `takeUntil`, cleanup in `useEffect`, or explicit `unsubscribe` |
-| Use `switchMap` for write operations (POST, PUT, DELETE) | Use `concatMap` (ordered) or `exhaustMap` (ignore duplicates) |
-| Use RxJS for a single fetch | Use `async`/`await` or React Query |
-| Create hot observables without `share()`/`shareReplay()` | Multicast to prevent duplicate side effects |
-| Put `takeUntil` before operators that create inner subscriptions | Always place `takeUntil` **last** in the pipe |
-
-### @armoury/streams — Reactive WebSocket Facades
-
-The `@armoury/streams` package provides typed, reactive facades over WebSocket clients using BehaviorSubject-backed state stores. It is the canonical pattern for projecting real-time WebSocket data into observable state shared across web and mobile.
-
-**Available streams:**
-
-| Stream | Client | State Shape | Purpose |
-|--------|--------|-------------|---------|
-| `PresenceStream` | `IFriendsPresenceClient` | `ReadonlyMap<string, OnlineFriend>` | Friend online/offline tracking |
-| `MatchStream` | `IMatchesRealtimeClient` | `ReadonlyMap<string, Match>` | Real-time match state cache |
-
-**Usage pattern:**
-
-```typescript
-import { createPresenceStream, createMatchStream } from '@armoury/streams';
-
-// Create streams from existing WebSocket clients (client lifecycle is NOT owned by the stream)
-const presenceStream = createPresenceStream(presenceClient);
-const matchStream = createMatchStream(matchClient);
-
-// Read state via observables
-presenceStream.onlineFriends$.subscribe(friends => console.log(friends.size));
-presenceStream.isOnline$('user-123').subscribe(online => console.log(online));
-matchStream.match$('match-456').subscribe(match => console.log(match));
-
-// Write through the stream (delegates to underlying client)
-matchStream.subscribeMatch('match-456');
-matchStream.sendMatchUpdate('match-456', { score: 10 });
-
-// Dispose when done (does NOT disconnect the client)
-presenceStream.dispose();
-matchStream.dispose();
-```
-
-**Key rules:**
-- Streams do **not** own client lifecycle — never call `connect()`/`disconnect()` on the client. The consumer manages the client.
-- `dispose()` is idempotent — calling it twice is safe.
-- All derived observables use `distinctUntilChanged()` to suppress duplicate emissions.
-- State is `ReadonlyMap` — consumers observe, never mutate directly.
-- When adding a new stream, follow the same pattern: BehaviorSubject state, factory function, interface in `types.ts`.
 ---
 
 ## 13. Routing & Navigation
@@ -968,6 +618,7 @@ export default function ArmiesError({ error, reset }: ErrorProps) {
 ```
 
 **Key rules:**
+
 - `error.tsx` must be a Client Component (uses hooks for error logging and the `reset` function)
 - Use `global-error.tsx` at the app root to catch errors in the root layout
 - `not-found.tsx` handles 404 states (triggered by `notFound()` or unmatched routes)
@@ -1082,6 +733,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 **Rules:**
+
 - Always use `display: 'swap'` to prevent Flash of Invisible Text (FOIT)
 - Define fonts in the root layout — they apply globally
 - Use `next/font/local` for self-hosted font files
@@ -1104,6 +756,7 @@ import Image from 'next/image';
 ```
 
 **Rules:**
+
 - Always provide `alt` text for accessibility
 - Use `priority` for Largest Contentful Paint (LCP) images (hero images, above-the-fold content)
 - Images are lazy-loaded by default — `priority` disables this for critical images
@@ -1269,6 +922,7 @@ export const config = {
 ```
 
 The middleware handles:
+
 - Detecting the user's preferred locale from `Accept-Language` headers
 - Redirecting `/` to `/{defaultLocale}`
 - Setting locale cookies for subsequent requests
@@ -1301,6 +955,7 @@ import { FlashList } from '@shopify/flash-list';
 ```
 
 **Performance rules:**
+
 - Always provide `estimatedItemSize` — FlashList needs this for recycling
 - Never use inline functions for `renderItem` in hot paths — extract to a stable component or use `useCallback`
 - Use `getItemType` if the list has multiple item types (headers, items, footers) to improve recycling
@@ -1348,14 +1003,14 @@ Use `react-native-reanimated` (v3+) for performant animations. Animations run on
 
 ### React Native Anti-Patterns
 
-| Never Do This | Do This Instead |
-|---------------|-----------------|
-| Use `FlatList` for 50+ items | Use `@shopify/flash-list` |
-| Animate with `Animated` from RN core | Use `react-native-reanimated` (UI thread) |
-| Block JS thread with heavy computation | Use `InteractionManager.runAfterInteractions()` |
-| Import platform-specific APIs in shared code | Use `.native.ts` / `.web.ts` extensions |
-| Store large blobs in AsyncStorage | Use filesystem (`expo-file-system`) |
-| Hardcode dimensions | Use `useWindowDimensions`, flex, or responsive breakpoints |
+| Never Do This                                | Do This Instead                                            |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| Use `FlatList` for 50+ items                 | Use `@shopify/flash-list`                                  |
+| Animate with `Animated` from RN core         | Use `react-native-reanimated` (UI thread)                  |
+| Block JS thread with heavy computation       | Use `InteractionManager.runAfterInteractions()`            |
+| Import platform-specific APIs in shared code | Use `.native.ts` / `.web.ts` extensions                    |
+| Store large blobs in AsyncStorage            | Use filesystem (`expo-file-system`)                        |
+| Hardcode dimensions                          | Use `useWindowDimensions`, flex, or responsive breakpoints |
 
 ---
 
@@ -1417,11 +1072,11 @@ test('sets isDeleting state to true', () => {
 
 ### Core Web Vitals
 
-| Metric | Target | Key Strategies |
-|--------|--------|----------------|
-| **LCP** (Largest Contentful Paint) | < 2.5s | Use `priority` on hero images, prefetch critical data in Server Components, use `next/font` with `display: 'swap'` |
-| **INP** (Interaction to Next Paint) | < 200ms | Keep event handlers fast, defer heavy work with `startTransition`, avoid blocking the main thread |
-| **CLS** (Cumulative Layout Shift) | < 0.1 | Always set `width`/`height` on images, use `next/font` to prevent font-swap shifts, reserve space for async content |
+| Metric                              | Target  | Key Strategies                                                                                                      |
+| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| **LCP** (Largest Contentful Paint)  | < 2.5s  | Use `priority` on hero images, prefetch critical data in Server Components, use `next/font` with `display: 'swap'`  |
+| **INP** (Interaction to Next Paint) | < 200ms | Keep event handlers fast, defer heavy work with `startTransition`, avoid blocking the main thread                   |
+| **CLS** (Cumulative Layout Shift)   | < 0.1   | Always set `width`/`height` on images, use `next/font` to prevent font-swap shifts, reserve space for async content |
 
 ### Bundle Size
 
@@ -1450,35 +1105,35 @@ test('sets isDeleting state to true', () => {
 
 ### React Anti-Patterns
 
-| Never Do This | Do This Instead |
-|---------------|-----------------|
-| Store derived state in `useState` | Compute inline or `useMemo` |
-| `useEffect` to sync two state values | Derive one from the other |
-| `useEffect` to handle user events | Put logic in the event handler |
-| Spread `{...props}` on DOM elements blindly | Destructure and pass only known props |
-| Use array index as `key` for dynamic lists | Use a stable unique ID |
-| Nest ternaries in JSX | Extract to variables or early returns |
-| `// eslint-disable` without justification | Fix the lint error |
+| Never Do This                                    | Do This Instead                              |
+| ------------------------------------------------ | -------------------------------------------- |
+| Store derived state in `useState`                | Compute inline or `useMemo`                  |
+| `useEffect` to sync two state values             | Derive one from the other                    |
+| `useEffect` to handle user events                | Put logic in the event handler               |
+| Spread `{...props}` on DOM elements blindly      | Destructure and pass only known props        |
+| Use array index as `key` for dynamic lists       | Use a stable unique ID                       |
+| Nest ternaries in JSX                            | Extract to variables or early returns        |
+| `// eslint-disable` without justification        | Fix the lint error                           |
 | Place React components in `src/shared/frontend/` | Components go in `src/web/` or `src/mobile/` |
-| Place React hooks in `src/shared/frontend/` | Hooks go in `src/web/` or `src/mobile/` |
-| Use React Context for global state | Use RxJS (`BehaviorSubject`) |
-| Suppress type errors with `as any` | Fix the underlying type issue |
-| Use empty catch blocks `catch(e) {}` | Handle or rethrow with typed errors |
-| Delete failing tests to "pass" | Fix the underlying issue |
+| Place React hooks in `src/shared/frontend/`      | Hooks go in `src/web/` or `src/mobile/`      |
+| Use React Context for global state               | Use RxJS (`BehaviorSubject`)                 |
+| Suppress type errors with `as any`               | Fix the underlying type issue                |
+| Use empty catch blocks `catch(e) {}`             | Handle or rethrow with typed errors          |
+| Delete failing tests to "pass"                   | Fix the underlying issue                     |
 
 ### Next.js Anti-Patterns
 
-| Never Do This | Do This Instead |
-|---------------|-----------------|
-| Import Server Components in Client Components | Pass Server Components as `children` |
-| Pass non-serializable props from Server → Client | Serialize data before passing (no functions, Dates, class instances) |
-| Use `'use client'` at the top of the component tree | Push `'use client'` to the deepest interactive leaf |
-| Hardcode text strings in components | Use `next-intl` message files |
-| Skip `setRequestLocale()` in i18n pages | Always call it to preserve SSG |
-| Use `<img>` tags directly | Use `next/image` for optimization |
-| Load fonts via `<link>` tags | Use `next/font` for zero-CLS font loading |
-| Fetch sequentially when data is independent | Use `Promise.all` for parallel fetches |
-| Skip `error.tsx` in route segments | Add error boundaries for graceful recovery |
+| Never Do This                                       | Do This Instead                                                      |
+| --------------------------------------------------- | -------------------------------------------------------------------- |
+| Import Server Components in Client Components       | Pass Server Components as `children`                                 |
+| Pass non-serializable props from Server → Client    | Serialize data before passing (no functions, Dates, class instances) |
+| Use `'use client'` at the top of the component tree | Push `'use client'` to the deepest interactive leaf                  |
+| Hardcode text strings in components                 | Use `next-intl` message files                                        |
+| Skip `setRequestLocale()` in i18n pages             | Always call it to preserve SSG                                       |
+| Use `<img>` tags directly                           | Use `next/image` for optimization                                    |
+| Load fonts via `<link>` tags                        | Use `next/font` for zero-CLS font loading                            |
+| Fetch sequentially when data is independent         | Use `Promise.all` for parallel fetches                               |
+| Skip `error.tsx` in route segments                  | Add error boundaries for graceful recovery                           |
 
 ---
 
