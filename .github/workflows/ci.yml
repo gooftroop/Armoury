@@ -136,10 +136,12 @@ jobs:
 
             - name: Ensure clean Docker state
               run: |
+                  shopt -s nullglob
                   for f in src/services/*/docker-compose.yml; do
                       dir=$(dirname "$f")
                       docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
                   done
+                  shopt -u nullglob
 
             - name: Run e2e tests
               run: npm run test:e2e
@@ -147,10 +149,12 @@ jobs:
             - name: Cleanup Docker containers
               if: always()
               run: |
+                  shopt -s nullglob
                   for f in src/services/*/docker-compose.yml; do
                       dir=$(dirname "$f")
                       docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
                   done
+                  shopt -u nullglob
 
     build-web:
         name: Build web

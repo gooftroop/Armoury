@@ -22,7 +22,10 @@ jobs:
         with:
             service-name: '@armoury/friends'
             working-directory: src/services/friends
+            service-short-name: friends
+            routing-rule-priority: 400
+            has-websocket: true
             needs-shared-build: true
-            has-migrations: false
+            has-migrations: true
             needs-authorizer: true
         secrets: inherit

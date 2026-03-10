@@ -90,7 +90,7 @@ export class MatchDAO extends BaseDAO<Match> {
 
     /**
      * Lists matches that include a specific player.
-     * Filters in-memory since the adapter has no JSON-contains query for JSONB arrays of objects.
+     * Filters in-memory since the adapter has no JSON-contains query for TEXT-serialized arrays of objects.
      */
     public async listByPlayer(playerId: string): Promise<Match[]> {
         const matches = (await this.adapter.getAll(this.getStore())) as Match[];

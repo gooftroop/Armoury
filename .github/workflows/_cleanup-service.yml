@@ -12,6 +12,21 @@ on:
                 required: false
                 type: boolean
                 default: false
+            service-short-name:
+                description: 'Short service name used for routing (e.g. users, campaigns, matches, friends). Empty = skip routing rule cleanup.'
+                required: false
+                type: string
+                default: ''
+            has-websocket:
+                description: 'Whether the service has a WebSocket API mapping to clean up'
+                required: false
+                type: boolean
+                default: false
+            routing-rule-priority:
+                description: 'The routing rule priority used during deploy (needed to find the rule to delete)'
+                required: false
+                type: number
+                default: 0
 
 jobs:
     teardown:
@@ -54,22 +69,56 @@ jobs:
             - name: Install Serverless Framework
               run: npm install -g serverless
 
-            - name: Delete custom domain
-              working-directory: ${{ inputs.working-directory }}
-              env:
-                  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
-              run: |
-                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
-                  serverless delete_domain \
-                    --stage pr-${{ github.event.pull_request.number }} \
-                    --param="domainPrefix=${SERVICE_SHORT_NAME}-pr-${{ github.event.pull_request.number }}-sandbox" \
-                    --param="domainName=${{ vars.DOMAIN_NAME }}" \
-                    --param="certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}" \
-                    --param="hostedZoneId=${{ vars.ROUTE53_HOSTED_ZONE_ID }}" \
-                    --param="customDomainEnabled=true"
-
             - name: Remove stage
               working-directory: ${{ inputs.working-directory }}
               env:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
               run: serverless remove --stage pr-${{ github.event.pull_request.number }}
+
+            - name: Delete REST routing rule
+              if: inputs.service-short-name != ''
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  PRIORITY: ${{ inputs.routing-rule-priority }}
+                  WILDCARD_DOMAIN: '*.sandbox.armoury-app.com'
+              run: |
+                  # Find and delete routing rule by priority
+                  EXISTING_RULE_ARN=$(aws apigatewayv2 get-routing-rules \
+                    --domain-name "${WILDCARD_DOMAIN}" \
+                    --query "Items[?Priority==\`${PRIORITY}\`].RoutingRuleArn" \
+                    --output text 2>/dev/null || true)
+
+                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ]; then
+                    RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
+                    echo "Deleting routing rule ${RULE_ID} (priority ${PRIORITY}) for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-routing-rule \
+                      --domain-name "${WILDCARD_DOMAIN}" \
+                      --routing-rule-id "${RULE_ID}"
+                    echo "Routing rule deleted."
+                  else
+                    echo "No routing rule found at priority ${PRIORITY} — skipping."
+                  fi
+
+            - name: Delete WS API mapping
+              if: inputs.has-websocket
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  WS_WILDCARD_DOMAIN: '*.ws-sandbox.armoury-app.com'
+              run: |
+                  # Find and delete the WS API mapping for this PR+service
+                  MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${WS_WILDCARD_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
+
+                  if [ -n "${MAPPING_ID}" ] && [ "${MAPPING_ID}" != "None" ]; then
+                    echo "Deleting WS API mapping ${MAPPING_ID} for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${WS_WILDCARD_DOMAIN}" \
+                      --api-mapping-id "${MAPPING_ID}"
+                    echo "WS API mapping deleted."
+                  else
+                    echo "No WS API mapping found for ${SERVICE_SHORT_NAME} — skipping."
+                  fi

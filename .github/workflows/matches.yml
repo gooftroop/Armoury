@@ -22,7 +22,10 @@ jobs:
         with:
             service-name: '@armoury/matches'
             working-directory: src/services/matches
+            service-short-name: matches
+            routing-rule-priority: 300
+            has-websocket: true
             needs-shared-build: true
-            has-migrations: false
+            has-migrations: true
             needs-authorizer: true
         secrets: inherit

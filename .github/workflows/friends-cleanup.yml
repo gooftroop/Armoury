@@ -13,4 +13,7 @@ jobs:
         uses: ./.github/workflows/_cleanup-service.yml
         with:
             working-directory: src/services/friends
+            service-short-name: friends
+            routing-rule-priority: 400
+            has-websocket: true
         secrets: inherit

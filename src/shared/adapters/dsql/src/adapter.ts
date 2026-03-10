@@ -141,6 +141,10 @@ export interface DSQLIAMConfig {
     clusterEndpoint: string;
     /** The AWS region of the DSQL cluster. */
     region: string;
+    /** Override the default port (5432). Useful for local DSQL mocks. */
+    port?: number;
+    /** Override SSL (defaults to true). Set false for local mocks. */
+    ssl?: boolean;
 }
 
 /**
@@ -231,8 +235,8 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                     user: 'admin',
                     password: token,
                     database: 'postgres',
-                    port: 5432,
-                    ssl: true,
+                    port: this.config.port ?? 5432,
+                    ssl: this.config.ssl ?? true,
                 });
             } else {
                 client = new Client({

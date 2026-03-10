@@ -46,22 +46,8 @@ build:
 
 plugins:
     - serverless-offline
-    - serverless-domain-manager
 
 custom:
-    customDomain:
-        rest:
-            domainName: ${param:domainPrefix}.${param:domainName}
-            certificateArn: ${param:certificateArn}
-            hostedZoneId: ${param:hostedZoneId}
-            basePath: ''
-            stage: ${self:provider.stage}
-            endpointType: REGIONAL
-            securityPolicy: tls_1_2
-            createRoute53Record: true
-            createRoute53IPv6Record: true
-            autoDomain: false
-            enabled: ${param:customDomainEnabled}
     serverless-offline:
         httpPort: 3000
         lambdaPort: 3002

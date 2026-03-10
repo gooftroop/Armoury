@@ -14,8 +14,8 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
-    preferences JSONB NOT NULL DEFAULT '{}',
-    systems JSONB NOT NULL DEFAULT '{}',
+    preferences TEXT NOT NULL DEFAULT '{}',
+    systems TEXT NOT NULL DEFAULT '{}',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );

@@ -13,4 +13,6 @@ jobs:
         uses: ./.github/workflows/_cleanup-service.yml
         with:
             working-directory: src/services/users
+            service-short-name: users
+            routing-rule-priority: 100
         secrets: inherit

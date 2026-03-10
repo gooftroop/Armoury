@@ -73,7 +73,6 @@ src/
 │       ├── lib/               → Library wrappers (auth0, queryClient)
 │       ├── hooks/             → Custom React hooks
 │       ├── utils/             → Web-specific utilities
-│       └── utils/             → Web-specific utilities
 │
 ├── mobile/                    → @armoury/mobile (Expo 53)
 │   └── src/
@@ -83,7 +82,6 @@ src/
 │       │   └── ...            → Feature-grouped (mirrors web structure)
 │       ├── hooks/             → Mobile-specific hooks
 │       ├── utils/             → Mobile-specific utilities
-│       └── utils/             → Mobile-specific utilities
 │
 └── ui/                        → @armoury/ui (shared design system — future)
     └── src/
@@ -239,10 +237,6 @@ What are you creating?
 │
 ├── API Client
 │   └── src/shared/clients/{serviceName}/
-│
-├── API Client
-│   └── src/shared/clients/{serviceName}/
-│
 ├── Type / Interface / Enum
 │   ├── Is it core/cross-cutting?
 │   │   └── src/shared/types/

@@ -5,35 +5,15 @@ services:
         path: src/services/campaigns
         params:
             authorizerArn: ${authorizer.AuthorizerArn}
-            domainPrefix: campaigns
-            domainName: ${env:DOMAIN_NAME, 'localhost'}
-            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}
-            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}
-            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}
     matches:
         path: src/services/matches
         params:
             authorizerArn: ${authorizer.AuthorizerArn}
-            domainPrefix: matches
-            domainName: ${env:DOMAIN_NAME, 'localhost'}
-            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}
-            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}
-            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}
     friends:
         path: src/services/friends
         params:
             authorizerArn: ${authorizer.AuthorizerArn}
-            domainPrefix: friends
-            domainName: ${env:DOMAIN_NAME, 'localhost'}
-            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}
-            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}
-            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}
     users:
         path: src/services/users
         params:
             authorizerArn: ${authorizer.AuthorizerArn}
-            domainPrefix: users
-            domainName: ${env:DOMAIN_NAME, 'localhost'}
-            certificateArn: ${env:ACM_CERTIFICATE_ARN, ''}
-            hostedZoneId: ${env:ROUTE53_HOSTED_ZONE_ID, ''}
-            customDomainEnabled: ${env:CUSTOM_DOMAIN_ENABLED, 'false'}

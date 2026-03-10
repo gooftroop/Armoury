@@ -42,7 +42,6 @@
         "eslint": "^9.0.0",
         "prettier": "^3.0.0",
         "serverless-offline": "^14.4.0",
-        "serverless-domain-manager": "^7.0.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.0.0",
         "vitest": "^4.0.0"
