@@ -134,6 +134,12 @@ jobs:
                       src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
+            - name: Pre-pull Docker images
+              run: |
+                  docker pull localstack/localstack:4.4.0 &
+                  docker pull postgres:16-alpine &
+                  wait
+
             - name: Ensure clean Docker state
               run: |
                   docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true

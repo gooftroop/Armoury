@@ -89,10 +89,10 @@ jobs:
                   # Find and delete routing rule by priority
                   EXISTING_RULE_ARN=$(aws apigatewayv2 get-routing-rules \
                     --domain-name "${WILDCARD_DOMAIN}" \
-                    --query "Items[?Priority==\`${PRIORITY}\`].RoutingRuleArn" \
-                    --output text 2>/dev/null || true)
+                    --output json 2>/dev/null \
+                    | jq -r ".Items[] | select(.Priority == ${PRIORITY} or (.Priority | tostring) == \"${PRIORITY}\") | .RoutingRuleArn" 2>/dev/null || true)
 
-                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ]; then
+                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ] && [ "${EXISTING_RULE_ARN}" != "null" ]; then
                     RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
                     echo "Deleting routing rule ${RULE_ID} (priority ${PRIORITY}) for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}"
                     aws apigatewayv2 delete-routing-rule \
