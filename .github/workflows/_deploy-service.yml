@@ -151,9 +151,13 @@ jobs:
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
-                  serverless deploy \
-                    --stage pr-${{ github.event.pull_request.number }} \
-                    ${{ inputs.needs-authorizer && '--param="authorizerArn=${AUTHORIZER_ARN}"' || '' }}
+
+                  DEPLOY_ARGS="--stage pr-${{ github.event.pull_request.number }}"
+                  if [[ "${{ inputs.needs-authorizer }}" == "true" && -n "${AUTHORIZER_ARN:-}" ]]; then
+                    DEPLOY_ARGS="${DEPLOY_ARGS} --param=\"authorizerArn=${AUTHORIZER_ARN}\""
+                  fi
+
+                  serverless deploy ${DEPLOY_ARGS}
 
             - name: Create REST routing rule
               if: github.event_name == 'pull_request' && inputs.service-short-name != ''

@@ -18,7 +18,7 @@ services:
         environment:
             SERVICES: secretsmanager,apigateway,iam
             DEFAULT_REGION: us-east-1
-            LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
+            LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:?LOCALSTACK_AUTH_TOKEN is required for LocalStack}
             DEBUG: 0
         volumes:
             - localstack-cache:/var/lib/localstack
