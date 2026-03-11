@@ -31,7 +31,7 @@
         "@armoury/typescript": "*",
         "@armoury/esbuild": "*",
         "@types/pg": "^8.16.0",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.3",
         "prettier": "^3.0.0"
     },
     "lint-staged": {

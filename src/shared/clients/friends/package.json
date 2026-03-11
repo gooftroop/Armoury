@@ -28,7 +28,7 @@
         "@armoury/vitest": "*",
         "@armoury/esbuild": "*",
         "@types/ws": "^8.18.1",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.3",
         "prettier": "^3.0.0",
         "vitest": "^4.0.0"
     },
