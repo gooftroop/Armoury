@@ -4,7 +4,38 @@ import { BaseDatabaseAdapter } from '@/adapter.js';
 import { Platform } from '@/types.js';
 import { registerEntityCodec } from '@/codec.js';
 import type { FileSyncStatus } from '@/types.js';
-import type { Unit } from '@armoury/wh40k10e/types/entities';
+/**
+ * Local test interface matching the shape of a Warhammer 40K Unit entity.
+ * Defined locally to avoid a cyclic dependency:
+ *   @armoury/data-dao → @armoury/wh40k10e → @armoury/data-context → @armoury/data-dao
+ *
+ * Only the fields exercised by these tests are included.
+ */
+interface TestUnit {
+    id: string;
+    name: string;
+    sourceFile: string;
+    sourceSha: string;
+    factionId: string;
+    movement: string;
+    toughness: number;
+    save: string;
+    wounds: number;
+    leadership: number;
+    objectiveControl: number;
+    composition: unknown[];
+    rangedWeapons: unknown[];
+    meleeWeapons: unknown[];
+    wargearOptions: unknown[];
+    wargearAbilities: unknown[];
+    abilities: unknown[];
+    structuredAbilities: unknown[];
+    constraints: unknown[];
+    leader: unknown;
+    keywords: string[];
+    factionKeywords: string[];
+    imageUrl: string;
+}
 
 /**
  * Extend PluginEntityMap with game-specific entity types used in these tests.
@@ -12,7 +43,7 @@ import type { Unit } from '@armoury/wh40k10e/types/entities';
  */
 declare module '../types.ts' {
     interface PluginEntityMap {
-        unit: Unit;
+        unit: TestUnit;
         factionModel: MockHydratableEntity;
     }
 }
@@ -215,7 +246,7 @@ describe('DatabaseAdapter interface', () => {
     it('CRUD operations work for units', async () => {
         const adapter = new MockDatabaseAdapter();
 
-        const unit: Unit = {
+        const unit: TestUnit = {
             id: 'unit-1',
             name: 'Intercessors',
             sourceFile: 'test.cat',
@@ -257,7 +288,7 @@ describe('DatabaseAdapter interface', () => {
     it('getByField filters correctly', async () => {
         const adapter = new MockDatabaseAdapter();
 
-        const unit1: Unit = {
+        const unit1: TestUnit = {
             id: 'unit-1',
             name: 'Intercessors',
             sourceFile: 'sm.cat',
@@ -283,14 +314,14 @@ describe('DatabaseAdapter interface', () => {
             imageUrl: '',
         };
 
-        const unit2: Unit = {
+        const unit2: TestUnit = {
             ...unit1,
             id: 'unit-2',
             name: 'Hellblasters',
             factionId: 'space-marines',
         };
 
-        const unit3: Unit = {
+        const unit3: TestUnit = {
             ...unit1,
             id: 'unit-3',
             name: 'Ork Boyz',
@@ -321,7 +352,7 @@ describe('DatabaseAdapter interface', () => {
     it('deleteAll clears store', async () => {
         const adapter = new MockDatabaseAdapter();
 
-        const unit: Unit = {
+        const unit: TestUnit = {
             id: 'unit-1',
             name: 'Test',
             sourceFile: 'test.cat',
@@ -367,7 +398,7 @@ describe('DatabaseAdapter interface', () => {
     describe('QueryOptions support', () => {
         it('getAll with limit returns bounded results', async () => {
             const adapter = new MockDatabaseAdapter();
-            const base: Unit = {
+            const base: TestUnit = {
                 id: '',
                 name: '',
                 sourceFile: 'test.cat',
@@ -405,7 +436,7 @@ describe('DatabaseAdapter interface', () => {
 
         it('getAll with offset skips entries', async () => {
             const adapter = new MockDatabaseAdapter();
-            const base: Unit = {
+            const base: TestUnit = {
                 id: '',
                 name: '',
                 sourceFile: 'test.cat',
@@ -443,7 +474,7 @@ describe('DatabaseAdapter interface', () => {
 
         it('getAll with orderBy sorts results', async () => {
             const adapter = new MockDatabaseAdapter();
-            const base: Unit = {
+            const base: TestUnit = {
                 id: '',
                 name: '',
                 sourceFile: 'test.cat',
@@ -484,7 +515,7 @@ describe('DatabaseAdapter interface', () => {
 
         it('getAll with limit + offset + orderBy paginates correctly', async () => {
             const adapter = new MockDatabaseAdapter();
-            const base: Unit = {
+            const base: TestUnit = {
                 id: '',
                 name: '',
                 sourceFile: 'test.cat',
@@ -532,7 +563,7 @@ describe('DatabaseAdapter interface', () => {
 
         it('returns total count of entities', async () => {
             const adapter = new MockDatabaseAdapter();
-            const base: Unit = {
+            const base: TestUnit = {
                 id: '',
                 name: '',
                 sourceFile: 'test.cat',
@@ -568,7 +599,7 @@ describe('DatabaseAdapter interface', () => {
 
         it('returns filtered count when field and value provided', async () => {
             const adapter = new MockDatabaseAdapter();
-            const base: Unit = {
+            const base: TestUnit = {
                 id: '',
                 name: '',
                 sourceFile: 'test.cat',
