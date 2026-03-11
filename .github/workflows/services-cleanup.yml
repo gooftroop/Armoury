@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────
+# Cleanup orchestrator for all Lambda service sandbox stages.
+#
+# When a PR is closed, tears down all per-PR sandbox stages.
+# Downstream services (campaigns, matches, friends, users) are removed
+# first in parallel, then the authorizer is removed last — reverse of
+# the deploy order.
+# ─────────────────────────────────────────────────────────────────────
+
+name: Services Sandbox Cleanup
+
+on:
+    pull_request:
+        types: [closed]
+        branches: [main]
+        paths:
+            - 'src/services/**'
+            - 'src/shared/**'
+
+concurrency:
+    group: services-cleanup-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    # ── Downstream services: clean up first (parallel) ──────────────
+
+    cleanup-campaigns:
+        uses: ./.github/workflows/_cleanup-service.yml
+        with:
+            working-directory: src/services/campaigns
+            service-short-name: campaigns
+            routing-rule-priority: 200
+            has-migrations: true
+        secrets: inherit
+
+    cleanup-matches:
+        uses: ./.github/workflows/_cleanup-service.yml
+        with:
+            working-directory: src/services/matches
+            service-short-name: matches
+            routing-rule-priority: 300
+            has-websocket: true
+            has-migrations: true
+        secrets: inherit
+
+    cleanup-friends:
+        uses: ./.github/workflows/_cleanup-service.yml
+        with:
+            working-directory: src/services/friends
+            service-short-name: friends
+            routing-rule-priority: 400
+            has-websocket: true
+            has-migrations: true
+        secrets: inherit
+
+    cleanup-users:
+        uses: ./.github/workflows/_cleanup-service.yml
+        with:
+            working-directory: src/services/users
+            service-short-name: users
+            routing-rule-priority: 100
+            has-migrations: true
+        secrets: inherit
+
+    # ── Authorizer: clean up last (after all downstream) ────────────
+
+    cleanup-authorizer:
+        needs: [cleanup-campaigns, cleanup-matches, cleanup-friends, cleanup-users]
+        uses: ./.github/workflows/_cleanup-service.yml
+        with:
+            working-directory: src/services/authorizer
+        secrets: inherit

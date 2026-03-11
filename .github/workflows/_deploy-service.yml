@@ -21,11 +21,11 @@ on:
                 required: false
                 type: boolean
                 default: false
-            needs-authorizer:
-                description: 'Whether the service requires the Lambda authorizer ARN (resolved from CloudFormation at deploy time)'
+            authorizer-arn:
+                description: 'Lambda authorizer ARN (resolved by the orchestrator workflow after deploying the authorizer service)'
                 required: false
-                type: boolean
-                default: false
+                type: string
+                default: ''
             service-short-name:
                 description: 'Short service name used for routing (e.g. users, campaigns, matches, friends). Empty = skip routing rule creation.'
                 required: false
@@ -125,20 +125,11 @@ jobs:
                   DB_SCHEMA: ${{ github.event_name == 'pull_request' && format('pr_{0}', github.event.pull_request.number) || 'public' }}
               run: npm run db:migrate -w ${{ inputs.service-name }}
 
-            - name: Fetch Authorizer ARN
-              if: inputs.needs-authorizer
+            - name: Set Authorizer ARN
+              if: inputs.authorizer-arn != ''
               run: |
-                  AUTHORIZER_STACK="armoury-authorizer-pr-${{ github.event.pull_request.number }}"
-                  if aws cloudformation describe-stacks --stack-name "${AUTHORIZER_STACK}" > /dev/null 2>&1; then
-                    AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
-                      --stack-name "${AUTHORIZER_STACK}" \
-                      --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
-                      --output text)
-                    echo "Resolved Authorizer ARN from stack ${AUTHORIZER_STACK}"
-                    echo "AUTHORIZER_ARN=${AUTHORIZER_ARN}" >> "${GITHUB_ENV}"
-                  else
-                    echo "::warning::Authorizer stack ${AUTHORIZER_STACK} not found. Deploying without authorizer integration."
-                  fi
+                  echo "AUTHORIZER_ARN=${{ inputs.authorizer-arn }}" >> "${GITHUB_ENV}"
+                  echo "Using Authorizer ARN passed from orchestrator"
 
             - name: Install Serverless Framework
               run: npm install -g serverless
@@ -153,7 +144,7 @@ jobs:
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
 
                   DEPLOY_ARGS="--stage pr-${{ github.event.pull_request.number }}"
-                  if [[ "${{ inputs.needs-authorizer }}" == "true" && -n "${AUTHORIZER_ARN:-}" ]]; then
+                  if [[ -n "${AUTHORIZER_ARN:-}" ]]; then
                     DEPLOY_ARGS="${DEPLOY_ARGS} --param=\"authorizerArn=${AUTHORIZER_ARN}\""
                   fi
 
@@ -311,16 +302,11 @@ jobs:
                   DB_SCHEMA: public
               run: npm run db:migrate -w ${{ inputs.service-name }}
 
-            - name: Fetch Authorizer ARN
-              if: inputs.needs-authorizer
+            - name: Set Authorizer ARN
+              if: inputs.authorizer-arn != ''
               run: |
-                  AUTHORIZER_STACK="armoury-authorizer-production"
-                  AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
-                    --stack-name "${AUTHORIZER_STACK}" \
-                    --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
-                    --output text)
-                  echo "Resolved Authorizer ARN from stack ${AUTHORIZER_STACK}"
-                  echo "AUTHORIZER_ARN=${AUTHORIZER_ARN}" >> "${GITHUB_ENV}"
+                  echo "AUTHORIZER_ARN=${{ inputs.authorizer-arn }}" >> "${GITHUB_ENV}"
+                  echo "Using Authorizer ARN passed from orchestrator"
 
             - name: Install Serverless Framework
               run: npm install -g serverless
@@ -330,6 +316,9 @@ jobs:
               env:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
               run: |
-                  serverless deploy \
-                    --stage production \
-                    ${{ inputs.needs-authorizer && '--param="authorizerArn=${AUTHORIZER_ARN}"' || '' }}
+                  DEPLOY_ARGS="--stage production"
+                  if [[ -n "${AUTHORIZER_ARN:-}" ]]; then
+                    DEPLOY_ARGS="${DEPLOY_ARGS} --param=\"authorizerArn=${AUTHORIZER_ARN}\""
+                  fi
+
+                  serverless deploy ${DEPLOY_ARGS}

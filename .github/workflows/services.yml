@@ -1,0 +1,230 @@
+# ─────────────────────────────────────────────────────────────────────
+# Orchestrator for all Lambda services.
+#
+# Deploys the authorizer FIRST, resolves its ARN, then fans out to
+# deploy all downstream services (campaigns, matches, friends, users)
+# in parallel — both for sandbox (PRs) and production (push to main).
+#
+# Each service still runs its own CI (typecheck, lint, format, test)
+# via _deploy-service.yml before deploying.
+# ─────────────────────────────────────────────────────────────────────
+
+name: Services
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'src/services/**'
+            - 'src/shared/**'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'src/services/**'
+            - 'src/shared/**'
+
+concurrency:
+    group: services-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    # ── Authorizer: deploys first (CI + deploy) ─────────────────────
+
+    deploy-authorizer:
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/authorizer'
+            working-directory: src/services/authorizer
+            needs-shared-build: false
+            has-migrations: false
+        secrets: inherit
+
+    # ── Sandbox: resolve authorizer ARN after deploy ────────────────
+
+    resolve-authorizer-sandbox:
+        name: Resolve Authorizer ARN (Sandbox)
+        needs: deploy-authorizer
+        if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        environment: sandbox
+        outputs:
+            authorizer-arn: ${{ steps.resolve.outputs.authorizer-arn }}
+        steps:
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+            - name: Resolve Authorizer ARN from CloudFormation
+              id: resolve
+              run: |
+                  AUTHORIZER_STACK="armoury-authorizer-pr-${{ github.event.pull_request.number }}"
+                  AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
+                    --stack-name "${AUTHORIZER_STACK}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
+                    --output text)
+
+                  if [ -z "${AUTHORIZER_ARN}" ] || [ "${AUTHORIZER_ARN}" = "None" ]; then
+                    echo "::error::Authorizer stack '${AUTHORIZER_STACK}' deployed but AuthorizerArn output not found."
+                    exit 1
+                  fi
+
+                  echo "Resolved Authorizer ARN: ${AUTHORIZER_ARN}"
+                  echo "authorizer-arn=${AUTHORIZER_ARN}" >> "${GITHUB_OUTPUT}"
+
+    # ── Sandbox: deploy downstream services (parallel) ──────────────
+
+    deploy-campaigns-sandbox:
+        needs: resolve-authorizer-sandbox
+        if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/campaigns'
+            working-directory: src/services/campaigns
+            service-short-name: campaigns
+            routing-rule-priority: 200
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+        secrets: inherit
+
+    deploy-matches-sandbox:
+        needs: resolve-authorizer-sandbox
+        if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/matches'
+            working-directory: src/services/matches
+            service-short-name: matches
+            routing-rule-priority: 300
+            has-websocket: true
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+        secrets: inherit
+
+    deploy-friends-sandbox:
+        needs: resolve-authorizer-sandbox
+        if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/friends'
+            working-directory: src/services/friends
+            service-short-name: friends
+            routing-rule-priority: 400
+            has-websocket: true
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+        secrets: inherit
+
+    deploy-users-sandbox:
+        needs: resolve-authorizer-sandbox
+        if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/users'
+            working-directory: src/services/users
+            service-short-name: users
+            routing-rule-priority: 100
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+        secrets: inherit
+
+    # ── Production: resolve authorizer ARN after deploy ─────────────
+
+    resolve-authorizer-production:
+        name: Resolve Authorizer ARN (Production)
+        needs: deploy-authorizer
+        if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        runs-on: ubuntu-latest
+        environment: production
+        outputs:
+            authorizer-arn: ${{ steps.resolve.outputs.authorizer-arn }}
+        steps:
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+            - name: Resolve Authorizer ARN from CloudFormation
+              id: resolve
+              run: |
+                  AUTHORIZER_STACK="armoury-authorizer-production"
+                  AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
+                    --stack-name "${AUTHORIZER_STACK}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
+                    --output text)
+
+                  if [ -z "${AUTHORIZER_ARN}" ] || [ "${AUTHORIZER_ARN}" = "None" ]; then
+                    echo "::error::Authorizer stack '${AUTHORIZER_STACK}' deployed but AuthorizerArn output not found."
+                    exit 1
+                  fi
+
+                  echo "Resolved Authorizer ARN: ${AUTHORIZER_ARN}"
+                  echo "authorizer-arn=${AUTHORIZER_ARN}" >> "${GITHUB_OUTPUT}"
+
+    # ── Production: deploy downstream services (parallel) ───────────
+
+    deploy-campaigns-production:
+        needs: resolve-authorizer-production
+        if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/campaigns'
+            working-directory: src/services/campaigns
+            service-short-name: campaigns
+            routing-rule-priority: 200
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+        secrets: inherit
+
+    deploy-matches-production:
+        needs: resolve-authorizer-production
+        if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/matches'
+            working-directory: src/services/matches
+            service-short-name: matches
+            routing-rule-priority: 300
+            has-websocket: true
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+        secrets: inherit
+
+    deploy-friends-production:
+        needs: resolve-authorizer-production
+        if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/friends'
+            working-directory: src/services/friends
+            service-short-name: friends
+            routing-rule-priority: 400
+            has-websocket: true
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+        secrets: inherit
+
+    deploy-users-production:
+        needs: resolve-authorizer-production
+        if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: ./.github/workflows/_deploy-service.yml
+        with:
+            service-name: '@armoury/users'
+            working-directory: src/services/users
+            service-short-name: users
+            routing-rule-priority: 100
+            needs-shared-build: true
+            has-migrations: true
+            authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+        secrets: inherit
