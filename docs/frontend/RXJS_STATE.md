@@ -297,8 +297,8 @@ Usage:
 
 'use client';
 
-import { useObservableValue } from '@shared/frontend/hooks/useObservable.js';
-import { usePresenceStream } from '@web/hooks/usePresenceStream.js';
+import { useObservableValue } from '@web/hooks/useObservable.ts';
+import { usePresenceStream } from '@web/hooks/usePresenceStream.ts';
 
 interface Props {
     matchId: string;
