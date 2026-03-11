@@ -51,10 +51,10 @@
         "@armoury/typescript": "*",
         "@armoury/vitest": "*",
         "@armoury/theme-generator": "*",
-        "@eslint/js": "^9.0.0",
-        "eslint": "^9.0.0",
+        "@eslint/js": "^10.0.0",
+        "eslint": "^10.0.3",
         "prettier": "^3.0.0",
-        "typescript-eslint": "^8.0.0",
+        "typescript-eslint": "^8.56.0",
         "vitest": "^4.0.0"
     },
     "lint-staged": {

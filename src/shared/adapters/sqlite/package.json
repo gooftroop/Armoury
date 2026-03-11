@@ -33,7 +33,7 @@
         "@armoury/prettier": "*",
         "@armoury/typescript": "*",
         "@armoury/esbuild": "*",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.3",
         "prettier": "^3.0.0"
     },
     "lint-staged": {

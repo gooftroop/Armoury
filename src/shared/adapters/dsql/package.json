@@ -24,7 +24,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "@aws-sdk/dsql-signer": "^3.985.0",
+        "@aws-sdk/dsql-signer": "^3.1006.0",
         "drizzle-orm": "^0.45.1",
         "pg": "^8.18.0",
         "@armoury/data-dao": "*"
@@ -35,7 +35,7 @@
         "@armoury/typescript": "*",
         "@armoury/esbuild": "*",
         "@types/pg": "^8.16.0",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.3",
         "prettier": "^3.0.0"
     },
     "lint-staged": {

@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import { parseAbility, parseDetachmentRule, parseEnhancementEffect, parseFactionRule } from '@/validation/abilityParser.js';
+import {
+    parseAbility,
+    parseDetachmentRule,
+    parseEnhancementEffect,
+    parseFactionRule,
+} from '@/validation/abilityParser.js';
 
 describe('Ability Parser', () => {
     it('parses Stealth by name', () => {

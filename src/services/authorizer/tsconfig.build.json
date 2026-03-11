@@ -5,19 +5,9 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@/*": [
-                "./src/*"
-            ]
+            "@/*": ["./src/*"]
         }
     },
-    "include": [
-        "**/*.ts"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist",
-        "**/__tests__/**",
-        "**/__mocks__/**",
-        "**/__fixtures__/**"
-    ]
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules", "dist", "**/__tests__/**", "**/__mocks__/**", "**/__fixtures__/**"]
 }
