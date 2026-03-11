@@ -323,7 +323,7 @@ const buildTwistCardFragment = (name: string, rulesText: string): string => {
  * Fragments are single-quoted and comma-separated, matching Wahapedia's JS array format.
  */
 const wrapJsArray = (varName: string, fragments: string[]): string => {
-    const escaped = fragments.map((f) => f.replace(/'/g, "\\'"));
+    const escaped = fragments.map((f) => f.replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
 
     return `var ${varName} = ['${escaped.join("', '")}'];`;
 };

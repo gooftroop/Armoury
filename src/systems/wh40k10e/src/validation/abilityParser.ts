@@ -138,7 +138,7 @@ function parseEffectFromText(
         };
     }
 
-    const deadlyDemiseMatch = name.match(/^deadly demise\s+(.+)$/i);
+    const deadlyDemiseMatch = name.match(/^deadly demise\s+(\S.*)$/i);
 
     if (deadlyDemiseMatch) {
         const amount = parseNumericExpression(deadlyDemiseMatch[1] ?? '');

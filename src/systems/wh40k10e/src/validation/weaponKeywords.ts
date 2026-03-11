@@ -44,7 +44,7 @@ export function parseWeaponKeyword(keyword: string): WeaponKeyword {
         };
     }
 
-    const antiMatch = trimmed.match(/^anti-(.+?)\s+(\d+)\+$/i);
+    const antiMatch = trimmed.match(/^anti-(\S+)\s+(\d+)\+$/i);
 
     if (antiMatch) {
         return {
