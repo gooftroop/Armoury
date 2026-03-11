@@ -1,11 +1,11 @@
 import { XMLParser } from 'fast-xml-parser';
-import { XmlParseError } from './types.ts';
+import { XmlParseError } from '@/types.js';
 import type {
     BattleScribeGameSystem,
     BattleScribeCatalogue,
     BattleScribeProfile,
     BattleScribeCharacteristic,
-} from './types.ts';
+} from '@/types.js';
 
 const ALWAYS_ARRAY_ELEMENTS = [
     'selectionEntry',

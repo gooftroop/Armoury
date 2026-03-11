@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FACTION_MAP, getAllFactionIds, getFactionConfig } from '../factionMap.ts';
+import { FACTION_MAP, getAllFactionIds, getFactionConfig } from '@/config/factionMap.js';
 
 /** Defines the faction map test suite. */
 const factionMapSuite = () => {

@@ -13,26 +13,26 @@ import { registerPluginEntity } from '@armoury/data-dao/adapter';
 import { registerHydrator } from '@armoury/data-dao/hydration';
 import { registerEntityCodec } from '@armoury/data-dao/codec';
 import { registerSchemaExtension } from '@armoury/data-dao/schema';
-import type { FactionData } from './models/FactionData.ts';
-import type { CoreRules } from './models/CoreRules.ts';
-import { hydrateCoreRules } from './models/CoreRules.ts';
-import { hydrateFactionData } from './models/FactionData.ts';
+import type { FactionData } from '@/models/FactionData.js';
+import type { CoreRules } from '@/models/CoreRules.js';
+import { hydrateCoreRules } from '@/models/CoreRules.js';
+import { hydrateFactionData } from '@/models/FactionData.js';
 import type { ValidationResult } from '@armoury/validation/types';
-import type { Army } from './models/ArmyModel.ts';
-import type { ChapterApproved } from './models/ChapterApproved.ts';
-import { hydrateChapterApproved } from './models/ChapterApproved.ts';
-import type { Unit } from './models/UnitModel.ts';
-import type { Faction } from './types/entities.ts';
-import type { CrusadeRules } from './models/CrusadeRulesModel.ts';
-import type { Weapon, Ability, Stratagem, Detachment } from './types/entities.ts';
-import { CoreRulesDAO } from './dao/CoreRulesDAO.ts';
-import { ChapterApprovedDAO } from './dao/ChapterApprovedDAO.ts';
+import type { Army } from '@/models/ArmyModel.js';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import { hydrateChapterApproved } from '@/models/ChapterApproved.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { Faction } from '@/types/entities.js';
+import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
+import type { Weapon, Ability, Stratagem, Detachment } from '@/types/entities.js';
+import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
+import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
 import { createWahapediaClient } from '@armoury/clients-wahapedia/index';
-import { CrusadeRulesDAO } from './dao/CrusadeRulesDAO.ts';
-import { ArmyDAO } from './dao/ArmyDAO.ts';
+import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
+import { ArmyDAO } from '@/dao/ArmyDAO.js';
 import { CampaignDAO } from '@armoury/data-dao/dao/CampaignDAO';
 
-import { GameData } from './dao/GameData.ts';
+import { GameData } from '@/dao/GameData.js';
 import {
     AeldariDAO,
     DrukhariDAO,
@@ -71,7 +71,7 @@ import {
     AdeptusTitanicusDAO,
     TitanicusTraitorisDAO,
     UnalignedForcesDAO,
-} from './dao/factions/index.ts';
+} from '@/dao/factions/index.js';
 import {
     validatePoints,
     validateStrategicReserves,
@@ -84,7 +84,7 @@ import {
     validateTransport,
     validateWargear,
     validateWarlord,
-} from './validation/rules/index.ts';
+} from '@/validation/rules/index.js';
 
 /**
  * Enum of entity kinds for wh40k10e data access.

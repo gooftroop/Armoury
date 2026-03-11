@@ -1,6 +1,6 @@
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { postMatch } from './../api/postMatch.ts';
-import type { CreateMatchRequest, Match } from './../types.ts';
+import { postMatch } from '@/api/postMatch.js';
+import type { CreateMatchRequest, Match } from '@/types.js';
 
 /**
  * Creates a React Query mutation options object for creating a match.

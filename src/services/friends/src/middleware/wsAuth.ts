@@ -1,4 +1,4 @@
-import type { UserContext, WebSocketEvent } from '../types.ts';
+import type { UserContext, WebSocketEvent } from '@/types.js';
 
 export function extractWsUserContext(event: WebSocketEvent): UserContext | null {
     if (event.requestContext.eventType !== 'CONNECT') {

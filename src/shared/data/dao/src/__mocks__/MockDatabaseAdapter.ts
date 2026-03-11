@@ -1,6 +1,6 @@
-import { Platform, type DatabaseAdapter, type EntityType, type EntityMap, type QueryOptions } from '../adapter.ts';
-import { getEntityCodec } from '../codec.ts';
-import type { FileSyncStatus } from '../types.ts';
+import { Platform, type DatabaseAdapter, type EntityType, type EntityMap, type QueryOptions } from '@/adapter.js';
+import { getEntityCodec } from '@/codec.js';
+import type { FileSyncStatus } from '@/types.js';
 
 /**
  * Mock in-memory database adapter for testing.

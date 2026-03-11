@@ -6,7 +6,7 @@
  */
 
 // Realtime client
-export { MatchesRealtimeClient, createMatchesRealtimeClient } from './realtime.ts';
+export { MatchesRealtimeClient, createMatchesRealtimeClient } from '@/realtime.js';
 
 // Types
 export type {
@@ -33,19 +33,19 @@ export type {
     ConnectionState,
     IMatchesRealtimeClient,
     MatchParams,
-} from './types.ts';
+} from '@/types.js';
 
 // Error classes and type guards
-export { MatchesApiError, MatchesNetworkError, isMatchesApiError, isMatchesNetworkError } from './types.ts';
+export { MatchesApiError, MatchesNetworkError, isMatchesApiError, isMatchesNetworkError } from '@/types.js';
 
 // Config constants
-export { MATCHES_BASE_URL, DEFAULT_MATCHES_WS_URL, MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from './config.ts';
+export { MATCHES_BASE_URL, DEFAULT_MATCHES_WS_URL, MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
 
 // Queries
-export { buildQueryMatchesKey, queryMatches } from './queries/queryMatches.ts';
-export { buildQueryMatchKey, queryMatch } from './queries/queryMatch.ts';
+export { buildQueryMatchesKey, queryMatches } from '@/queries/queryMatches.js';
+export { buildQueryMatchKey, queryMatch } from '@/queries/queryMatch.js';
 
 // Mutations
-export { mutationCreateMatch } from './mutations/mutationCreateMatch.ts';
-export { mutationUpdateMatch } from './mutations/mutationUpdateMatch.ts';
-export { mutationDeleteMatch } from './mutations/mutationDeleteMatch.ts';
+export { mutationCreateMatch } from '@/mutations/mutationCreateMatch.js';
+export { mutationUpdateMatch } from '@/mutations/mutationUpdateMatch.js';
+export { mutationDeleteMatch } from '@/mutations/mutationDeleteMatch.js';

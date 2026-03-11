@@ -1,6 +1,6 @@
-import type { DatabaseAdapter } from '../adapter.ts';
-import { BaseDAO } from './BaseDAO.ts';
-import { registerEntityCodec, type EntityCodec } from '../codec.ts';
+import type { DatabaseAdapter } from '@/adapter.js';
+import { BaseDAO } from '@/dao/BaseDAO.js';
+import { registerEntityCodec, type EntityCodec } from '@/codec.js';
 import type { UserPresence } from '@armoury/models/UserPresenceModel';
 
 type ColumnBuilder = {

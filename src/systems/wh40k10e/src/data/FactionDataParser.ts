@@ -25,7 +25,7 @@ import {
     type BattleScribeCategoryLink,
     ensureArray,
 } from '@armoury/providers-bsdata/types';
-import type { Ability, Detachment, Enhancement, Stratagem, Weapon } from '../types/entities.ts';
+import type { Ability, Detachment, Enhancement, Stratagem, Weapon } from '@/types/entities.js';
 import type {
     Unit,
     UnitAbility,
@@ -34,16 +34,16 @@ import type {
     WargearChoice,
     WargearAbility,
     LeaderInfo,
-} from '../models/UnitModel.ts';
-import { parseWeaponKeywords } from '../validation/weaponKeywords.ts';
+} from '@/models/UnitModel.js';
+import { parseWeaponKeywords } from '@/validation/weaponKeywords.js';
 import { parseConstraints } from '@armoury/validation/constraints/parser';
 import {
     parseAbilities,
     parseFactionRule,
     parseDetachmentRule,
     parseEnhancementEffect,
-} from '../validation/abilityParser.ts';
-import type { FactionData, FactionRule } from '../models/FactionData.ts';
+} from '@/validation/abilityParser.js';
+import type { FactionData, FactionRule } from '@/models/FactionData.js';
 
 /**
  * Internal type for entries that may have cost data attached.

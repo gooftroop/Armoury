@@ -8,8 +8,8 @@
 
 // === Presence Client ===
 
-export { FriendsPresenceClient, createFriendsPresenceClient } from './presence.ts';
-export type { IFriendsPresenceClient } from './presence.ts';
+export { FriendsPresenceClient, createFriendsPresenceClient } from '@/presence.js';
+export type { IFriendsPresenceClient } from '@/presence.js';
 
 // === Types ===
 
@@ -26,24 +26,24 @@ export type {
     FriendsServerMessage,
     FriendsPresenceConfig,
     ConnectionState,
-} from './types.ts';
+} from '@/types.js';
 
 // === Error Classes ===
 
-export { FriendsApiError, FriendsNetworkError } from './types.ts';
-export { isFriendsApiError, isFriendsNetworkError } from './types.ts';
+export { FriendsApiError, FriendsNetworkError } from '@/types.js';
+export { isFriendsApiError, isFriendsNetworkError } from '@/types.js';
 
 // === Config ===
 
-export { FRIENDS_BASE_URL, DEFAULT_FRIENDS_WS_URL, MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from './config.ts';
+export { FRIENDS_BASE_URL, DEFAULT_FRIENDS_WS_URL, MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
 
 // === Queries ===
 
-export { buildQueryFriendsKey, queryFriends } from './queries/queryFriends.ts';
-export { buildQueryFriendKey, queryFriend } from './queries/queryFriend.ts';
+export { buildQueryFriendsKey, queryFriends } from '@/queries/queryFriends.js';
+export { buildQueryFriendKey, queryFriend } from '@/queries/queryFriend.js';
 
 // === Mutations ===
 
-export { mutationSendFriendRequest } from './mutations/mutationSendFriendRequest.ts';
-export { mutationUpdateFriend } from './mutations/mutationUpdateFriend.ts';
-export { mutationDeleteFriend } from './mutations/mutationDeleteFriend.ts';
+export { mutationSendFriendRequest } from '@/mutations/mutationSendFriendRequest.js';
+export { mutationUpdateFriend } from '@/mutations/mutationUpdateFriend.js';
+export { mutationDeleteFriend } from '@/mutations/mutationDeleteFriend.js';

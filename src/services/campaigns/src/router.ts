@@ -1,13 +1,13 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/types';
-import type { ApiResponse, PathParameters, RouteHandler, UserContext } from './types.ts';
-import { createCampaign, deleteCampaign, getCampaign, listCampaigns, updateCampaign } from './routes/campaigns.ts';
+import type { ApiResponse, PathParameters, RouteHandler, UserContext } from '@/types.js';
+import { createCampaign, deleteCampaign, getCampaign, listCampaigns, updateCampaign } from '@/routes/campaigns.js';
 import {
     deleteParticipant,
     getParticipant,
     joinCampaign,
     listParticipants,
     updateParticipant,
-} from './routes/participants.ts';
+} from '@/routes/participants.js';
 
 /**
  * Route dispatch key for API Gateway resource and HTTP method.

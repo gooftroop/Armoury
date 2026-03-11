@@ -5,13 +5,13 @@ import type {
     WebSocketResponse,
     WsConnection,
     WsRouteHandler,
-} from '../types.ts';
-import { createBroadcaster } from '../utils/broadcast.ts';
+} from '@/types.js';
+import { createBroadcaster } from '@/utils/broadcast.js';
 import {
     parseSubscribeMatchMessage,
     parseUnsubscribeMatchMessage,
     parseUpdateMatchMessage,
-} from '../utils/validation.ts';
+} from '@/utils/validation.js';
 
 export const handleWsConnect: WsRouteHandler = async (
     event,

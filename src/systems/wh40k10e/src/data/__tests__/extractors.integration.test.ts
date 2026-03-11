@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
 import { parseCatalogue } from '@armoury/providers-bsdata/xmlParser';
-import { extractUnits } from '../extractors.ts';
-import { parseWeaponKeywords } from '../../validation/weaponKeywords.ts';
-import { parseAbility, parseDetachmentRule } from '../../validation/abilityParser.ts';
+import { extractUnits } from '@/data/extractors.js';
+import { parseWeaponKeywords } from '@/validation/weaponKeywords.js';
+import { parseAbility, parseDetachmentRule } from '@/validation/abilityParser.js';
 
 const buildCatalogueXml = (): string => `<?xml version="1.0" encoding="UTF-8"?>
 <catalogue id="faction-1" name="Test Faction" revision="1" battleScribeVersion="2.03" gameSystemId="gs-1" gameSystemRevision="1">

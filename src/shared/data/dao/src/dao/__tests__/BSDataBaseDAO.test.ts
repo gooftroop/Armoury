@@ -1,8 +1,8 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { BSDataBaseDAO } from '../BSDataBaseDAO.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { BSDataBaseDAO } from '@/dao/BSDataBaseDAO.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { IGitHubClient } from '@armoury/clients-github/types';
-import { registerPluginEntity } from '../../adapter.ts';
+import { registerPluginEntity } from '@/adapter.js';
 
 /**
  * Test model for BSDataBaseDAO testing.

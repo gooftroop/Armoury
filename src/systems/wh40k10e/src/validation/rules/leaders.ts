@@ -1,7 +1,7 @@
-import type { Army, ArmyUnit } from '../../models/ArmyModel.ts';
-import type { FactionData } from '../../models/FactionData.ts';
-import type { Unit } from '../../models/UnitModel.ts';
-import type { ValidationResult } from '../types.ts';
+import type { Army, ArmyUnit } from '@/models/ArmyModel.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { ValidationResult } from '@/validation/types.js';
 
 /**
  * Look up the unit datasheet name for an army unit.

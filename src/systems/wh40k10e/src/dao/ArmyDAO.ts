@@ -1,6 +1,6 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import { BaseDAO } from '@armoury/data-dao/dao/BaseDAO';
-import type { Army } from '../models/ArmyModel.ts';
+import type { Army } from '@/models/ArmyModel.js';
 
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;

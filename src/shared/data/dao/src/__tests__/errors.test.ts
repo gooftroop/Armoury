@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DatabaseError, isDatabaseError } from '../types.ts';
+import { DatabaseError, isDatabaseError } from '@/types.js';
 import {
     GitHubApiError,
     RateLimitError,

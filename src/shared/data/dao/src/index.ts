@@ -1,16 +1,16 @@
-export { registerHydrator, getHydrator, hasHydrator, clearHydrationRegistry } from './hydration.ts';
-export { registerEntityCodec, getEntityCodec, hasEntityCodec, clearCodecRegistry, type EntityCodec } from './codec.ts';
+export { registerHydrator, getHydrator, hasHydrator, clearHydrationRegistry } from '@/hydration.js';
+export { registerEntityCodec, getEntityCodec, hasEntityCodec, clearCodecRegistry, type EntityCodec } from '@/codec.js';
 export {
     registerSchemaExtension,
     getSchemaExtensions,
     clearSchemaExtensions,
     getMergedSQLiteSchema,
     getMergedDSQLSchema,
-} from './schema.ts';
-export { Platform, DatabaseError, isDatabaseError } from './types.ts';
-export { BaseDatabaseAdapter } from './adapter.ts';
-export type { DatabaseAdapter, EntityType, EntityMap, QueryOptions, SortDirection } from './adapter.ts';
-export type { SchemaExtension, SQLiteSchemaExtension, DSQLSchemaExtension } from './schema.ts';
+} from '@/schema.js';
+export { Platform, DatabaseError, isDatabaseError } from '@/types.js';
+export { BaseDatabaseAdapter } from '@/adapter.js';
+export type { DatabaseAdapter, EntityType, EntityMap, QueryOptions, SortDirection } from '@/adapter.js';
+export type { SchemaExtension, SQLiteSchemaExtension, DSQLSchemaExtension } from '@/schema.js';
 export type {
     FileSyncStatus,
     GameSystem,
@@ -19,18 +19,18 @@ export type {
     DataSourceConfig,
     ArmyDAO,
     CampaignDAO,
-} from './types.ts';
-export { PluginRegistry } from './pluginRegistry.ts';
+} from '@/types.js';
+export { PluginRegistry } from '@/pluginRegistry.js';
 
-export { BaseDAO } from './dao/BaseDAO.ts';
-export { RemoteDataDAO } from './dao/RemoteDataDAO.ts';
-export { BSDataBaseDAO } from './dao/BSDataBaseDAO.ts';
-export { TTLSyncBaseDAO, DEFAULT_STALE_AFTER_MS } from './dao/TTLSyncBaseDAO.ts';
-export { AccountDAO, accountsTable } from './dao/AccountDAO.ts';
-export { FriendDAO, friendsTable } from './dao/FriendDAO.ts';
-export { MatchDAO, matchesTable } from './dao/MatchDAO.ts';
-export { UserPresenceDAO, userPresenceTable } from './dao/UserPresenceDAO.ts';
-export { UserDAO, usersTable } from './dao/UserDAO.ts';
-export { CampaignDAO as CampaignDAOImpl, campaignsTable } from './dao/CampaignDAO.ts';
-export { CampaignParticipantDAO, campaignParticipantsTable } from './dao/CampaignParticipantDAO.ts';
-export { syncStatusTable } from './dao/SyncStatusTable.ts';
+export { BaseDAO } from '@/dao/BaseDAO.js';
+export { RemoteDataDAO } from '@/dao/RemoteDataDAO.js';
+export { BSDataBaseDAO } from '@/dao/BSDataBaseDAO.js';
+export { TTLSyncBaseDAO, DEFAULT_STALE_AFTER_MS } from '@/dao/TTLSyncBaseDAO.js';
+export { AccountDAO, accountsTable } from '@/dao/AccountDAO.js';
+export { FriendDAO, friendsTable } from '@/dao/FriendDAO.js';
+export { MatchDAO, matchesTable } from '@/dao/MatchDAO.js';
+export { UserPresenceDAO, userPresenceTable } from '@/dao/UserPresenceDAO.js';
+export { UserDAO, usersTable } from '@/dao/UserDAO.js';
+export { CampaignDAO as CampaignDAOImpl, campaignsTable } from '@/dao/CampaignDAO.js';
+export { CampaignParticipantDAO, campaignParticipantsTable } from '@/dao/CampaignParticipantDAO.js';
+export { syncStatusTable } from '@/dao/SyncStatusTable.js';

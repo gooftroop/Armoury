@@ -1,5 +1,5 @@
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk/client-apigatewaymanagementapi';
-import type { WebSocketEvent } from '../types.ts';
+import type { WebSocketEvent } from '@/types.js';
 
 const encoder = new TextEncoder();
 

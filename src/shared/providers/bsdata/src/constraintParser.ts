@@ -1,6 +1,6 @@
-import type { BattleScribeConstraint } from './types.ts';
-import { ensureArray } from './types.ts';
-import type { ParsedConstraint } from './constraintTypes.ts';
+import type { BattleScribeConstraint } from '@/types.js';
+import { ensureArray } from '@/types.js';
+import type { ParsedConstraint } from '@/constraintTypes.js';
 
 /**
  * Parse a single BattleScribe constraint XML element into a ParsedConstraint.

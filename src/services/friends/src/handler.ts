@@ -10,11 +10,11 @@
  */
 
 import * as Sentry from '@sentry/aws-serverless';
-import { extractUserContext } from './middleware/auth.ts';
-import { formatErrorResponse } from './middleware/errorHandler.ts';
-import { router } from './router.ts';
-import type { ApiResponse, DatabaseAdapter } from './types.ts';
-import { getServiceConfig } from './utils/secrets.ts';
+import { extractUserContext } from '@/middleware/auth.js';
+import { formatErrorResponse } from '@/middleware/errorHandler.js';
+import { router } from '@/router.js';
+import type { ApiResponse, DatabaseAdapter } from '@/types.js';
+import { getServiceConfig } from '@/utils/secrets.js';
 
 /**
  * Minimal API Gateway proxy event payload.

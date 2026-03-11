@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FactionDAO } from '../FactionDAO.ts';
-import { SpaceMarinesDAO } from '../factions/SpaceMarinesDAO.ts';
-import type { FactionData } from '../../models/FactionData.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
-import { MockGitHubClient } from '../../__mocks__/MockGitHubClient.ts';
-import type { FactionConfig } from '../../config/factionMap.ts';
+import { FactionDAO } from '@/dao/FactionDAO.js';
+import { SpaceMarinesDAO } from '@/dao/factions/SpaceMarinesDAO.js';
+import type { FactionData } from '@/models/FactionData.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { MockGitHubClient } from '@/__mocks__/MockGitHubClient.js';
+import type { FactionConfig } from '@/config/factionMap.js';
 import type { BattleScribeCatalogue } from '@armoury/providers-bsdata/types';
-import { parseFactionData } from '../../data/FactionDataParser.ts';
+import { parseFactionData } from '@/data/FactionDataParser.js';
 
 vi.mock('../../data/FactionDataParser.ts', () => ({
     parseFactionData: vi.fn(),

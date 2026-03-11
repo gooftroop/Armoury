@@ -5,18 +5,18 @@
  * modifying core adapter code.
  */
 
-import { accountsTable, accountsSqliteTable } from './dao/AccountDAO.ts';
-import { campaignParticipantsTable, campaignParticipantsSqliteTable } from './dao/CampaignParticipantDAO.ts';
-import { campaignsTable, campaignsSqliteTable } from './dao/CampaignDAO.ts';
-import { friendsTable, friendsSqliteTable } from './dao/FriendDAO.ts';
-import { matchesTable, matchesSqliteTable } from './dao/MatchDAO.ts';
-import { syncStatusTable, syncStatusSqliteTable } from './dao/SyncStatusTable.ts';
-import { userPresenceTable, userPresenceSqliteTable } from './dao/UserPresenceDAO.ts';
+import { accountsTable, accountsSqliteTable } from '@/dao/AccountDAO.js';
+import { campaignParticipantsTable, campaignParticipantsSqliteTable } from '@/dao/CampaignParticipantDAO.js';
+import { campaignsTable, campaignsSqliteTable } from '@/dao/CampaignDAO.js';
+import { friendsTable, friendsSqliteTable } from '@/dao/FriendDAO.js';
+import { matchesTable, matchesSqliteTable } from '@/dao/MatchDAO.js';
+import { syncStatusTable, syncStatusSqliteTable } from '@/dao/SyncStatusTable.js';
+import { userPresenceTable, userPresenceSqliteTable } from '@/dao/UserPresenceDAO.js';
 
-import type { SQLiteSchemaExtension, DSQLSchemaExtension, SchemaExtension } from './types.ts';
+import type { SQLiteSchemaExtension, DSQLSchemaExtension, SchemaExtension } from '@/types.js';
 
 // Re-export schema interfaces for backward compatibility with existing '@data/schema.js' imports
-export type { SQLiteSchemaExtension, DSQLSchemaExtension, SchemaExtension } from './types.ts';
+export type { SQLiteSchemaExtension, DSQLSchemaExtension, SchemaExtension } from '@/types.js';
 
 // ============ REGISTRY ============
 

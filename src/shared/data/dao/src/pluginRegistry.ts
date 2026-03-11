@@ -3,7 +3,7 @@
  * Provides lookup by plugin id for DataManager builders and factories.
  */
 
-import type { GameSystem } from './types.ts';
+import type { GameSystem } from '@/types.js';
 
 /**
  * Internal storage for registered plugins keyed by id.

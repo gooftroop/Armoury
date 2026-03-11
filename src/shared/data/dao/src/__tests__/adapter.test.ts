@@ -1,9 +1,9 @@
 import { beforeAll, describe, it, expect } from 'vitest';
-import type { DatabaseAdapter, EntityMap, EntityType, QueryOptions } from '../adapter.ts';
-import { BaseDatabaseAdapter } from '../adapter.ts';
-import { Platform } from '../types.ts';
-import { registerEntityCodec } from '../codec.ts';
-import type { FileSyncStatus } from '../types.ts';
+import type { DatabaseAdapter, EntityMap, EntityType, QueryOptions } from '@/adapter.js';
+import { BaseDatabaseAdapter } from '@/adapter.js';
+import { Platform } from '@/types.js';
+import { registerEntityCodec } from '@/codec.js';
+import type { FileSyncStatus } from '@/types.js';
 import type { Unit } from '@armoury/wh40k10e/types/entities';
 
 /**

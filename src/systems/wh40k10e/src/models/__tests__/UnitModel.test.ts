@@ -7,8 +7,8 @@ import type {
     WargearChoice,
     WargearOption,
     LeaderInfo,
-} from '../UnitModel.ts';
-import type { Weapon } from '../../types/entities.ts';
+} from '@/models/UnitModel.js';
+import type { Weapon } from '@/types/entities.js';
 
 /** Builds a basic UnitComposition object for shape testing. */
 const buildComposition = (): UnitComposition => ({

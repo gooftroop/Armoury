@@ -1,4 +1,4 @@
-import type { UserContext } from '../types.ts';
+import type { UserContext } from '@/types.js';
 
 /**
  * Minimal API Gateway event shape for Lambda TOKEN authorizer context.

@@ -1,5 +1,5 @@
 import type { NumericExpression } from '@armoury/validation/effects/types';
-import type { GameEffect, RuleTiming, StructuredRule } from '../types/effects.ts';
+import type { GameEffect, RuleTiming, StructuredRule } from '@/types/effects.js';
 
 /**
  * Parse a D6+ threshold from text, returning a numeric threshold when present.

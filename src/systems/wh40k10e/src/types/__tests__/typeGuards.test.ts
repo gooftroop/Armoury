@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import { isRangedWeapon, isMeleeWeapon } from '../typeGuards.ts';
-import type { RangedWeapon, MeleeWeapon, Weapon } from '../entities.ts';
+import { isRangedWeapon, isMeleeWeapon } from '@/types/typeGuards.js';
+import type { RangedWeapon, MeleeWeapon, Weapon } from '@/types/entities.js';
 
 const buildRangedWeapon = (overrides: Partial<RangedWeapon> = {}): RangedWeapon => ({
     id: 'weapon-ranged',

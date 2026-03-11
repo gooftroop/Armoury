@@ -6,7 +6,7 @@ import { AccountDAO } from '@armoury/data-dao/dao/AccountDAO';
 import { FriendDAO } from '@armoury/data-dao/dao/FriendDAO';
 import { MatchDAO } from '@armoury/data-dao/dao/MatchDAO';
 import { UserDAO } from '@armoury/data-dao/dao/UserDAO';
-import { DataContextBuilder } from './DataContextBuilder.ts';
+import { DataContextBuilder } from '@/DataContextBuilder.js';
 
 /**
  * DataContext interface exposing core and game-specific DAOs.

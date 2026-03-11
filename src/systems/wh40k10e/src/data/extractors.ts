@@ -15,10 +15,10 @@ import {
     getCharacteristicValue,
     extractProfileCharacteristics,
 } from '@armoury/providers-bsdata/xmlParser';
-import { parseWeaponKeywords } from '../validation/weaponKeywords.ts';
-import type { Weapon, RangedWeapon, MeleeWeapon, Ability } from '../types/entities.ts';
-import type { Unit } from '../models/UnitModel.ts';
-import type { UnitAbility, WargearAbility, LeaderInfo } from '../models/UnitModel.ts';
+import { parseWeaponKeywords } from '@/validation/weaponKeywords.js';
+import type { Weapon, RangedWeapon, MeleeWeapon, Ability } from '@/types/entities.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { UnitAbility, WargearAbility, LeaderInfo } from '@/models/UnitModel.js';
 
 export { parseGameSystem, parseCatalogue };
 

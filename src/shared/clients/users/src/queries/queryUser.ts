@@ -3,8 +3,8 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query';
-import { getUser } from './../api/getUser.ts';
-import type { User, UserParams } from './../types.ts';
+import { getUser } from '@/api/getUser.js';
+import type { User, UserParams } from '@/types.js';
 
 /**
  * Builds the query key for a single user query.

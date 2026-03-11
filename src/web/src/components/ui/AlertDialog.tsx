@@ -19,8 +19,8 @@
 import { AlertDialog } from 'radix-ui';
 import * as React from 'react';
 
-import { cn } from '../../lib/utils.ts';
-import { buttonVariants } from './button.tsx';
+import { cn } from '@/lib/utils.js';
+import { buttonVariants } from '@/components/ui/button.js';
 
 /**
  * Props for the AlertDialogOverlay component.

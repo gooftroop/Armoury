@@ -1,15 +1,15 @@
 /**
  * Data access object exports for core entities.
  */
-export { BaseDAO } from './BaseDAO.ts';
-export { RemoteDataDAO } from './RemoteDataDAO.ts';
-export { BSDataBaseDAO } from './BSDataBaseDAO.ts';
-export { TTLSyncBaseDAO, DEFAULT_STALE_AFTER_MS } from './TTLSyncBaseDAO.ts';
-export { AccountDAO, accountsTable } from './AccountDAO.ts';
-export { FriendDAO, friendsTable } from './FriendDAO.ts';
-export { MatchDAO, matchesTable } from './MatchDAO.ts';
-export { UserPresenceDAO, userPresenceTable } from './UserPresenceDAO.ts';
-export { UserDAO, usersTable } from './UserDAO.ts';
-export { CampaignDAO, campaignsTable } from './CampaignDAO.ts';
-export { CampaignParticipantDAO, campaignParticipantsTable } from './CampaignParticipantDAO.ts';
-export { syncStatusTable } from './SyncStatusTable.ts';
+export { BaseDAO } from '@/dao/BaseDAO.js';
+export { RemoteDataDAO } from '@/dao/RemoteDataDAO.js';
+export { BSDataBaseDAO } from '@/dao/BSDataBaseDAO.js';
+export { TTLSyncBaseDAO, DEFAULT_STALE_AFTER_MS } from '@/dao/TTLSyncBaseDAO.js';
+export { AccountDAO, accountsTable } from '@/dao/AccountDAO.js';
+export { FriendDAO, friendsTable } from '@/dao/FriendDAO.js';
+export { MatchDAO, matchesTable } from '@/dao/MatchDAO.js';
+export { UserPresenceDAO, userPresenceTable } from '@/dao/UserPresenceDAO.js';
+export { UserDAO, usersTable } from '@/dao/UserDAO.js';
+export { CampaignDAO, campaignsTable } from '@/dao/CampaignDAO.js';
+export { CampaignParticipantDAO, campaignParticipantsTable } from '@/dao/CampaignParticipantDAO.js';
+export { syncStatusTable } from '@/dao/SyncStatusTable.js';

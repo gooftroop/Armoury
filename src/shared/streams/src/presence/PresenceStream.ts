@@ -17,7 +17,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { map, distinctUntilChanged } from 'rxjs/operators';
 import type { IFriendsPresenceClient, FriendsServerMessage } from '@armoury/clients-friends';
-import type { OnlineFriend, IPresenceStream } from './../types.ts';
+import type { OnlineFriend, IPresenceStream } from '@/types.js';
 
 /**
  * @requirements

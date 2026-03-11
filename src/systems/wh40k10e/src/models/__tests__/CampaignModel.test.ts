@@ -11,7 +11,7 @@ import type {
     CrusadeUnitProgression,
     CrusadeBattleHonour,
     CrusadeBattleScar,
-} from '../CampaignModel.ts';
+} from '@/models/CampaignModel.js';
 
 const buildCampaignPhase = (id: string = 'phase-1', order: number = 1): CampaignPhase => ({
     id,

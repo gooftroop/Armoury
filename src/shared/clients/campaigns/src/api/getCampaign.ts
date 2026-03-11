@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from './../config.ts';
-import type { Campaign, CampaignParams } from './../types.ts';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { Campaign, CampaignParams } from '@/types.js';
 
 /**
  * Retrieves a single campaign by its unique identifier.

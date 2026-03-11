@@ -2,9 +2,9 @@ import { randomUUID } from 'crypto';
 
 import type { DatabaseAdapter } from '@armoury/data-dao/types';
 import type { Campaign } from '@armoury/models/CampaignModel';
-import type { ApiResponse, PathParameters, RouteHandler, UserContext } from '../types.ts';
-import { errorResponse, jsonResponse } from '../utils/response.ts';
-import { parseCreateCampaignRequest, parseUpdateCampaignRequest } from '../utils/validation.ts';
+import type { ApiResponse, PathParameters, RouteHandler, UserContext } from '@/types.js';
+import { errorResponse, jsonResponse } from '@/utils/response.js';
+import { parseCreateCampaignRequest, parseUpdateCampaignRequest } from '@/utils/validation.js';
 
 /**
  * Creates a master campaign.

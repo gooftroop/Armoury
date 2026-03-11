@@ -17,8 +17,8 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { buildQueryFriendsKey, queryFriends } from './../queries/queryFriends.ts';
-import { buildQueryFriendKey, queryFriend } from './../queries/queryFriend.ts';
+import { buildQueryFriendsKey, queryFriends } from '@/queries/queryFriends.js';
+import { buildQueryFriendKey, queryFriend } from '@/queries/queryFriend.js';
 
 const authorization = 'Bearer test-token-123';
 

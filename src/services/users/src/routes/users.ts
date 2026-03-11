@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
-import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, User, UserContext } from '../types.ts';
-import { errorResponse, jsonResponse } from '../utils/response.ts';
-import { parseCreateUser, parseUpdateUser } from '../utils/validation.ts';
+import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, User, UserContext } from '@/types.js';
+import { errorResponse, jsonResponse } from '@/utils/response.js';
+import { parseCreateUser, parseUpdateUser } from '@/utils/validation.js';
 
 /**
  * Creates a new user.

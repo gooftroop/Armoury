@@ -4,8 +4,8 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DataContextBuilder } from '../DataContextBuilder.ts';
-import { MockDatabaseAdapter } from '@armoury/data-dao/__mocks__/MockDatabaseAdapter';
+import { DataContextBuilder } from '@/DataContextBuilder.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { GameSystem } from '@armoury/data-dao/types';
 import type { IGitHubClient } from '@armoury/clients-github/types';
 import type { GameContextResult } from '@armoury/data-dao/types';

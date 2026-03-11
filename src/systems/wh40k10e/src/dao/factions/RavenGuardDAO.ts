@@ -1,9 +1,9 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import type { IGitHubClient } from '@armoury/clients-github/types';
-import type { FactionData } from '../../models/FactionData.ts';
-import { FACTION_MAP } from '../../config/factionMap.ts';
-import { FactionDAO } from '../FactionDAO.ts';
-import { SpaceMarinesDAO } from './SpaceMarinesDAO.ts';
+import type { FactionData } from '@/models/FactionData.js';
+import { FACTION_MAP } from '@/config/factionMap.js';
+import { FactionDAO } from '@/dao/FactionDAO.js';
+import { SpaceMarinesDAO } from '@/dao/factions/SpaceMarinesDAO.js';
 
 /** DAO for Raven Guard faction data (Space Marines chapter). */
 export class RavenGuardDAO extends SpaceMarinesDAO {

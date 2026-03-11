@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { putParticipant } from './../api/putParticipant.ts';
-import type { CampaignParticipant, ParticipantParams, UpdateParticipantRequest } from './../types.ts';
+import { putParticipant } from '@/api/putParticipant.js';
+import type { CampaignParticipant, ParticipantParams, UpdateParticipantRequest } from '@/types.js';
 
 /**
  * Builds React Query mutation options for updating a campaign participant.

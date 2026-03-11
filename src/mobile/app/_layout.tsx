@@ -13,10 +13,10 @@ import * as Sentry from '@sentry/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Slot } from 'expo-router';
 import { TamaguiProvider } from 'tamagui';
-import { queryClient } from '../src/lib/queryClient.ts';
+import { queryClient } from '@/lib/queryClient.js';
 import config from '../tamagui.config.ts';
-import { AuthProvider } from '../src/providers/AuthProvider.tsx';
-import { DataContextProvider } from '../src/providers/DataContextProvider.tsx';
+import { AuthProvider } from '@/providers/AuthProvider.js';
+import { DataContextProvider } from '@/providers/DataContextProvider.js';
 
 /** Initializes Sentry for mobile error tracking and performance monitoring. */
 Sentry.init({

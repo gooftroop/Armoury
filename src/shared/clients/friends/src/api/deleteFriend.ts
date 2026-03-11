@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { FRIENDS_BASE_URL } from './../config.ts';
-import type { FriendParams } from './../types.ts';
+import { FRIENDS_BASE_URL } from '@/config.js';
+import type { FriendParams } from '@/types.js';
 
 /**
  * Deletes a friend relationship.

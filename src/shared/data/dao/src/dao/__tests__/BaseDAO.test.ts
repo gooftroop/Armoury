@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { BaseDAO } from '../BaseDAO.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
-import { registerPluginEntity } from '../../adapter.ts';
+import { BaseDAO } from '@/dao/BaseDAO.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { registerPluginEntity } from '@/adapter.js';
 
 type TestEntity = {
     id: string;

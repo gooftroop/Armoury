@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { FRIENDS_BASE_URL } from './../config.ts';
-import type { Friend, FriendParams } from './../types.ts';
+import { FRIENDS_BASE_URL } from '@/config.js';
+import type { Friend, FriendParams } from '@/types.js';
 
 /**
  * Fetches a single friend relationship.

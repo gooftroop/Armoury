@@ -4,13 +4,34 @@
         "rootDir": ".",
         "jsx": "preserve",
         "noEmit": true,
-        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "lib": [
+            "ES2022",
+            "DOM",
+            "DOM.Iterable"
+        ],
         "plugins": [
             {
                 "name": "next"
             }
-        ]
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
     },
-    "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
-    "exclude": ["node_modules", ".next", "**/__tests__/**", "**/__mocks__/**", "**/__fixtures__/**"]
+    "include": [
+        "next-env.d.ts",
+        ".next/types/**/*.ts",
+        "**/*.ts",
+        "**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules",
+        ".next",
+        "**/__tests__/**",
+        "**/__mocks__/**",
+        "**/__fixtures__/**"
+    ]
 }

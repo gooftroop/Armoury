@@ -16,9 +16,9 @@
  * 6. Must accept (adapter, githubClient, owner, repo) in constructor.
  */
 
-import type { DatabaseAdapter } from '../adapter.ts';
+import type { DatabaseAdapter } from '@/adapter.js';
 import type { IGitHubClient } from '@armoury/clients-github/types';
-import { RemoteDataDAO } from './RemoteDataDAO.ts';
+import { RemoteDataDAO } from '@/dao/RemoteDataDAO.js';
 
 /**
  * Abstract base DAO for BSData-backed entities.

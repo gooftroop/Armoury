@@ -17,33 +17,33 @@ export type {
     UpdateUserRequest,
     CreateAccountRequest,
     UpdateAccountRequest,
-} from './types.ts';
+} from '@/types.js';
 
 // === Error Classes and Type Guards ===
 
-export { UsersApiError, UsersNetworkError, isUsersApiError, isUsersNetworkError } from './types.ts';
+export { UsersApiError, UsersNetworkError, isUsersApiError, isUsersNetworkError } from '@/types.js';
 
 // === Config ===
 
-export { USERS_BASE_URL } from './config.ts';
+export { USERS_BASE_URL } from '@/config.js';
 
 // === Query Key Builders ===
 
-export { buildQueryUsersKey } from './queries/queryUsers.ts';
-export { buildQueryUserKey } from './queries/queryUser.ts';
-export { buildQueryAccountKey } from './queries/queryAccount.ts';
+export { buildQueryUsersKey } from '@/queries/queryUsers.js';
+export { buildQueryUserKey } from '@/queries/queryUser.js';
+export { buildQueryAccountKey } from '@/queries/queryAccount.js';
 
 // === Query Options Builders ===
 
-export { queryUsers } from './queries/queryUsers.ts';
-export { queryUser } from './queries/queryUser.ts';
-export { queryAccount } from './queries/queryAccount.ts';
+export { queryUsers } from '@/queries/queryUsers.js';
+export { queryUser } from '@/queries/queryUser.js';
+export { queryAccount } from '@/queries/queryAccount.js';
 
 // === Mutation Options Builders ===
 
-export { mutationCreateUser } from './mutations/mutationCreateUser.ts';
-export { mutationUpdateUser } from './mutations/mutationUpdateUser.ts';
-export { mutationDeleteUser } from './mutations/mutationDeleteUser.ts';
-export { mutationCreateAccount } from './mutations/mutationCreateAccount.ts';
-export { mutationUpdateAccount } from './mutations/mutationUpdateAccount.ts';
-export { mutationDeleteAccount } from './mutations/mutationDeleteAccount.ts';
+export { mutationCreateUser } from '@/mutations/mutationCreateUser.js';
+export { mutationUpdateUser } from '@/mutations/mutationUpdateUser.js';
+export { mutationDeleteUser } from '@/mutations/mutationDeleteUser.js';
+export { mutationCreateAccount } from '@/mutations/mutationCreateAccount.js';
+export { mutationUpdateAccount } from '@/mutations/mutationUpdateAccount.js';
+export { mutationDeleteAccount } from '@/mutations/mutationDeleteAccount.js';

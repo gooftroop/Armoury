@@ -15,8 +15,8 @@ import type {
     PlayerState,
     UnitProjection,
     UnitFlags,
-} from './MatchData.ts';
-import { createDefaultUnitFlags, PHASE_ORDER } from './MatchData.ts';
+} from '@/models/MatchData.js';
+import { createDefaultUnitFlags, PHASE_ORDER } from '@/models/MatchData.js';
 
 /**
  * Typed wrapper around a core Match<MatchData>.

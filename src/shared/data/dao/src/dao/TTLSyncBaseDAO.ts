@@ -14,8 +14,8 @@
  * 5. Must default staleAfterMs to 7 days when not specified.
  */
 
-import type { DatabaseAdapter } from '../adapter.ts';
-import { RemoteDataDAO } from './RemoteDataDAO.ts';
+import type { DatabaseAdapter } from '@/adapter.js';
+import { RemoteDataDAO } from '@/dao/RemoteDataDAO.js';
 
 /** Default TTL: 7 days in milliseconds. */
 const DEFAULT_STALE_AFTER_MS = 7 * 24 * 60 * 60 * 1000;

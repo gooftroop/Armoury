@@ -8,7 +8,7 @@
  */
 
 import type { MatchDataBase } from '@armoury/models/MatchModel';
-import type { BattleSize } from './ArmyModel.ts';
+import type { BattleSize } from '@/models/ArmyModel.js';
 
 // ============ GAME PHASE ============
 

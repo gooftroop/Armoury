@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractUnits, extractWeapons, extractAbilities } from '../extractors.ts';
+import { extractUnits, extractWeapons, extractAbilities } from '@/data/extractors.js';
 import type {
     BattleScribeCatalogue,
     BattleScribeProfile,

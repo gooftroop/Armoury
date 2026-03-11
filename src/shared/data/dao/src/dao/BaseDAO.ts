@@ -1,4 +1,4 @@
-import type { DatabaseAdapter, EntityMap, EntityType } from '../adapter.ts';
+import type { DatabaseAdapter, EntityMap, EntityType } from '@/adapter.js';
 
 /**
  * Abstract base class that provides CRUD operations for a single entity store.

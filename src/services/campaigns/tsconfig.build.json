@@ -2,9 +2,17 @@
     "extends": "@armoury/typescript/build.json",
     "compilerOptions": {
         "rootDir": "./src",
-        "outDir": "dist"
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
     },
-    "include": ["src/**/*.ts"],
+    "include": [
+        "src/**/*.ts"
+    ],
     "exclude": [
         "node_modules",
         "dist",

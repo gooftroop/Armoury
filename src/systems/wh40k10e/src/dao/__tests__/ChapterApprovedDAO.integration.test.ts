@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ChapterApprovedDAO } from '../ChapterApprovedDAO.ts';
-import type { ChapterApproved } from '../../models/ChapterApproved.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
-import { MockWahapediaClient } from '../../__mocks__/MockWahapediaClient.ts';
+import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { MockWahapediaClient } from '@/__mocks__/MockWahapediaClient.js';
 import type { EntityType } from '@armoury/data-dao/adapter';
 
 const CHAPTER_APPROVED_STORE = 'chapterApproved' as EntityType;

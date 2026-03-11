@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import type { Army, ArmyUnit } from '../../models/ArmyModel.ts';
-import type { CoreRules } from '../../models/CoreRules.ts';
-import type { FactionData } from '../../models/FactionData.ts';
-import type { Unit } from '../../models/UnitModel.ts';
-import type { Detachment, Enhancement } from '../../types/entities.ts';
-import { validateArmy } from '../engine.ts';
+import type { Army, ArmyUnit } from '@/models/ArmyModel.js';
+import type { CoreRules } from '@/models/CoreRules.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { Detachment, Enhancement } from '@/types/entities.js';
+import { validateArmy } from '@/validation/engine.js';
 
 const DEFAULT_TIMESTAMP = '2024-01-01T00:00:00Z';
 

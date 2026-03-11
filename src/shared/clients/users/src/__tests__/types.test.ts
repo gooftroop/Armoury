@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { UsersApiError, UsersNetworkError, isUsersApiError, isUsersNetworkError } from './../types.ts';
+import { UsersApiError, UsersNetworkError, isUsersApiError, isUsersNetworkError } from '@/types.js';
 
 describe('UsersApiError', () => {
     it('sets the name to "UsersApiError"', () => {

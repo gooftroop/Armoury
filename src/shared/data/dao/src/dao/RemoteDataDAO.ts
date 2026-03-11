@@ -19,7 +19,7 @@
  * 9. Must clear memoized promise on error to allow retry.
  */
 
-import type { DatabaseAdapter, EntityMap, EntityType } from '../adapter.ts';
+import type { DatabaseAdapter, EntityMap, EntityType } from '@/adapter.js';
 
 /**
  * Abstract base DAO for entities synced from a remote data source.

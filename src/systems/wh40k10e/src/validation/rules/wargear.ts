@@ -1,7 +1,7 @@
-import type { Army, ArmyUnit, ArmyWargearSelection } from '../../models/ArmyModel.ts';
-import type { FactionData } from '../../models/FactionData.ts';
-import type { Unit, WargearOption } from '../../models/UnitModel.ts';
-import type { ValidationResult } from '../types.ts';
+import type { Army, ArmyUnit, ArmyWargearSelection } from '@/models/ArmyModel.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { Unit, WargearOption } from '@/models/UnitModel.js';
+import type { ValidationResult } from '@/validation/types.js';
 
 /**
  * Check that a wargear selection references a valid option on the unit datasheet.

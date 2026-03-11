@@ -5,7 +5,7 @@
  * to verify correct query key shapes, staleTime, queryFn presence, and custom option spreading.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { MatchParams } from './../types.ts';
+import type { MatchParams } from '@/types.js';
 
 vi.mock('ky', () => ({
     default: {
@@ -16,8 +16,8 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { buildQueryMatchesKey, queryMatches } from './../queries/queryMatches.ts';
-import { buildQueryMatchKey, queryMatch } from './../queries/queryMatch.ts';
+import { buildQueryMatchesKey, queryMatches } from '@/queries/queryMatches.js';
+import { buildQueryMatchKey, queryMatch } from '@/queries/queryMatch.js';
 
 const TEST_AUTH = 'Bearer test-token-123';
 

@@ -1,4 +1,4 @@
-import type { DatabaseAdapter, EntityMap, EntityType } from '../types.ts';
+import type { DatabaseAdapter, EntityMap, EntityType } from '@/types.js';
 
 /**
  * In-memory mock database adapter for unit testing.

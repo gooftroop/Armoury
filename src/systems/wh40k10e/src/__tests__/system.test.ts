@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { wh40k10eSystem, EntityKind } from '../system.ts';
+import { wh40k10eSystem, EntityKind } from '@/system.js';
 import { hasEntityCodec, clearCodecRegistry } from '@armoury/data-dao/codec';
 import { hasHydrator, clearHydrationRegistry } from '@armoury/data-dao/hydration';
 import { getSchemaExtensions, clearSchemaExtensions } from '@armoury/data-dao/schema';
 import { PluginRegistry } from '@armoury/data-dao/pluginRegistry';
-import { MockDatabaseAdapter } from '../__mocks__/MockDatabaseAdapter.ts';
-import { MockGitHubClient } from '../__mocks__/MockGitHubClient.ts';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { MockGitHubClient } from '@/__mocks__/MockGitHubClient.js';
 
 /**
  * System test suite for wh40k10e GameSystem registration.

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { generatePolicy } from '../utils/policy.ts';
-import { handler } from '../handler.ts';
-import { getJwks } from '../jwks.ts';
-import { getServiceConfig } from '../utils/secrets.ts';
-import type { AuthorizerEvent } from '../types.ts';
+import { generatePolicy } from '@/utils/policy.js';
+import { handler } from '@/handler.js';
+import { getJwks } from '@/jwks.js';
+import { getServiceConfig } from '@/utils/secrets.js';
+import type { AuthorizerEvent } from '@/types.js';
 
 const joseMocks = vi.hoisted(() => {
     return {

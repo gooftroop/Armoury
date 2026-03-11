@@ -25,7 +25,7 @@ import {
 } from '@armoury/providers-bsdata/types';
 import { parseConstraints } from '@armoury/validation/constraints/parser';
 import type { ParsedConstraint } from '@armoury/validation/constraints/types';
-import type { CoreRules, ProfileTypeInfo, CostTypeInfo, SharedRule } from '../models/CoreRules.ts';
+import type { CoreRules, ProfileTypeInfo, CostTypeInfo, SharedRule } from '@/models/CoreRules.js';
 
 /**
  * Parse a BattleScribe game system XML structure into a CoreRules plain object.

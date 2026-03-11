@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from './../config.ts';
-import type { Account, UserParams } from './../types.ts';
+import { USERS_BASE_URL } from '@/config.js';
+import type { Account, UserParams } from '@/types.js';
 
 /**
  * Retrieves the account associated with a user.

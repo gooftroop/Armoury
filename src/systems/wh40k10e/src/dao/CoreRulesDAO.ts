@@ -1,10 +1,10 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import type { IGitHubClient } from '@armoury/clients-github/types';
-import type { Faction } from '../types/entities.ts';
+import type { Faction } from '@/types/entities.js';
 import { parseGameSystem } from '@armoury/providers-bsdata/xmlParser';
-import type { CoreRules } from '../models/CoreRules.ts';
-import { parseCoreRules } from '../data/CoreRulesParser.ts';
-import { BaseDAO } from './BaseDAO.ts';
+import type { CoreRules } from '@/models/CoreRules.js';
+import { parseCoreRules } from '@/data/CoreRulesParser.js';
+import { BaseDAO } from '@/dao/BaseDAO.js';
 
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;

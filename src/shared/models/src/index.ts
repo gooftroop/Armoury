@@ -7,8 +7,8 @@
  * @module @armoury/models
  */
 
-export type { UserPreferences, SystemPreferences, Account } from './AccountModel.ts';
-export type { CampaignStatus } from './CampaignModel.ts';
+export type { UserPreferences, SystemPreferences, Account } from '@/AccountModel.js';
+export type { CampaignStatus } from '@/CampaignModel.js';
 export type {
     NarrativeBase,
     CustomNarrative,
@@ -17,9 +17,9 @@ export type {
     CampaignRanking,
     Campaign,
     CampaignParticipant,
-} from './CampaignModel.ts';
-export type { FriendStatus, Friend } from './FriendModel.ts';
-export type { User } from './UserModel.ts';
+} from '@/CampaignModel.js';
+export type { FriendStatus, Friend } from '@/FriendModel.js';
+export type { User } from '@/UserModel.js';
 export type {
     MatchDataBase,
     MatchPlayer,
@@ -30,5 +30,5 @@ export type {
     PlayerResult,
     MatchOutcome,
     Match,
-} from './MatchModel.ts';
-export type { PresenceStatus, UserPresence } from './UserPresenceModel.ts';
+} from '@/MatchModel.js';
+export type { PresenceStatus, UserPresence } from '@/UserPresenceModel.js';

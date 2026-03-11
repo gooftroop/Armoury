@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { registerHydrator, getHydrator, hasHydrator, clearHydrationRegistry } from '../hydration.ts';
-import { registerEntityCodec, clearCodecRegistry, type EntityCodec } from '../codec.ts';
+import { registerHydrator, getHydrator, hasHydrator, clearHydrationRegistry } from '@/hydration.js';
+import { registerEntityCodec, clearCodecRegistry, type EntityCodec } from '@/codec.js';
 
 describe('hydration registry', () => {
     beforeEach(() => {

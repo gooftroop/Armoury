@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { deleteFriend } from './../api/deleteFriend.ts';
-import type { FriendParams } from './../types.ts';
+import { deleteFriend } from '@/api/deleteFriend.js';
+import type { FriendParams } from '@/types.js';
 
 /**
  * Builds React Query mutation options for deleting a friend relationship.

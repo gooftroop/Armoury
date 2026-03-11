@@ -9,7 +9,7 @@
  * Generic campaigns are simpler narrative campaigns without crusade progression.
  */
 
-import type { CrusadeUnitRank } from './CrusadeRulesModel.ts';
+import type { CrusadeUnitRank } from '@/models/CrusadeRulesModel.js';
 
 /**
  * A battle honour earned by a crusade unit.

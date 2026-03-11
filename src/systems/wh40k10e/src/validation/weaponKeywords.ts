@@ -1,5 +1,5 @@
 import type { Threshold } from '@armoury/validation/effects/types';
-import type { WeaponKeyword } from '../types/effects.ts';
+import type { WeaponKeyword } from '@/types/effects.js';
 
 /**
  * Parse a single weapon keyword token into a structured keyword object.

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { registerEntityCodec, getEntityCodec, hasEntityCodec, clearCodecRegistry, type EntityCodec } from '../codec.ts';
+import { registerEntityCodec, getEntityCodec, hasEntityCodec, clearCodecRegistry, type EntityCodec } from '@/codec.js';
 
 describe('codec registry', () => {
     beforeEach(() => {

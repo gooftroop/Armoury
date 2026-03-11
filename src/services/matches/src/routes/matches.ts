@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto';
 
-import type { ApiResponse, DatabaseAdapter, Match, PathParameters, RouteHandler, UserContext } from '../types.ts';
-import { errorResponse, jsonResponse } from '../utils/response.ts';
-import { parseCreateMatchRequest, parseUpdateMatchRequest } from '../utils/validation.ts';
+import type { ApiResponse, DatabaseAdapter, Match, PathParameters, RouteHandler, UserContext } from '@/types.js';
+import { errorResponse, jsonResponse } from '@/utils/response.js';
+import { parseCreateMatchRequest, parseUpdateMatchRequest } from '@/utils/validation.js';
 
 export const createMatch: RouteHandler = async (
     adapter: DatabaseAdapter,

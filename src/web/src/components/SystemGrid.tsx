@@ -33,9 +33,9 @@ import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
 import type { GameSystemManifest, GameSystem } from '@armoury/data-dao/types';
 
-import { useDataContext } from '../providers/DataContextProvider.tsx';
-import type { SystemSyncStatus } from '../providers/DataContextProvider.tsx';
-import { cn } from '../lib/utils.ts';
+import { useDataContext } from '@/providers/DataContextProvider.js';
+import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
+import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the SystemGrid component.

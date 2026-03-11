@@ -1,4 +1,4 @@
-import type { DatabaseAdapter, UserContext, WebSocketEvent, WebSocketResponse, WsRouteHandler } from './types.ts';
+import type { DatabaseAdapter, UserContext, WebSocketEvent, WebSocketResponse, WsRouteHandler } from '@/types.js';
 import {
     handleSubscribeMatch,
     handleUnsubscribeMatch,
@@ -6,7 +6,7 @@ import {
     handleWsConnect,
     handleWsDefault,
     handleWsDisconnect,
-} from './routes/wsMatches.ts';
+} from '@/routes/wsMatches.js';
 
 const ROUTE_MAP: Record<string, WsRouteHandler> = {
     $connect: handleWsConnect,

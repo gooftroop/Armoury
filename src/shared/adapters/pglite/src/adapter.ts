@@ -11,7 +11,7 @@ import { getEntityCodec } from '@armoury/data-dao/codec';
 import type { FileSyncStatus } from '@armoury/data-dao/types';
 import { DatabaseError } from '@armoury/data-dao/types';
 import { getMergedDSQLSchema } from '@armoury/data-dao/schema';
-import { generateAllTablesDDL } from './ddl.ts';
+import { generateAllTablesDDL } from '@/ddl.js';
 
 type PGliteInstance = {
     close: () => Promise<void>;

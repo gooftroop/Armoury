@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { CoreRules } from '../CoreRules.ts';
-import { hydrateCoreRules } from '../CoreRules.ts';
-import { parseCoreRules } from '../../data/CoreRulesParser.ts';
+import type { CoreRules } from '@/models/CoreRules.js';
+import { hydrateCoreRules } from '@/models/CoreRules.js';
+import { parseCoreRules } from '@/data/CoreRulesParser.js';
 import type {
     BattleScribeGameSystem,
     BattleScribeProfileType,

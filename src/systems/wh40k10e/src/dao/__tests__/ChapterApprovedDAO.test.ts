@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ChapterApprovedDAO } from '../ChapterApprovedDAO.ts';
-import type { ChapterApproved } from '../../models/ChapterApproved.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { IWahapediaClient } from '@armoury/clients-wahapedia/types';
 import type { EntityType } from '@armoury/data-dao/adapter';
 

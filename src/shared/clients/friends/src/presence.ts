@@ -9,8 +9,8 @@
 import WebSocket from 'ws';
 import { Subject, BehaviorSubject } from 'rxjs';
 import type { Observable } from 'rxjs';
-import { MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from './config.ts';
-import type { FriendsPresenceConfig, FriendsServerMessage, ConnectionState } from './types.ts';
+import { MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
+import type { FriendsPresenceConfig, FriendsServerMessage, ConnectionState } from '@/types.js';
 
 /**
  * Interface for the friends WebSocket presence client.

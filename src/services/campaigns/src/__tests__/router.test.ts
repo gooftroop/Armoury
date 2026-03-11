@@ -5,9 +5,9 @@ import type {
     UpdateCampaignRequest,
     UpdateParticipantRequest,
     UserContext,
-} from '../types.ts';
-import { router } from '../router.ts';
-import { MockDatabaseAdapter } from '../__mocks__/MockDatabaseAdapter.ts';
+} from '@/types.js';
+import { router } from '@/router.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
     sub: 'user-1',

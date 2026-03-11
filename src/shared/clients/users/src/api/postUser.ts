@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from './../config.ts';
-import type { User, CreateUserRequest } from './../types.ts';
+import { USERS_BASE_URL } from '@/config.js';
+import type { User, CreateUserRequest } from '@/types.js';
 
 /**
  * Creates a new user with the provided data.

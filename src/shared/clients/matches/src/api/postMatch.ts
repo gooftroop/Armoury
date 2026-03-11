@@ -1,6 +1,6 @@
 import ky from 'ky';
-import { MATCHES_BASE_URL } from './../config.ts';
-import type { CreateMatchRequest, Match } from './../types.ts';
+import { MATCHES_BASE_URL } from '@/config.js';
+import type { CreateMatchRequest, Match } from '@/types.js';
 
 /**
  * Creates a new match via the matches service.

@@ -8,7 +8,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { FriendsApiError, FriendsNetworkError, isFriendsApiError, isFriendsNetworkError } from './../types.ts';
+import { FriendsApiError, FriendsNetworkError, isFriendsApiError, isFriendsNetworkError } from '@/types.js';
 
 describe('FriendsApiError', () => {
     beforeEach(() => vi.clearAllMocks());

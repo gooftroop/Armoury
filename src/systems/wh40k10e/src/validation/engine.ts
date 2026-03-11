@@ -1,6 +1,6 @@
-import type { Army } from '../models/ArmyModel.ts';
-import type { FactionData } from '../models/FactionData.ts';
-import type { CoreRules } from '../models/CoreRules.ts';
+import type { Army } from '@/models/ArmyModel.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { CoreRules } from '@/models/CoreRules.js';
 import type { ValidationResult, ValidationSummary } from '@armoury/validation/types';
 import {
     validateCharacter,
@@ -14,7 +14,7 @@ import {
     validateTransport,
     validateWargear,
     validateWarlord,
-} from './rules/index.ts';
+} from '@/validation/rules/index.js';
 
 /**
  * Validate a Warhammer 40K 10th Edition army list against faction data and core rules.

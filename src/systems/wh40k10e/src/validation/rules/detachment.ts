@@ -1,6 +1,6 @@
-import type { Army } from '../../models/ArmyModel.ts';
-import type { FactionData } from '../../models/FactionData.ts';
-import type { ValidationResult } from '../types.ts';
+import type { Army } from '@/models/ArmyModel.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { ValidationResult } from '@/validation/types.js';
 
 /**
  * Check that the army has a detachment selected.

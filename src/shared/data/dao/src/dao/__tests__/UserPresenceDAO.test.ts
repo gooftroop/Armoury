@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { UserPresenceDAO } from '../UserPresenceDAO.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { UserPresenceDAO } from '@/dao/UserPresenceDAO.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { UserPresence } from '@armoury/models/UserPresenceModel';
 
 function makePresence(overrides: Partial<UserPresence> = {}): UserPresence {

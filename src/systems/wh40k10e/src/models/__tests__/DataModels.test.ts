@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import type { Account } from '@armoury/models/AccountModel';
-import type { Army, ArmyUnit, ArmyVersion } from '../ArmyModel.ts';
+import type { Army, ArmyUnit, ArmyVersion } from '@/models/ArmyModel.js';
 import type { Friend } from '@armoury/models/FriendModel';
 import type { Match } from '@armoury/models/MatchModel';
 import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
-import type { CrusadeRules } from '../CrusadeRulesModel.ts';
-import type { CrusadeParticipantData } from '../CampaignModel.ts';
+import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
+import type { CrusadeParticipantData } from '@/models/CampaignModel.js';
 
 const buildAccount = (): Account => ({
     id: 'auth0|user-1',

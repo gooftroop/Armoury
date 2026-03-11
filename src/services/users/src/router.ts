@@ -1,6 +1,6 @@
-import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from './types.ts';
-import { createAccount, deleteAccount, getAccount, updateAccount } from './routes/accounts.ts';
-import { createUser, deleteUser, getUser, listUsers, updateUser } from './routes/users.ts';
+import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from '@/types.js';
+import { createAccount, deleteAccount, getAccount, updateAccount } from '@/routes/accounts.js';
+import { createUser, deleteUser, getUser, listUsers, updateUser } from '@/routes/users.js';
 
 /**
  * Route dispatch key for API Gateway resource and HTTP method.

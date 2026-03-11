@@ -1,7 +1,7 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import type { IGitHubClient } from '@armoury/clients-github/types';
-import type { CrusadeRules } from '../models/CrusadeRulesModel.ts';
-import { BaseDAO } from './BaseDAO.ts';
+import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
+import { BaseDAO } from '@/dao/BaseDAO.js';
 
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;

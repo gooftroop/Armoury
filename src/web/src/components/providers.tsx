@@ -9,8 +9,8 @@
  */
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '../lib/queryClient.ts';
-import { DataContextProvider } from '../providers/DataContextProvider.tsx';
+import { queryClient } from '@/lib/queryClient.js';
+import { DataContextProvider } from '@/providers/DataContextProvider.js';
 
 /**
  * Properties for the Providers component.

@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { FRIENDS_BASE_URL } from './../config.ts';
-import type { Friend, SendFriendRequestPayload } from './../types.ts';
+import { FRIENDS_BASE_URL } from '@/config.js';
+import type { Friend, SendFriendRequestPayload } from '@/types.js';
 
 /**
  * Sends a friend request.

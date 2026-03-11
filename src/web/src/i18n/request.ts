@@ -1,5 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
-import { routing } from './routing.ts';
+import { routing } from '@/i18n/routing.js';
 
 /** Provides per-request i18n configuration, loading the correct message bundle for the active locale. */
 export default getRequestConfig(async ({ requestLocale }) => {

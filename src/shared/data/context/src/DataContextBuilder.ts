@@ -1,7 +1,7 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import type { IGitHubClient } from '@armoury/clients-github/types';
 import type { GameSystem } from '@armoury/data-dao/types';
-import { DataContext } from './DataContext.ts';
+import { DataContext } from '@/DataContext.js';
 
 /** Creates a stub GitHub client that throws on invocation. */
 function createMissingGitHubClient(): IGitHubClient {

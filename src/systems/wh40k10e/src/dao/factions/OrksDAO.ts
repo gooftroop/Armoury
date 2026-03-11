@@ -1,8 +1,8 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import type { IGitHubClient } from '@armoury/clients-github/types';
-import type { FactionData } from '../../models/FactionData.ts';
-import { FactionDAO } from '../FactionDAO.ts';
-import { FACTION_MAP } from '../../config/factionMap.ts';
+import type { FactionData } from '@/models/FactionData.js';
+import { FactionDAO } from '@/dao/FactionDAO.js';
+import { FACTION_MAP } from '@/config/factionMap.js';
 
 /** DAO for Orks faction data. */
 export class OrksDAO {

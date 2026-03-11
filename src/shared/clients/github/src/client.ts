@@ -1,7 +1,7 @@
-import { GitHubApiError, RateLimitError, NetworkError } from './types.ts';
-import { GITHUB_API_BASE_URL, GITHUB_RAW_BASE_URL, DEFAULT_USER_AGENT, MAX_RETRIES, BASE_DELAY_MS } from './config.ts';
-import type { GitHubClientConfig, GitHubFileInfo, GitHubContentsResponse, IGitHubClient } from './types.ts';
-import { createAuthHeaders } from './utils.ts';
+import { GitHubApiError, RateLimitError, NetworkError } from '@/types.js';
+import { GITHUB_API_BASE_URL, GITHUB_RAW_BASE_URL, DEFAULT_USER_AGENT, MAX_RETRIES, BASE_DELAY_MS } from '@/config.js';
+import type { GitHubClientConfig, GitHubFileInfo, GitHubContentsResponse, IGitHubClient } from '@/types.js';
+import { createAuthHeaders } from '@/utils.js';
 
 /**
  * GitHub API client for interacting with BattleScribe data repositories.

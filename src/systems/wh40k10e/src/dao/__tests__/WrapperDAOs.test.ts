@@ -1,11 +1,11 @@
 import { beforeEach, describe, it, expect } from 'vitest';
-import { BSDATA_OWNER, BSDATA_REPO } from '../BaseDAO.ts';
-import { ArmyDAO } from '../ArmyDAO.ts';
+import { BSDATA_OWNER, BSDATA_REPO } from '@/dao/BaseDAO.js';
+import { ArmyDAO } from '@/dao/ArmyDAO.js';
 import { CampaignDAO } from '@armoury/data-dao/dao/CampaignDAO';
 
 import { AccountDAO } from '@armoury/data-dao/dao/AccountDAO';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
-import type { Army } from '../../models/ArmyModel.ts';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import type { Army } from '@/models/ArmyModel.js';
 import type { Campaign } from '@armoury/models/CampaignModel';
 
 import type { Account } from '@armoury/models/AccountModel';

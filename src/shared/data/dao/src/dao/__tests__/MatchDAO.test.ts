@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { MatchDAO } from '../MatchDAO.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { MatchDAO } from '@/dao/MatchDAO.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { Match } from '@armoury/models/MatchModel';
 
 function makeMatch(overrides: Partial<Match> = {}): Match {

@@ -13,4 +13,4 @@
  */
 
 // Shared base types — safe to import from both web and mobile
-export type { ButtonVariant, ButtonSize, DrawerSide, BadgeVariant, InputVariant, SelectOption } from './types.ts';
+export type { ButtonVariant, ButtonSize, DrawerSide, BadgeVariant, InputVariant, SelectOption } from '@/types.js';

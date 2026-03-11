@@ -1,5 +1,5 @@
-import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from './types.ts';
-import { createMatch, deleteMatch, getMatch, listMatches, updateMatch } from './routes/matches.ts';
+import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from '@/types.js';
+import { createMatch, deleteMatch, getMatch, listMatches, updateMatch } from '@/routes/matches.js';
 
 type RouteKey = `${string}::${string}`;
 

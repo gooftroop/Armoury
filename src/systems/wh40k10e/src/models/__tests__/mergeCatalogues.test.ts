@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeCatalogues } from '../mergeCatalogues.ts';
+import { mergeCatalogues } from '@/models/mergeCatalogues.js';
 import type {
     BattleScribeCatalogue,
     BattleScribeProfile,

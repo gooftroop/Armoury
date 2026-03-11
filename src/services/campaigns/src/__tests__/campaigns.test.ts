@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { CreateCampaignRequest, UpdateCampaignRequest, UserContext } from '../types.ts';
+import type { CreateCampaignRequest, UpdateCampaignRequest, UserContext } from '@/types.js';
 import type { Campaign } from '@armoury/models/CampaignModel';
-import { createCampaign, deleteCampaign, getCampaign, listCampaigns, updateCampaign } from '../routes/campaigns.ts';
-import { MockDatabaseAdapter } from '../__mocks__/MockDatabaseAdapter.ts';
+import { createCampaign, deleteCampaign, getCampaign, listCampaigns, updateCampaign } from '@/routes/campaigns.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
     sub: 'user-1',

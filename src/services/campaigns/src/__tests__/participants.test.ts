@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { JoinCampaignRequest, UpdateParticipantRequest, UserContext } from '../types.ts';
+import type { JoinCampaignRequest, UpdateParticipantRequest, UserContext } from '@/types.js';
 import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
 import {
     deleteParticipant,
@@ -7,8 +7,8 @@ import {
     joinCampaign,
     listParticipants,
     updateParticipant,
-} from '../routes/participants.ts';
-import { MockDatabaseAdapter } from '../__mocks__/MockDatabaseAdapter.ts';
+} from '@/routes/participants.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
     sub: 'user-1',

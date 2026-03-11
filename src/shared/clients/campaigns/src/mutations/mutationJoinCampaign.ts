@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { postParticipant } from './../api/postParticipant.ts';
-import type { CampaignParams, CampaignParticipant, JoinCampaignRequest } from './../types.ts';
+import { postParticipant } from '@/api/postParticipant.js';
+import type { CampaignParams, CampaignParticipant, JoinCampaignRequest } from '@/types.js';
 
 /**
  * Builds React Query mutation options for joining a campaign as a participant.

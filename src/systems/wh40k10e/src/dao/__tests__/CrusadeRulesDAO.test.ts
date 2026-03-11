@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CrusadeRulesDAO } from '../CrusadeRulesDAO.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { IGitHubClient } from '@armoury/clients-github/types';
 import type { EntityType } from '@armoury/data-dao/adapter';
 

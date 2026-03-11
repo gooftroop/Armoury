@@ -1,5 +1,5 @@
-import type { FileSyncStatus } from './types.ts';
-import { Platform } from './types.ts';
+import type { FileSyncStatus } from '@/types.js';
+import { Platform } from '@/types.js';
 
 // Re-export all pure types for backward compatibility with existing '@data/adapter.js' imports
 export type {
@@ -10,12 +10,12 @@ export type {
     EntityMap,
     EntityType,
     DatabaseAdapter,
-} from './types.ts';
+} from '@/types.js';
 
 // Re-export Platform for backward compatibility
-export { Platform } from './types.ts';
+export { Platform } from '@/types.js';
 
-import type { EntityType, EntityMap, QueryOptions, DatabaseAdapter } from './types.ts';
+import type { EntityType, EntityMap, QueryOptions, DatabaseAdapter } from '@/types.js';
 
 /**
  * Registry for plugin-provided entity types.

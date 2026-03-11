@@ -2,7 +2,7 @@
  * Runtime type guard functions for Warhammer 40K entity types.
  * Separated from type definitions to enable tree-shaking.
  */
-import type { Weapon, RangedWeapon, MeleeWeapon } from './entities.ts';
+import type { Weapon, RangedWeapon, MeleeWeapon } from '@/types/entities.js';
 
 /**
  * Type guard to narrow a Weapon to RangedWeapon.

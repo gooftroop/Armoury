@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from './../config.ts';
-import type { CampaignParams } from './../types.ts';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { CampaignParams } from '@/types.js';
 
 /**
  * Deletes a campaign by its unique identifier.

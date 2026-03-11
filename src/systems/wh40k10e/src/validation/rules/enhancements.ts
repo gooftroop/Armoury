@@ -1,8 +1,8 @@
-import type { Army, ArmyUnit } from '../../models/ArmyModel.ts';
-import type { FactionData } from '../../models/FactionData.ts';
-import type { Unit } from '../../models/UnitModel.ts';
-import type { Enhancement } from '../../types/entities.ts';
-import type { ValidationResult } from '../types.ts';
+import type { Army, ArmyUnit } from '@/models/ArmyModel.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { Enhancement } from '@/types/entities.js';
+import type { ValidationResult } from '@/validation/types.js';
 
 /**
  * Check that a unit receiving an enhancement has the Character keyword.

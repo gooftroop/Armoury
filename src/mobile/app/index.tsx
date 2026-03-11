@@ -29,9 +29,9 @@ import { useAuth0 } from 'react-native-auth0';
 import { Button, H1, Paragraph, ScrollView, YStack } from 'tamagui';
 import type { GameSystem, GameSystemManifest } from '@armoury/data-dao/types';
 
-import { useDataContext } from '../src/providers/DataContextProvider.tsx';
-import { systemManifests } from '../src/lib/discoverSystems.ts';
-import type { SystemSyncStatus } from '../src/providers/DataContextProvider.tsx';
+import { useDataContext } from '@/providers/DataContextProvider.js';
+import { systemManifests } from '@/lib/discoverSystems.js';
+import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
 
 /**
  * Resolves a GameSystem implementation for the given manifest ID.

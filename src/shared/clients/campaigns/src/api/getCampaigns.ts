@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from './../config.ts';
-import type { Campaign } from './../types.ts';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { Campaign } from '@/types.js';
 
 /**
  * Retrieves the list of all campaigns.

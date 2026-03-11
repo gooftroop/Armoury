@@ -1,8 +1,8 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import type { Match as CoreMatch } from '@armoury/models/MatchModel';
 import { BaseDAO } from '@armoury/data-dao/dao/BaseDAO';
-import type { MatchData } from '../models/MatchData.ts';
-import { Match } from '../models/Match.ts';
+import type { MatchData } from '@/models/MatchData.js';
+import { Match } from '@/models/Match.js';
 
 /**
  * DAO for 40K match records. Wraps core match persistence and returns

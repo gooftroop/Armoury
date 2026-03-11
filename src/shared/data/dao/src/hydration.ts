@@ -1,5 +1,5 @@
-import type { EntityHydrator } from './types.ts';
-import { getEntityCodec } from './codec.ts';
+import type { EntityHydrator } from '@/types.js';
+import { getEntityCodec } from '@/codec.js';
 
 /**
  * Global registry for entity hydrators.

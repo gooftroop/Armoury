@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from './../config.ts';
-import type { CampaignParticipant, ParticipantParams } from './../types.ts';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { CampaignParticipant, ParticipantParams } from '@/types.js';
 
 /**
  * Retrieves a single participant by their unique identifier.

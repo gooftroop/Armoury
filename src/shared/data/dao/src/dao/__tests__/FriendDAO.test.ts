@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect } from 'vitest';
-import { FriendDAO } from '../FriendDAO.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { FriendDAO } from '@/dao/FriendDAO.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { Friend } from '@armoury/models/FriendModel';
 
 /**

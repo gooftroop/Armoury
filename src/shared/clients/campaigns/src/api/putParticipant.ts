@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from './../config.ts';
-import type { CampaignParticipant, ParticipantParams, UpdateParticipantRequest } from './../types.ts';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { CampaignParticipant, ParticipantParams, UpdateParticipantRequest } from '@/types.js';
 
 /**
  * Updates a participant's data within a campaign.

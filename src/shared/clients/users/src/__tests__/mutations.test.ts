@@ -15,7 +15,7 @@ import type {
     UpdateUserRequest,
     CreateAccountRequest,
     UpdateAccountRequest,
-} from './../types.ts';
+} from '@/types.js';
 
 vi.mock('ky', () => ({
     default: {
@@ -26,12 +26,12 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { mutationCreateUser } from './../mutations/mutationCreateUser.ts';
-import { mutationUpdateUser } from './../mutations/mutationUpdateUser.ts';
-import { mutationDeleteUser } from './../mutations/mutationDeleteUser.ts';
-import { mutationCreateAccount } from './../mutations/mutationCreateAccount.ts';
-import { mutationUpdateAccount } from './../mutations/mutationUpdateAccount.ts';
-import { mutationDeleteAccount } from './../mutations/mutationDeleteAccount.ts';
+import { mutationCreateUser } from '@/mutations/mutationCreateUser.js';
+import { mutationUpdateUser } from '@/mutations/mutationUpdateUser.js';
+import { mutationDeleteUser } from '@/mutations/mutationDeleteUser.js';
+import { mutationCreateAccount } from '@/mutations/mutationCreateAccount.js';
+import { mutationUpdateAccount } from '@/mutations/mutationUpdateAccount.js';
+import { mutationDeleteAccount } from '@/mutations/mutationDeleteAccount.js';
 
 const AUTHORIZATION = 'Bearer test-token';
 

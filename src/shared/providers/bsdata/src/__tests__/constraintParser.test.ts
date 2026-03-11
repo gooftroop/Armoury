@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseConstraint, parseConstraints } from './../constraintParser.ts';
-import type { BattleScribeConstraint } from './../types.ts';
+import { parseConstraint, parseConstraints } from '@/constraintParser.js';
+import type { BattleScribeConstraint } from '@/types.js';
 
 describe('parseConstraint', () => {
     it('parses a complete constraint with all fields', () => {

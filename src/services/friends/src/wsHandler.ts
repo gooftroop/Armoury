@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/aws-serverless';
-import { extractWsUserContext } from './middleware/wsAuth.ts';
-import { wsRouter } from './wsRouter.ts';
-import type { DatabaseAdapter, WebSocketEvent, WebSocketResponse } from './types.ts';
-import { getServiceConfig } from './utils/secrets.ts';
+import { extractWsUserContext } from '@/middleware/wsAuth.js';
+import { wsRouter } from '@/wsRouter.js';
+import type { DatabaseAdapter, WebSocketEvent, WebSocketResponse } from '@/types.js';
+import { getServiceConfig } from '@/utils/secrets.js';
 
 interface DSQLAdapterConfig {
     clusterEndpoint: string;

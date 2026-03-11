@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { Match as CoreMatch } from '@armoury/models/MatchModel';
-import type { MatchData } from '../MatchData.ts';
-import { createDefaultUnitFlags, createDefaultGameState } from '../MatchData.ts';
-import { Match } from '../Match.ts';
+import type { MatchData } from '@/models/MatchData.js';
+import { createDefaultUnitFlags, createDefaultGameState } from '@/models/MatchData.js';
+import { Match } from '@/models/Match.js';
 
 function buildMatchData(): MatchData {
     return {

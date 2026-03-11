@@ -16,7 +16,7 @@ import type {
     ParticipantParams,
     UpdateCampaignRequest,
     UpdateParticipantRequest,
-} from './../types.ts';
+} from '@/types.js';
 
 vi.mock('ky', () => ({
     default: {
@@ -27,12 +27,12 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { mutationCreateCampaign } from './../mutations/mutationCreateCampaign.ts';
-import { mutationUpdateCampaign } from './../mutations/mutationUpdateCampaign.ts';
-import { mutationDeleteCampaign } from './../mutations/mutationDeleteCampaign.ts';
-import { mutationJoinCampaign } from './../mutations/mutationJoinCampaign.ts';
-import { mutationUpdateParticipant } from './../mutations/mutationUpdateParticipant.ts';
-import { mutationDeleteParticipant } from './../mutations/mutationDeleteParticipant.ts';
+import { mutationCreateCampaign } from '@/mutations/mutationCreateCampaign.js';
+import { mutationUpdateCampaign } from '@/mutations/mutationUpdateCampaign.js';
+import { mutationDeleteCampaign } from '@/mutations/mutationDeleteCampaign.js';
+import { mutationJoinCampaign } from '@/mutations/mutationJoinCampaign.js';
+import { mutationUpdateParticipant } from '@/mutations/mutationUpdateParticipant.js';
+import { mutationDeleteParticipant } from '@/mutations/mutationDeleteParticipant.js';
 
 const AUTH = 'Bearer test-token';
 

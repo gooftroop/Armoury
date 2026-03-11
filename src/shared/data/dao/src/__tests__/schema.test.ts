@@ -8,7 +8,7 @@ import {
     type SchemaExtension,
     type SQLiteSchemaExtension,
     type DSQLSchemaExtension,
-} from '../schema.ts';
+} from '@/schema.js';
 
 describe('Schema Extension Registry', () => {
     beforeEach(() => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PluginRegistry } from '../pluginRegistry.ts';
-import type { GameSystem } from '../types.ts';
+import { PluginRegistry } from '@/pluginRegistry.js';
+import type { GameSystem } from '@/types.js';
 
 function createTestPlugin(id: string, name: string = `Test Plugin ${id}`): GameSystem {
     return {

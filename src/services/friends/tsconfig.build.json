@@ -2,8 +2,23 @@
     "extends": "@armoury/typescript/build.json",
     "compilerOptions": {
         "rootDir": ".",
-        "outDir": "dist"
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
     },
-    "include": ["**/*.ts"],
-    "exclude": ["node_modules", "dist", "e2e", "**/__tests__/**", "**/__mocks__/**", "**/__fixtures__/**"]
+    "include": [
+        "**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "e2e",
+        "**/__tests__/**",
+        "**/__mocks__/**",
+        "**/__fixtures__/**"
+    ]
 }

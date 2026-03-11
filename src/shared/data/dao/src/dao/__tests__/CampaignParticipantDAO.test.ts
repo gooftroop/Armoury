@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { CampaignParticipantDAO } from '../CampaignParticipantDAO.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { CampaignParticipantDAO } from '@/dao/CampaignParticipantDAO.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { CampaignParticipant } from '@armoury/models/CampaignModel';
 
 function makeParticipant(overrides: Partial<CampaignParticipant> = {}): CampaignParticipant {

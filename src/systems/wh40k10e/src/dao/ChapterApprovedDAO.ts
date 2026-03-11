@@ -1,8 +1,8 @@
 import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
 import type { IWahapediaClient } from '@armoury/clients-wahapedia/types';
-import type { ChapterApproved } from '../models/ChapterApproved.ts';
-import { hydrateChapterApproved } from '../models/ChapterApproved.ts';
-import { ChapterApprovedParser } from '../data/ChapterApprovedParser.ts';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import { hydrateChapterApproved } from '@/models/ChapterApproved.js';
+import { ChapterApprovedParser } from '@/data/ChapterApprovedParser.js';
 import { TTLSyncBaseDAO } from '@armoury/data-dao/dao/TTLSyncBaseDAO';
 
 type ColumnBuilder = {

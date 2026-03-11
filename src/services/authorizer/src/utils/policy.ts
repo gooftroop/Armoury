@@ -1,4 +1,4 @@
-import type { AuthorizerContext, AuthorizerResult, PolicyEffect } from '../types.ts';
+import type { AuthorizerContext, AuthorizerResult, PolicyEffect } from '@/types.js';
 
 /**
  * Builds a wildcard resource ARN for all API routes.

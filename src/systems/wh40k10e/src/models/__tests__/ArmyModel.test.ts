@@ -6,7 +6,7 @@ import type {
     ArmyModelConfig,
     ArmyWargearSelection,
     ArmyEnhancement,
-} from '../ArmyModel.ts';
+} from '@/models/ArmyModel.js';
 
 /** Builds a minimal model config for testing. */
 const buildModelConfig = (modelName: string): ArmyModelConfig => ({

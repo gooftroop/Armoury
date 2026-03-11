@@ -5,7 +5,7 @@ import type {
     JoinCampaignRequest,
     UpdateCampaignRequest,
     UpdateParticipantRequest,
-} from '../types.ts';
+} from '@/types.js';
 
 /** Valid campaign status values. */
 const VALID_CAMPAIGN_STATUSES: ReadonlySet<string> = new Set<CampaignStatus>([

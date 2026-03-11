@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from './../config.ts';
-import type { Campaign, CreateCampaignRequest } from './../types.ts';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { Campaign, CreateCampaignRequest } from '@/types.js';
 
 /**
  * Creates a new campaign with the provided data.

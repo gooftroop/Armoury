@@ -1,5 +1,5 @@
-import type { DatabaseAdapter } from '../adapter.ts';
-import { BaseDAO } from './BaseDAO.ts';
+import type { DatabaseAdapter } from '@/adapter.js';
+import { BaseDAO } from '@/dao/BaseDAO.js';
 import type { Friend, FriendStatus } from '@armoury/models/FriendModel';
 
 type ColumnBuilder = {

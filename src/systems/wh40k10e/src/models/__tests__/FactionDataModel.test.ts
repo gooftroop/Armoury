@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { FactionData } from '../FactionData.ts';
-import { hydrateFactionData } from '../FactionData.ts';
-import { parseFactionData } from '../../data/FactionDataParser.ts';
+import type { FactionData } from '@/models/FactionData.js';
+import { hydrateFactionData } from '@/models/FactionData.js';
+import { parseFactionData } from '@/data/FactionDataParser.js';
 import type {
     BattleScribeCatalogue,
     BattleScribeProfile,

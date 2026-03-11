@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CoreRulesDAO } from '../CoreRulesDAO.ts';
-import { CrusadeRulesDAO } from '../CrusadeRulesDAO.ts';
-import { FactionDAO } from '../FactionDAO.ts';
-import { getFactionConfig } from '../../config/factionMap.ts';
-import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
-import { MockGitHubClient } from '../../__mocks__/MockGitHubClient.ts';
+import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
+import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
+import { FactionDAO } from '@/dao/FactionDAO.js';
+import { getFactionConfig } from '@/config/factionMap.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { MockGitHubClient } from '@/__mocks__/MockGitHubClient.js';
 import { clearCodecRegistry } from '@armoury/data-dao/codec';
 import { clearHydrationRegistry } from '@armoury/data-dao/hydration';
 import { clearSchemaExtensions } from '@armoury/data-dao/schema';
