@@ -229,7 +229,45 @@ If you have attempted a fix twice without success:
 3. Present what you tried, what failed, and why.
 4. Ask for guidance.
 
-## Token Efficiency
+## Resource Efficiency
+
+### Quality-Cost Optimization (QCO)
+
+Agent spawns consume requests proportional to their complexity (spawn + internal reasoning + result collection). Direct tool calls within a single turn are free. The goal is not minimum requests — it is maximum ROI: quality × success rate / requests consumed.
+
+**Direct Tools vs Agent Spawns:**
+
+| Need | Direct Tool (0 extra requests) | Agent Spawn (3-20+ requests) |
+|---|---|---|
+| Find a file by name | `glob` | ~~explore~~ |
+| Find a pattern in code | `grep`, `ast_grep_search` | ~~explore~~ |
+| Navigate to a definition | `lsp_goto_definition` | ~~explore~~ |
+| Get a file outline | `lsp_symbols` (documentSymbol) | ~~explore~~ |
+| Look up one library's API | `codesearch`, `context7_query-docs` | ~~librarian~~ |
+| Fetch a specific URL/doc | `webfetch` | ~~librarian~~ |
+| Multi-file reasoning across modules | Direct tools may miss connections | `explore` ✓ |
+| Synthesize multiple external sources | Direct tools return raw data | `librarian` ✓ |
+| Architectural trade-off analysis | Beyond direct tool capability | `oracle` ✓ |
+| Complex planning with unknowns | Needs interview-style reasoning | `plan` agent ✓ |
+
+**Rule**: Use direct tools for deterministic lookups. Use agents when their model's reasoning adds measurable quality over what direct tools provide.
+
+**Agent Spawn Decision Matrix:**
+
+|  | Low Complexity | High Complexity |
+|---|---|---|
+| **Familiar Domain** | Self + direct tools (0 requests) | Self + oracle review (~10 requests) |
+| **Unfamiliar Domain** | Librarian + self (~5 requests) | Librarian + plan agent + specialist (~20-30 requests) |
+
+**Planning Scale — Always plan, scale the method:**
+
+| Complexity | Method | Request Cost |
+|---|---|---|
+| Trivial (1-2 steps, obvious) | Direct todos | 0 |
+| Simple (3-5 steps, clear scope) | Direct tool exploration → todos | 0 |
+| Medium (5+ steps, some unknowns) | Exploration → todos → user confirmation | 0 |
+| Complex (many unknowns, cross-cutting) | Plan agent (superior model reasoning) | 5-10 |
+| Very complex (architectural, ambiguous) | Metis → plan agent → momus review | 15-25 |
 
 ### File Reading Strategy
 
@@ -256,6 +294,7 @@ Parallelize independent tool calls — never issue sequential reads for independ
 - Batch independent grep searches, LSP lookups, and file reads together
 - Fire `explore`/`librarian` agents in background — never block on them
 - Cancel background agents you no longer need (individually by task ID, never cancel-all)
+- Prefer parallel direct tool calls over parallel agent spawns when they produce equivalent results. Five parallel grep calls in one turn cost zero extra requests; five parallel explore agents cost 15-25+ requests.
 
 ### Delegation Scope & Retry Discipline
 
@@ -305,9 +344,11 @@ Agent subagent_types also have fixed model tiers:
 
 **Rules**:
 - Default to the cheapest viable category. Escalate only when quality demands it.
-- `explore` and `librarian` are cheap. Fire them liberally in background.
+- `explore` and `librarian` are cheap per-spawn but compound quickly. Prefer direct tools (grep, LSP, codesearch, context7) for deterministic lookups; reserve agent spawns for tasks requiring multi-step reasoning.
 - `oracle`, `metis`, `momus` are expensive. Use only when their specialized reasoning is required.
 - When delegating to `quick`, prompts MUST be exhaustively explicit (Haiku has limited reasoning).
+- Agent spawns have compounding request cost: spawn + internal reasoning turns + result collection. A single `explore` agent may consume 3-6 requests total. Factor this into cheapest-viable-category decisions.
+- When direct tools (grep, LSP, codesearch, context7) can answer a question with equivalent quality, prefer them over agent spawns.
 
 ### Phase Cost Estimation
 
@@ -319,12 +360,13 @@ Phase: [Phase name]
 Estimated operations:
   - [N] file reads (~X lines each)
   - [N] file writes/edits
-  - [N] delegated tasks: [categories] -> [models]
+  - [N] delegated tasks: [categories] → [models]
   - [N] agent calls: [types]
 
-Delegation plan:
-  - task(category="[cat]") x [N] -> [model] ([cost tier])
-  - [subagent_type] x [N] -> [model] ([cost tier])
+Request budget:
+  - Direct tool operations: [N] (0 extra requests)
+  - Agent spawns: [N] × ~[X] requests each = ~[total]
+  - Quality trade-off: [What agent usage buys vs self-execution]
 
 Relative cost: [Cheap / Moderate / Expensive / Very Expensive]
 Confidence: [High / Medium / Low] (low = more unknowns, actual cost may vary)
@@ -343,6 +385,8 @@ If a file exceeds ~300 lines or is growing beyond what can be efficiently read, 
 - When delegating to subagents, include all relevant context in the prompt.
 - Keep your current todo list updated — it is rehydrated after compaction.
 - **Lazy-load documents**: Do not read `docs/CODING_STANDARDS.md` or other detailed docs until entering the phase that needs them. See Document Loading Strategy above.
+- Prefer direct tools for deterministic lookups (file finding, pattern matching, single-doc queries). Reserve agent spawns for tasks requiring multi-step reasoning or model quality that exceeds your own capability.
+- Always confirm with the user before starting implementation phases — this prevents wasted requests on misunderstood requirements.
 
 ## Research Protocol
 
@@ -362,3 +406,6 @@ When performing research: (1) Define specific questions — research is done whe
 - Retrying a failed delegation with the same scope/parameters more than once without changing strategy.
 - Giving subagents large, multi-concern tasks when smaller focused tasks would suffice.
 - Letting a file grow past ~300 lines without proposing decomposition.
+- Spawning explore/librarian agents for lookups that grep, glob, LSP, or codesearch can handle directly.
+- Spawning 5+ agents in parallel when 1-2 targeted agents plus direct tools would produce equivalent results.
+- Starting implementation without user confirmation — misunderstood requirements waste all downstream requests.
