@@ -21,7 +21,7 @@
     },
     "dependencies": {
         "@armoury/data": "*",
-        "@aws-sdk/dsql-signer": "^3.985.0",
+        "@aws-sdk/dsql-signer": "^3.1006.0",
         "drizzle-orm": "^0.45.1",
         "pg": "^8.18.0"
     },
