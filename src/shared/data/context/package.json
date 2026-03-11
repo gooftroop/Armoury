@@ -19,7 +19,7 @@
     },
     "scripts": {
         "build": "ESBUILD_ENTRIES=src/index.ts,src/DataContext.ts,src/DataContextBuilder.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
-        "generate:types": "tsc -p tsconfig.build.json",
+        "generate:types": "tsc -p tsconfig.build.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\"",
         "test": "vitest run",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
