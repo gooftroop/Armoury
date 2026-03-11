@@ -208,8 +208,7 @@ function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemT
         <Pressable onPress={onPress} disabled={isSyncing} style={styles.tile}>
             <View style={[styles.gradientBox, { backgroundColor: manifest.gradientStart }]}>
                 <Paragraph
-                    style={styles.splashText}
-                    color={manifest.splashTextColor}
+                    style={[styles.splashText, { color: manifest.splashTextColor }]}
                     fontSize={48}
                     fontWeight="800"
                     letterSpacing={4}

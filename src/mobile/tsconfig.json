@@ -7,6 +7,8 @@
         "rewriteRelativeImportExtensions": false,
         "jsx": "react-jsx",
         "noEmit": true,
+        "declaration": false,
+        "declarationMap": false,
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"]

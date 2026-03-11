@@ -20,7 +20,7 @@ export function mutationUpdateAccount(
     params: UserParams,
     body: UpdateAccountRequest,
     options?: Omit<UseMutationOptions<Account, Error, void>, 'mutationFn'>,
-): UseMutationOptions<Account, Error, void> {
+): Omit<UseMutationOptions<Account, Error, void>, 'mutationFn'> & { mutationFn: () => Promise<Account> } {
     return {
         mutationFn: () => putAccount(authorization, params, body),
         ...options,
