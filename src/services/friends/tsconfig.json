@@ -1,5 +1,10 @@
 {
     "extends": "@armoury/typescript/base.json",
-    "compilerOptions": {},
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    },
     "include": ["**/*.ts"]
 }
