@@ -61,10 +61,10 @@
         banner.setAttribute(
             'style',
             'position:fixed;top:0;left:0;right:0;z-index:99999;' +
-            'padding:12px 16px;' +
-            'background:#b91c1c;color:#fff;' +
-            'font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;' +
-            'text-align:center;'
+                'padding:12px 16px;' +
+                'background:#b91c1c;color:#fff;' +
+                'font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;' +
+                'text-align:center;',
         );
         banner.innerHTML =
             'Your browser is not supported. Please update to a recent version of ' +

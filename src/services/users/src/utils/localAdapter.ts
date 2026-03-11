@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter, EntityMap, EntityType } from '@users/src/types.js';
 
 type QueryResult = {
@@ -49,7 +48,7 @@ type StoreConfig = {
     fieldToColumn: Record<string, string>;
 };
 
-const { Client } = await import('pg') as unknown as { Client: PgClientConstructor };
+const { Client } = (await import('pg')) as unknown as { Client: PgClientConstructor };
 
 const STORE_CONFIGS: Record<EntityType, StoreConfig> = {
     user: {
@@ -61,6 +60,7 @@ const STORE_CONFIGS: Record<EntityType, StoreConfig> = {
             email: 'email',
             name: 'name',
             picture: 'picture',
+            accountId: 'account_id',
             createdAt: 'created_at',
             updatedAt: 'updated_at',
         },
@@ -71,10 +71,8 @@ const STORE_CONFIGS: Record<EntityType, StoreConfig> = {
         fieldToColumn: {
             id: 'id',
             userId: 'user_id',
-            displayName: 'display_name',
-            picture: 'picture',
-            email: 'email',
             preferences: 'preferences',
+            systems: 'systems',
             createdAt: 'created_at',
             updatedAt: 'updated_at',
         },

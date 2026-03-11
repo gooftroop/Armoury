@@ -17,6 +17,7 @@ export default mergeConfig(
                 '@clients-wahapedia': path.resolve(__dirname, '../../shared/clients/wahapedia/src'),
                 '@providers-bsdata': path.resolve(__dirname, '../../shared/providers/bsdata/src'),
                 '@validation': path.resolve(__dirname, '../../shared/validation/src'),
+                '@adapters-pglite': path.resolve(__dirname, '../../shared/adapters/pglite/src'),
             },
         },
         test: {

@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter, EntityMap, EntityType } from '@friends/src/types.js';
 
 type QueryResult = {
@@ -49,7 +48,7 @@ type StoreConfig = {
     fieldToColumn: Record<string, string>;
 };
 
-const { Client } = await import('pg') as unknown as { Client: PgClientConstructor };
+const { Client } = (await import('pg')) as unknown as { Client: PgClientConstructor };
 
 const STORE_CONFIGS: Record<EntityType, StoreConfig> = {
     friend: {

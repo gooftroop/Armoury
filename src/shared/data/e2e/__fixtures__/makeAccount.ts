@@ -1,7 +1,7 @@
 import type { Account } from '@models/AccountModel.js';
 
-    /** Creates a test Account fixture with sensible defaults. */
-        export function makeAccount(overrides: Partial<Account> = {}): Account {
+/** Creates a test Account fixture with sensible defaults. */
+export function makeAccount(overrides: Partial<Account> = {}): Account {
     return {
         id: 'a1b2c3d4-0001-0000-0000-000000000001',
         userId: 'user-123',

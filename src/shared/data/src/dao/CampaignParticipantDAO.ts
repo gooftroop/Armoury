@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { CampaignParticipant } from '@models/CampaignModel.js';
@@ -24,7 +23,6 @@ type PgCoreModule = {
     text: (...args: unknown[]) => ColumnBuilder;
     integer: (...args: unknown[]) => ColumnBuilder;
     boolean: (...args: unknown[]) => ColumnBuilder;
-    jsonb: (...args: unknown[]) => ColumnBuilder;
     timestamp: (...args: unknown[]) => ColumnBuilder;
     index: (...args: unknown[]) => IndexBuilder;
 };
@@ -36,14 +34,16 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
-const { pgTable, text, integer, boolean, jsonb, timestamp, index } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
+const { pgTable, text, integer, boolean, timestamp, index } = pgCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 export const campaignParticipantsTable = pgTable(
     'campaign_participants',
     {
-        id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         campaignId: text('campaign_id').notNull(),
         userId: text('user_id').notNull(),
         displayName: text('display_name').notNull(),
@@ -52,8 +52,8 @@ export const campaignParticipantsTable = pgTable(
         armyName: text('army_name').notNull(),
         currentPhaseId: text('current_phase_id').notNull(),
         matchesInCurrentPhase: integer('matches_in_current_phase').notNull(),
-        participantData: jsonb('participant_data'),
-        matchIds: jsonb('match_ids'),
+        participantData: text('participant_data'),
+        matchIds: text('match_ids'),
         joinedAt: timestamp('joined_at', { mode: 'string' }).notNull(),
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },
@@ -64,7 +64,10 @@ export const campaignParticipantsTable = pgTable(
 );
 
 export const campaignParticipantsSqliteTable = sl.sqliteTable('campaign_participants', {
-    id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: sl
+        .text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     campaignId: sl.text('campaign_id').notNull(),
     userId: sl.text('user_id').notNull(),
     displayName: sl.text('display_name').notNull(),

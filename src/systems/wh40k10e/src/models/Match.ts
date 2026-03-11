@@ -36,9 +36,7 @@ export class Match {
         }
 
         if (match.matchData.systemId !== 'wh40k10e') {
-            throw new Error(
-                `Cannot create Match: expected systemId 'wh40k10e', got '${match.matchData.systemId}'.`,
-            );
+            throw new Error(`Cannot create Match: expected systemId 'wh40k10e', got '${match.matchData.systemId}'.`);
         }
 
         return new Match(match);
@@ -165,12 +163,7 @@ export class Match {
      * @param flag - Flag name to set.
      * @param value - Boolean value to set.
      */
-    public setUnitFlag(
-        playerId: string,
-        armyUnitId: string,
-        flag: keyof UnitFlags,
-        value: boolean,
-    ): Match {
+    public setUnitFlag(playerId: string, armyUnitId: string, flag: keyof UnitFlags, value: boolean): Match {
         return this.updateUnitProjection(playerId, armyUnitId, (unit) => ({
             ...unit,
             flags: { ...unit.flags, [flag]: value },
@@ -296,10 +289,7 @@ export class Match {
         });
     }
 
-    private updatePlayerState(
-        playerId: string,
-    fn: (state: PlayerState) => PlayerState,
-    ): Match {
+    private updatePlayerState(playerId: string, fn: (state: PlayerState) => PlayerState): Match {
         const existing = this.data.playerStateById[playerId];
 
         if (!existing) {
@@ -318,7 +308,7 @@ export class Match {
     private updateUnitProjection(
         playerId: string,
         armyUnitId: string,
-    fn: (unit: UnitProjection) => UnitProjection,
+        fn: (unit: UnitProjection) => UnitProjection,
     ): Match {
         return this.updatePlayerState(playerId, (state) => {
             const existingUnit = state.armyProjection.unitsByArmyUnitId[armyUnitId];

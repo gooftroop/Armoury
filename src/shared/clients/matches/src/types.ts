@@ -14,7 +14,6 @@ export interface MatchDataBase<TPlayerState extends object = Record<string, unkn
     playerStateById: Record<string, TPlayerState>;
 }
 
-
 /** A player participating in a match. */
 export interface MatchPlayer {
     /** Unique identifier of the player. */
@@ -229,7 +228,6 @@ export interface MatchParams {
     /** Unique identifier of the match. */
     matchId: string;
 }
-
 
 // Error classes
 

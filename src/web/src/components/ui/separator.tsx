@@ -31,9 +31,13 @@ export type SeparatorProps = React.ComponentPropsWithRef<typeof SeparatorPrimiti
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered Separator component.
  */
-function Separator(
-    { className, orientation = 'horizontal', decorative = true, ref, ...props }: SeparatorProps,
-): React.ReactElement {
+function Separator({
+    className,
+    orientation = 'horizontal',
+    decorative = true,
+    ref,
+    ...props
+}: SeparatorProps): React.ReactElement {
     return (
         <SeparatorPrimitive.Root
             className={cn(

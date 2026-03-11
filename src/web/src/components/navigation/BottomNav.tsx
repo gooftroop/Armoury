@@ -28,7 +28,7 @@ const NAV_ITEMS = [
 
 /**
  * Bottom navigation bar for mobile screens.
- * 
+ *
  * @param props - Component props
  * @returns The BottomNav component
  */
@@ -51,14 +51,14 @@ export function BottomNav({ locale, gameSystem }: BottomNavProps) {
                             href={href}
                             className={cn(
                                 'flex h-full min-w-16 flex-col items-center justify-center gap-1 px-1 transition-colors',
-                                isActive ? 'text-accent-primary' : 'text-secondary hover:text-primary'
+                                isActive ? 'text-accent-primary' : 'text-secondary hover:text-primary',
                             )}
                         >
                             <Icon className={cn('h-5 w-5', isActive ? 'stroke-[2.5px]' : 'stroke-2')} />
-                            <span className="text-[10px] font-medium uppercase tracking-wider">{t(item.id as "armies" | "matches" | "campaigns" | "social" | "references")}</span>
-                            {isActive && (
-                                <div className="absolute bottom-1 h-1 w-1 rounded-full bg-accent-primary" />
-                            )}
+                            <span className="text-[10px] font-medium uppercase tracking-wider">
+                                {t(item.id as 'armies' | 'matches' | 'campaigns' | 'social' | 'references')}
+                            </span>
+                            {isActive && <div className="absolute bottom-1 h-1 w-1 rounded-full bg-accent-primary" />}
                         </Link>
                     );
                 })}

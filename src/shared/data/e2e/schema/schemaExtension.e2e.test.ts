@@ -11,7 +11,7 @@ type PgCoreModule = {
     jsonb: (...args: unknown[]) => ColumnBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, jsonb } = pgCoreModule;
 
 describe('Schema Extension E2E', () => {

@@ -23,16 +23,13 @@ import { cn } from '@web/src/lib/utils.js';
 /**
  * Label variant styles using class-variance-authority.
  */
-const labelVariants = cva(
-    'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-);
+const labelVariants = cva('text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70');
 
 /**
  * Props for the Label component.
  */
 export interface LabelProps
-    extends React.ComponentPropsWithRef<typeof LabelPrimitive.Root>,
-        VariantProps<typeof labelVariants> {}
+    extends React.ComponentPropsWithRef<typeof LabelPrimitive.Root>, VariantProps<typeof labelVariants> {}
 
 /**
  * Label component - a label for form fields.
@@ -41,16 +38,8 @@ export interface LabelProps
  * @param ref - Forwarded ref to the label element.
  * @returns The rendered Label component.
  */
-function Label(
-    { className, ref, ...props }: LabelProps,
-): React.ReactElement {
-    return (
-        <LabelPrimitive.Root
-            className={cn(labelVariants(), className)}
-            ref={ref}
-            {...props}
-        />
-    );
+function Label({ className, ref, ...props }: LabelProps): React.ReactElement {
+    return <LabelPrimitive.Root className={cn(labelVariants(), className)} ref={ref} {...props} />;
 }
 
 Label.displayName = 'Label';

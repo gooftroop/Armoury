@@ -27,12 +27,9 @@ const badgeVariants = cva(
     {
         variants: {
             variant: {
-                default:
-                    'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
-                secondary:
-                    'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                destructive:
-                    'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
+                default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
+                secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+                destructive: 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
                 outline: 'text-foreground',
             },
         },
@@ -45,8 +42,7 @@ const badgeVariants = cva(
 /**
  * Props for the Badge component.
  */
-export type BadgeProps = React.HTMLAttributes<HTMLDivElement> &
-    VariantProps<typeof badgeVariants>;
+export type BadgeProps = React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof badgeVariants>;
 
 /**
  * Badge component - displays a small label for status or counts.
@@ -55,15 +51,9 @@ export type BadgeProps = React.HTMLAttributes<HTMLDivElement> &
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered Badge component.
  */
-const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-    ({ className, variant, ...props }, ref) => (
-        <div
-            className={cn(badgeVariants({ variant }), className)}
-            ref={ref}
-            {...props}
-        />
-    ),
-);
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(({ className, variant, ...props }, ref) => (
+    <div className={cn(badgeVariants({ variant }), className)} ref={ref} {...props} />
+));
 Badge.displayName = 'Badge';
 
 export { Badge, badgeVariants };

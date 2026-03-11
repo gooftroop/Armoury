@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import type { IGitHubClient } from '@clients-github/types.js';
 import type { Faction } from '@wh40k10e/types/entities.js';
@@ -39,9 +38,9 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, jsonb, timestamp } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for core rules entities. */
 export const coreRulesTable = pgTable('core_rules', {

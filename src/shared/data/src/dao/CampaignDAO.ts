@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { Campaign, CampaignStatus } from '@models/CampaignModel.js';
@@ -24,7 +23,6 @@ type PgCoreModule = {
     text: (...args: unknown[]) => ColumnBuilder;
     integer: (...args: unknown[]) => ColumnBuilder;
     boolean: (...args: unknown[]) => ColumnBuilder;
-    jsonb: (...args: unknown[]) => ColumnBuilder;
     timestamp: (...args: unknown[]) => ColumnBuilder;
     index: (...args: unknown[]) => IndexBuilder;
 };
@@ -36,27 +34,29 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
-const { pgTable, text, jsonb, timestamp, index } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
+const { pgTable, text, timestamp, index } = pgCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 export const campaignsTable = pgTable(
     'campaigns',
     {
-        id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
         name: text('name').notNull(),
         type: text('type').notNull(),
         organizerId: text('organizer_id').notNull(),
-        narrative: jsonb('narrative'),
-        campaignData: jsonb('campaign_data'),
+        narrative: text('narrative'),
+        campaignData: text('campaign_data'),
         startDate: text('start_date').notNull(),
         endDate: text('end_date'),
         status: text('status').notNull(),
-        phases: jsonb('phases'),
-        customRules: jsonb('custom_rules'),
-        rankings: jsonb('rankings'),
-        participantIds: jsonb('participant_ids'),
-        matchIds: jsonb('match_ids'),
+        phases: text('phases'),
+        customRules: text('custom_rules'),
+        rankings: text('rankings'),
+        participantIds: text('participant_ids'),
+        matchIds: text('match_ids'),
         createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },
@@ -67,7 +67,10 @@ export const campaignsTable = pgTable(
 );
 
 export const campaignsSqliteTable = sl.sqliteTable('campaigns', {
-    id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: sl
+        .text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     name: sl.text('name').notNull(),
     type: sl.text('type').notNull(),
     organizerId: sl.text('organizer_id').notNull(),
@@ -129,5 +132,4 @@ export class CampaignDAO extends BaseDAO<Campaign> {
 
         return results as Campaign[];
     }
-
 }

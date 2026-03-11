@@ -334,10 +334,7 @@ export class ChapterApprovedParser implements IWahapediaParser<ChapterApproved> 
      * @param category - Mission category: 'standard' or 'asymmetric-war'
      * @returns Array of parsed PrimaryMission objects
      */
-    private parsePrimaryMissions(
-        fragments: string[],
-        category: 'standard' | 'asymmetric-war',
-    ): PrimaryMission[] {
+    private parsePrimaryMissions(fragments: string[], category: 'standard' | 'asymmetric-war'): PrimaryMission[] {
         return fragments.map((fragment) => {
             const $ = cheerio.load(fragment, { xml: false });
 
@@ -399,9 +396,7 @@ export class ChapterApprovedParser implements IWahapediaParser<ChapterApproved> 
             let objectiveModifications: string | null = null;
 
             if (fragment.includes('Start of the Battle:') || fragment.includes('start of the first')) {
-                const objMatch = fragment.match(
-                    /<b>Start of the Battle:<\/b>\s*(.*?)(?:<br><br>|<div class="pnWhen)/s,
-                );
+                const objMatch = fragment.match(/<b>Start of the Battle:<\/b>\s*(.*?)(?:<br><br>|<div class="pnWhen)/s);
 
                 if (objMatch) {
                     objectiveModifications = this.stripHtml(objMatch[1]);
@@ -875,9 +870,7 @@ export class ChapterApprovedParser implements IWahapediaParser<ChapterApproved> 
              * Resolve primary mission ID by matching title-cased name.
              * Tournament table uses title case names like "Take and Hold".
              */
-            const primaryMission = primaryMissions.find(
-                (pm) => pm.name.toLowerCase() === primaryName.toLowerCase(),
-            );
+            const primaryMission = primaryMissions.find((pm) => pm.name.toLowerCase() === primaryName.toLowerCase());
             const primaryMissionId = primaryMission?.id ?? this.toKebabCase(primaryName);
 
             /**

@@ -1,0 +1,203 @@
+name: Infrastructure (CDK)
+
+# ─────────────────────────────────────────────────────────────────────
+# Deploys Aurora DSQL infrastructure via AWS CDK.
+#
+# Triggers only when files under infra/cdk/ change.
+# - Pull requests:  runs `cdk diff` and posts the output as a PR comment.
+# - Push to main:   deploys all CDK stacks (sandbox + production).
+# - Manual trigger: allows force-deploy without code changes.
+#
+# CDK provisions long-lived infrastructure (DSQL clusters, IAM roles)
+# that all Lambda services share.  Service pipelines (_deploy-service.yml)
+# create schemas and deploy Lambdas against the existing infrastructure.
+#
+# ORDERING: CDK changes are rare and should be merged independently of
+# service changes.  If both change in the same commit, CDK and service
+# workflows run in parallel — this is safe because the infrastructure
+# already exists from a prior deploy.  For the initial bootstrap or
+# breaking infrastructure changes, merge CDK first.
+# ─────────────────────────────────────────────────────────────────────
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'infra/cdk/**'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'infra/cdk/**'
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Target environment for manual deploy'
+                required: true
+                type: choice
+                options:
+                    - all
+                    - sandbox
+                    - production
+                default: all
+
+# Minimal top-level permissions.  Jobs override as needed.
+permissions:
+    contents: read
+
+# Prevent parallel CDK deploys on the same ref.
+# cancel-in-progress: false — never abort a running deploy mid-flight.
+concurrency:
+    group: infra-cdk-${{ github.ref }}
+    cancel-in-progress: false
+
+env:
+    CDK_DIR: infra/cdk
+    AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+    NODE_OPTIONS: '--max-old-space-size=4096'
+
+jobs:
+    # ── Diff (PRs only) ──────────────────────────────────────────────
+    diff:
+        name: CDK Diff
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        environment: sandbox
+        permissions:
+            contents: read
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
+                  cache-dependency-path: infra/cdk/package-lock.json
+
+            - name: Install CDK dependencies
+              working-directory: ${{ env.CDK_DIR }}
+              run: npm ci
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ env.AWS_REGION }}
+
+            - name: CDK Diff
+              id: cdk-diff
+              working-directory: ${{ env.CDK_DIR }}
+              run: |
+                  set +e
+                  npx cdk diff --all 2>&1 | tee /tmp/cdk-diff.txt
+                  diff_exit=$?
+                  set -e
+                  {
+                    echo "has_changes=$( [ $diff_exit -eq 1 ] && echo true || echo false )"
+                  } >> "$GITHUB_OUTPUT"
+                  # Exit 0 = no diff, 1 = has diff, 2+ = error
+                  if [ $diff_exit -gt 1 ]; then
+                    exit $diff_exit
+                  fi
+
+            - name: Post diff as PR comment
+              if: always() && steps.cdk-diff.outcome == 'success'
+              continue-on-error: true
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const fs = require('fs');
+                      const diff = fs.readFileSync('/tmp/cdk-diff.txt', 'utf8').trim();
+                      const hasDiff = '${{ steps.cdk-diff.outputs.has_changes }}' === 'true';
+                      const icon = hasDiff ? '⚠️' : '✅';
+                      const status = hasDiff ? 'Changes detected' : 'No changes';
+                      const body = [
+                        `### ${icon} CDK Diff — ${status}`,
+                        '',
+                        '<details>',
+                        `<summary>Click to expand diff output</summary>`,
+                        '',
+                        '```',
+                        diff,
+                        '```',
+                        '',
+                        '</details>',
+                        '',
+                        `> Run: [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+                      ].join('\n');
+
+                      const marker = '### ';
+                      const markerPrefix = '### ';
+                      const { data: comments } = await github.rest.issues.listComments({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: context.issue.number,
+                      });
+
+                      const existing = comments.find(c => c.body?.includes('CDK Diff'));
+
+                      if (existing) {
+                          await github.rest.issues.updateComment({
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              comment_id: existing.id,
+                              body,
+                          });
+                      } else {
+                          await github.rest.issues.createComment({
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              issue_number: context.issue.number,
+                              body,
+                          });
+                      }
+
+    # ── Deploy (push to main OR manual dispatch) ─────────────────────
+    deploy:
+        name: CDK Deploy
+        if: >-
+            (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+            github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        environment: production
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
+                  cache-dependency-path: infra/cdk/package-lock.json
+
+            - name: Install CDK dependencies
+              working-directory: ${{ env.CDK_DIR }}
+              run: npm ci
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ env.AWS_REGION }}
+
+            - name: Determine stacks to deploy
+              id: stacks
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    case "${{ inputs.environment }}" in
+                      sandbox)    echo "args=Armoury-Dsql-Sandbox" >> "$GITHUB_OUTPUT" ;;
+                      production) echo "args=Armoury-Dsql-Production" >> "$GITHUB_OUTPUT" ;;
+                      *)          echo "args=--all" >> "$GITHUB_OUTPUT" ;;
+                    esac
+                  else
+                    echo "args=--all" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: CDK Deploy
+              working-directory: ${{ env.CDK_DIR }}
+              run: npx cdk deploy ${{ steps.stacks.outputs.args }} --require-approval never --ci

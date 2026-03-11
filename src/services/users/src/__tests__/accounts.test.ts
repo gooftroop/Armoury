@@ -34,12 +34,7 @@ describe('account routes', () => {
 
     describe('getAccount', () => {
         it('returns 200 with account', async () => {
-            const createResponse = await createAccount(
-                adapter,
-                validAccountPayload,
-                { id: 'user-1' },
-                baseUserContext,
-            );
+            const createResponse = await createAccount(adapter, validAccountPayload, { id: 'user-1' }, baseUserContext);
 
             expect(createResponse.statusCode).toBe(201);
 
@@ -78,12 +73,7 @@ describe('account routes', () => {
 
     describe('createAccount', () => {
         it('returns 201', async () => {
-            const response = await createAccount(
-                adapter,
-                validAccountPayload,
-                { id: 'user-1' },
-                baseUserContext,
-            );
+            const response = await createAccount(adapter, validAccountPayload, { id: 'user-1' }, baseUserContext);
             const payload = JSON.parse(response.body) as Account;
 
             expect(response.statusCode).toBe(201);
@@ -99,24 +89,14 @@ describe('account routes', () => {
         });
 
         it('returns 400 on invalid body', async () => {
-            const response = await createAccount(
-                adapter,
-                {},
-                { id: 'user-1' },
-                baseUserContext,
-            );
+            const response = await createAccount(adapter, {}, { id: 'user-1' }, baseUserContext);
 
             expect(response.statusCode).toBe(400);
             expect(JSON.parse(response.body)).toMatchObject({ error: 'ValidationError' });
         });
 
         it('returns 404 when user not found', async () => {
-            const response = await createAccount(
-                adapter,
-                validAccountPayload,
-                { id: 'no-user' },
-                baseUserContext,
-            );
+            const response = await createAccount(adapter, validAccountPayload, { id: 'no-user' }, baseUserContext);
 
             expect(response.statusCode).toBe(404);
             expect(JSON.parse(response.body)).toMatchObject({ error: 'NotFound' });
@@ -125,12 +105,7 @@ describe('account routes', () => {
         it('returns 409 when account already exists', async () => {
             await createAccount(adapter, validAccountPayload, { id: 'user-1' }, baseUserContext);
 
-            const response = await createAccount(
-                adapter,
-                validAccountPayload,
-                { id: 'user-1' },
-                baseUserContext,
-            );
+            const response = await createAccount(adapter, validAccountPayload, { id: 'user-1' }, baseUserContext);
 
             expect(response.statusCode).toBe(409);
             expect(JSON.parse(response.body)).toMatchObject({ error: 'Conflict' });

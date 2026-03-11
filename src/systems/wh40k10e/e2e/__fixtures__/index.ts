@@ -1,4 +1,11 @@
-export { makeAccount, makeCampaignParticipant, makeCoreCampaign, makeCoreMatch, makeFriend, makeUserPresence } from '../../shared/data/e2e/__fixtures__/index.ts';
+export {
+    makeAccount,
+    makeCampaignParticipant,
+    makeCoreCampaign,
+    makeCoreMatch,
+    makeFriend,
+    makeUserPresence,
+} from '../../shared/data/e2e/__fixtures__/index.ts';
 export { makeArmy } from './makeArmy.ts';
 export { makeBoltRifle } from './makeBoltRifle.ts';
 export { makeCampaign } from './makeCampaign.ts';

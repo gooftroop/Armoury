@@ -15,5 +15,12 @@
         }
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/**/__mocks__/**", "src/**/__fixtures__/**"]
+    "exclude": [
+        "node_modules",
+        "dist",
+        "src/**/__tests__/**",
+        "src/**/__testing__/**",
+        "src/**/__mocks__/**",
+        "src/**/__fixtures__/**"
+    ]
 }

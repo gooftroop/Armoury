@@ -13,10 +13,7 @@ import type { ParticipantParams } from '@clients-campaigns/types.js';
  * @param params - Parameters containing the campaign ID and participant ID
  * @returns Promise resolving when the participant is removed
  */
-export async function deleteParticipant(
-    authorization: string,
-    params: ParticipantParams,
-): Promise<void> {
+export async function deleteParticipant(authorization: string, params: ParticipantParams): Promise<void> {
     await ky.delete(`campaigns/${params.campaignId}/participants/${params.participantId}`, {
         prefixUrl: CAMPAIGNS_BASE_URL,
         headers: { Authorization: authorization },

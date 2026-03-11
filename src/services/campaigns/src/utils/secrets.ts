@@ -1,7 +1,7 @@
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 
 /**
- * Campaigns service configuration fetched from AWS Secrets Manager.
+ * Campaigns service configuration fetched from AWS SSM Parameter Store.
  */
 export interface CampaignsServiceConfig {
     /** Aurora DSQL cluster endpoint hostname. */
@@ -15,16 +15,16 @@ export interface CampaignsServiceConfig {
 let cachedConfig: CampaignsServiceConfig | null = null;
 
 /**
- * Fetches the campaigns service configuration from AWS Secrets Manager.
+ * Fetches the campaigns service configuration from AWS SSM Parameter Store.
  *
- * On the first invocation (cold start), retrieves the secret by name from
- * Secrets Manager and parses the JSON value. On subsequent invocations,
- * returns the cached configuration.
+ * On the first invocation (cold start), retrieves the DSQL cluster endpoint
+ * from SSM and reads the AWS region from the Lambda runtime environment.
+ * On subsequent invocations, returns the cached configuration.
  *
- * The secret name is read from the SECRET_NAME environment variable.
+ * The SSM parameter name is read from the DSQL_ENDPOINT_PARAM environment variable.
  *
  * @returns The parsed service configuration.
- * @throws Error if SECRET_NAME is not set or the secret cannot be retrieved.
+ * @throws Error if DSQL_ENDPOINT_PARAM is not set or the parameter cannot be retrieved.
  */
 export async function getServiceConfig(): Promise<CampaignsServiceConfig> {
     if (cachedConfig) {
@@ -42,27 +42,23 @@ export async function getServiceConfig(): Promise<CampaignsServiceConfig> {
         return cachedConfig;
     }
 
-    const secretName = process.env['SECRET_NAME'];
+    const paramName = process.env['DSQL_ENDPOINT_PARAM'];
 
-    if (!secretName) {
-        throw new Error('SECRET_NAME environment variable is required');
+    if (!paramName) {
+        throw new Error('DSQL_ENDPOINT_PARAM environment variable is required');
     }
 
-    const client = new SecretsManagerClient({});
-    const command = new GetSecretValueCommand({ SecretId: secretName });
+    const client = new SSMClient({});
+    const command = new GetParameterCommand({ Name: paramName });
     const response = await client.send(command);
 
-    if (!response.SecretString) {
-        throw new Error('Secret value is empty');
+    const dsqlClusterEndpoint = response.Parameter?.Value;
+
+    if (!dsqlClusterEndpoint) {
+        throw new Error(`SSM parameter ${paramName} has no value`);
     }
 
-    const parsed = JSON.parse(response.SecretString) as Record<string, unknown>;
-    const dsqlClusterEndpoint = parsed['dsqlClusterEndpoint'];
-    const dsqlRegion = parsed['dsqlRegion'];
-
-    if (typeof dsqlClusterEndpoint !== 'string' || typeof dsqlRegion !== 'string') {
-        throw new Error('Secret must contain dsqlClusterEndpoint and dsqlRegion string fields');
-    }
+    const dsqlRegion = process.env['AWS_REGION'] ?? 'us-east-1';
 
     cachedConfig = { dsqlClusterEndpoint, dsqlRegion };
 

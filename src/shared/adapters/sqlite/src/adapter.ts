@@ -57,7 +57,6 @@ type EqBuilder = (column: unknown, value: unknown) => unknown;
 
 type OrderByFn = (column: unknown) => unknown;
 
-
 /**
  * Database adapter for React Native/Expo mobile apps using SQLite.
  */
@@ -83,12 +82,8 @@ export class SQLiteAdapter extends BaseDatabaseAdapter {
 
     async initialize(): Promise<void> {
         try {
-            const { drizzle } = await import('drizzle-orm/expo-sqlite') as unknown as { drizzle: DrizzleFactory };
-            const {
-                eq,
-                asc,
-                desc,
-            } = await import('drizzle-orm') as unknown as {
+            const { drizzle } = (await import('drizzle-orm/expo-sqlite')) as unknown as { drizzle: DrizzleFactory };
+            const { eq, asc, desc } = (await import('drizzle-orm')) as unknown as {
                 eq: EqBuilder;
                 asc: OrderByFn;
                 desc: OrderByFn;

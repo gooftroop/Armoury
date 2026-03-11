@@ -24,9 +24,7 @@ export class MatchDAO extends BaseDAO<CoreMatch<MatchData>> {
     public async listTyped(): Promise<Match[]> {
         const raw = await this.list();
 
-        return raw
-            .filter((m) => m.matchData?.systemId === 'wh40k10e')
-            .map((m) => Match.fromMatch(m));
+        return raw.filter((m) => m.matchData?.systemId === 'wh40k10e').map((m) => Match.fromMatch(m));
     }
 
     /** Lists 40K matches that include a specific player. */

@@ -13,6 +13,10 @@
         "android": {
             "package": "com.armoury.mobile"
         },
-        "plugins": ["@sentry/react-native/expo", "expo-router", ["react-native-auth0", { "domain": "${EXPO_PUBLIC_AUTH0_DOMAIN}" }]]
+        "plugins": [
+            "@sentry/react-native/expo",
+            "expo-router",
+            ["react-native-auth0", { "domain": "${EXPO_PUBLIC_AUTH0_DOMAIN}" }]
+        ]
     }
 }

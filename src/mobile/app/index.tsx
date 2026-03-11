@@ -103,7 +103,9 @@ export default function LandingScreen() {
 
             const status = getSyncStatus(manifest.id, systemSyncStates);
 
-            if (status === 'syncing') {return;}
+            if (status === 'syncing') {
+                return;
+            }
 
             setActivatingId(manifest.id);
             const system = await resolveGameSystem(manifest.id);
@@ -149,11 +151,7 @@ export default function LandingScreen() {
 
             {!isAuthenticated && (
                 <YStack style={styles.authSection}>
-                    <Button
-                        size="$3"
-                        theme="accent"
-                        onPress={() => void authorize({ scope: 'openid profile email' })}
-                    >
+                    <Button size="$3" theme="accent" onPress={() => void authorize({ scope: 'openid profile email' })}>
                         Sign In
                     </Button>
                     <Paragraph color="$mutedForeground" size="$2">
@@ -162,14 +160,9 @@ export default function LandingScreen() {
                 </YStack>
             )}
 
-            <Paragraph
-                color="$mutedForeground"
-                size="$1"
-                opacity={0.6}
-                style={styles.disclaimer}
-            >
-                This is an unofficial, fan-made tool. Not affiliated with or endorsed by any game
-                publisher. All trademarks are property of their respective owners.
+            <Paragraph color="$mutedForeground" size="$1" opacity={0.6} style={styles.disclaimer}>
+                This is an unofficial, fan-made tool. Not affiliated with or endorsed by any game publisher. All
+                trademarks are property of their respective owners.
             </Paragraph>
         </ScrollView>
     );
@@ -226,9 +219,7 @@ function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemT
 
                 {!isSynced && (
                     <View style={styles.overlay}>
-                        {isSyncing ? (
-                            <ActivityIndicator size="small" color="#ffffff" />
-                        ) : null}
+                        {isSyncing ? <ActivityIndicator size="small" color="#ffffff" /> : null}
                         <Paragraph
                             color={isError ? '$destructive' : '$color'}
                             fontWeight="600"

@@ -18,12 +18,7 @@ describe('friend routes', () => {
 
     describe('sendFriendRequest', () => {
         it('creates a pending friend request and returns 201', async () => {
-            const response = await sendFriendRequest(
-                adapter,
-                { userId: 'user-2' },
-                null,
-                baseUserContext,
-            );
+            const response = await sendFriendRequest(adapter, { userId: 'user-2' }, null, baseUserContext);
 
             expect(response.statusCode).toBe(201);
             const payload = JSON.parse(response.body) as Friend;

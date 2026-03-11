@@ -116,9 +116,7 @@ function extractUnitAbilities(entry: BattleScribeSelectionEntry): UnitAbility[] 
                 id: profile['@_id'],
                 name: profile['@_name'],
                 description:
-                    getCharacteristicValue(chars, 'Description') ??
-                    getCharacteristicValue(chars, 'Effect') ??
-                    '',
+                    getCharacteristicValue(chars, 'Description') ?? getCharacteristicValue(chars, 'Effect') ?? '',
             });
         }
     }
@@ -147,8 +145,7 @@ function extractWargearAbilities(entry: BattleScribeSelectionEntry): WargearAbil
         abilities.push({
             id: profile['@_id'],
             name: profile['@_name'],
-            description:
-                getCharacteristicValue(chars, 'Description') ?? getCharacteristicValue(chars, 'Effect') ?? '',
+            description: getCharacteristicValue(chars, 'Description') ?? getCharacteristicValue(chars, 'Effect') ?? '',
         });
     }
 
@@ -162,10 +159,7 @@ function extractWargearAbilities(entry: BattleScribeSelectionEntry): WargearAbil
  * @param abilities - Already-extracted unit abilities to search for "Leader" ability
  * @returns LeaderInfo if the unit has leader data, undefined otherwise
  */
-function extractLeaderInfo(
-    entry: BattleScribeSelectionEntry,
-    abilities: UnitAbility[],
-): LeaderInfo | undefined {
+function extractLeaderInfo(entry: BattleScribeSelectionEntry, abilities: UnitAbility[]): LeaderInfo | undefined {
     const leaderAbility = abilities.find((ability) => ability.name.toLowerCase() === 'leader')?.description;
     const categoryLinks = ensureArray(entry.categoryLinks?.categoryLink);
     const canAttachTo = categoryLinks
@@ -351,8 +345,7 @@ function buildStratagem(
         sourceSha,
         cp: Number.isNaN(cp) ? 0 : cp,
         phase: getCharacteristicValue(chars, 'Phase') ?? '',
-        description:
-            getCharacteristicValue(chars, 'Description') ?? getCharacteristicValue(chars, 'Effect') ?? '',
+        description: getCharacteristicValue(chars, 'Description') ?? getCharacteristicValue(chars, 'Effect') ?? '',
         detachmentId,
     };
 }
@@ -394,8 +387,7 @@ function extractEntryDescription(entry: BattleScribeSelectionEntry): string {
 
     for (const profile of profiles) {
         const chars = extractProfileCharacteristics(profile);
-        const description =
-            getCharacteristicValue(chars, 'Description') ?? getCharacteristicValue(chars, 'Effect');
+        const description = getCharacteristicValue(chars, 'Description') ?? getCharacteristicValue(chars, 'Effect');
 
         if (description) {
             return description;
@@ -656,7 +648,16 @@ function traverseEntry(
     const nestedEntries = ensureArray(entry.selectionEntries?.selectionEntry);
 
     for (const nested of nestedEntries) {
-        traverseEntry(nested, primarySourceFile, sourceSha, catId, stratagemsById, detachmentsById, enhancementsById, currentDetachmentId);
+        traverseEntry(
+            nested,
+            primarySourceFile,
+            sourceSha,
+            catId,
+            stratagemsById,
+            detachmentsById,
+            enhancementsById,
+            currentDetachmentId,
+        );
     }
 
     const groups = ensureArray(entry.selectionEntryGroups?.selectionEntryGroup);
@@ -665,7 +666,16 @@ function traverseEntry(
         const groupEntries = ensureArray(group.selectionEntries?.selectionEntry);
 
         for (const groupEntry of groupEntries) {
-            traverseEntry(groupEntry, primarySourceFile, sourceSha, catId, stratagemsById, detachmentsById, enhancementsById, currentDetachmentId);
+            traverseEntry(
+                groupEntry,
+                primarySourceFile,
+                sourceSha,
+                catId,
+                stratagemsById,
+                detachmentsById,
+                enhancementsById,
+                currentDetachmentId,
+            );
         }
     }
 }
@@ -777,7 +787,15 @@ function parseFactionData(catalogue: BattleScribeCatalogue, sourceFiles: string[
     const enhancementsById = new Map<string, Enhancement>();
 
     for (const entry of allEntries) {
-        traverseEntry(entry, primarySourceFile, sourceSha, cat['@_id'], stratagemsById, detachmentsById, enhancementsById);
+        traverseEntry(
+            entry,
+            primarySourceFile,
+            sourceSha,
+            cat['@_id'],
+            stratagemsById,
+            detachmentsById,
+            enhancementsById,
+        );
     }
 
     const sharedGroups = ensureArray(cat.sharedSelectionEntryGroups?.selectionEntryGroup);
@@ -786,7 +804,15 @@ function parseFactionData(catalogue: BattleScribeCatalogue, sourceFiles: string[
         const groupEntries = ensureArray(group.selectionEntries?.selectionEntry);
 
         for (const groupEntry of groupEntries) {
-            traverseEntry(groupEntry, primarySourceFile, sourceSha, cat['@_id'], stratagemsById, detachmentsById, enhancementsById);
+            traverseEntry(
+                groupEntry,
+                primarySourceFile,
+                sourceSha,
+                cat['@_id'],
+                stratagemsById,
+                detachmentsById,
+                enhancementsById,
+            );
         }
     }
 

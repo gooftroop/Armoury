@@ -13,13 +13,12 @@ import type { User, CreateUserRequest } from '@clients-users/types.js';
  * @param params - The user creation payload
  * @returns Promise resolving to the created user
  */
-export async function postUser(
-    authorization: string,
-    params: CreateUserRequest,
-): Promise<User> {
-    return ky.post('users', {
-        prefixUrl: USERS_BASE_URL,
-        headers: { Authorization: authorization },
-        json: params,
-    }).json<User>();
+export async function postUser(authorization: string, params: CreateUserRequest): Promise<User> {
+    return ky
+        .post('users', {
+            prefixUrl: USERS_BASE_URL,
+            headers: { Authorization: authorization },
+            json: params,
+        })
+        .json<User>();
 }

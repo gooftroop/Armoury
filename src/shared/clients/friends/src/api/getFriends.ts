@@ -13,8 +13,10 @@ import type { Friend } from '@clients-friends/types.js';
  * @returns Promise resolving to an array of friend relationships.
  */
 export async function getFriends(authorization: string): Promise<Friend[]> {
-    return ky.get('friends', {
-        prefixUrl: FRIENDS_BASE_URL,
-        headers: { Authorization: authorization },
-    }).json<Friend[]>();
+    return ky
+        .get('friends', {
+            prefixUrl: FRIENDS_BASE_URL,
+            headers: { Authorization: authorization },
+        })
+        .json<Friend[]>();
 }

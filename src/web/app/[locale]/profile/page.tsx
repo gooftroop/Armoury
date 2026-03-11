@@ -138,9 +138,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <div className="mx-auto w-full max-w-2xl">
                 <Card>
                     <CardHeader className="text-center">
-                        <CardTitle className="text-2xl font-bold text-primary">
-                            {t('title')}
-                        </CardTitle>
+                        <CardTitle className="text-2xl font-bold text-primary">{t('title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center gap-6 p-8">
                         {/* Avatar */}
@@ -158,22 +156,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                         <div className="w-full space-y-4">
                             {/* Email */}
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-secondary">
-                                    {t('email')}
-                                </span>
+                                <span className="text-sm font-medium text-secondary">{t('email')}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-foreground">{email}</span>
-                                    {emailVerified && (
-                                        <Badge variant="secondary">✓</Badge>
-                                    )}
+                                    {emailVerified && <Badge variant="secondary">✓</Badge>}
                                 </div>
                             </div>
 
                             {/* Member Since */}
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-secondary">
-                                    {t('memberSince')}
-                                </span>
+                                <span className="text-sm font-medium text-secondary">{t('memberSince')}</span>
                                 <span className="text-sm text-foreground">{memberSince}</span>
                             </div>
                         </div>

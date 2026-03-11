@@ -91,10 +91,13 @@ describe('getCampaigns', () => {
 
         await getCampaigns(AUTH);
 
-        expect(mockGet).toHaveBeenCalledWith('campaigns', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockGet).toHaveBeenCalledWith(
+            'campaigns',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('has a truthy prefixUrl', async () => {
@@ -117,10 +120,13 @@ describe('getCampaign', () => {
     it('calls ky.get with the campaign ID in the URL', async () => {
         await getCampaign(AUTH, { campaignId: 'camp-1' });
 
-        expect(mockGet).toHaveBeenCalledWith('campaigns/camp-1', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockGet).toHaveBeenCalledWith(
+            'campaigns/camp-1',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('has a truthy prefixUrl', async () => {
@@ -144,11 +150,14 @@ describe('postCampaign', () => {
     it('calls ky.post with correct URL and json body', async () => {
         await postCampaign(AUTH, createParams);
 
-        expect(mockPost).toHaveBeenCalledWith('campaigns', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-            json: createParams,
-        }));
+        expect(mockPost).toHaveBeenCalledWith(
+            'campaigns',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+                json: createParams,
+            }),
+        );
     });
 
     it('has a truthy prefixUrl', async () => {
@@ -173,10 +182,13 @@ describe('putCampaign', () => {
     it('calls ky.put with the campaign ID in the URL', async () => {
         await putCampaign(AUTH, updateParams);
 
-        expect(mockPut).toHaveBeenCalledWith('campaigns/camp-1', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockPut).toHaveBeenCalledWith(
+            'campaigns/camp-1',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('passes the request body without campaignId', async () => {
@@ -199,10 +211,13 @@ describe('deleteCampaign', () => {
     it('calls ky.delete with the campaign ID in the URL', async () => {
         await deleteCampaign(AUTH, { campaignId: 'camp-1' });
 
-        expect(mockDelete).toHaveBeenCalledWith('campaigns/camp-1', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockDelete).toHaveBeenCalledWith(
+            'campaigns/camp-1',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('has a truthy prefixUrl', async () => {
@@ -225,10 +240,13 @@ describe('getParticipants', () => {
 
         await getParticipants(AUTH, { campaignId: 'camp-1' });
 
-        expect(mockGet).toHaveBeenCalledWith('campaigns/camp-1/participants', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockGet).toHaveBeenCalledWith(
+            'campaigns/camp-1/participants',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('has a truthy prefixUrl', async () => {
@@ -247,10 +265,13 @@ describe('getParticipant', () => {
 
         await getParticipant(AUTH, { campaignId: 'camp-1', participantId: 'part-1' });
 
-        expect(mockGet).toHaveBeenCalledWith('campaigns/camp-1/participants/part-1', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockGet).toHaveBeenCalledWith(
+            'campaigns/camp-1/participants/part-1',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('has a truthy prefixUrl', async () => {
@@ -277,10 +298,13 @@ describe('postParticipant', () => {
 
         await postParticipant(AUTH, joinParams);
 
-        expect(mockPost).toHaveBeenCalledWith('campaigns/camp-1/participants', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockPost).toHaveBeenCalledWith(
+            'campaigns/camp-1/participants',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('passes the request body without campaignId', async () => {
@@ -320,10 +344,13 @@ describe('putParticipant', () => {
 
         await putParticipant(AUTH, updateParams);
 
-        expect(mockPut).toHaveBeenCalledWith('campaigns/camp-1/participants/part-1', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockPut).toHaveBeenCalledWith(
+            'campaigns/camp-1/participants/part-1',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('passes the request body without campaignId or participantId', async () => {
@@ -352,10 +379,13 @@ describe('deleteParticipant', () => {
     it('calls ky.delete with campaign ID and participant ID in the URL', async () => {
         await deleteParticipant(AUTH, { campaignId: 'camp-1', participantId: 'part-1' });
 
-        expect(mockDelete).toHaveBeenCalledWith('campaigns/camp-1/participants/part-1', expect.objectContaining({
-            prefixUrl: expect.anything(),
-            headers: { Authorization: AUTH },
-        }));
+        expect(mockDelete).toHaveBeenCalledWith(
+            'campaigns/camp-1/participants/part-1',
+            expect.objectContaining({
+                prefixUrl: expect.anything(),
+                headers: { Authorization: AUTH },
+            }),
+        );
     });
 
     it('has a truthy prefixUrl', async () => {

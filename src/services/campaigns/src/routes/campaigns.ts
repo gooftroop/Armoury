@@ -109,7 +109,9 @@ export const updateCampaign: RouteHandler = async (
         name: request.name,
         type: request.type,
         narrative: request.narrative as Campaign['narrative'],
-        campaignData: (request.campaignData !== undefined ? request.campaignData : existing.campaignData) as Campaign['campaignData'],
+        campaignData: (request.campaignData !== undefined
+            ? request.campaignData
+            : existing.campaignData) as Campaign['campaignData'],
         startDate: request.startDate,
         endDate: request.endDate,
         status: request.status,

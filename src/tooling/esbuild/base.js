@@ -78,7 +78,10 @@ export function baseOptions(entryPoints, cwd) {
 export function parseEntryPoints() {
     const envEntries = process.env.ESBUILD_ENTRIES;
     if (envEntries) {
-        return envEntries.split(',').map((e) => e.trim()).filter(Boolean);
+        return envEntries
+            .split(',')
+            .map((e) => e.trim())
+            .filter(Boolean);
     }
 
     const args = process.argv.slice(2);

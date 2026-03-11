@@ -253,10 +253,10 @@ describe('Partial failure', () => {
         const failureDao = createRejectingDao(new Error('Mock DAO failure'));
 
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const game = new GameData(
+        const game = new GameData(
             buildDeps({
-    coreRulesDAO: successDao as unknown as GameDataDeps['coreRulesDAO'],
-    aeldariDAO: failureDao as unknown as GameDataDeps['aeldariDAO'],
+                coreRulesDAO: successDao as unknown as GameDataDeps['coreRulesDAO'],
+                aeldariDAO: failureDao as unknown as GameDataDeps['aeldariDAO'],
             }),
         );
 
@@ -275,10 +275,10 @@ describe('Partial failure', () => {
         const coreRulesDao = createResolvedDao(coreRules);
         const toggle = createToggleDao(factionData, true);
 
-    const game = new GameData(
+        const game = new GameData(
             buildDeps({
-    coreRulesDAO: coreRulesDao as unknown as GameDataDeps['coreRulesDAO'],
-    aeldariDAO: toggle.dao as unknown as GameDataDeps['aeldariDAO'],
+                coreRulesDAO: coreRulesDao as unknown as GameDataDeps['coreRulesDAO'],
+                aeldariDAO: toggle.dao as unknown as GameDataDeps['aeldariDAO'],
             }),
         );
 
@@ -297,9 +297,9 @@ describe('Data consistency', () => {
     it('sync plus immediate read returns correct data', async () => {
         const coreRules = makeCoreRules();
 
-    const game = new GameData(
+        const game = new GameData(
             buildDeps({
-    coreRulesDAO: createResolvedDao(coreRules) as unknown as GameDataDeps['coreRulesDAO'],
+                coreRulesDAO: createResolvedDao(coreRules) as unknown as GameDataDeps['coreRulesDAO'],
             }),
         );
 

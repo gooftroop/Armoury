@@ -16,29 +16,14 @@ import type { BattleSize } from '@wh40k10e/models/ArmyModel.js';
  * Phase within a player's turn in a 40K battle round.
  * Follows the 10th Edition turn sequence including pre-game and end-of-turn phases.
  */
-export type GamePhase =
-    | 'Setup'
-    | 'Deployment'
-    | 'Command'
-    | 'Movement'
-    | 'Shooting'
-    | 'Charge'
-    | 'Fight'
-    | 'End';
+export type GamePhase = 'Setup' | 'Deployment' | 'Command' | 'Movement' | 'Shooting' | 'Charge' | 'Fight' | 'End';
 
 /**
  * Canonical ordering of in-turn phases within a player's turn.
  * Excludes pre-game phases (Setup, Deployment) which are not part of the turn cycle.
  * Used by the Match class to advance through the phase state machine.
  */
-export const PHASE_ORDER: readonly GamePhase[] = [
-    'Command',
-    'Movement',
-    'Shooting',
-    'Charge',
-    'Fight',
-    'End',
-];
+export const PHASE_ORDER: readonly GamePhase[] = ['Command', 'Movement', 'Shooting', 'Charge', 'Fight', 'End'];
 
 // ============ MISSION CONFIG ============
 

@@ -1,10 +1,4 @@
-import {
-    Platform,
-    type DatabaseAdapter,
-    type EntityType,
-    type EntityMap,
-    type QueryOptions,
-} from '@data/adapter.js';
+import { Platform, type DatabaseAdapter, type EntityType, type EntityMap, type QueryOptions } from '@data/adapter.js';
 import { getEntityCodec } from '@data/codec.js';
 import type { FileSyncStatus } from '@data/types.js';
 

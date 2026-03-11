@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import { BaseDAO } from '@data/dao/BaseDAO.js';
 import type { Match } from '@models/MatchModel.js';
@@ -24,7 +23,6 @@ type PgCoreModule = {
     text: (...args: unknown[]) => ColumnBuilder;
     integer: (...args: unknown[]) => ColumnBuilder;
     boolean: (...args: unknown[]) => ColumnBuilder;
-    jsonb: (...args: unknown[]) => ColumnBuilder;
     timestamp: (...args: unknown[]) => ColumnBuilder;
     index: (...args: unknown[]) => IndexBuilder;
 };
@@ -36,20 +34,22 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
-const { pgTable, text, jsonb } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
+const { pgTable, text } = pgCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for match entities. */
 export const matchesTable = pgTable('matches', {
-    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     systemId: text('system_id').notNull(),
-    players: jsonb('players').notNull(),
-    turn: jsonb('turn').notNull(),
-    score: jsonb('score'),
-    outcome: jsonb('outcome').notNull(),
+    players: text('players').notNull(),
+    turn: text('turn').notNull(),
+    score: text('score'),
+    outcome: text('outcome').notNull(),
     campaignId: text('campaign_id'),
-    matchData: jsonb('match_data'),
+    matchData: text('match_data'),
     notes: text('notes').notNull(),
     playedAt: text('played_at'),
     createdAt: text('created_at').notNull(),
@@ -58,7 +58,10 @@ export const matchesTable = pgTable('matches', {
 
 /** Drizzle SQLite table mapping for match entities. */
 export const matchesSqliteTable = sl.sqliteTable('matches', {
-    id: sl.text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: sl
+        .text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     systemId: sl.text('system_id').notNull(),
     players: sl.text('players').notNull(),
     turn: sl.text('turn').notNull(),
@@ -87,7 +90,7 @@ export class MatchDAO extends BaseDAO<Match> {
 
     /**
      * Lists matches that include a specific player.
-     * Filters in-memory since the adapter has no JSON-contains query for JSONB arrays of objects.
+     * Filters in-memory since the adapter has no JSON-contains query for TEXT-serialized arrays of objects.
      */
     public async listByPlayer(playerId: string): Promise<Match[]> {
         const matches = (await this.adapter.getAll(this.getStore())) as Match[];

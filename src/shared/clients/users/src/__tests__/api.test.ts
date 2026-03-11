@@ -9,7 +9,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { CreateUserRequest, UpdateUserRequest, UserParams, CreateAccountRequest, UpdateAccountRequest } from '@clients-users/types.js';
+import type {
+    CreateUserRequest,
+    UpdateUserRequest,
+    UserParams,
+    CreateAccountRequest,
+    UpdateAccountRequest,
+} from '@clients-users/types.js';
 
 const { mockJson, mockGet, mockPost, mockPut, mockDelete } = vi.hoisted(() => {
     const mockJson = vi.fn();

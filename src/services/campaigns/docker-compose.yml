@@ -1,9 +1,9 @@
 services:
-    postgres:
+    campaigns-db:
         image: postgres:16-alpine
         container_name: armoury-campaigns-db
         ports:
-            - '5432:5432'
+            - '5435:5432'
         environment:
             POSTGRES_DB: armoury_campaigns
             POSTGRES_USER: armoury

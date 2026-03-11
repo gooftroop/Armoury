@@ -79,7 +79,7 @@ describe('BSDataBaseDAO', () => {
             expect(result).toBe(testData);
             expect(dao.fetchRemoteDataFn).toHaveBeenCalled();
             expect(dao.fetchRemoteDataFn).toHaveBeenCalledTimes(1);
-            expect(adapter.getSyncStatus('test:file.gst')).resolves.toMatchObject({
+            await expect(adapter.getSyncStatus('test:file.gst')).resolves.toMatchObject({
                 fileKey: 'test:file.gst',
                 sha: 'sha123',
             });
@@ -115,7 +115,7 @@ describe('BSDataBaseDAO', () => {
 
             expect(result).toBe(newData);
             expect(dao.fetchRemoteDataFn).toHaveBeenCalled();
-            expect(adapter.getSyncStatus('test:file.gst')).resolves.toMatchObject({
+            await expect(adapter.getSyncStatus('test:file.gst')).resolves.toMatchObject({
                 fileKey: 'test:file.gst',
                 sha: 'newSha',
             });

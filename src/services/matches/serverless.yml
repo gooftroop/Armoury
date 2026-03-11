@@ -9,21 +9,22 @@ provider:
     memorySize: 256
     timeout: 29
     environment:
-        SECRET_NAME: armoury/${self:provider.stage}/matches
+        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/matches/dsql-cluster-endpoint'}
         NODE_OPTIONS: '--import ./src/instrument.js'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
+        DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
     iam:
         role:
             statements:
                 - Effect: Allow
                   Action:
                       - dsql:DbConnectAdmin
-                  Resource: '*'
+                  Resource: 'arn:aws:dsql:${self:provider.region}:${aws:accountId}:cluster/*'
                 - Effect: Allow
                   Action:
-                      - secretsmanager:GetSecretValue
-                  Resource: '*'
+                      - ssm:GetParameter
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
                 - Effect: Allow
                   Action:
                       - execute-api:ManageConnections
@@ -44,40 +45,14 @@ build:
             js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
         external:
             - '@aws-sdk/dsql-signer'
-            - '@aws-sdk/client-secrets-manager'
+            - '@aws-sdk/client-ssm'
             - '@aws-sdk/client-apigatewaymanagementapi'
             - pg
 
 plugins:
     - serverless-offline
-    - serverless-domain-manager
 
 custom:
-    customDomain:
-        rest:
-            domainName: matches.${param:domainName}
-            certificateArn: ${param:certificateArn}
-            hostedZoneId: ${param:hostedZoneId}
-            basePath: ''
-            stage: ${self:provider.stage}
-            endpointType: REGIONAL
-            securityPolicy: tls_1_2
-            createRoute53Record: true
-            createRoute53IPv6Record: true
-            autoDomain: true
-            enabled: ${param:customDomainEnabled}
-        websocket:
-            domainName: ws-matches.${param:domainName}
-            certificateArn: ${param:certificateArn}
-            hostedZoneId: ${param:hostedZoneId}
-            basePath: ''
-            stage: ${self:provider.stage}
-            endpointType: REGIONAL
-            securityPolicy: tls_1_2
-            createRoute53Record: true
-            createRoute53IPv6Record: true
-            autoDomain: true
-            enabled: ${param:customDomainEnabled}
     serverless-offline:
         httpPort: 3001
         websocketPort: 3002

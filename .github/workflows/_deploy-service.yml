@@ -21,6 +21,26 @@ on:
                 required: false
                 type: boolean
                 default: false
+            needs-authorizer:
+                description: 'Whether the service requires the Lambda authorizer ARN (resolved from CloudFormation at deploy time)'
+                required: false
+                type: boolean
+                default: false
+            service-short-name:
+                description: 'Short service name used for routing (e.g. users, campaigns, matches, friends). Empty = skip routing rule creation.'
+                required: false
+                type: string
+                default: ''
+            has-websocket:
+                description: 'Whether the service has a WebSocket API that needs a WS domain mapping'
+                required: false
+                type: boolean
+                default: false
+            routing-rule-priority:
+                description: 'Base priority for this service routing rule (unique per service, 1-999999). Required if service-short-name is set.'
+                required: false
+                type: number
+                default: 0
 
 jobs:
     ci:
@@ -38,10 +58,10 @@ jobs:
 
             - name: Build dependencies
               if: inputs.needs-shared-build
-              run: npx turbo run build --filter=${{ inputs.service-name }}^...
+              run: npx turbo run build generate:types --filter=${{ inputs.service-name }}^...
 
             - name: Typecheck
-              run: npm run typecheck -w ${{ inputs.service-name }}
+              run: npx turbo run typecheck --filter=${{ inputs.service-name }}
 
             - name: Lint
               run: npm run lint -w ${{ inputs.service-name }}
@@ -50,7 +70,7 @@ jobs:
               run: npm run format:check -w ${{ inputs.service-name }}
 
             - name: Test
-              run: npm test -w ${{ inputs.service-name }}
+              run: npx turbo run test --filter=${{ inputs.service-name }}
 
     deploy-sandbox:
         name: Deploy Sandbox
@@ -79,16 +99,170 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch DSQL config and generate token
+              if: inputs.has-migrations
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  DSQL_REGION="${{ vars.AWS_REGION || 'us-east-1' }}"
+                  DSQL_TOKEN=$(node --import=tsx src/services/__testing__/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
+                  echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${DSQL_REGION}" >> "${GITHUB_ENV}"
+                  echo "::add-mask::${DSQL_TOKEN}"
+                  echo "DSQL_TOKEN=${DSQL_TOKEN}" >> "${GITHUB_ENV}"
+
+            - name: Create PR schema
+              if: inputs.has-migrations && github.event_name == 'pull_request'
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: node --import=tsx src/services/__testing__/dbSchema.ts create "${DB_SCHEMA}"
+
             - name: Run migrations
               if: inputs.has-migrations
+              env:
+                  DB_SCHEMA: ${{ github.event_name == 'pull_request' && format('pr_{0}', github.event.pull_request.number) || 'public' }}
               run: npm run db:migrate -w ${{ inputs.service-name }}
+
+            - name: Fetch Authorizer ARN
+              if: inputs.needs-authorizer
+              run: |
+                  AUTHORIZER_STACK="armoury-authorizer-pr-${{ github.event.pull_request.number }}"
+                  if aws cloudformation describe-stacks --stack-name "${AUTHORIZER_STACK}" > /dev/null 2>&1; then
+                    AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
+                      --stack-name "${AUTHORIZER_STACK}" \
+                      --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
+                      --output text)
+                    echo "Resolved Authorizer ARN from stack ${AUTHORIZER_STACK}"
+                    echo "AUTHORIZER_ARN=${AUTHORIZER_ARN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Authorizer stack ${AUTHORIZER_STACK} not found. Deploying without authorizer integration."
+                  fi
 
             - name: Install Serverless Framework
               run: npm install -g serverless
 
             - name: Deploy
               working-directory: ${{ inputs.working-directory }}
-              run: serverless deploy --stage pr-${{ github.event.pull_request.number }}
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+                  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
+
+                  DEPLOY_ARGS="--stage pr-${{ github.event.pull_request.number }}"
+                  if [[ "${{ inputs.needs-authorizer }}" == "true" && -n "${AUTHORIZER_ARN:-}" ]]; then
+                    DEPLOY_ARGS="${DEPLOY_ARGS} --param=\"authorizerArn=${AUTHORIZER_ARN}\""
+                  fi
+
+                  serverless deploy ${DEPLOY_ARGS}
+
+            - name: Create REST routing rule
+              if: github.event_name == 'pull_request' && inputs.service-short-name != ''
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  BASE_PRIORITY: ${{ inputs.routing-rule-priority }}
+                  WILDCARD_DOMAIN: '*.sandbox.armoury-app.com'
+              run: |
+                  # Compute a unique priority per PR to avoid collisions between concurrent PRs.
+                  # Each service has a unique base priority (1-999); adding PR_NUMBER * 1000
+                  # gives each PR its own priority band (e.g. PR 42 + base 100 = 42100).
+                  PRIORITY=$((PR_NUMBER * 1000 + BASE_PRIORITY))
+                  STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
+                  REST_API_ID=$(aws cloudformation describe-stacks \
+                    --stack-name "${STACK_NAME}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`ServiceEndpoint`].OutputValue' \
+                    --output text | grep -oP '(?<=https://)[^.]+' || true)
+
+                  # Fallback: get REST API ID from CloudFormation resource
+                  if [ -z "${REST_API_ID}" ]; then
+                    REST_API_ID=$(aws cloudformation describe-stack-resource \
+                      --stack-name "${STACK_NAME}" \
+                      --logical-resource-id ApiGatewayRestApi \
+                      --query 'StackResourceDetail.PhysicalResourceId' \
+                      --output text)
+                  fi
+
+                  echo "REST API ID: ${REST_API_ID}"
+
+                  # Delete existing routing rule for this PR+service if it exists
+                  EXISTING_RULE_ARN=$(aws apigatewayv2 list-routing-rules \
+                    --domain-name "${WILDCARD_DOMAIN}" \
+                    --output json \
+                    | jq -r ".RoutingRules[] | select(.Priority == ${PRIORITY}) | .RoutingRuleArn" || true)
+
+                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ] && [ "${EXISTING_RULE_ARN}" != "null" ]; then
+                    EXISTING_RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
+                    echo "Deleting existing routing rule: ${EXISTING_RULE_ID}"
+                    aws apigatewayv2 delete-routing-rule \
+                      --domain-name "${WILDCARD_DOMAIN}" \
+                      --routing-rule-id "${EXISTING_RULE_ID}"
+                  fi
+
+                  # Create routing rule: Host header match + base path match
+                  aws apigatewayv2 create-routing-rule \
+                    --domain-name "${WILDCARD_DOMAIN}" \
+                    --priority "${PRIORITY}" \
+                    --conditions '[
+                      {
+                        "MatchHeaders": {
+                          "AnyOf": [{
+                            "Header": "Host",
+                            "ValueGlob": "'"pr-${PR_NUMBER}.sandbox.armoury-app.com"'"
+                          }]
+                        }
+                      },
+                      {
+                        "MatchBasePaths": {
+                          "AnyOf": ["'"${SERVICE_SHORT_NAME}"'"]
+                        }
+                      }
+                    ]' \
+                    --actions '[{
+                      "InvokeApi": {
+                        "ApiId": "'"${REST_API_ID}"'",
+                        "Stage": "pr-'"${PR_NUMBER}"'",
+                        "StripBasePath": true
+                      }
+                    }]'
+
+                  echo "Created routing rule for pr-${PR_NUMBER}.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${REST_API_ID}"
+
+            - name: Create WS domain mapping
+              if: github.event_name == 'pull_request' && inputs.has-websocket
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  WS_DOMAIN: 'ws-sandbox.armoury-app.com'
+              run: |
+                  STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
+
+                  # Get WebSocket API ID from CloudFormation
+                  WS_API_ID=$(aws cloudformation describe-stack-resource \
+                    --stack-name "${STACK_NAME}" \
+                    --logical-resource-id WebsocketsApi \
+                    --query 'StackResourceDetail.PhysicalResourceId' \
+                    --output text)
+
+                  echo "WebSocket API ID: ${WS_API_ID}"
+
+                  # Serialize WS domain creation to avoid API Gateway rate limits (1 per 30s).
+                  # The GitHub concurrency group ensures only one WS mapping runs at a time.
+                  # Sleep briefly to respect the rate limit window from any prior creation.
+                  sleep 5
+
+                  # Create API mapping: ws-sandbox.armoury-app.com/pr-{N}-{service} -> WS API
+                  # Include PR number in mapping key to avoid collisions between concurrent PRs.
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${WS_DOMAIN}" \
+                    --api-id "${WS_API_ID}" \
+                    --stage "pr-${PR_NUMBER}" \
+                    --api-mapping-key "pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}" || echo "::warning::WS API mapping creation failed (may already exist)"
+
+                  echo "Created WS API mapping for ws-sandbox.armoury-app.com/pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} -> ${WS_API_ID}"
 
     deploy-production:
         name: Deploy Production
@@ -117,9 +291,36 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch DSQL config and generate token
+              if: inputs.has-migrations
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/production/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  DSQL_REGION="${{ vars.AWS_REGION || 'us-east-1' }}"
+                  DSQL_TOKEN=$(node --import=tsx src/services/__testing__/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
+                  echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${DSQL_REGION}" >> "${GITHUB_ENV}"
+                  echo "::add-mask::${DSQL_TOKEN}"
+                  echo "DSQL_TOKEN=${DSQL_TOKEN}" >> "${GITHUB_ENV}"
+
             - name: Run migrations
               if: inputs.has-migrations
+              env:
+                  DB_SCHEMA: public
               run: npm run db:migrate -w ${{ inputs.service-name }}
+
+            - name: Fetch Authorizer ARN
+              if: inputs.needs-authorizer
+              run: |
+                  AUTHORIZER_STACK="armoury-authorizer-production"
+                  AUTHORIZER_ARN=$(aws cloudformation describe-stacks \
+                    --stack-name "${AUTHORIZER_STACK}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`AuthorizerArn`].OutputValue' \
+                    --output text)
+                  echo "Resolved Authorizer ARN from stack ${AUTHORIZER_STACK}"
+                  echo "AUTHORIZER_ARN=${AUTHORIZER_ARN}" >> "${GITHUB_ENV}"
 
             - name: Install Serverless Framework
               run: npm install -g serverless
@@ -127,8 +328,8 @@ jobs:
             - name: Deploy
               working-directory: ${{ inputs.working-directory }}
               env:
-                  DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
-                  ACM_CERTIFICATE_ARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
-                  ROUTE53_HOSTED_ZONE_ID: ${{ vars.ROUTE53_HOSTED_ZONE_ID }}
-                  CUSTOM_DOMAIN_ENABLED: 'true'
-              run: serverless deploy --stage production
+                  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+              run: |
+                  serverless deploy \
+                    --stage production \
+                    ${{ inputs.needs-authorizer && '--param="authorizerArn=${AUTHORIZER_ARN}"' || '' }}

@@ -6,7 +6,7 @@
  * catches all unhandled errors via the error handler middleware.
  *
  * Environment variables:
- * - SECRET_NAME: AWS Secrets Manager secret name containing DSQL configuration
+ * - DSQL_ENDPOINT_PARAM: SSM Parameter Store path for DSQL cluster endpoint
  */
 
 import * as Sentry from '@sentry/aws-serverless';
@@ -64,7 +64,7 @@ interface DSQLAdapterConstructor {
  * Resolves the DSQLAdapter class from @armoury/data at runtime using dynamic import.
  * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
  */
-const { DSQLAdapter } = await import('@armoury/data') as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
 
 /**
  * Singleton database adapter instance reused across warm Lambda invocations.
@@ -75,12 +75,12 @@ let adapterInstance: DatabaseAdapter | null = null;
 /**
  * Initializes the Aurora DSQL adapter on cold start.
  *
- * Reads cluster endpoint and region from Secrets Manager, creates the
+ * Reads cluster endpoint and region from SSM Parameter Store, creates the
  * DSQLAdapter instance, and calls initialize() to establish the database
  * connection. The adapter is cached in module scope for warm reuse.
  *
  * @returns The initialized database adapter ready for CRUD operations.
- * @throws Error if the secret name is missing or Secrets Manager retrieval fails.
+ * @throws Error if DSQL_ENDPOINT_PARAM is missing or SSM parameter retrieval fails.
  * @throws DatabaseError if the adapter fails to connect to Aurora DSQL.
  */
 async function initializeAdapter(): Promise<DatabaseAdapter> {

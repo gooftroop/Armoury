@@ -23,21 +23,18 @@ import { cn } from '@web/src/lib/utils.js';
 /**
  * Avatar size variants using class-variance-authority.
  */
-const avatarVariants = cva(
-    'relative flex shrink-0 overflow-hidden rounded-full',
-    {
-        variants: {
-            size: {
-                sm: 'h-8 w-8',
-                md: 'h-10 w-10',
-                lg: 'h-12 w-12',
-            },
-        },
-        defaultVariants: {
-            size: 'md',
+const avatarVariants = cva('relative flex shrink-0 overflow-hidden rounded-full', {
+    variants: {
+        size: {
+            sm: 'h-8 w-8',
+            md: 'h-10 w-10',
+            lg: 'h-12 w-12',
         },
     },
-);
+    defaultVariants: {
+        size: 'md',
+    },
+});
 
 /**
  * Props for the Avatar component.
@@ -62,16 +59,11 @@ export type AvatarFallbackProps = React.ComponentPropsWithoutRef<typeof AvatarPr
  * @param ref - Forwarded ref to the span element.
  * @returns The rendered Avatar component.
  */
-const Avatar = React.forwardRef<
-    React.ElementRef<typeof AvatarPrimitive.Root>,
-    AvatarProps
->(({ className, size, ...props }, ref) => (
-    <AvatarPrimitive.Root
-        className={cn(avatarVariants({ size, className }))}
-        ref={ref}
-        {...props}
-    />
-));
+const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(
+    ({ className, size, ...props }, ref) => (
+        <AvatarPrimitive.Root className={cn(avatarVariants({ size, className }))} ref={ref} {...props} />
+    ),
+);
 Avatar.displayName = 'Avatar';
 
 /**
@@ -81,16 +73,11 @@ Avatar.displayName = 'Avatar';
  * @param ref - Forwarded ref to the img element.
  * @returns The rendered AvatarImage component.
  */
-const AvatarImage = React.forwardRef<
-    React.ElementRef<typeof AvatarPrimitive.Image>,
-    AvatarImageProps
->(({ className, ...props }, ref) => (
-    <AvatarPrimitive.Image
-        className={cn('aspect-square h-full w-full', className)}
-        ref={ref}
-        {...props}
-    />
-));
+const AvatarImage = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Image>, AvatarImageProps>(
+    ({ className, ...props }, ref) => (
+        <AvatarPrimitive.Image className={cn('aspect-square h-full w-full', className)} ref={ref} {...props} />
+    ),
+);
 AvatarImage.displayName = 'AvatarImage';
 
 /**
@@ -100,19 +87,15 @@ AvatarImage.displayName = 'AvatarImage';
  * @param ref - Forwarded ref to the span element.
  * @returns The rendered AvatarFallback component.
  */
-const AvatarFallback = React.forwardRef<
-    React.ElementRef<typeof AvatarPrimitive.Fallback>,
-    AvatarFallbackProps
->(({ className, ...props }, ref) => (
-    <AvatarPrimitive.Fallback
-        className={cn(
-            'flex h-full w-full items-center justify-center rounded-full bg-muted',
-            className,
-        )}
-        ref={ref}
-        {...props}
-    />
-));
+const AvatarFallback = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Fallback>, AvatarFallbackProps>(
+    ({ className, ...props }, ref) => (
+        <AvatarPrimitive.Fallback
+            className={cn('flex h-full w-full items-center justify-center rounded-full bg-muted', className)}
+            ref={ref}
+            {...props}
+        />
+    ),
+);
 AvatarFallback.displayName = 'AvatarFallback';
 
 export { Avatar, AvatarImage, AvatarFallback, avatarVariants };

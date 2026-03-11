@@ -169,7 +169,7 @@ export interface Campaign<
     updatedAt: string;
 }
 
-/** 
+/**
  * Campaign participant record.
  *
  * @template TParticipantData - Game-system-specific participant data payload.
@@ -217,4 +217,3 @@ export interface CampaignParticipant<
     /** Updated timestamp. ISO 8601. */
     updatedAt: string;
 }
-

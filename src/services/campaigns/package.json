@@ -19,14 +19,15 @@
         "typecheck": "tsc --noEmit",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "db:generate": "TSX_TSCONFIG_PATH=tsconfig.drizzle.json NODE_OPTIONS='--import tsx' drizzle-kit generate",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
         "generate:types": "tsc -p tsconfig.build.json"
     },
     "dependencies": {
         "@armoury/data": "*",
         "@armoury/adapters-pglite": "*",
         "@armoury/models": "*",
-        "@aws-sdk/client-secrets-manager": "^3.0.0",
+        "@aws-sdk/client-ssm": "^3.0.0",
         "@sentry/aws-serverless": "^10.38.0"
     },
     "devDependencies": {
@@ -41,9 +42,12 @@
         "eslint": "^9.0.0",
         "prettier": "^3.0.0",
         "serverless-offline": "^14.4.0",
-        "serverless-domain-manager": "^7.0.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.0.0",
         "vitest": "^4.0.0"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
+        "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"
     }
 }

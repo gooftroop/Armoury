@@ -1,0 +1,80 @@
+diff --git a/node_modules/drizzle-orm/pg-core/dialect.cjs b/node_modules/drizzle-orm/pg-core/dialect.cjs
+index 87a1a45..4d83ae5 100644
+--- a/node_modules/drizzle-orm/pg-core/dialect.cjs
++++ b/node_modules/drizzle-orm/pg-core/dialect.cjs
+@@ -48,7 +48,7 @@ class PgDialect {
+     const migrationsSchema = typeof config === "string" ? "drizzle" : config.migrationsSchema ?? "drizzle";
+     const migrationTableCreate = import_sql2.sql`
+ 			CREATE TABLE IF NOT EXISTS ${import_sql2.sql.identifier(migrationsSchema)}.${import_sql2.sql.identifier(migrationsTable)} (
+-				id SERIAL PRIMARY KEY,
++				id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+ 				hash text NOT NULL,
+ 				created_at bigint
+ 			)
+@@ -59,18 +59,16 @@ class PgDialect {
+       import_sql2.sql`select id, hash, created_at from ${import_sql2.sql.identifier(migrationsSchema)}.${import_sql2.sql.identifier(migrationsTable)} order by created_at desc limit 1`
+     );
+     const lastDbMigration = dbMigrations[0];
+-    await session.transaction(async (tx) => {
+-      for await (const migration of migrations) {
+-        if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis) {
+-          for (const stmt of migration.sql) {
+-            await tx.execute(import_sql2.sql.raw(stmt));
+-          }
+-          await tx.execute(
+-            import_sql2.sql`insert into ${import_sql2.sql.identifier(migrationsSchema)}.${import_sql2.sql.identifier(migrationsTable)} ("hash", "created_at") values(${migration.hash}, ${migration.folderMillis})`
+-          );
++    for await (const migration of migrations) {
++      if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis) {
++        for (const stmt of migration.sql) {
++          await session.execute(import_sql2.sql.raw(stmt));
+         }
++        await session.execute(
++          import_sql2.sql`insert into ${import_sql2.sql.identifier(migrationsSchema)}.${import_sql2.sql.identifier(migrationsTable)} ("hash", "created_at") values(${migration.hash}, ${migration.folderMillis})`
++        );
+       }
+-    });
++    }
+   }
+   escapeName(name) {
+     return `"${name}"`;
+diff --git a/node_modules/drizzle-orm/pg-core/dialect.js b/node_modules/drizzle-orm/pg-core/dialect.js
+index c4ecdc8..ae9c111 100644
+--- a/node_modules/drizzle-orm/pg-core/dialect.js
++++ b/node_modules/drizzle-orm/pg-core/dialect.js
+@@ -46,7 +46,7 @@ class PgDialect {
+     const migrationsSchema = typeof config === "string" ? "drizzle" : config.migrationsSchema ?? "drizzle";
+     const migrationTableCreate = sql`
+ 			CREATE TABLE IF NOT EXISTS ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} (
+-				id SERIAL PRIMARY KEY,
++				id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+ 				hash text NOT NULL,
+ 				created_at bigint
+ 			)
+@@ -57,18 +57,16 @@ class PgDialect {
+       sql`select id, hash, created_at from ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} order by created_at desc limit 1`
+     );
+     const lastDbMigration = dbMigrations[0];
+-    await session.transaction(async (tx) => {
+-      for await (const migration of migrations) {
+-        if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis) {
+-          for (const stmt of migration.sql) {
+-            await tx.execute(sql.raw(stmt));
+-          }
+-          await tx.execute(
+-            sql`insert into ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} ("hash", "created_at") values(${migration.hash}, ${migration.folderMillis})`
+-          );
++    for await (const migration of migrations) {
++      if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis) {
++        for (const stmt of migration.sql) {
++          await session.execute(sql.raw(stmt));
+         }
++        await session.execute(
++          sql`insert into ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} ("hash", "created_at") values(${migration.hash}, ${migration.folderMillis})`
++        );
+       }
+-    });
++    }
+   }
+   escapeName(name) {
+     return `"${name}"`;

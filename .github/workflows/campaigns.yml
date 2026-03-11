@@ -22,6 +22,9 @@ jobs:
         with:
             service-name: '@armoury/campaigns'
             working-directory: src/services/campaigns
+            service-short-name: campaigns
+            routing-rule-priority: 200
             needs-shared-build: true
             has-migrations: true
+            needs-authorizer: true
         secrets: inherit

@@ -31,5 +31,9 @@
         "@armoury/esbuild": "*",
         "eslint": "^9.0.0",
         "prettier": "^3.0.0"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
+        "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"
     }
 }

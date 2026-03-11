@@ -21,6 +21,5 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    deploy:
-        uses: ./.github/workflows/_deploy-web.yml
-        secrets: inherit
+    ci:
+        uses: ./.github/workflows/_ci-web.yml

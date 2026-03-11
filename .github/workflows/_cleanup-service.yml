@@ -7,6 +7,26 @@ on:
                 description: 'Path to the service directory (e.g. src/services/campaigns)'
                 required: true
                 type: string
+            has-migrations:
+                description: 'Whether the service has database migrations (and thus a PR schema to drop)'
+                required: false
+                type: boolean
+                default: false
+            service-short-name:
+                description: 'Short service name used for routing (e.g. users, campaigns, matches, friends). Empty = skip routing rule cleanup.'
+                required: false
+                type: string
+                default: ''
+            has-websocket:
+                description: 'Whether the service has a WebSocket API mapping to clean up'
+                required: false
+                type: boolean
+                default: false
+            routing-rule-priority:
+                description: 'The routing rule priority used during deploy (needed to find the rule to delete)'
+                required: false
+                type: number
+                default: 0
 
 jobs:
     teardown:
@@ -31,9 +51,77 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch DSQL config from SSM
+              if: inputs.has-migrations
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${{ vars.AWS_REGION || 'us-east-1' }}" >> "${GITHUB_ENV}"
+
+            - name: Drop PR schema
+              if: inputs.has-migrations
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: node --import=tsx src/services/__testing__/dbSchema.ts drop "${DB_SCHEMA}"
+
             - name: Install Serverless Framework
               run: npm install -g serverless
 
             - name: Remove stage
               working-directory: ${{ inputs.working-directory }}
+              env:
+                  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
               run: serverless remove --stage pr-${{ github.event.pull_request.number }}
+
+            - name: Delete REST routing rule
+              if: inputs.service-short-name != ''
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  BASE_PRIORITY: ${{ inputs.routing-rule-priority }}
+                  WILDCARD_DOMAIN: '*.sandbox.armoury-app.com'
+              run: |
+                  # Compute priority using same formula as deploy: PR_NUMBER * 1000 + BASE_PRIORITY
+                  PRIORITY=$((PR_NUMBER * 1000 + BASE_PRIORITY))
+                  # Find and delete routing rule by priority
+                  EXISTING_RULE_ARN=$(aws apigatewayv2 list-routing-rules \
+                    --domain-name "${WILDCARD_DOMAIN}" \
+                    --output json \
+                    | jq -r ".RoutingRules[] | select(.Priority == ${PRIORITY}) | .RoutingRuleArn" || true)
+
+                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ] && [ "${EXISTING_RULE_ARN}" != "null" ]; then
+                    RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
+                    echo "Deleting routing rule ${RULE_ID} (priority ${PRIORITY}) for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-routing-rule \
+                      --domain-name "${WILDCARD_DOMAIN}" \
+                      --routing-rule-id "${RULE_ID}"
+                    echo "Routing rule deleted."
+                  else
+                    echo "No routing rule found at priority ${PRIORITY} — skipping."
+                  fi
+
+            - name: Delete WS API mapping
+              if: inputs.has-websocket
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  WS_DOMAIN: 'ws-sandbox.armoury-app.com'
+              run: |
+                  # Find and delete the WS API mapping for this PR+service (keyed by pr-{N}-{service})
+                  MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${WS_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
+
+                  if [ -n "${MAPPING_ID}" ] && [ "${MAPPING_ID}" != "None" ]; then
+                    echo "Deleting WS API mapping ${MAPPING_ID} for pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${WS_DOMAIN}" \
+                      --api-mapping-id "${MAPPING_ID}"
+                    echo "WS API mapping deleted."
+                  else
+                    echo "No WS API mapping found for pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} — skipping."
+                  fi

@@ -83,7 +83,6 @@ export interface FriendParams {
     friendId: string;
 }
 
-
 // === Presence Types ===
 
 /** The online status of a user in the presence system. */
@@ -141,7 +140,6 @@ export interface FriendOfflineMessage {
 
 /** Union of all possible messages received from the friends WebSocket server. */
 export type FriendsServerMessage = FriendOnlineMessage | FriendOfflineMessage;
-
 
 /**
  * Configuration for the friends WebSocket presence client.

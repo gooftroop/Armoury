@@ -38,7 +38,6 @@ export interface MatchDataBase<TPlayerState extends object = Record<string, unkn
     playerStateById: Record<string, TPlayerState>;
 }
 
-
 // ============ MATCH PLAYER ============
 
 /**

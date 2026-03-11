@@ -2,13 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { MatchDAO } from '@wh40k10e/dao/MatchDAO.js';
 import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
 import { makeMatch } from '../../../e2e/__fixtures__/makeMatch.ts';
-import type {
-    Match as CoreMatch,
-    MatchOutcome,
-    MatchPlayer,
-    MatchScore,
-    MatchTurn,
-} from '@models/MatchModel.js';
+import type { Match as CoreMatch, MatchOutcome, MatchPlayer, MatchScore, MatchTurn } from '@models/MatchModel.js';
 import type { MatchData } from '@wh40k10e/models/MatchData.js';
 import { Match } from '@wh40k10e/models/Match.js';
 
@@ -167,7 +161,7 @@ function makeCoreMatch(overrides: Partial<CoreMatch<MatchData>> = {}): CoreMatch
         turn: makeMatchTurn(),
         score: makeMatchScore(),
         outcome: makeMatchOutcome(),
-        ...overrides as Partial<CoreMatch>,
+        ...(overrides as Partial<CoreMatch>),
     }) as unknown as CoreMatch<MatchData>;
 }
 

@@ -45,12 +45,7 @@ describe('user routes', () => {
         });
 
         it('returns 400 when required fields are missing', async () => {
-            const response = await createUser(
-                adapter,
-                { sub: 'auth0|user-1' },
-                null,
-                baseUserContext,
-            );
+            const response = await createUser(adapter, { sub: 'auth0|user-1' }, null, baseUserContext);
 
             expect(response.statusCode).toBe(400);
             expect(JSON.parse(response.body)).toMatchObject({ error: 'ValidationError' });
@@ -158,24 +153,14 @@ describe('user routes', () => {
         });
 
         it('returns 404 when not found', async () => {
-            const response = await updateUser(
-                adapter,
-                { email: 'new@test.com' },
-                { id: 'missing' },
-                baseUserContext,
-            );
+            const response = await updateUser(adapter, { email: 'new@test.com' }, { id: 'missing' }, baseUserContext);
 
             expect(response.statusCode).toBe(404);
             expect(JSON.parse(response.body)).toMatchObject({ error: 'NotFound' });
         });
 
         it('returns 400 when id is missing', async () => {
-            const response = await updateUser(
-                adapter,
-                { email: 'new@test.com' },
-                null,
-                baseUserContext,
-            );
+            const response = await updateUser(adapter, { email: 'new@test.com' }, null, baseUserContext);
 
             expect(response.statusCode).toBe(400);
             expect(JSON.parse(response.body)).toMatchObject({ error: 'ValidationError' });

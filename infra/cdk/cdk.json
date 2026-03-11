@@ -1,0 +1,26 @@
+{
+    "app": "npx tsx bin/app.ts",
+    "watch": {
+        "include": ["**"],
+        "exclude": [
+            "README.md",
+            "cdk*.json",
+            "**/*.d.ts",
+            "**/*.js",
+            "tsconfig.json",
+            "package*.json",
+            "node_modules",
+            "dist"
+        ]
+    },
+    "context": {
+        "armoury:environments": {
+            "sandbox": {
+                "region": "us-east-1"
+            },
+            "production": {
+                "region": "us-east-1"
+            }
+        }
+    }
+}

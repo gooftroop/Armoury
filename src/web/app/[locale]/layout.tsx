@@ -51,7 +51,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             suppressHydrationWarning
         >
             <head>
-
                 <script src="/js/init.js" />
             </head>
             <body className="min-h-screen bg-background text-foreground antialiased">

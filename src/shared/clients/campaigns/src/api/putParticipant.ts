@@ -19,9 +19,11 @@ export async function putParticipant(
 ): Promise<CampaignParticipant> {
     const { campaignId, participantId, ...request } = params;
 
-    return ky.put(`campaigns/${campaignId}/participants/${participantId}`, {
-        prefixUrl: CAMPAIGNS_BASE_URL,
-        headers: { Authorization: authorization },
-        json: request,
-    }).json<CampaignParticipant>();
+    return ky
+        .put(`campaigns/${campaignId}/participants/${participantId}`, {
+            prefixUrl: CAMPAIGNS_BASE_URL,
+            headers: { Authorization: authorization },
+            json: request,
+        })
+        .json<CampaignParticipant>();
 }

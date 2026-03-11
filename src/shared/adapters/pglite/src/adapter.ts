@@ -67,13 +67,13 @@ type OrderByFn = (column: unknown) => unknown;
 
 type MigrateFunction = (db: DrizzleDatabase, config: { migrationsFolder: string }) => Promise<void>;
 
-const { PGlite } = await import('@electric-sql/pglite') as unknown as { PGlite: PGliteConstructor };
-const { drizzle } = await import('drizzle-orm/pglite') as unknown as { drizzle: DrizzleFactory };
+const { PGlite } = (await import('@electric-sql/pglite')) as unknown as { PGlite: PGliteConstructor };
+const { drizzle } = (await import('drizzle-orm/pglite')) as unknown as { drizzle: DrizzleFactory };
 const {
     eq,
     asc: drizzleAsc,
     desc: drizzleDesc,
-} = await import('drizzle-orm') as unknown as {
+} = (await import('drizzle-orm')) as unknown as {
     eq: EqBuilder;
     asc: OrderByFn;
     desc: OrderByFn;
@@ -131,7 +131,9 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
             this.syncStatusTable = this.storeToTable['fileSyncStatus'] ?? null;
 
             if (this.config.migrationsFolder) {
-                const { migrate } = await import(/* webpackIgnore: true */ 'drizzle-orm/pglite/migrator') as unknown as { migrate: MigrateFunction };
+                const { migrate } = (await import(
+                    /* webpackIgnore: true */ 'drizzle-orm/pglite/migrator'
+                )) as unknown as { migrate: MigrateFunction };
                 await migrate(this.db, { migrationsFolder: this.config.migrationsFolder });
             } else {
                 const ddl = generateAllTablesDDL();

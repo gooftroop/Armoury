@@ -71,11 +71,7 @@ describe('mutationUpdateFriend', () => {
     it('spreads custom options onto the returned object', () => {
         const onSuccess = vi.fn();
 
-        const result = mutationUpdateFriend(
-            authorization,
-            { friendId: 'friend-1', status: 'accepted' },
-            { onSuccess },
-        );
+        const result = mutationUpdateFriend(authorization, { friendId: 'friend-1', status: 'accepted' }, { onSuccess });
 
         expect(result.onSuccess).toBe(onSuccess);
     });

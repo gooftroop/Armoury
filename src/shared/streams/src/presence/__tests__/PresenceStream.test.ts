@@ -201,7 +201,6 @@ describe('PresenceStream', () => {
         });
 
         it('emits updated map after online/offline events', async () => {
-
             // Collect first 4 emissions: initial + 3 messages
             const promise = firstValueFrom(stream.onlineFriends$.pipe(skip(3), take(1)));
 
@@ -406,9 +405,7 @@ describe('PresenceStream', () => {
         });
 
         it('emits all connection state transitions', async () => {
-            const promise = firstValueFrom(
-                stream.connectionState$.pipe(take(4), toArray()),
-            );
+            const promise = firstValueFrom(stream.connectionState$.pipe(take(4), toArray()));
 
             client.connectionStateSubject.next('connecting');
             client.connectionStateSubject.next('connected');
@@ -416,12 +413,7 @@ describe('PresenceStream', () => {
 
             const result = await promise;
 
-            expect(result).toEqual([
-                'disconnected',
-                'connecting',
-                'connected',
-                'disconnected',
-            ]);
+            expect(result).toEqual(['disconnected', 'connecting', 'connected', 'disconnected']);
         });
     });
 

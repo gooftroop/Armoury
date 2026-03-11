@@ -1,4 +1,3 @@
-
 import type { DatabaseAdapter } from '@data/adapter.js';
 import type { IGitHubClient } from '@clients-github/types.js';
 import type { CrusadeRules } from '@wh40k10e/models/CrusadeRulesModel.js';
@@ -36,9 +35,9 @@ type SqliteCoreModule = {
     index: (...args: unknown[]) => IndexBuilder;
 };
 
-const pgCoreModule = await import('drizzle-orm/pg-core') as unknown as PgCoreModule;
+const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
 const { pgTable, text, integer, jsonb } = pgCoreModule;
-const sl = await import('drizzle-orm/sqlite-core') as unknown as SqliteCoreModule;
+const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for crusade rules entities. */
 export const crusadeRulesTable = pgTable('crusade_rules', {
@@ -138,7 +137,6 @@ class CrusadeRulesDAO extends BaseDAO<CrusadeRules> {
     protected override async needsSync(): Promise<boolean> {
         return false;
     }
-
 }
 
 export { CrusadeRulesDAO };

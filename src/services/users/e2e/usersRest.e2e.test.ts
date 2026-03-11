@@ -170,7 +170,12 @@ describe('users REST e2e', () => {
         );
 
         const updateRes = await router(
-            restEvent('PUT', '/users/{id}/account', { preferences: { theme: 'light', language: 'es', notificationsEnabled: false } }, { id: user.id }),
+            restEvent(
+                'PUT',
+                '/users/{id}/account',
+                { preferences: { theme: 'light', language: 'es', notificationsEnabled: false } },
+                { id: user.id },
+            ),
             adapter,
             userContext,
         );
@@ -234,11 +239,7 @@ describe('users REST e2e', () => {
     });
 
     it('returns 404 for route not found', async () => {
-        const res = await router(
-            restEvent('GET', '/nonexistent'),
-            adapter,
-            userContext,
-        );
+        const res = await router(restEvent('GET', '/nonexistent'), adapter, userContext);
         expect(res.statusCode).toBe(404);
     });
 });

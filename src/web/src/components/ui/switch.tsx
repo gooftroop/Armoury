@@ -31,9 +31,7 @@ export type SwitchProps = React.ComponentPropsWithRef<typeof SwitchPrimitive.Roo
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered Switch component.
  */
-function Switch(
-    { className, ref, ...props }: SwitchProps,
-): React.ReactElement {
+function Switch({ className, ref, ...props }: SwitchProps): React.ReactElement {
     return (
         <SwitchPrimitive.Root
             className={cn(

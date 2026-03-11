@@ -1,0 +1,35 @@
+# docker-compose.yml
+#
+# LocalStack container for local AWS emulation in e2e tests.
+# Provides: Secrets Manager, API Gateway REST, IAM.
+#
+# Usage:
+#   docker compose -f infra/localstack/docker-compose.yml up -d --wait
+#
+# The init hook at infra/localstack/seed.sh seeds Secrets Manager
+# secrets after LocalStack reaches the "ready" state.
+
+services:
+    localstack:
+        image: localstack/localstack:4.4.0
+        container_name: localstack-main
+        ports:
+            - '4566:4566'
+        environment:
+            SERVICES: secretsmanager,apigateway,iam
+            DEFAULT_REGION: us-east-1
+            LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
+            DEBUG: 0
+        volumes:
+            - localstack-cache:/var/lib/localstack
+            - ./seed.sh:/etc/localstack/init/ready.d/seed.sh
+        healthcheck:
+            test: ['CMD-SHELL', 'curl -sf http://localhost:4566/_localstack/health | grep -q running']
+            interval: 3s
+            timeout: 3s
+            retries: 20
+        restart: unless-stopped
+
+volumes:
+    localstack-cache:
+        name: armoury-localstack-cache
