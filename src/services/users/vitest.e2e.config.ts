@@ -9,12 +9,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default mergeConfig(
     baseConfig,
     defineConfig({
-        resolve: {
-            alias: {
-                '@users': path.resolve(__dirname),
-                '@shared': path.resolve(__dirname, '../../shared'),
-            },
-        },
         test: {
             include: ['e2e/**/*.e2e.test.ts'],
             globalSetup: [path.resolve(__dirname, '../__testing__/dockerSetup.ts')],

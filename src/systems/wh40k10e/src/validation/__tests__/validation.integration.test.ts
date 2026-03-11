@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 
-import type { Army, ArmyUnit } from '@wh40k10e/models/ArmyModel.js';
-import type { Unit, WargearOption } from '@wh40k10e/models/UnitModel.js';
-import type { Enhancement } from '@wh40k10e/types/entities.js';
-import type { ValidationResult } from '@validation/types.js';
-import { validateArmy } from '@wh40k10e/validation/engine.js';
+import type { Army, ArmyUnit } from '../../models/ArmyModel.ts';
+import type { Unit, WargearOption } from '../../models/UnitModel.ts';
+import type { Enhancement } from '../../types/entities.ts';
+import type { ValidationResult } from '@armoury/validation/types';
+import { validateArmy } from '../engine.ts';
 import { makeArmy } from '../../../e2e/__fixtures__/makeArmy.ts';
 import { makeFactionData } from '../../../e2e/__fixtures__/makeFactionData.ts';
 import { makeCoreRules } from '../../../e2e/__fixtures__/makeCoreRules.ts';

@@ -70,7 +70,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ChapterApprovedParser } from '@wh40k10e/data/ChapterApprovedParser.js';
+import { ChapterApprovedParser } from '../ChapterApprovedParser.ts';
 
 // ─── Accessor Type for Private Methods ────────────────────────────────────────
 

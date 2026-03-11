@@ -5,12 +5,7 @@
  * and the isMatchesApiError / isMatchesNetworkError type guard functions.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-    MatchesApiError,
-    MatchesNetworkError,
-    isMatchesApiError,
-    isMatchesNetworkError,
-} from '@clients-matches/types.js';
+import { MatchesApiError, MatchesNetworkError, isMatchesApiError, isMatchesNetworkError } from './../types.ts';
 
 describe('MatchesApiError', () => {
     beforeEach(() => vi.clearAllMocks());

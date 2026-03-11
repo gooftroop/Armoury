@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import type { Army, ArmyUnit } from '@wh40k10e/models/ArmyModel.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { Unit, WargearOption } from '@wh40k10e/models/UnitModel.js';
-import type { Enhancement } from '@wh40k10e/types/entities.js';
+import type { Army, ArmyUnit } from '../../models/ArmyModel.ts';
+import type { FactionData } from '../../models/FactionData.ts';
+import type { Unit, WargearOption } from '../../models/UnitModel.ts';
+import type { Enhancement } from '../../types/entities.ts';
 import {
     validateCharacter,
     validateComposition,
@@ -16,7 +16,7 @@ import {
     validateTransport,
     validateWargear,
     validateWarlord,
-} from '@wh40k10e/validation/rules/index.js';
+} from '../rules/index.ts';
 
 const DEFAULT_TIMESTAMP = '2024-01-01T00:00:00Z';
 

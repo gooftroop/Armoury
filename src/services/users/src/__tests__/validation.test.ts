@@ -5,14 +5,14 @@ import type {
     UpdateAccountPayload,
     UpdateUserPayload,
     UserPreferences,
-} from '@users/src/types.js';
+} from '../types.ts';
 import {
     isUserPreferences,
     parseCreateAccount,
     parseCreateUser,
     parseUpdateAccount,
     parseUpdateUser,
-} from '@users/src/utils/validation.js';
+} from '../utils/validation.ts';
 
 describe('validation utilities', () => {
     describe('parseCreateUser', () => {

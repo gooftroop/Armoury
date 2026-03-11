@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractUserContext } from '@friends/src/middleware/auth.js';
+import { extractUserContext } from '../middleware/auth.ts';
 
 describe('auth middleware', () => {
     it('extracts user context from authorizer context', () => {

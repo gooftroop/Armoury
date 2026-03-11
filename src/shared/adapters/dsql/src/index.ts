@@ -1,5 +1,5 @@
 /**
  * Aurora DSQL adapter exports.
  */
-export { DSQLAdapter } from '@adapters-dsql/adapter.js';
-export type { DSQLAdapterConfig, DSQLIAMConfig, DSQLRawConfig } from '@adapters-dsql/adapter.js';
+export { DSQLAdapter } from './adapter.ts';
+export type { DSQLAdapterConfig, DSQLIAMConfig, DSQLRawConfig } from './adapter.ts';

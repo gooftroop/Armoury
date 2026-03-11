@@ -1,7 +1,7 @@
 /**
  * Game-agnostic validation exports for rules, constraints, and effects.
  */
-export * from '@validation/types.js';
-export { validateArmyWithRules, type ValidationRuleFn } from '@validation/engine.js';
-export * from '@validation/constraints/index.js';
-export * from '@validation/effects/index.js';
+export * from './types.ts';
+export { validateArmyWithRules, type ValidationRuleFn } from './engine.ts';
+export * from './constraints/index.ts';
+export * from './effects/index.ts';

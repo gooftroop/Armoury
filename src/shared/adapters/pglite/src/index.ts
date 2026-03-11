@@ -1,6 +1,6 @@
 /**
  * PGlite adapter and DDL helper exports.
  */
-export { PGliteAdapter } from '@adapters-pglite/adapter.js';
-export type { PGliteAdapterConfig } from '@adapters-pglite/adapter.js';
-export { generateCreateTableSQL, generateAllTablesDDL, getAllTableNames, getTableName } from '@adapters-pglite/ddl.js';
+export { PGliteAdapter } from './adapter.ts';
+export type { PGliteAdapterConfig } from './adapter.ts';
+export { generateCreateTableSQL, generateAllTablesDDL, getAllTableNames, getTableName } from './ddl.ts';

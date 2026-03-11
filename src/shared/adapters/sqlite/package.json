@@ -9,6 +9,10 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./dist/node/index.js"
+        },
+        "./*": {
+            "types": "./dist/*.d.ts",
+            "default": "./dist/node/*.js"
         }
     },
     "scripts": {
@@ -20,9 +24,9 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "@armoury/data": "*",
         "drizzle-orm": "^0.45.1",
-        "expo-sqlite": "^16.0.0"
+        "expo-sqlite": "^16.0.0",
+        "@armoury/data-dao": "*"
     },
     "devDependencies": {
         "@armoury/eslint": "*",

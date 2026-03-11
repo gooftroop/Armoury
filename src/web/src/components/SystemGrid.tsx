@@ -31,11 +31,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
-import type { GameSystemManifest, GameSystem } from '@armoury/data';
+import type { GameSystemManifest, GameSystem } from '@armoury/data-dao/types';
 
-import { useDataContext } from '@web/src/providers/DataContextProvider.js';
-import type { SystemSyncStatus } from '@web/src/providers/DataContextProvider.js';
-import { cn } from '@web/src/lib/utils.js';
+import { useDataContext } from '../providers/DataContextProvider.tsx';
+import type { SystemSyncStatus } from '../providers/DataContextProvider.tsx';
+import { cn } from '../lib/utils.ts';
 
 /**
  * Props for the SystemGrid component.

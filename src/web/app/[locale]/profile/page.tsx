@@ -20,7 +20,7 @@
 
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { auth0 } from '@web/src/lib/auth0.js';
+import { auth0 } from '../../../src/lib/auth0.ts';
 import {
     Avatar,
     AvatarFallback,
@@ -32,7 +32,7 @@ import {
     CardHeader,
     CardTitle,
     Separator,
-} from '@web/src/components/ui/index.js';
+} from '../../../src/components/ui/index.ts';
 
 /** Props for the locale-parameterized profile page. */
 export interface ProfilePageProps {

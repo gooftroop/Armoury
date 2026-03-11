@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { CreateCampaignRequest, JoinCampaignRequest, UserContext } from '@campaigns/src/types.js';
-import type { Campaign, CampaignParticipant } from '@models/CampaignModel.js';
-import { router } from '@campaigns/src/router.js';
-import { createE2EAdapter, resetDatabase } from '@campaigns/src/__testing__/e2eAdapter.js';
-import type { PGliteAdapter } from '@adapters-pglite/adapter.js';
+import type { CreateCampaignRequest, JoinCampaignRequest, UserContext } from '../src/types.ts';
+import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
+import { router } from '../src/router.ts';
+import { createE2EAdapter, resetDatabase } from '../src/__testing__/e2eAdapter.ts';
+import type { PGliteAdapter } from '@armoury/adapters-pglite';
 
 let adapter: PGliteAdapter;
 

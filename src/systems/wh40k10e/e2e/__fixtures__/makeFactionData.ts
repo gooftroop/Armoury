@@ -1,5 +1,5 @@
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { Ability, Detachment, Enhancement, Stratagem } from '@wh40k10e/types/entities.js';
+import type { FactionData } from '../../src/models/FactionData.ts';
+import type { Ability, Detachment, Enhancement, Stratagem } from '../../src/types/entities.ts';
 import { makeCaptainInTerminatorArmour } from './makeCaptainInTerminatorArmour.ts';
 import { makeIntercessorSquad } from './makeIntercessorSquad.ts';
 import { makePowerFist } from './makePowerFist.ts';

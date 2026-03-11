@@ -11,7 +11,7 @@
  */
 
 // Button component and variants
-export { Button, buttonVariants, type ButtonProps } from './button.js';
+export { Button, buttonVariants, type ButtonProps } from './button.tsx';
 
 // Card components
 export {
@@ -27,7 +27,7 @@ export {
     type CardDescriptionProps,
     type CardContentProps,
     type CardFooterProps,
-} from './card.js';
+} from './card.tsx';
 
 // Dialog components
 export {
@@ -47,7 +47,7 @@ export {
     type DialogFooterProps,
     type DialogTitleProps,
     type DialogDescriptionProps,
-} from './dialog.js';
+} from './dialog.tsx';
 
 // DropdownMenu components
 export {
@@ -76,7 +76,7 @@ export {
     type DropdownMenuShortcutProps,
     type DropdownMenuSubTriggerProps,
     type DropdownMenuSubContentProps,
-} from './DropdownMenu.js';
+} from './DropdownMenu.tsx';
 
 // Avatar components
 export {
@@ -87,7 +87,7 @@ export {
     type AvatarProps,
     type AvatarImageProps,
     type AvatarFallbackProps,
-} from './avatar.js';
+} from './avatar.tsx';
 
 // Tooltip components
 export {
@@ -97,7 +97,7 @@ export {
     TooltipProvider,
     type TooltipTriggerProps,
     type TooltipContentProps,
-} from './tooltip.js';
+} from './tooltip.tsx';
 
 // Tabs components
 export {
@@ -108,25 +108,25 @@ export {
     type TabsListProps,
     type TabsTriggerProps,
     type TabsContentProps,
-} from './tabs.js';
+} from './tabs.tsx';
 
 // Badge component
-export { Badge, badgeVariants, type BadgeProps } from './badge.js';
+export { Badge, badgeVariants, type BadgeProps } from './badge.tsx';
 
 // Skeleton component
-export { Skeleton, type SkeletonProps } from './skeleton.js';
+export { Skeleton, type SkeletonProps } from './skeleton.tsx';
 
 // Separator component
-export { Separator, type SeparatorProps } from './separator.js';
+export { Separator, type SeparatorProps } from './separator.tsx';
 
 // Switch component
-export { Switch, type SwitchProps } from './switch.js';
+export { Switch, type SwitchProps } from './switch.tsx';
 
 // Label component
-export { Label, type LabelProps } from './label.js';
+export { Label, type LabelProps } from './label.tsx';
 
 // Input component
-export { Input, type InputProps } from './input.js';
+export { Input, type InputProps } from './input.tsx';
 
 // Select components
 export {
@@ -147,7 +147,7 @@ export {
     type SelectSeparatorProps,
     type SelectScrollUpButtonProps,
     type SelectScrollDownButtonProps,
-} from './select.js';
+} from './select.tsx';
 
 // AlertDialog components
 export {
@@ -170,7 +170,7 @@ export {
     type AlertDialogDescriptionProps,
     type AlertDialogActionProps,
     type AlertDialogCancelProps,
-} from './AlertDialog.js';
+} from './AlertDialog.tsx';
 
 // Toast components
 export {
@@ -186,4 +186,4 @@ export {
     type ToastCloseProps,
     type ToastTitleProps,
     type ToastDescriptionProps,
-} from './toast.js';
+} from './toast.tsx';

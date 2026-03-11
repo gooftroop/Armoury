@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { GitHubClient, createGitHubClient } from '@clients-github/client.js';
-import { BASE_DELAY_MS, DEFAULT_USER_AGENT, GITHUB_API_BASE_URL, GITHUB_RAW_BASE_URL } from '@clients-github/config.js';
-import { createAuthHeaders } from '@clients-github/utils.js';
-import { GitHubApiError, NetworkError, RateLimitError } from '@clients-github/types.js';
+import { GitHubClient, createGitHubClient } from './../client.ts';
+import { BASE_DELAY_MS, DEFAULT_USER_AGENT, GITHUB_API_BASE_URL, GITHUB_RAW_BASE_URL } from './../config.ts';
+import { createAuthHeaders } from './../utils.ts';
+import { GitHubApiError, NetworkError, RateLimitError } from './../types.ts';
 
 describe('GitHubClient', () => {
     const originalFetch = globalThis.fetch;

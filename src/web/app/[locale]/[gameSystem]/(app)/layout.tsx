@@ -5,8 +5,8 @@
  * 3. Must pass the gameSystem param down to the navigation components.
  */
 
-import { SideNav } from '@web/src/components/navigation/SideNav.js';
-import { BottomNav } from '@web/src/components/navigation/BottomNav.js';
+import { SideNav } from '../../../../src/components/navigation/SideNav.tsx';
+import { BottomNav } from '../../../../src/components/navigation/BottomNav.tsx';
 
 export interface AppLayoutProps {
     children: React.ReactNode;

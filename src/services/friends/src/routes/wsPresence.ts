@@ -1,5 +1,5 @@
-import type { DatabaseAdapter, Friend, UserPresence, WebSocketResponse, WsRouteHandler } from '@friends/src/types.js';
-import { createBroadcaster } from '@friends/src/utils/broadcast.js';
+import type { DatabaseAdapter, Friend, UserPresence, WebSocketResponse, WsRouteHandler } from '../types.ts';
+import { createBroadcaster } from '../utils/broadcast.ts';
 
 const ONLINE_STATUS: UserPresence['status'] = 'online';
 const OFFLINE_STATUS: UserPresence['status'] = 'offline';

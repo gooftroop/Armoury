@@ -10,12 +10,12 @@
  */
 
 import * as Sentry from '@sentry/aws-serverless';
-import { extractUserContext } from '@campaigns/src/middleware/auth.js';
-import { formatErrorResponse } from '@campaigns/src/middleware/errorHandler.js';
-import { router } from '@campaigns/src/router.js';
-import type { DatabaseAdapter } from '@data/types.js';
-import type { ApiResponse } from '@campaigns/src/types.js';
-import { getServiceConfig } from '@campaigns/src/utils/secrets.js';
+import { extractUserContext } from './middleware/auth.ts';
+import { formatErrorResponse } from './middleware/errorHandler.ts';
+import { router } from './router.ts';
+import type { DatabaseAdapter } from '@armoury/data-dao/types';
+import type { ApiResponse } from './types.ts';
+import { getServiceConfig } from './utils/secrets.ts';
 
 /**
  * Minimal API Gateway proxy event payload.
@@ -64,7 +64,7 @@ interface DSQLAdapterConstructor {
  * Resolves the DSQLAdapter class from @armoury/data at runtime using dynamic import.
  * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
  */
-const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
 
 /**
  * Singleton database adapter instance reused across warm Lambda invocations.

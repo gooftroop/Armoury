@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import { hydrateFactionData } from '@wh40k10e/models/FactionData.js';
-import { parseFactionData } from '@wh40k10e/data/FactionDataParser.js';
+import type { FactionData } from '../FactionData.ts';
+import { hydrateFactionData } from '../FactionData.ts';
+import { parseFactionData } from '../../data/FactionDataParser.ts';
 import type {
     BattleScribeCatalogue,
     BattleScribeProfile,
     BattleScribeSelectionEntry,
     BattleScribeRule,
-} from '@providers-bsdata/types.js';
+} from '@armoury/providers-bsdata/types';
 
 /** Builds a minimal BattleScribe profile with characteristics. */
 const buildProfile = (id: string, name: string, typeName: string, characteristics: Record<string, string>) => {

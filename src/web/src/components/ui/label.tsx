@@ -18,7 +18,7 @@ import { Label as LabelPrimitive } from 'radix-ui';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
-import { cn } from '@web/src/lib/utils.js';
+import { cn } from '../../lib/utils.ts';
 
 /**
  * Label variant styles using class-variance-authority.

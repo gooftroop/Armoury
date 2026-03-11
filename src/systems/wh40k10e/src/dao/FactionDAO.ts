@@ -1,12 +1,12 @@
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { IGitHubClient } from '@clients-github/types.js';
-import type { FactionConfig } from '@wh40k10e/config/factionMap.js';
-import { parseCatalogue } from '@providers-bsdata/xmlParser.js';
-import { mergeCatalogues } from '@wh40k10e/models/mergeCatalogues.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import { parseFactionData } from '@wh40k10e/data/FactionDataParser.js';
-import type { BattleScribeCatalogue } from '@providers-bsdata/types.js';
-import { BaseDAO } from '@wh40k10e/dao/BaseDAO.js';
+import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
+import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { FactionConfig } from '../config/factionMap.ts';
+import { parseCatalogue } from '@armoury/providers-bsdata/xmlParser';
+import { mergeCatalogues } from '../models/mergeCatalogues.ts';
+import type { FactionData } from '../models/FactionData.ts';
+import { parseFactionData } from '../data/FactionDataParser.ts';
+import type { BattleScribeCatalogue } from '@armoury/providers-bsdata/types';
+import { BaseDAO } from './BaseDAO.ts';
 
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;

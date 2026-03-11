@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GameData } from '@wh40k10e/dao/GameData.js';
-import type { GameDataDeps } from '@wh40k10e/dao/GameData.js';
+import { GameData } from '../GameData.ts';
+import type { GameDataDeps } from '../GameData.ts';
 
 function createSuccessDAO<T>(value: unknown): T {
     return { load: vi.fn().mockResolvedValue(value) } as unknown as T;

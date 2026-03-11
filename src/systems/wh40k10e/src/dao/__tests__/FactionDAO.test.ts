@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FactionDAO } from '@wh40k10e/dao/FactionDAO.js';
-import { SpaceMarinesDAO } from '@wh40k10e/dao/factions/SpaceMarinesDAO.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { MockGitHubClient } from '@wh40k10e/__mocks__/MockGitHubClient.js';
-import type { FactionConfig } from '@wh40k10e/config/factionMap.js';
-import type { BattleScribeCatalogue } from '@providers-bsdata/types.js';
-import { parseFactionData } from '@wh40k10e/data/FactionDataParser.js';
+import { FactionDAO } from '../FactionDAO.ts';
+import { SpaceMarinesDAO } from '../factions/SpaceMarinesDAO.ts';
+import type { FactionData } from '../../models/FactionData.ts';
+import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { MockGitHubClient } from '../../__mocks__/MockGitHubClient.ts';
+import type { FactionConfig } from '../../config/factionMap.ts';
+import type { BattleScribeCatalogue } from '@armoury/providers-bsdata/types';
+import { parseFactionData } from '../../data/FactionDataParser.ts';
 
-vi.mock('@wh40k10e/data/FactionDataParser.js', () => ({
+vi.mock('../../data/FactionDataParser.ts', () => ({
     parseFactionData: vi.fn(),
 }));
 
@@ -16,7 +16,7 @@ vi.mock('@wh40k10e/data/FactionDataParser.js', () => ({
  * Mock the BSData XML parser module.
  * Prevents actual XML parsing in tests — returns mock BattleScribe catalogue structures.
  */
-vi.mock('@providers-bsdata/xmlParser.js', () => ({
+vi.mock('@armoury/providers-bsdata/xmlParser', () => ({
     parseCatalogue: vi.fn((content: string) => {
         // Return a minimal mock catalogue based on content marker
         const mockCatalogue: BattleScribeCatalogue = {
@@ -40,7 +40,7 @@ vi.mock('@providers-bsdata/xmlParser.js', () => ({
  * Mock the merge-catalogues module.
  * Prevents actual catalogue merging logic — returns a simple merged result.
  */
-vi.mock('@wh40k10e/models/mergeCatalogues.js', () => ({
+vi.mock('../../models/mergeCatalogues.ts', () => ({
     mergeCatalogues: vi.fn((...catalogues: BattleScribeCatalogue[]) => {
         // Return the last catalogue (simulating merge override behavior)
         return catalogues[catalogues.length - 1];
@@ -320,7 +320,7 @@ describe('FactionDAO', () => {
          * Test: fetchRemoteData() parses catalogue via parseCatalogue().
          */
         it('fetchRemoteData() parses catalogue via parseCatalogue()', async () => {
-            const { parseCatalogue } = await import('@providers-bsdata/xmlParser.js');
+            const { parseCatalogue } = await import('@armoury/providers-bsdata/xmlParser');
             const config = createFactionConfig();
             const dao = new FactionDAO(adapter, githubClient, config);
 
@@ -360,7 +360,7 @@ describe('FactionDAO', () => {
          * Test: fetchRemoteData() handles multi-catalogue download (downloads all files in factionConfig.files).
          */
         it('fetchRemoteData() handles multi-catalogue download (downloads all files in factionConfig.files)', async () => {
-            const { mergeCatalogues } = await import('@wh40k10e/models/mergeCatalogues.js');
+            const { mergeCatalogues } = await import('../../models/mergeCatalogues.ts');
             const config = createFactionConfig({
                 files: ['Library.cat', 'Faction.cat'],
             });
@@ -599,7 +599,7 @@ describe('FactionDAO', () => {
             const config = createFactionConfig({ files: [] });
             const dao = new FactionDAO(adapter, githubClient, config);
 
-            const { mergeCatalogues } = await import('@wh40k10e/models/mergeCatalogues.js');
+            const { mergeCatalogues } = await import('../../models/mergeCatalogues.ts');
             vi.mocked(mergeCatalogues).mockImplementation((...catalogues) => {
                 if (catalogues.length === 0) {
                     throw new Error('Cannot merge empty catalogue list');

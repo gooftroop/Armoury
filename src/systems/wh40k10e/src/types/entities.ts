@@ -2,7 +2,7 @@
  * Warhammer 40K 10th Edition entity interfaces.
  */
 
-import type { StructuredRule, WeaponKeyword } from '@wh40k10e/types/effects.js';
+import type { StructuredRule, WeaponKeyword } from './effects.ts';
 
 /**
  * Base entity interface for all domain objects.
@@ -191,4 +191,4 @@ export interface UnitAbility {
     description: string;
 }
 
-export type { Unit, UnitComposition, WargearOption, WargearChoice } from '@wh40k10e/models/UnitModel.js';
+export type { Unit, UnitComposition, WargearOption, WargearChoice } from '../models/UnitModel.ts';

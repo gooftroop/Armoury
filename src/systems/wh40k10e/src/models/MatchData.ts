@@ -7,8 +7,8 @@
  * live in the core Match model (@models/MatchModel).
  */
 
-import type { MatchDataBase } from '@models/MatchModel.js';
-import type { BattleSize } from '@wh40k10e/models/ArmyModel.js';
+import type { MatchDataBase } from '@armoury/models/MatchModel';
+import type { BattleSize } from './ArmyModel.ts';
 
 // ============ GAME PHASE ============
 

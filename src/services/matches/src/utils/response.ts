@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@matches/src/types.js';
+import type { ApiResponse } from '../types.ts';
 
 /**
  * Builds a successful JSON response.

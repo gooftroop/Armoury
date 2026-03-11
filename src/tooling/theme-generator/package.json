@@ -8,6 +8,10 @@
             "types": "./src/types.d.ts",
             "default": "./src/index.js"
         },
+        "./*": {
+            "types": "./src/*.d.ts",
+            "default": "./src/*.js"
+        },
         "./generate": "./src/generate.js"
     },
     "bin": {

@@ -9,6 +9,10 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./dist/node/index.js"
+        },
+        "./*": {
+            "types": "./dist/*.d.ts",
+            "default": "./dist/node/*.js"
         }
     },
     "scripts": {
@@ -20,10 +24,10 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "@armoury/data": "*",
         "@aws-sdk/dsql-signer": "^3.985.0",
         "drizzle-orm": "^0.45.1",
-        "pg": "^8.18.0"
+        "pg": "^8.18.0",
+        "@armoury/data-dao": "*"
     },
     "devDependencies": {
         "@armoury/eslint": "*",

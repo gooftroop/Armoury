@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatErrorResponse } from '@friends/src/middleware/errorHandler.js';
+import { formatErrorResponse } from '../middleware/errorHandler.ts';
 
 describe('error handler', () => {
     it('returns 400 for ValidationError', () => {

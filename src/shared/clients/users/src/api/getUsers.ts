@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from '@clients-users/config.js';
-import type { User } from '@clients-users/types.js';
+import { USERS_BASE_URL } from './../config.ts';
+import type { User } from './../types.ts';
 
 /**
  * Retrieves the list of all users.

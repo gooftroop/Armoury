@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@campaigns/src/types.js';
+import type { ApiResponse } from '../types.ts';
 
 /**
  * Formats an error into an API Gateway proxy response.

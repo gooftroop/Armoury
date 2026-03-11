@@ -6,7 +6,7 @@
  * mutation methods that return new Match instances.
  */
 
-import type { Match as CoreMatch, MatchPlayer, MatchTurn, MatchScore, MatchOutcome } from '@models/MatchModel.js';
+import type { Match as CoreMatch, MatchPlayer, MatchTurn, MatchScore, MatchOutcome } from '@armoury/models/MatchModel';
 import type {
     MatchData,
     GameState,
@@ -15,8 +15,8 @@ import type {
     PlayerState,
     UnitProjection,
     UnitFlags,
-} from '@wh40k10e/models/MatchData.js';
-import { createDefaultUnitFlags, PHASE_ORDER } from '@wh40k10e/models/MatchData.js';
+} from './MatchData.ts';
+import { createDefaultUnitFlags, PHASE_ORDER } from './MatchData.ts';
 
 /**
  * Typed wrapper around a core Match<MatchData>.

@@ -1,4 +1,4 @@
-import type { SendFriendRequestPayload, UpdateFriendRequest } from '@friends/src/types.js';
+import type { SendFriendRequestPayload, UpdateFriendRequest } from '../types.ts';
 
 /**
  * Type guard for records.

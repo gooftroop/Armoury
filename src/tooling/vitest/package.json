@@ -7,6 +7,10 @@
         ".": {
             "types": "./vitest.config.d.ts",
             "default": "./vitest.config.js"
+        },
+        "./*": {
+            "types": "./*.d.ts",
+            "default": "./*.js"
         }
     },
     "peerDependencies": {

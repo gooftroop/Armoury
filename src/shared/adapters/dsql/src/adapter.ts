@@ -6,13 +6,13 @@
  * schema registry guarantees Drizzle table definitions match entity shapes.
  */
 
-import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@data/adapter.js';
-import { Platform } from '@data/types.js';
-import { getEntityCodec } from '@data/codec.js';
-import type { FileSyncStatus } from '@data/types.js';
-import { DatabaseError } from '@data/types.js';
-import { syncStatusTable } from '@data/dao/SyncStatusTable.js';
-import { getMergedDSQLSchema } from '@data/schema.js';
+import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@armoury/data-dao/adapter';
+import { Platform } from '@armoury/data-dao/types';
+import { getEntityCodec } from '@armoury/data-dao/codec';
+import type { FileSyncStatus } from '@armoury/data-dao/types';
+import { DatabaseError } from '@armoury/data-dao/types';
+import { syncStatusTable } from '@armoury/data-dao/dao/SyncStatusTable';
+import { getMergedDSQLSchema } from '@armoury/data-dao/schema';
 
 /**
  * Aurora DSQL authentication token signer

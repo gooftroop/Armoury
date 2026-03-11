@@ -1,11 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import {
-    parseAbility,
-    parseDetachmentRule,
-    parseEnhancementEffect,
-    parseFactionRule,
-} from '@wh40k10e/validation/abilityParser.js';
+import { parseAbility, parseDetachmentRule, parseEnhancementEffect, parseFactionRule } from '../abilityParser.ts';
 
 describe('Ability Parser', () => {
     it('parses Stealth by name', () => {

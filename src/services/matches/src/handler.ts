@@ -1,9 +1,9 @@
 import * as Sentry from '@sentry/aws-serverless';
-import { extractUserContext } from '@matches/src/middleware/auth.js';
-import { formatErrorResponse } from '@matches/src/middleware/errorHandler.js';
-import { router } from '@matches/src/router.js';
-import type { ApiResponse, DatabaseAdapter } from '@matches/src/types.js';
-import { getServiceConfig } from '@matches/src/utils/secrets.js';
+import { extractUserContext } from './middleware/auth.ts';
+import { formatErrorResponse } from './middleware/errorHandler.ts';
+import { router } from './router.ts';
+import type { ApiResponse, DatabaseAdapter } from './types.ts';
+import { getServiceConfig } from './utils/secrets.ts';
 
 interface ApiGatewayEvent {
     httpMethod: string;
@@ -38,8 +38,8 @@ interface LocalAdapterConstructor {
     new (config: LocalAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
 }
 
-const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('@matches/src/utils/localAdapter.js')) as unknown as {
+const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.ts')) as unknown as {
     LocalDatabaseAdapter: LocalAdapterConstructor;
 };
 

@@ -4,10 +4,10 @@
  * Represents a complete unit datasheet including stat profiles,
  * composition options, equipped weapons, wargear, abilities, and leader rules.
  */
-import type { ParsedConstraint } from '@validation/constraints/types.js';
-import type { StructuredRule } from '@wh40k10e/types/effects.js';
-import type { Entity } from '@wh40k10e/types/entities.js';
-import type { Weapon } from '@wh40k10e/types/entities.js';
+import type { ParsedConstraint } from '@armoury/validation/constraints/types';
+import type { StructuredRule } from '../types/effects.ts';
+import type { Entity } from '../types/entities.ts';
+import type { Weapon } from '../types/entities.ts';
 
 /**
  * A size option for a unit (e.g. 5 models for 90pts, 10 models for 180pts).

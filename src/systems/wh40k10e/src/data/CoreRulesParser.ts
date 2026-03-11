@@ -22,10 +22,10 @@ import {
     type BattleScribeCharacteristicType,
     type BattleScribeCategory,
     ensureArray,
-} from '@providers-bsdata/types.js';
-import { parseConstraints } from '@validation/constraints/parser.js';
-import type { ParsedConstraint } from '@validation/constraints/types.js';
-import type { CoreRules, ProfileTypeInfo, CostTypeInfo, SharedRule } from '@wh40k10e/models/CoreRules.js';
+} from '@armoury/providers-bsdata/types';
+import { parseConstraints } from '@armoury/validation/constraints/parser';
+import type { ParsedConstraint } from '@armoury/validation/constraints/types';
+import type { CoreRules, ProfileTypeInfo, CostTypeInfo, SharedRule } from '../models/CoreRules.ts';
 
 /**
  * Parse a BattleScribe game system XML structure into a CoreRules plain object.

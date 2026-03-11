@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 
-import { cn } from '@web/src/lib/utils.js';
+import { cn } from '../../lib/utils.ts';
 
 /**
  * Props for the Card component.

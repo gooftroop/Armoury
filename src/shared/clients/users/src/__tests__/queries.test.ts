@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { UserParams } from '@clients-users/types.js';
+import type { UserParams } from './../types.ts';
 
 vi.mock('ky', () => ({
     default: {
@@ -17,9 +17,9 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { buildQueryUsersKey, queryUsers } from '@clients-users/queries/queryUsers.js';
-import { buildQueryUserKey, queryUser } from '@clients-users/queries/queryUser.js';
-import { buildQueryAccountKey, queryAccount } from '@clients-users/queries/queryAccount.js';
+import { buildQueryUsersKey, queryUsers } from './../queries/queryUsers.ts';
+import { buildQueryUserKey, queryUser } from './../queries/queryUser.ts';
+import { buildQueryAccountKey, queryAccount } from './../queries/queryAccount.ts';
 
 const AUTHORIZATION = 'Bearer test-token';
 

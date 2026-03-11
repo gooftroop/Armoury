@@ -27,11 +27,11 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth0 } from 'react-native-auth0';
 import { Button, H1, Paragraph, ScrollView, YStack } from 'tamagui';
-import type { GameSystem, GameSystemManifest } from '@armoury/data';
+import type { GameSystem, GameSystemManifest } from '@armoury/data-dao/types';
 
-import { useDataContext } from '@mobile/src/providers/DataContextProvider.js';
-import { systemManifests } from '@mobile/src/lib/discoverSystems.js';
-import type { SystemSyncStatus } from '@mobile/src/providers/DataContextProvider.js';
+import { useDataContext } from '../src/providers/DataContextProvider.tsx';
+import { systemManifests } from '../src/lib/discoverSystems.ts';
+import type { SystemSyncStatus } from '../src/providers/DataContextProvider.tsx';
 
 /**
  * Resolves a GameSystem implementation for the given manifest ID.

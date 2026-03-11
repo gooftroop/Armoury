@@ -7,7 +7,7 @@
  * to bootstrap PostgreSQL databases from the merged Drizzle schema.
  */
 
-import { getMergedDSQLSchema } from '@data/schema.js';
+import { getMergedDSQLSchema } from '@armoury/data-dao/schema';
 
 interface DrizzleColumn {
     name: string;

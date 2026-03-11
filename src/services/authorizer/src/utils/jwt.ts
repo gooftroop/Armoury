@@ -1,4 +1,4 @@
-import type { JwtPayload } from '@authorizer/src/types.js';
+import type { JwtPayload } from '../types.ts';
 
 /**
  * Guards payloads to the expected JWT shape for the authorizer.

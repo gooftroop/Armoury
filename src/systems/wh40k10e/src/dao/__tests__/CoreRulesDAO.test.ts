@@ -1,18 +1,18 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { CoreRulesDAO } from '@wh40k10e/dao/CoreRulesDAO.js';
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { MockGitHubClient } from '@wh40k10e/__mocks__/MockGitHubClient.js';
-import { clearCodecRegistry } from '@data/codec.js';
-import { clearHydrationRegistry } from '@data/hydration.js';
-import { clearSchemaExtensions } from '@data/schema.js';
-import { PluginRegistry } from '@data/pluginRegistry.js';
-import type { BattleScribeGameSystem } from '@providers-bsdata/types.js';
-import type { Faction } from '@wh40k10e/types/entities.js';
-import { parseGameSystem } from '@providers-bsdata/xmlParser.js';
+import { CoreRulesDAO } from '../CoreRulesDAO.ts';
+import type { CoreRules } from '../../models/CoreRules.ts';
+import { MockDatabaseAdapter } from '../../__mocks__/MockDatabaseAdapter.ts';
+import { MockGitHubClient } from '../../__mocks__/MockGitHubClient.ts';
+import { clearCodecRegistry } from '@armoury/data-dao/codec';
+import { clearHydrationRegistry } from '@armoury/data-dao/hydration';
+import { clearSchemaExtensions } from '@armoury/data-dao/schema';
+import { PluginRegistry } from '@armoury/data-dao/pluginRegistry';
+import type { BattleScribeGameSystem } from '@armoury/providers-bsdata/types';
+import type { Faction } from '../../types/entities.ts';
+import { parseGameSystem } from '@armoury/providers-bsdata/xmlParser';
 
 // Mock the xml-parser module
-vi.mock('@providers-bsdata/xmlParser.js', () => ({
+vi.mock('@armoury/providers-bsdata/xmlParser', () => ({
     parseGameSystem: vi.fn(),
 }));
 

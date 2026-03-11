@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from '@clients-campaigns/config.js';
-import type { CampaignParams, CampaignParticipant } from '@clients-campaigns/types.js';
+import { CAMPAIGNS_BASE_URL } from './../config.ts';
+import type { CampaignParams, CampaignParticipant } from './../types.ts';
 
 /**
  * Retrieves the list of all participants in a campaign.

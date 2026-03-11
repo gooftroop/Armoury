@@ -1,4 +1,4 @@
-import { PGliteAdapter } from '@adapters-pglite/adapter.js';
+import { PGliteAdapter } from '@armoury/adapters-pglite';
 
 export async function createE2EAdapter(): Promise<PGliteAdapter> {
     const adapter = new PGliteAdapter({ dataDir: 'memory://' });

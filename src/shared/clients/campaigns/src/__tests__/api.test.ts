@@ -10,7 +10,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Campaign, CampaignParticipant } from '@clients-campaigns/types.js';
+import type { Campaign, CampaignParticipant } from './../types.ts';
 
 const { mockJson, mockGet, mockPost, mockPut, mockDelete } = vi.hoisted(() => {
     const mockJson = vi.fn();
@@ -33,16 +33,16 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { getCampaigns } from '@clients-campaigns/api/getCampaigns.js';
-import { getCampaign } from '@clients-campaigns/api/getCampaign.js';
-import { postCampaign } from '@clients-campaigns/api/postCampaign.js';
-import { putCampaign } from '@clients-campaigns/api/putCampaign.js';
-import { deleteCampaign } from '@clients-campaigns/api/deleteCampaign.js';
-import { getParticipants } from '@clients-campaigns/api/getParticipants.js';
-import { getParticipant } from '@clients-campaigns/api/getParticipant.js';
-import { postParticipant } from '@clients-campaigns/api/postParticipant.js';
-import { putParticipant } from '@clients-campaigns/api/putParticipant.js';
-import { deleteParticipant } from '@clients-campaigns/api/deleteParticipant.js';
+import { getCampaigns } from './../api/getCampaigns.ts';
+import { getCampaign } from './../api/getCampaign.ts';
+import { postCampaign } from './../api/postCampaign.ts';
+import { putCampaign } from './../api/putCampaign.ts';
+import { deleteCampaign } from './../api/deleteCampaign.ts';
+import { getParticipants } from './../api/getParticipants.ts';
+import { getParticipant } from './../api/getParticipant.ts';
+import { postParticipant } from './../api/postParticipant.ts';
+import { putParticipant } from './../api/putParticipant.ts';
+import { deleteParticipant } from './../api/deleteParticipant.ts';
 
 const AUTH = 'Bearer test-token';
 

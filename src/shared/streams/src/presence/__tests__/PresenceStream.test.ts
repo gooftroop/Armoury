@@ -75,7 +75,7 @@ import { Subject, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { take, toArray, skip } from 'rxjs/operators';
 import type { FriendsServerMessage, ConnectionState } from '@armoury/clients-friends';
 import type { IFriendsPresenceClient } from '@armoury/clients-friends';
-import { PresenceStream, createPresenceStream } from '../PresenceStream.js';
+import { PresenceStream, createPresenceStream } from '../PresenceStream.ts';
 
 /**
  * Creates a mock IFriendsPresenceClient for testing.

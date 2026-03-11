@@ -1,14 +1,14 @@
 import 'dotenv/config';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { GitHubFileInfo, IGitHubClient } from '@clients-github/types.js';
-import { GitHubClient } from '@clients-github/client.js';
-import { wh40k10eSystem } from '@wh40k10e/system.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { SpaceMarinesDAO } from '@wh40k10e/dao/factions/SpaceMarinesDAO.js';
-import { BloodAngelsDAO } from '@wh40k10e/dao/factions/BloodAngelsDAO.js';
-import { FactionDAO } from '@wh40k10e/dao/FactionDAO.js';
-import { CoreRulesDAO } from '@wh40k10e/dao/CoreRulesDAO.js';
-import { FACTION_MAP } from '@wh40k10e/config/factionMap.js';
+import type { GitHubFileInfo, IGitHubClient } from '@armoury/clients-github/types';
+import { GitHubClient } from '@armoury/clients-github/client';
+import { wh40k10eSystem } from '../src/system.ts';
+import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.ts';
+import { SpaceMarinesDAO } from '../src/dao/factions/SpaceMarinesDAO.ts';
+import { BloodAngelsDAO } from '../src/dao/factions/BloodAngelsDAO.ts';
+import { FactionDAO } from '../src/dao/FactionDAO.ts';
+import { CoreRulesDAO } from '../src/dao/CoreRulesDAO.ts';
+import { FACTION_MAP } from '../src/config/factionMap.ts';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const HAS_TOKEN = Boolean(GITHUB_TOKEN);

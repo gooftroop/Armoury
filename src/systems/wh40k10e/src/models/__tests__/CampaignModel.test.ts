@@ -5,13 +5,13 @@ import type {
     CampaignPhase,
     CampaignRanking,
     CustomNarrative,
-} from '@models/CampaignModel.js';
+} from '@armoury/models/CampaignModel';
 import type {
     CrusadeParticipantData,
     CrusadeUnitProgression,
     CrusadeBattleHonour,
     CrusadeBattleScar,
-} from '@wh40k10e/models/CampaignModel.js';
+} from '../CampaignModel.ts';
 
 const buildCampaignPhase = (id: string = 'phase-1', order: number = 1): CampaignPhase => ({
     id,

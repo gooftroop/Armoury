@@ -8,9 +8,9 @@ import type {
     PathParameters,
     RouteHandler,
     UserContext,
-} from '@friends/src/types.js';
-import { errorResponse, jsonResponse } from '@friends/src/utils/response.js';
-import { parseSendFriendRequest, parseUpdateFriendRequest } from '@friends/src/utils/validation.js';
+} from '../types.ts';
+import { errorResponse, jsonResponse } from '../utils/response.ts';
+import { parseSendFriendRequest, parseUpdateFriendRequest } from '../utils/validation.ts';
 
 /**
  * Valid status transitions for friend relationships.

@@ -8,8 +8,8 @@
 
 // === Presence Client ===
 
-export { FriendsPresenceClient, createFriendsPresenceClient } from '@clients-friends/presence.js';
-export type { IFriendsPresenceClient } from '@clients-friends/presence.js';
+export { FriendsPresenceClient, createFriendsPresenceClient } from './presence.ts';
+export type { IFriendsPresenceClient } from './presence.ts';
 
 // === Types ===
 
@@ -26,29 +26,24 @@ export type {
     FriendsServerMessage,
     FriendsPresenceConfig,
     ConnectionState,
-} from '@clients-friends/types.js';
+} from './types.ts';
 
 // === Error Classes ===
 
-export { FriendsApiError, FriendsNetworkError } from '@clients-friends/types.js';
-export { isFriendsApiError, isFriendsNetworkError } from '@clients-friends/types.js';
+export { FriendsApiError, FriendsNetworkError } from './types.ts';
+export { isFriendsApiError, isFriendsNetworkError } from './types.ts';
 
 // === Config ===
 
-export {
-    FRIENDS_BASE_URL,
-    DEFAULT_FRIENDS_WS_URL,
-    MAX_RECONNECT_ATTEMPTS,
-    BASE_RECONNECT_DELAY_MS,
-} from '@clients-friends/config.js';
+export { FRIENDS_BASE_URL, DEFAULT_FRIENDS_WS_URL, MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from './config.ts';
 
 // === Queries ===
 
-export { buildQueryFriendsKey, queryFriends } from '@clients-friends/queries/queryFriends.js';
-export { buildQueryFriendKey, queryFriend } from '@clients-friends/queries/queryFriend.js';
+export { buildQueryFriendsKey, queryFriends } from './queries/queryFriends.ts';
+export { buildQueryFriendKey, queryFriend } from './queries/queryFriend.ts';
 
 // === Mutations ===
 
-export { mutationSendFriendRequest } from '@clients-friends/mutations/mutationSendFriendRequest.js';
-export { mutationUpdateFriend } from '@clients-friends/mutations/mutationUpdateFriend.js';
-export { mutationDeleteFriend } from '@clients-friends/mutations/mutationDeleteFriend.js';
+export { mutationSendFriendRequest } from './mutations/mutationSendFriendRequest.ts';
+export { mutationUpdateFriend } from './mutations/mutationUpdateFriend.ts';
+export { mutationDeleteFriend } from './mutations/mutationDeleteFriend.ts';

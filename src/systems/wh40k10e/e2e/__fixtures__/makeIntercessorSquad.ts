@@ -1,5 +1,5 @@
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { Weapon } from '@wh40k10e/types/entities.js';
+import type { Unit } from '../../src/models/UnitModel.ts';
+import type { Weapon } from '../../src/types/entities.ts';
 import { makeBoltRifle } from './makeBoltRifle.ts';
 
 export function makeIntercessorSquad(): Unit {

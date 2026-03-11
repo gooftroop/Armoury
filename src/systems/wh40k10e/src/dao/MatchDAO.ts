@@ -1,8 +1,8 @@
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { Match as CoreMatch } from '@models/MatchModel.js';
-import { BaseDAO } from '@data/dao/BaseDAO.js';
-import type { MatchData } from '@wh40k10e/models/MatchData.js';
-import { Match } from '@wh40k10e/models/Match.js';
+import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
+import type { Match as CoreMatch } from '@armoury/models/MatchModel';
+import { BaseDAO } from '@armoury/data-dao/dao/BaseDAO';
+import type { MatchData } from '../models/MatchData.ts';
+import { Match } from '../models/Match.ts';
 
 /**
  * DAO for 40K match records. Wraps core match persistence and returns

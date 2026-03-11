@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from '@clients-users/config.js';
-import type { UserParams } from '@clients-users/types.js';
+import { USERS_BASE_URL } from './../config.ts';
+import type { UserParams } from './../types.ts';
 
 /**
  * Deletes the account associated with a user.

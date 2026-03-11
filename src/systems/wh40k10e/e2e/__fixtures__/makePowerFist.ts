@@ -1,4 +1,4 @@
-import type { Weapon } from '@wh40k10e/types/entities.js';
+import type { Weapon } from '../../src/types/entities.ts';
 
 export function makePowerFist(): Weapon {
     return {

@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { CreateMatchRequest, Match, UserContext } from '@matches/src/types.js';
-import { router } from '@matches/src/router.js';
-import { createE2EAdapter, resetDatabase } from '@matches/src/__testing__/e2eAdapter.js';
-import type { LocalDatabaseAdapter } from '@matches/src/utils/localAdapter.js';
+import type { CreateMatchRequest, Match, UserContext } from '../src/types.ts';
+import { router } from '../src/router.ts';
+import { createE2EAdapter, resetDatabase } from '../src/__testing__/e2eAdapter.ts';
+import type { LocalDatabaseAdapter } from '../src/utils/localAdapter.ts';
 
 let adapter: LocalDatabaseAdapter;
 

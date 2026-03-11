@@ -3,8 +3,8 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query';
-import { getParticipant } from '@clients-campaigns/api/getParticipant.js';
-import type { CampaignParticipant, ParticipantParams } from '@clients-campaigns/types.js';
+import { getParticipant } from './../api/getParticipant.ts';
+import type { CampaignParticipant, ParticipantParams } from './../types.ts';
 
 /**
  * Builds the query key for a single participant query.

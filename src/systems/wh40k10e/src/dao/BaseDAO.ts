@@ -1,6 +1,6 @@
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { IGitHubClient } from '@clients-github/types.js';
-import { BSDataBaseDAO } from '@data/dao/BSDataBaseDAO.js';
+import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
+import type { IGitHubClient } from '@armoury/clients-github/types';
+import { BSDataBaseDAO } from '@armoury/data-dao/dao/BSDataBaseDAO';
 
 const BSDATA_OWNER = 'BSData';
 const BSDATA_REPO = 'wh40k-10e';

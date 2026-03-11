@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { WahapediaClient, createWahapediaClient } from '@clients-wahapedia/client.js';
-import type { IWahapediaParser } from '@clients-wahapedia/types.js';
+import { WahapediaClient, createWahapediaClient } from './../client.ts';
+import type { IWahapediaParser } from './../types.ts';
 
 describe('WahapediaClient', () => {
     const originalFetch = globalThis.fetch;

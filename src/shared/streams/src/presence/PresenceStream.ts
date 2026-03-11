@@ -17,7 +17,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { map, distinctUntilChanged } from 'rxjs/operators';
 import type { IFriendsPresenceClient, FriendsServerMessage } from '@armoury/clients-friends';
-import type { OnlineFriend, IPresenceStream } from '@streams/types.js';
+import type { OnlineFriend, IPresenceStream } from './../types.ts';
 
 /**
  * @requirements
@@ -88,7 +88,7 @@ export class PresenceStream implements IPresenceStream {
      * Observable of the underlying WebSocket connection state.
      * Proxied directly from the client — no transformation applied.
      */
-    readonly connectionState$: Observable<import('@streams/types.js').ConnectionState>;
+    readonly connectionState$: Observable<import('./../types.ts').ConnectionState>;
 
     /**
      * Creates a new PresenceStream.

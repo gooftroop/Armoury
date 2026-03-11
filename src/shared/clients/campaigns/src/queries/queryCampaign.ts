@@ -3,8 +3,8 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query';
-import { getCampaign } from '@clients-campaigns/api/getCampaign.js';
-import type { Campaign, CampaignParams } from '@clients-campaigns/types.js';
+import { getCampaign } from './../api/getCampaign.ts';
+import type { Campaign, CampaignParams } from './../types.ts';
 
 /**
  * Builds the query key for a single campaign query.

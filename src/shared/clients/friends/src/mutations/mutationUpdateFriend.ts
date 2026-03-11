@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import type { Friend, FriendParams, UpdateFriendRequest } from '@clients-friends/types.js';
-import { putFriend } from '@clients-friends/api/putFriend.js';
+import type { Friend, FriendParams, UpdateFriendRequest } from './../types.ts';
+import { putFriend } from './../api/putFriend.ts';
 
 /**
  * Builds React Query mutation options for updating a friend relationship.

@@ -1,6 +1,12 @@
-import { Platform, type DatabaseAdapter, type EntityType, type EntityMap, type QueryOptions } from '@data/adapter.js';
-import { getEntityCodec } from '@data/codec.js';
-import type { FileSyncStatus } from '@data/types.js';
+import {
+    Platform,
+    type DatabaseAdapter,
+    type EntityType,
+    type EntityMap,
+    type QueryOptions,
+} from '@armoury/data-dao/adapter';
+import { getEntityCodec } from '@armoury/data-dao/codec';
+import type { FileSyncStatus } from '@armoury/data-dao/types';
 
 /**
  * Mock in-memory database adapter for testing.

@@ -9,7 +9,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CampaignParams, ParticipantParams } from '@clients-campaigns/types.js';
+import type { CampaignParams, ParticipantParams } from './../types.ts';
 
 vi.mock('ky', () => ({
     default: {
@@ -20,10 +20,10 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { buildQueryCampaignsKey, queryCampaigns } from '@clients-campaigns/queries/queryCampaigns.js';
-import { buildQueryCampaignKey, queryCampaign } from '@clients-campaigns/queries/queryCampaign.js';
-import { buildQueryParticipantsKey, queryParticipants } from '@clients-campaigns/queries/queryParticipants.js';
-import { buildQueryParticipantKey, queryParticipant } from '@clients-campaigns/queries/queryParticipant.js';
+import { buildQueryCampaignsKey, queryCampaigns } from './../queries/queryCampaigns.ts';
+import { buildQueryCampaignKey, queryCampaign } from './../queries/queryCampaign.ts';
+import { buildQueryParticipantsKey, queryParticipants } from './../queries/queryParticipants.ts';
+import { buildQueryParticipantKey, queryParticipant } from './../queries/queryParticipant.ts';
 
 const AUTH = 'Bearer test-token';
 const campaignParams: CampaignParams = { campaignId: 'camp-1' };

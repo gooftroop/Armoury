@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from '@clients-users/config.js';
-import type { Account, UserParams, UpdateAccountRequest } from '@clients-users/types.js';
+import { USERS_BASE_URL } from './../config.ts';
+import type { Account, UserParams, UpdateAccountRequest } from './../types.ts';
 
 /**
  * Updates the account associated with a user.

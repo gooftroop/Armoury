@@ -15,7 +15,7 @@ import type {
     UserParams,
     CreateAccountRequest,
     UpdateAccountRequest,
-} from '@clients-users/types.js';
+} from './../types.ts';
 
 const { mockJson, mockGet, mockPost, mockPut, mockDelete } = vi.hoisted(() => {
     const mockJson = vi.fn();
@@ -38,15 +38,15 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { getUsers } from '@clients-users/api/getUsers.js';
-import { getUser } from '@clients-users/api/getUser.js';
-import { postUser } from '@clients-users/api/postUser.js';
-import { putUser } from '@clients-users/api/putUser.js';
-import { deleteUser } from '@clients-users/api/deleteUser.js';
-import { getAccount } from '@clients-users/api/getAccount.js';
-import { postAccount } from '@clients-users/api/postAccount.js';
-import { putAccount } from '@clients-users/api/putAccount.js';
-import { deleteAccount } from '@clients-users/api/deleteAccount.js';
+import { getUsers } from './../api/getUsers.ts';
+import { getUser } from './../api/getUser.ts';
+import { postUser } from './../api/postUser.ts';
+import { putUser } from './../api/putUser.ts';
+import { deleteUser } from './../api/deleteUser.ts';
+import { getAccount } from './../api/getAccount.ts';
+import { postAccount } from './../api/postAccount.ts';
+import { putAccount } from './../api/putAccount.ts';
+import { deleteAccount } from './../api/deleteAccount.ts';
 
 const AUTHORIZATION = 'Bearer test-token';
 

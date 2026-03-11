@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { putAccount } from '@clients-users/api/putAccount.js';
-import type { Account, UserParams, UpdateAccountRequest } from '@clients-users/types.js';
+import { putAccount } from './../api/putAccount.ts';
+import type { Account, UserParams, UpdateAccountRequest } from './../types.ts';
 
 /**
  * Builds React Query mutation options for updating a user's account.

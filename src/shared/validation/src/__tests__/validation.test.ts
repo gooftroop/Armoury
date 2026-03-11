@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import type { BattleScribeConstraint } from '@providers-bsdata/types.js';
-import { parseConstraints, parseConstraint } from '@validation/constraints/parser.js';
+import type { BattleScribeConstraint } from '@armoury/providers-bsdata/types';
+import { parseConstraints, parseConstraint } from './../constraints/parser.ts';
 describe('Constraint Parser', () => {
     it('parses a BattleScribe constraint element', () => {
         const constraint: BattleScribeConstraint = {

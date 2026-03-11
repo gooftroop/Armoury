@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-import { hydrateCoreRules } from '@wh40k10e/models/CoreRules.js';
-import { parseCoreRules } from '@wh40k10e/data/CoreRulesParser.js';
+import type { CoreRules } from '../CoreRules.ts';
+import { hydrateCoreRules } from '../CoreRules.ts';
+import { parseCoreRules } from '../../data/CoreRulesParser.ts';
 import type {
     BattleScribeGameSystem,
     BattleScribeProfileType,
     BattleScribeCostType,
     BattleScribeRule,
     BattleScribeCategory,
-} from '@providers-bsdata/types.js';
+} from '@armoury/providers-bsdata/types';
 
 /** Builds a minimal profile type entry for testing. */
 const buildProfileType = (id: string, name: string): BattleScribeProfileType => ({

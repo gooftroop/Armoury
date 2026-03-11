@@ -1,7 +1,7 @@
-import type { Army, ArmyUnit } from '@wh40k10e/models/ArmyModel.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { ValidationResult } from '@wh40k10e/validation/types.js';
+import type { Army, ArmyUnit } from '../../models/ArmyModel.ts';
+import type { FactionData } from '../../models/FactionData.ts';
+import type { Unit } from '../../models/UnitModel.ts';
+import type { ValidationResult } from '../types.ts';
 
 /**
  * Check that a unit includes the army's faction keyword.

@@ -12,7 +12,7 @@
  * 4. Must export ProfileTypeInfo, CostTypeInfo, and SharedRule as named type exports.
  */
 
-import type { ParsedConstraint } from '@validation/constraints/types.js';
+import type { ParsedConstraint } from '@armoury/validation/constraints/types';
 
 /**
  * Profile type information extracted from game system.

@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@friends/src/types.js';
+import type { ApiResponse } from '../types.ts';
 
 /**
  * Formats an error into an API Gateway proxy response.

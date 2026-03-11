@@ -1,4 +1,4 @@
-import type { IWahapediaClient, IWahapediaParser } from '@clients-wahapedia/types.js';
+import type { IWahapediaClient, IWahapediaParser } from './types.ts';
 
 /**
  * Maximum number of retry attempts for failed requests.

@@ -19,9 +19,9 @@
 
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { auth0 } from '@web/src/lib/auth0.js';
-import { discoverSystemManifests } from '@web/src/lib/discoverSystems.js';
-import { SystemGrid } from '@web/src/components/SystemGrid.js';
+import { auth0 } from '../../src/lib/auth0.ts';
+import { discoverSystemManifests } from '../../src/lib/discoverSystems.ts';
+import { SystemGrid } from '../../src/components/SystemGrid.tsx';
 
 /** Props for the locale-parameterized landing page. */
 export interface LandingPageProps {

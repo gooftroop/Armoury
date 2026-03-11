@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { extractUnits, extractWeapons, extractAbilities } from '@wh40k10e/data/extractors.js';
+import { extractUnits, extractWeapons, extractAbilities } from '../extractors.ts';
 import type {
     BattleScribeCatalogue,
     BattleScribeProfile,
     BattleScribeSelectionEntry,
-} from '@providers-bsdata/types.js';
+} from '@armoury/providers-bsdata/types';
 
 /**
  * Builds a minimal BattleScribe profile with characteristics.

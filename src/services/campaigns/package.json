@@ -5,7 +5,8 @@
     "type": "module",
     "main": "dist/handler.js",
     "exports": {
-        ".": "./dist/handler.js"
+        ".": "./dist/handler.js",
+        "./*": "./dist/*.js"
     },
     "scripts": {
         "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/service'\"",
@@ -24,11 +25,12 @@
         "generate:types": "tsc -p tsconfig.build.json"
     },
     "dependencies": {
-        "@armoury/data": "*",
         "@armoury/adapters-pglite": "*",
         "@armoury/models": "*",
         "@aws-sdk/client-ssm": "^3.0.0",
-        "@sentry/aws-serverless": "^10.38.0"
+        "@sentry/aws-serverless": "^10.38.0",
+        "@armoury/data-dao": "*",
+        "@armoury/adapters-dsql": "*"
     },
     "devDependencies": {
         "drizzle-kit": "^0.31.9",

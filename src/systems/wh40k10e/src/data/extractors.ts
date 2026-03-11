@@ -7,18 +7,18 @@ import type {
     BattleScribeSelectionEntry,
     BattleScribeProfile,
     BattleScribeCategoryLink,
-} from '@providers-bsdata/types.js';
-import { ensureArray } from '@providers-bsdata/types.js';
+} from '@armoury/providers-bsdata/types';
+import { ensureArray } from '@armoury/providers-bsdata/types';
 import {
     parseGameSystem,
     parseCatalogue,
     getCharacteristicValue,
     extractProfileCharacteristics,
-} from '@providers-bsdata/xmlParser.js';
-import { parseWeaponKeywords } from '@wh40k10e/validation/weaponKeywords.js';
-import type { Weapon, RangedWeapon, MeleeWeapon, Ability } from '@wh40k10e/types/entities.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { UnitAbility, WargearAbility, LeaderInfo } from '@wh40k10e/models/UnitModel.js';
+} from '@armoury/providers-bsdata/xmlParser';
+import { parseWeaponKeywords } from '../validation/weaponKeywords.ts';
+import type { Weapon, RangedWeapon, MeleeWeapon, Ability } from '../types/entities.ts';
+import type { Unit } from '../models/UnitModel.ts';
+import type { UnitAbility, WargearAbility, LeaderInfo } from '../models/UnitModel.ts';
 
 export { parseGameSystem, parseCatalogue };
 

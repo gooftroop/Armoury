@@ -4,35 +4,35 @@ import type {
     PluginValidationRule,
     EntityHydrator,
     GameSystem,
-} from '@data/types.js';
-import type { SchemaExtension } from '@data/schema.js';
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { IGitHubClient } from '@clients-github/types.js';
-import type { GameContextResult } from '@data/types.js';
-import { registerPluginEntity } from '@data/adapter.js';
-import { registerHydrator } from '@data/hydration.js';
-import { registerEntityCodec } from '@data/codec.js';
-import { registerSchemaExtension } from '@data/schema.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-import { hydrateCoreRules } from '@wh40k10e/models/CoreRules.js';
-import { hydrateFactionData } from '@wh40k10e/models/FactionData.js';
-import type { ValidationResult } from '@validation/types.js';
-import type { Army } from '@wh40k10e/models/ArmyModel.js';
-import type { ChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import { hydrateChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { Faction } from '@wh40k10e/types/entities.js';
-import type { CrusadeRules } from '@wh40k10e/models/CrusadeRulesModel.js';
-import type { Weapon, Ability, Stratagem, Detachment } from '@wh40k10e/types/entities.js';
-import { CoreRulesDAO } from '@wh40k10e/dao/CoreRulesDAO.js';
-import { ChapterApprovedDAO } from '@wh40k10e/dao/ChapterApprovedDAO.js';
-import { createWahapediaClient } from '@clients-wahapedia/index.js';
-import { CrusadeRulesDAO } from '@wh40k10e/dao/CrusadeRulesDAO.js';
-import { ArmyDAO } from '@wh40k10e/dao/ArmyDAO.js';
-import { CampaignDAO } from '@data/dao/CampaignDAO.js';
+} from '@armoury/data-dao/types';
+import type { SchemaExtension } from '@armoury/data-dao/schema';
+import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
+import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { GameContextResult } from '@armoury/data-dao/types';
+import { registerPluginEntity } from '@armoury/data-dao/adapter';
+import { registerHydrator } from '@armoury/data-dao/hydration';
+import { registerEntityCodec } from '@armoury/data-dao/codec';
+import { registerSchemaExtension } from '@armoury/data-dao/schema';
+import type { FactionData } from './models/FactionData.ts';
+import type { CoreRules } from './models/CoreRules.ts';
+import { hydrateCoreRules } from './models/CoreRules.ts';
+import { hydrateFactionData } from './models/FactionData.ts';
+import type { ValidationResult } from '@armoury/validation/types';
+import type { Army } from './models/ArmyModel.ts';
+import type { ChapterApproved } from './models/ChapterApproved.ts';
+import { hydrateChapterApproved } from './models/ChapterApproved.ts';
+import type { Unit } from './models/UnitModel.ts';
+import type { Faction } from './types/entities.ts';
+import type { CrusadeRules } from './models/CrusadeRulesModel.ts';
+import type { Weapon, Ability, Stratagem, Detachment } from './types/entities.ts';
+import { CoreRulesDAO } from './dao/CoreRulesDAO.ts';
+import { ChapterApprovedDAO } from './dao/ChapterApprovedDAO.ts';
+import { createWahapediaClient } from '@armoury/clients-wahapedia/index';
+import { CrusadeRulesDAO } from './dao/CrusadeRulesDAO.ts';
+import { ArmyDAO } from './dao/ArmyDAO.ts';
+import { CampaignDAO } from '@armoury/data-dao/dao/CampaignDAO';
 
-import { GameData } from '@wh40k10e/dao/GameData.js';
+import { GameData } from './dao/GameData.ts';
 import {
     AeldariDAO,
     DrukhariDAO,
@@ -71,7 +71,7 @@ import {
     AdeptusTitanicusDAO,
     TitanicusTraitorisDAO,
     UnalignedForcesDAO,
-} from '@wh40k10e/dao/factions/index.js';
+} from './dao/factions/index.ts';
 import {
     validatePoints,
     validateStrategicReserves,
@@ -84,7 +84,7 @@ import {
     validateTransport,
     validateWargear,
     validateWarlord,
-} from '@wh40k10e/validation/rules/index.js';
+} from './validation/rules/index.ts';
 
 /**
  * Enum of entity kinds for wh40k10e data access.

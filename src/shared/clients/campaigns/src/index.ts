@@ -22,40 +22,35 @@ export type {
     UpdateCampaignRequest,
     JoinCampaignRequest,
     UpdateParticipantRequest,
-} from '@clients-campaigns/types.js';
+} from './types.ts';
 
 // === Error Classes and Type Guards ===
 
-export {
-    CampaignsApiError,
-    CampaignsNetworkError,
-    isCampaignsApiError,
-    isCampaignsNetworkError,
-} from '@clients-campaigns/types.js';
+export { CampaignsApiError, CampaignsNetworkError, isCampaignsApiError, isCampaignsNetworkError } from './types.ts';
 
 // === Config ===
 
-export { CAMPAIGNS_BASE_URL } from '@clients-campaigns/config.js';
+export { CAMPAIGNS_BASE_URL } from './config.ts';
 
 // === Query Key Builders ===
 
-export { buildQueryCampaignsKey } from '@clients-campaigns/queries/queryCampaigns.js';
-export { buildQueryCampaignKey } from '@clients-campaigns/queries/queryCampaign.js';
-export { buildQueryParticipantsKey } from '@clients-campaigns/queries/queryParticipants.js';
-export { buildQueryParticipantKey } from '@clients-campaigns/queries/queryParticipant.js';
+export { buildQueryCampaignsKey } from './queries/queryCampaigns.ts';
+export { buildQueryCampaignKey } from './queries/queryCampaign.ts';
+export { buildQueryParticipantsKey } from './queries/queryParticipants.ts';
+export { buildQueryParticipantKey } from './queries/queryParticipant.ts';
 
 // === Query Options Builders ===
 
-export { queryCampaigns } from '@clients-campaigns/queries/queryCampaigns.js';
-export { queryCampaign } from '@clients-campaigns/queries/queryCampaign.js';
-export { queryParticipants } from '@clients-campaigns/queries/queryParticipants.js';
-export { queryParticipant } from '@clients-campaigns/queries/queryParticipant.js';
+export { queryCampaigns } from './queries/queryCampaigns.ts';
+export { queryCampaign } from './queries/queryCampaign.ts';
+export { queryParticipants } from './queries/queryParticipants.ts';
+export { queryParticipant } from './queries/queryParticipant.ts';
 
 // === Mutation Options Builders ===
 
-export { mutationCreateCampaign } from '@clients-campaigns/mutations/mutationCreateCampaign.js';
-export { mutationUpdateCampaign } from '@clients-campaigns/mutations/mutationUpdateCampaign.js';
-export { mutationDeleteCampaign } from '@clients-campaigns/mutations/mutationDeleteCampaign.js';
-export { mutationJoinCampaign } from '@clients-campaigns/mutations/mutationJoinCampaign.js';
-export { mutationUpdateParticipant } from '@clients-campaigns/mutations/mutationUpdateParticipant.js';
-export { mutationDeleteParticipant } from '@clients-campaigns/mutations/mutationDeleteParticipant.js';
+export { mutationCreateCampaign } from './mutations/mutationCreateCampaign.ts';
+export { mutationUpdateCampaign } from './mutations/mutationUpdateCampaign.ts';
+export { mutationDeleteCampaign } from './mutations/mutationDeleteCampaign.ts';
+export { mutationJoinCampaign } from './mutations/mutationJoinCampaign.ts';
+export { mutationUpdateParticipant } from './mutations/mutationUpdateParticipant.ts';
+export { mutationDeleteParticipant } from './mutations/mutationDeleteParticipant.ts';

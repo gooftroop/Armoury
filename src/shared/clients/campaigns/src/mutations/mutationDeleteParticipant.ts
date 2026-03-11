@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { deleteParticipant } from '@clients-campaigns/api/deleteParticipant.js';
-import type { ParticipantParams } from '@clients-campaigns/types.js';
+import { deleteParticipant } from './../api/deleteParticipant.ts';
+import type { ParticipantParams } from './../types.ts';
 
 /**
  * Builds React Query mutation options for removing a participant from a campaign.

@@ -13,9 +13,9 @@
  * 5. Must normalize nested unit, detachment, enhancement, and weapon data during hydration.
  */
 
-import type { Ability, Detachment, Enhancement, Stratagem, Weapon } from '@wh40k10e/types/entities.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { StructuredRule } from '@wh40k10e/types/effects.js';
+import type { Ability, Detachment, Enhancement, Stratagem, Weapon } from '../types/entities.ts';
+import type { Unit } from './UnitModel.ts';
+import type { StructuredRule } from '../types/effects.ts';
 
 /**
  * Faction rule data extracted from BattleScribe catalogues.

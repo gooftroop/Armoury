@@ -1,4 +1,4 @@
-import type { DatabaseAdapter, EntityMap, EntityType } from '@matches/src/types.js';
+import type { DatabaseAdapter, EntityMap, EntityType } from '../types.ts';
 
 type QueryResult = {
     rows: Record<string, unknown>[];

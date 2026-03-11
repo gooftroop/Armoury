@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from '@clients-users/config.js';
-import type { User, UserParams } from '@clients-users/types.js';
+import { USERS_BASE_URL } from './../config.ts';
+import type { User, UserParams } from './../types.ts';
 
 /**
  * Retrieves a single user by their unique identifier.

@@ -1,6 +1,6 @@
 import ky from 'ky';
-import { MATCHES_BASE_URL } from '@clients-matches/config.js';
-import type { MatchParams } from '@clients-matches/types.js';
+import { MATCHES_BASE_URL } from './../config.ts';
+import type { MatchParams } from './../types.ts';
 
 /**
  * Deletes a match by ID via the matches service.

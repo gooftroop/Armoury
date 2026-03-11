@@ -1,11 +1,11 @@
-import type { CampaignStatus } from '@models/CampaignModel.js';
+import type { CampaignStatus } from '@armoury/models/CampaignModel';
 
 import type {
     CreateCampaignRequest,
     JoinCampaignRequest,
     UpdateCampaignRequest,
     UpdateParticipantRequest,
-} from '@campaigns/src/types.js';
+} from '../types.ts';
 
 /** Valid campaign status values. */
 const VALID_CAMPAIGN_STATUSES: ReadonlySet<string> = new Set<CampaignStatus>([

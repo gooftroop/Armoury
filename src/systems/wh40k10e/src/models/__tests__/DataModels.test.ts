@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import type { Account } from '@models/AccountModel.js';
-import type { Army, ArmyUnit, ArmyVersion } from '@wh40k10e/models/ArmyModel.js';
-import type { Friend } from '@models/FriendModel.js';
-import type { Match } from '@models/MatchModel.js';
-import type { Campaign, CampaignParticipant } from '@models/CampaignModel.js';
-import type { CrusadeRules } from '@wh40k10e/models/CrusadeRulesModel.js';
-import type { CrusadeParticipantData } from '@wh40k10e/models/CampaignModel.js';
+import type { Account } from '@armoury/models/AccountModel';
+import type { Army, ArmyUnit, ArmyVersion } from '../ArmyModel.ts';
+import type { Friend } from '@armoury/models/FriendModel';
+import type { Match } from '@armoury/models/MatchModel';
+import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
+import type { CrusadeRules } from '../CrusadeRulesModel.ts';
+import type { CrusadeParticipantData } from '../CampaignModel.ts';
 
 const buildAccount = (): Account => ({
     id: 'auth0|user-1',

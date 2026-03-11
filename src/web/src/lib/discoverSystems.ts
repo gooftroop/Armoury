@@ -18,7 +18,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { GameSystemManifest } from '@armoury/data';
+import type { GameSystemManifest } from '@armoury/data-dao/types';
 
 /**
  * Absolute path to the `public/systems/` directory.

@@ -53,9 +53,9 @@
 
 import * as cheerio from 'cheerio';
 
-import type { IWahapediaParser } from '@clients-wahapedia/types.js';
+import type { IWahapediaParser } from '@armoury/clients-wahapedia/types';
 
-import type { ChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
+import type { ChapterApproved } from '../models/ChapterApproved.ts';
 import type {
     ChallengerCard,
     ChallengerMission,
@@ -67,7 +67,7 @@ import type {
     TerrainLayout,
     TournamentMission,
     TwistCard,
-} from '@wh40k10e/models/ChapterApprovedTypes.js';
+} from '../models/ChapterApprovedTypes.ts';
 
 /** Base URL for resolving relative Wahapedia image paths to absolute URLs. */
 const WAHAPEDIA_BASE_URL = 'https://wahapedia.ru';

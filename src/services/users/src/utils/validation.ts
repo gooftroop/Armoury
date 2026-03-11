@@ -4,7 +4,7 @@ import type {
     UpdateAccountPayload,
     UpdateUserPayload,
     UserPreferences,
-} from '@users/src/types.js';
+} from '../types.ts';
 
 /**
  * Type guard for records.

@@ -1,11 +1,7 @@
 {
     "extends": "@armoury/typescript/base.json",
     "compilerOptions": {
-        "noEmit": true,
-        "baseUrl": ".",
-        "paths": {
-            "@providers-bsdata/*": ["./src/*"]
-        }
+        "noEmit": true
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules", "dist"]

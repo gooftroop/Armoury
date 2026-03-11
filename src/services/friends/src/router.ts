@@ -1,5 +1,5 @@
-import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from '@friends/src/types.js';
-import { deleteFriend, getFriend, listFriends, sendFriendRequest, updateFriend } from '@friends/src/routes/friends.js';
+import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from './types.ts';
+import { deleteFriend, getFriend, listFriends, sendFriendRequest, updateFriend } from './routes/friends.ts';
 
 /**
  * Route dispatch key for API Gateway resource and HTTP method.

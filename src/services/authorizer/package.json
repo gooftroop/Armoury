@@ -5,7 +5,8 @@
     "type": "module",
     "main": "dist/handler.js",
     "exports": {
-        ".": "./dist/handler.js"
+        ".": "./dist/handler.js",
+        "./*": "./dist/*.js"
     },
     "scripts": {
         "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/service'\"",

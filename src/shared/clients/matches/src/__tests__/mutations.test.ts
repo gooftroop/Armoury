@@ -5,7 +5,7 @@
  * to verify mutationFn presence, absence of mutationKey, and custom option spreading.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { CreateMatchRequest, MatchParams, UpdateMatchRequest } from '@clients-matches/types.js';
+import type { CreateMatchRequest, MatchParams, UpdateMatchRequest } from './../types.ts';
 
 vi.mock('ky', () => ({
     default: {
@@ -16,9 +16,9 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { mutationCreateMatch } from '@clients-matches/mutations/mutationCreateMatch.js';
-import { mutationUpdateMatch } from '@clients-matches/mutations/mutationUpdateMatch.js';
-import { mutationDeleteMatch } from '@clients-matches/mutations/mutationDeleteMatch.js';
+import { mutationCreateMatch } from './../mutations/mutationCreateMatch.ts';
+import { mutationUpdateMatch } from './../mutations/mutationUpdateMatch.ts';
+import { mutationDeleteMatch } from './../mutations/mutationDeleteMatch.ts';
 
 const TEST_AUTH = 'Bearer test-token-123';
 

@@ -1,0 +1,53 @@
+{
+    "name": "@armoury/data-dao",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/node/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "browser": "./dist/browser/index.js",
+            "default": "./dist/node/index.js"
+        },
+        "./*": {
+            "types": "./dist/*.d.ts",
+            "browser": "./dist/browser/*.js",
+            "default": "./dist/node/*.js"
+        },
+        "./__mocks__/*": "./src/__mocks__/*.ts"
+    },
+    "scripts": {
+        "build": "ESBUILD_ENTRIES=src/index.ts,src/adapter.ts,src/types.ts,src/codec.ts,src/hydration.ts,src/schema.ts,src/pluginRegistry.ts,src/dao/index.ts,src/dao/AccountDAO.ts,src/dao/BaseDAO.ts,src/dao/BSDataBaseDAO.ts,src/dao/CampaignDAO.ts,src/dao/CampaignParticipantDAO.ts,src/dao/FriendDAO.ts,src/dao/MatchDAO.ts,src/dao/RemoteDataDAO.ts,src/dao/SyncStatusTable.ts,src/dao/TTLSyncBaseDAO.ts,src/dao/UserDAO.ts,src/dao/UserPresenceDAO.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
+        "generate:types": "tsc -p tsconfig.build.json",
+        "test": "vitest run",
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "dependencies": {
+        "@armoury/models": "*",
+        "@armoury/clients-github": "*",
+        "drizzle-orm": "^0.45.1"
+    },
+    "devDependencies": {
+        "@armoury/eslint": "*",
+        "@armoury/prettier": "*",
+        "@armoury/typescript": "*",
+        "@armoury/vitest": "*",
+        "@armoury/esbuild": "*",
+        "@electric-sql/pglite": "^0.3.15",
+        "@types/pg": "^8.16.0",
+        "drizzle-kit": "^0.31.9",
+        "eslint": "^9.0.0",
+        "pg": "^8.18.0",
+        "prettier": "^3.0.0",
+        "vitest": "^4.0.0"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
+        "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"
+    }
+}

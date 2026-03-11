@@ -3,8 +3,8 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query';
-import type { Friend, FriendParams } from '@clients-friends/types.js';
-import { getFriend } from '@clients-friends/api/getFriend.js';
+import type { Friend, FriendParams } from './../types.ts';
+import { getFriend } from './../api/getFriend.ts';
 
 /**
  * Builds the query key for a single friend query.

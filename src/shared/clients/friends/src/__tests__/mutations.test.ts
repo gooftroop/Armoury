@@ -17,9 +17,9 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { mutationSendFriendRequest } from '@clients-friends/mutations/mutationSendFriendRequest.js';
-import { mutationUpdateFriend } from '@clients-friends/mutations/mutationUpdateFriend.js';
-import { mutationDeleteFriend } from '@clients-friends/mutations/mutationDeleteFriend.js';
+import { mutationSendFriendRequest } from './../mutations/mutationSendFriendRequest.ts';
+import { mutationUpdateFriend } from './../mutations/mutationUpdateFriend.ts';
+import { mutationDeleteFriend } from './../mutations/mutationDeleteFriend.ts';
 
 const authorization = 'Bearer test-token-123';
 

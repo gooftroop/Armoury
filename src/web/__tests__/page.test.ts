@@ -7,7 +7,7 @@ vi.mock('@auth0/nextjs-auth0/server', () => ({
     },
 }));
 
-import HomePage from '@web/app/[locale]/page.js';
+import HomePage from '../app/[locale]/page.tsx';
 
 /** Verifies the HomePage component is exported and renderable. */
 describe('HomePage', () => {

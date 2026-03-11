@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Swords, BookOpen, Flag, Users, Library, ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@web/src/lib/utils.js';
+import { cn } from '../../lib/utils.ts';
 
 export interface SideNavProps {
     locale: string;

@@ -1,15 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
-import type {
-    Account,
-    ApiResponse,
-    DatabaseAdapter,
-    PathParameters,
-    RouteHandler,
-    UserContext,
-} from '@users/src/types.js';
-import { errorResponse, jsonResponse } from '@users/src/utils/response.js';
-import { parseCreateAccount, parseUpdateAccount } from '@users/src/utils/validation.js';
+import type { Account, ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from '../types.ts';
+import { errorResponse, jsonResponse } from '../utils/response.ts';
+import { parseCreateAccount, parseUpdateAccount } from '../utils/validation.ts';
 
 /**
  * Retrieves the account for a user.
