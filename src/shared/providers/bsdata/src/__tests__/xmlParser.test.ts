@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseGameSystem, parseCatalogue } from '@/xmlParser.js';
-import { XmlParseError } from '@/types.js';
+import { parseGameSystem, parseCatalogue } from '@providers-bsdata/xmlParser.js';
+import { XmlParseError } from '@providers-bsdata/types.js';
 
 const SAMPLE_GST = `<?xml version="1.0" encoding="UTF-8"?>
 <gameSystem id="sys-123" name="Warhammer 40,000 10th Edition" revision="87" battleScribeVersion="2.03">
