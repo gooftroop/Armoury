@@ -1,8 +1,8 @@
 ---
 model: opus
 created: 2026-02-02
-modified: 2026-03-05
-reviewed: 2026-03-05
+modified: 2026-03-11
+reviewed: 2026-03-11
 name: git-worktree-agent-workflow
 description: |
     MANDATORY workflow for all agent code changes. Every agent MUST use a git
@@ -12,6 +12,43 @@ description: |
     covers worktree creation, parallel agent coordination, patch management,
     integration, and cleanup.
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task, TodoWrite
+---
+
+# ⛔ SYSTEM DIRECTIVE — READ THIS BEFORE ANYTHING ELSE
+
+> **This is not optional. This is not a suggestion. This is a HARD SYSTEM CONSTRAINT.**
+>
+> **EVERY agent — orchestrator, subagent, delegated task — MUST operate inside a git worktree.**
+> **There are ZERO exceptions unless the user explicitly says "skip worktree" or "work on main".**
+>
+> **If you are about to write, edit, or create ANY file and your current working directory is NOT
+> inside `.worktrees/`, STOP IMMEDIATELY. Create or switch to a worktree first.**
+>
+> **Your working directory for ALL tool calls (Bash `workdir`, Read, Write, Edit, Glob, Grep)**
+> **MUST be the worktree path. Not the repo root. The WORKTREE.**
+>
+> **Failure to comply means ALL your work is in the wrong place and must be reverted.**
+
+## Pre-Flight Checklist (MANDATORY — Run BEFORE any code change)
+
+```
+□ Am I in a worktree?
+  → YES: Proceed. Use this worktree's absolute path as workdir for ALL tool calls.
+  → NO:  STOP. Do NOT write any files. Create or locate a worktree first.
+
+□ Is my worktree rebased on latest origin/master?
+  → YES: Proceed.
+  → NO:  Run: git fetch origin master && git rebase origin/master
+
+□ Are node_modules installed in the worktree?
+  → YES: Proceed.
+  → NO:  Run: npm install (from within the worktree)
+
+□ Is my Bash `workdir` parameter set to the worktree path?
+  → YES: Proceed.
+  → NO:  Set it. Every Bash call MUST use workdir="<worktree-absolute-path>"
+```
+
 ---
 
 # Git Worktree Agent Workflow
@@ -30,10 +67,42 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task, TodoWrite
 | Run read-only git commands in main working tree | Commit to any branch in main working tree     |
 | Create worktrees from main working tree         | Modify code without a worktree                |
 | All code changes inside a worktree              | `git checkout -b` + direct edits in main tree |
+| `workdir` pointing to worktree path             | `workdir` pointing to repo root for writes    |
+| Bash calls with `workdir=<worktree-path>`       | Bash calls without explicit worktree workdir  |
 
 **If an agent is already operating inside a worktree** (e.g., the user opened VS Code
 in `.worktrees/AST-1234`), the agent works in that worktree directly —
 no need to create a new one.
+
+### Working Directory Rule (NON-NEGOTIABLE)
+
+**Every Bash tool call that reads or writes project files MUST use `workdir="<worktree-absolute-path>"`.**
+
+```typescript
+// CORRECT: workdir points to worktree
+bash((command = 'npm run test'), (workdir = '/repo/.worktrees/feat-xyz'));
+bash((command = 'npm install'), (workdir = '/repo/.worktrees/feat-xyz'));
+bash((command = 'git status'), (workdir = '/repo/.worktrees/feat-xyz'));
+
+// WRONG: workdir is repo root or omitted
+bash((command = 'npm run test')); // defaults to repo root — FORBIDDEN
+bash((command = 'npm run test'), (workdir = '/repo')); // repo root — FORBIDDEN
+```
+
+**File tool calls (Read, Write, Edit, Glob, Grep)** MUST use absolute paths within the worktree:
+
+```typescript
+// CORRECT
+read(filePath="/repo/.worktrees/feat-xyz/src/shared/models/index.ts")
+edit(filePath="/repo/.worktrees/feat-xyz/src/shared/models/index.ts", ...)
+
+// WRONG — points to main tree
+read(filePath="/repo/src/shared/models/index.ts")  // only OK for read-only context
+edit(filePath="/repo/src/shared/models/index.ts", ...)  // FORBIDDEN
+```
+
+**Exception**: Reading files from the main tree for reference/context is allowed.
+Writing/editing files in the main tree is NEVER allowed.
 
 ## Human Communication (MANDATORY)
 
@@ -232,9 +301,9 @@ git stash drop 2>/dev/null || true
 - `working-tree.patch` - Uncommitted modifications
 - `staged.patch` - Staged but uncommitted changes
 
-### Step 3: Create worktrees
+### Step 3: Create worktrees (with MANDATORY rebase + npm install)
 
-Create worktrees in `.worktrees/`. **Always fetch latest master first**, then branch from `origin/master`.
+Create worktrees in `.worktrees/`. **Every new worktree MUST be rebased on latest `origin/master` and have `npm install` run before any work begins.** These are not optional steps — they are part of worktree creation.
 
 ```bash
 # ALWAYS fetch latest master before creating worktrees
@@ -269,14 +338,25 @@ Identifiers can be:
 - Descriptive names: `feature-dark-mode`, `fix-auth-redirect`, `refactor-color-manager`
 - Any consistent naming the developer prefers
 
-### Step 4: Install dependencies (if new worktree)
+### Step 4: Install dependencies (MANDATORY — ALWAYS)
 
-New worktrees need dependency installation since `node_modules` is not shared.
+**This is NOT optional. EVERY worktree — new or existing — MUST have dependencies installed before any work begins.**
+
+`node_modules` is NOT shared between worktrees. A worktree without `npm install` will fail on builds, tests, and type checks.
 
 ```bash
-# From within the worktree
-cd .worktrees/AST-4142
+# MANDATORY: Run from within the worktree using workdir
+# Do NOT skip this step. Do NOT assume node_modules exist.
 npm install
+```
+
+**For the orchestrator dispatching subagents**: Run `npm install` in each worktree BEFORE dispatching agents to them. Do not delegate `npm install` to the subagent unless you explicitly include it as the FIRST step in their instructions.
+
+**Verification**: After `npm install`, confirm it succeeded:
+
+```bash
+# Quick check that node_modules exist and are populated
+ls node_modules/.package-lock.json
 ```
 
 ### Step 5: Apply existing work (if applicable)
@@ -310,17 +390,24 @@ git -C .worktrees/AST-4142 apply /tmp/patches/partial-work.patch
 
 Launch agents to complete work in their respective worktrees.
 
-**Critical**: Each agent receives the **absolute path** to its worktree.
+**Critical**: Each agent receives the **absolute path** to its worktree. The orchestrator MUST have already run `npm install` in the worktree before dispatching the agent.
 
 **Agent prompt template**:
 
 ```
 You are working in the worktree at: <repo-root>/.worktrees/<identifier>
 
-## WORKTREE ENFORCEMENT
+## WORKTREE ENFORCEMENT (NON-NEGOTIABLE)
 You MUST make ALL code changes inside this worktree directory ONLY.
 DO NOT modify any files in the main repo working tree.
 You may READ files from the main tree for context, but ALL writes go to your worktree.
+
+## WORKING DIRECTORY RULE (NON-NEGOTIABLE)
+Your working directory is: <repo-root>/.worktrees/<identifier>
+- ALL Bash tool calls MUST use workdir="<repo-root>/.worktrees/<identifier>"
+- ALL Write/Edit file paths MUST be under <repo-root>/.worktrees/<identifier>/
+- NEVER use the repo root as your working directory
+- NEVER omit the workdir parameter on Bash calls
 
 ⚠️  IMPORTANT: The human's current branch is UNTOUCHED by your work.
 All changes are isolated in the worktree above.
@@ -343,12 +430,14 @@ All changes are isolated in the worktree above.
    Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Constraints
+- ALL Bash `workdir` MUST be set to <repo-root>/.worktrees/<identifier>
 - ALL file modifications MUST be inside <repo-root>/.worktrees/<identifier>/
 - DO NOT modify any files outside your worktree
-- Run npm install if dependencies are not yet installed
+- node_modules should already be installed. If not, run `npm install` FIRST.
 
 ## Skills
 - If your task includes pushing branches or creating PRs, load the `mastering-github-cli` skill for `gh` command patterns, auth checks, and CI monitoring.
+```
 
 **Parallelization**: Agents run simultaneously because:
 
@@ -448,11 +537,17 @@ Each subagent MUST:
 
 ## Verification Checklist
 
+**Before starting work**:
+
+- [ ] Agent confirmed it is inside a worktree (not the main tree)
+- [ ] Worktree was rebased on latest `origin/master` (`git fetch origin master && git rebase origin/master`)
+- [ ] `npm install` was run in the worktree and succeeded
+- [ ] All Bash `workdir` params point to the worktree absolute path
+- [ ] All Write/Edit file paths point inside the worktree
+- [ ] Agent communicated worktree location to the human
+
 **Before integration**:
 
-- [ ] Agent verified it was working inside a worktree (not the main tree)
-- [ ] Worktree was freshened against `origin/master` before work began
-- [ ] Agent communicated worktree location to the human
 - [ ] Each worktree has exactly 1 commit ahead of base
 - [ ] Tests pass in each worktree
 - [ ] Commits reference correct issue numbers
@@ -468,34 +563,36 @@ Each subagent MUST:
 
 ## Key Constraints for Agents
 
-1. **Worktree required**: ALL code changes MUST happen in a worktree — no exceptions
-2. **Fresh against master**: Worktrees MUST be up-to-date with `origin/master` before work begins
-3. **Human communication**: ALWAYS tell the human which worktree you're using and that their branch is safe
-4. **Absolute paths only**: Always pass full paths to avoid confusion
-5. **No directory changes in main tree**: Code work happens via worktree paths, not `cd` in main
-6. **Single commit per worktree**: Keep changes atomic and reviewable
-7. **Issue reference in commit**: Always include the ticket/issue identifier
-8. **Dependency installation**: New worktrees need `npm install`
-9. **Main tree is read-only**: Agents may read from main tree but MUST NOT write to it
+1. **Worktree required**: ALL code changes MUST happen in a worktree — no exceptions, unless user explicitly says "skip worktree" or "work on main"
+2. **Working directory = worktree**: ALL Bash `workdir` params, ALL file paths for Write/Edit MUST point inside the worktree. NEVER the repo root.
+3. **Fresh against master**: Worktrees MUST be rebased on latest `origin/master` before work begins — `git fetch origin master && git rebase origin/master`
+4. **npm install is MANDATORY**: Run `npm install` in every worktree before any work. Do NOT assume `node_modules` exist. Do NOT skip this.
+5. **Human communication**: ALWAYS tell the human which worktree you're using and that their branch is safe
+6. **Absolute paths only**: Always pass full paths to avoid confusion
+7. **No directory changes in main tree**: Code work happens via worktree paths, not `cd` in main
+8. **Single commit per worktree**: Keep changes atomic and reviewable
+9. **Issue reference in commit**: Always include the ticket/issue identifier
+10. **Main tree is read-only**: Agents may read from main tree but MUST NOT write to it
 
 ## Agentic Optimizations
 
-| Context               | Command                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| Ensure worktrees dir  | `mkdir -p .worktrees`                                                                       |
-| List worktrees        | `git worktree list --porcelain`                                                             |
-| Create worktree       | `git worktree add .worktrees/<id> -b <id> origin/master`                                    |
-| Remove worktree       | `git worktree remove .worktrees/<id>`                                                       |
-| Freshen worktree      | `git -C .worktrees/<id> fetch origin master && git -C .worktrees/<id> rebase origin/master` |
-| Preserve commits      | `git format-patch <base>..HEAD -o /tmp/patches/`                                            |
-| Apply patch (am)      | `git -C .worktrees/<id> am /tmp/patches/*.patch`                                            |
-| Apply patch (apply)   | `git -C .worktrees/<id> apply /tmp/patches/file.patch`                                      |
-| Extract file changes  | `git show <commit> -- path/to/file > /tmp/patch.patch`                                      |
-| Check worktree status | `git -C .worktrees/<id> status --porcelain`                                                 |
-| Run tests in worktree | `cd .worktrees/<id> && npm run test --workspace=<pkg>`                                    |
-| Push worktree branch  | `git -C .worktrees/<id> push origin <id>`                                                   |
-| Detect worktree       | `git rev-parse --path-format=absolute --git-common-dir`                                     |
-| Install deps          | `cd .worktrees/<id> && npm install`                                                    |
+| Context               | Command (use `workdir=<worktree-path>` for Bash)                         |
+| --------------------- | ------------------------------------------------------------------------ |
+| Ensure worktrees dir  | `mkdir -p .worktrees`                                                    |
+| List worktrees        | `git worktree list --porcelain`                                          |
+| Create worktree       | `git worktree add .worktrees/<id> -b <id> origin/master`                 |
+| Rebase on master      | `git fetch origin master && git rebase origin/master` (workdir=worktree) |
+| Install deps          | `npm install` (workdir=worktree) — MANDATORY before any work             |
+| Remove worktree       | `git worktree remove .worktrees/<id>`                                    |
+| Freshen worktree      | `git fetch origin master && git rebase origin/master` (workdir=worktree) |
+| Preserve commits      | `git format-patch <base>..HEAD -o /tmp/patches/`                         |
+| Apply patch (am)      | `git am /tmp/patches/*.patch` (workdir=worktree)                         |
+| Apply patch (apply)   | `git apply /tmp/patches/file.patch` (workdir=worktree)                   |
+| Extract file changes  | `git show <commit> -- path/to/file > /tmp/patch.patch`                   |
+| Check worktree status | `git status --porcelain` (workdir=worktree)                              |
+| Run tests in worktree | `npm run test --workspace=<pkg>` (workdir=worktree)                      |
+| Push worktree branch  | `git push origin <id>` (workdir=worktree)                                |
+| Detect worktree       | `git rev-parse --path-format=absolute --git-common-dir`                  |
 
 ## Quick Reference
 
