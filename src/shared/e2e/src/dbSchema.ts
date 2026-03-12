@@ -208,21 +208,33 @@ if (!command) {
 
 switch (command) {
     case 'create':
-        if (!schemaName) { console.error('Missing schema name.'); process.exit(1); }
+        if (!schemaName) {
+            console.error('Missing schema name.');
+            process.exit(1);
+        }
         await createSchema(schemaName);
         break;
     case 'drop':
-        if (!schemaName) { console.error('Missing schema name.'); process.exit(1); }
+        if (!schemaName) {
+            console.error('Missing schema name.');
+            process.exit(1);
+        }
         await dropSchema(schemaName);
         break;
     case 'url':
-        if (!schemaName) { console.error('Missing schema name.'); process.exit(1); }
+        if (!schemaName) {
+            console.error('Missing schema name.');
+            process.exit(1);
+        }
         await generateDatabaseUrl(schemaName);
         break;
     case 'token': {
         const region = args[1];
         const hostname = args[2];
-        if (!region || !hostname) { console.error('Usage: token <REGION> <HOSTNAME>'); process.exit(1); }
+        if (!region || !hostname) {
+            console.error('Usage: token <REGION> <HOSTNAME>');
+            process.exit(1);
+        }
         await generateToken(region, hostname);
         break;
     }

@@ -134,7 +134,6 @@ async function waitForLocalStackReady(): Promise<void> {
     throw new Error(`[e2e] LocalStack did not become healthy within ${LOCALSTACK_STARTUP_TIMEOUT}ms.`);
 }
 
-
 /**
  * Ensures LocalStack is running. If already running (e.g. another turbo
  * task started it), skips the startup. Otherwise starts it via
@@ -164,10 +163,7 @@ async function ensureLocalStack(repoRoot: string): Promise<void> {
         // When turbo runs multiple test:e2e tasks in parallel, another process
         // may have already created the container. If so, fall through to polling.
         const stderr =
-            error !== null &&
-            typeof error === 'object' &&
-            'stderr' in error &&
-            Buffer.isBuffer(error.stderr)
+            error !== null && typeof error === 'object' && 'stderr' in error && Buffer.isBuffer(error.stderr)
                 ? error.stderr.toString()
                 : '';
         const message = error instanceof Error ? error.message : String(error);

@@ -32,4 +32,9 @@ export { ensureArray } from '@providers-bsdata/types.js';
 export { XmlParseError, isXmlParseError } from '@providers-bsdata/types.js';
 
 export { parseConstraint, parseConstraints } from '@providers-bsdata/constraintParser.js';
-export type { ParsedConstraint, ConstraintType, ConstraintField, ConstraintScope } from '@providers-bsdata/constraintTypes.js';
+export type {
+    ParsedConstraint,
+    ConstraintType,
+    ConstraintField,
+    ConstraintScope,
+} from '@providers-bsdata/constraintTypes.js';

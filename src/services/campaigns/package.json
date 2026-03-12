@@ -32,7 +32,7 @@
         "@armoury/data-dao": "*",
         "@armoury/adapters-dsql": "*"
     },
-        "@armoury/e2e": "*",
+    "@armoury/e2e": "*",
     "devDependencies": {
         "drizzle-kit": "^0.31.9",
         "@armoury/eslint": "*",

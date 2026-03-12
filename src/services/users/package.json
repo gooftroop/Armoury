@@ -30,7 +30,7 @@
         "@aws-sdk/client-ssm": "^3.0.0",
         "@sentry/aws-serverless": "^10.38.0"
     },
-        "@armoury/e2e": "*",
+    "@armoury/e2e": "*",
     "devDependencies": {
         "@armoury/eslint": "*",
         "@armoury/prettier": "*",
