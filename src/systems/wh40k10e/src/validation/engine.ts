@@ -1,7 +1,7 @@
 import type { Army } from '@/models/ArmyModel.js';
 import type { FactionData } from '@/models/FactionData.js';
 import type { CoreRules } from '@/models/CoreRules.js';
-import type { ValidationResult, ValidationSummary } from '@armoury/validation/types';
+import type { ValidationResult, ValidationSummary } from '@armoury/validation';
 import {
     validateCharacter,
     validateComposition,

@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type {
-    Campaign,
-    CampaignParticipant,
-    CampaignPhase,
-    CampaignRanking,
-    CustomNarrative,
-} from '@armoury/models/CampaignModel';
+import type { Campaign, CampaignParticipant, CampaignPhase, CampaignRanking, CustomNarrative } from '@armoury/models';
 import type {
     CrusadeParticipantData,
     CrusadeUnitProgression,

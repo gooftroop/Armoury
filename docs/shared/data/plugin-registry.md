@@ -17,7 +17,7 @@ Global registry for game system plugins. Allows lookup by plugin ID for DataMana
 
 ```typescript
 import { PluginRegistry } from '@armoury/shared';
-import { wh40k10ePlugin } from '@shared/systems/wh40k10e/plugin.js';
+import { wh40k10ePlugin } from '@armoury/systems';
 
 PluginRegistry.register(wh40k10ePlugin);
 

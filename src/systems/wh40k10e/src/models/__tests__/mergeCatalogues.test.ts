@@ -7,7 +7,7 @@ import type {
     BattleScribeRule,
     BattleScribeSelectionEntryGroup,
     BattleScribeCategory,
-} from '@armoury/providers-bsdata/types';
+} from '@armoury/providers-bsdata';
 
 /** Builds a profile entry for catalogue merging tests. */
 const buildProfile = (id: string, name: string): BattleScribeProfile => ({

@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { CampaignDAO } from '@/dao/CampaignDAO.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import type { Campaign } from '@armoury/models/CampaignModel';
+import type { Campaign } from '@armoury/models';
 
 function makeCampaign(overrides: Partial<Campaign> = {}): Campaign {
     return {

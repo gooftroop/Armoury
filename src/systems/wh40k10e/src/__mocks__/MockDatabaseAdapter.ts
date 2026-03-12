@@ -1,12 +1,6 @@
-import {
-    Platform,
-    type DatabaseAdapter,
-    type EntityType,
-    type EntityMap,
-    type QueryOptions,
-} from '@armoury/data-dao/adapter';
-import { getEntityCodec } from '@armoury/data-dao/codec';
-import type { FileSyncStatus } from '@armoury/data-dao/types';
+import { Platform, type DatabaseAdapter, type EntityType, type EntityMap, type QueryOptions } from '@armoury/data-dao';
+import { getEntityCodec } from '@armoury/data-dao';
+import type { FileSyncStatus } from '@armoury/data-dao';
 
 /**
  * Mock in-memory database adapter for testing.

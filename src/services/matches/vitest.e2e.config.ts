@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import { defineConfig, mergeConfig } from 'vitest/config';
 import { baseConfig } from '@armoury/vitest';
-import { e2eEnv } from '@armoury/e2e/e2eEnv.js';
+import { e2eEnv } from '@armoury/e2e';
 
 export default mergeConfig(
     baseConfig,

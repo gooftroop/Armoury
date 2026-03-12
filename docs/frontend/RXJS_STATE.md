@@ -83,7 +83,7 @@ Key design decisions:
 // @requirements FE-052, FE-059
 
 import { BehaviorSubject, map, distinctUntilChanged, type Observable, type Subscription } from 'rxjs';
-import type { Match } from '@shared/types/entities.js';
+import type { Match } from '@armoury/models';
 
 /**
  * Reactive stream of live match state.
@@ -174,8 +174,8 @@ import {
     catchError,
     of,
 } from 'rxjs';
-import { dc } from '@shared/data/DataContext.js';
-import type { ArmySearchResult } from '@shared/types/entities.js';
+import { dc } from '@armoury/data';
+import type { ArmySearchResult } from '@armoury/models';
 
 /**
  * Typeahead search using switchMap + debounceTime.
@@ -297,8 +297,8 @@ Usage:
 
 'use client';
 
-import { useObservableValue } from '@web/hooks/useObservable.ts';
-import { usePresenceStream } from '@web/hooks/usePresenceStream.ts';
+import { useObservableValue } from '@web/hooks/useObservable.js';
+import { usePresenceStream } from '@web/hooks/usePresenceStream.js';
 
 interface Props {
     matchId: string;
@@ -404,7 +404,7 @@ RxJS subscriptions that are not cleaned up cause memory leaks and ghost event ha
 
 import { useEffect, useState } from 'react';
 import { useMatchStream } from '@web/hooks/useMatchStream.js';
-import type { MatchScore } from '@shared/types/entities.js';
+import type { MatchScore } from '@armoury/models';
 
 interface Props {
     matchId: string;
@@ -439,7 +439,7 @@ For long-lived streams in service classes (not React components), use `takeUntil
 // @requirements FE-059
 
 import { Subject, takeUntil, mergeMap, type Observable } from 'rxjs';
-import type { MatchEvent, Match } from '@shared/types/entities.js';
+import type { MatchEvent, Match } from '@armoury/models';
 
 /** Processes incoming match events and applies them to the MatchStream. */
 export class MatchEventProcessor {
@@ -501,7 +501,7 @@ Unlike `Promise` rejections, unhandled errors in an RxJS `Observable` complete t
 // @requirements FE-059
 
 import { Observable, catchError, retry, throwError, timer, switchMap, type MonoTypeOperatorFunction } from 'rxjs';
-import type { Match } from '@shared/types/entities.js';
+import type { Match } from '@armoury/models';
 
 /**
  * Retry with exponential backoff for transient network errors.
@@ -560,7 +560,7 @@ This is the critical integration pattern for real-time features. RxJS is the tra
 import { type QueryClient } from '@tanstack/react-query';
 import { type MatchStream } from '@armoury/streams';
 import { matchDetailOptions } from '@shared/frontend/matches/queries.js';
-import type { Match } from '@shared/types/entities.js';
+import type { Match } from '@armoury/models';
 
 /**
  * Bridges the real-time MatchStream into the React Query cache.

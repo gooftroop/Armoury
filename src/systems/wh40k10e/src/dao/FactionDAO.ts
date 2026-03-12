@@ -1,11 +1,11 @@
-import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
-import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
 import type { FactionConfig } from '@/config/factionMap.js';
-import { parseCatalogue } from '@armoury/providers-bsdata/xmlParser';
+import { parseCatalogue } from '@armoury/providers-bsdata';
 import { mergeCatalogues } from '@/models/mergeCatalogues.js';
 import type { FactionData } from '@/models/FactionData.js';
 import { parseFactionData } from '@/data/FactionDataParser.js';
-import type { BattleScribeCatalogue } from '@armoury/providers-bsdata/types';
+import type { BattleScribeCatalogue } from '@armoury/providers-bsdata';
 import { BaseDAO } from '@/dao/BaseDAO.js';
 
 type ColumnBuilder = {

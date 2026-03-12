@@ -7,14 +7,14 @@ import type {
     BattleScribeSelectionEntry,
     BattleScribeProfile,
     BattleScribeCategoryLink,
-} from '@armoury/providers-bsdata/types';
-import { ensureArray } from '@armoury/providers-bsdata/types';
+} from '@armoury/providers-bsdata';
+import { ensureArray } from '@armoury/providers-bsdata';
 import {
     parseGameSystem,
     parseCatalogue,
     getCharacteristicValue,
     extractProfileCharacteristics,
-} from '@armoury/providers-bsdata/xmlParser';
+} from '@armoury/providers-bsdata';
 import { parseWeaponKeywords } from '@/validation/weaponKeywords.js';
 import type { Weapon, RangedWeapon, MeleeWeapon, Ability } from '@/types/entities.js';
 import type { Unit } from '@/models/UnitModel.js';

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import type { IGitHubClient } from '@armoury/clients-github/types';
-import type { EntityType } from '@armoury/data-dao/adapter';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { EntityType } from '@armoury/data-dao';
 
 const CRUSADE_RULES_STORE = 'crusadeRules' as EntityType;
 const SYNC_KEY = 'crusadeRules:static';

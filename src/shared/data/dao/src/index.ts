@@ -10,6 +10,7 @@ export {
 export { Platform, DatabaseError, isDatabaseError } from '@/types.js';
 export { BaseDatabaseAdapter } from '@/adapter.js';
 export type { DatabaseAdapter, EntityType, EntityMap, QueryOptions, SortDirection } from '@/adapter.js';
+export { registerPluginEntity } from '@/adapter.js';
 export type { SchemaExtension, SQLiteSchemaExtension, DSQLSchemaExtension } from '@/schema.js';
 export type {
     FileSyncStatus,
@@ -19,6 +20,10 @@ export type {
     DataSourceConfig,
     ArmyDAO,
     CampaignDAO,
+    EntityKindDefinition,
+    PluginValidationRule,
+    ValidationRuleResult,
+    EntityHydrator,
 } from '@/types.js';
 export { PluginRegistry } from '@/pluginRegistry.js';
 

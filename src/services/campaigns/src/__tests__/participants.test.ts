@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { JoinCampaignRequest, UpdateParticipantRequest, UserContext } from '@/types.js';
-import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
+import type { Campaign, CampaignParticipant } from '@armoury/models';
 import {
     deleteParticipant,
     getParticipant,

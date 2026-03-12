@@ -6,7 +6,7 @@
  * mutation methods that return new Match instances.
  */
 
-import type { Match as CoreMatch, MatchPlayer, MatchTurn, MatchScore, MatchOutcome } from '@armoury/models/MatchModel';
+import type { Match as CoreMatch, MatchPlayer, MatchTurn, MatchScore, MatchOutcome } from '@armoury/models';
 import type {
     MatchData,
     GameState,

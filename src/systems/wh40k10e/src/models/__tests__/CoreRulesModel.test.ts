@@ -8,7 +8,7 @@ import type {
     BattleScribeCostType,
     BattleScribeRule,
     BattleScribeCategory,
-} from '@armoury/providers-bsdata/types';
+} from '@armoury/providers-bsdata';
 
 /** Builds a minimal profile type entry for testing. */
 const buildProfileType = (id: string, name: string): BattleScribeProfileType => ({

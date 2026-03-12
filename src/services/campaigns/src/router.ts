@@ -1,4 +1,4 @@
-import type { DatabaseAdapter } from '@armoury/data-dao/types';
+import type { DatabaseAdapter } from '@armoury/data-dao';
 import type { ApiResponse, PathParameters, RouteHandler, UserContext } from '@/types.js';
 import { createCampaign, deleteCampaign, getCampaign, listCampaigns, updateCampaign } from '@/routes/campaigns.js';
 import {

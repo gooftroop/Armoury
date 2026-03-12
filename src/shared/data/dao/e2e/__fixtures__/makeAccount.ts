@@ -1,4 +1,4 @@
-import type { Account } from '@armoury/models/AccountModel';
+import type { Account } from '@armoury/models';
 
 /** Creates a test Account fixture with sensible defaults. */
 export function makeAccount(overrides: Partial<Account> = {}): Account {

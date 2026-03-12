@@ -5,7 +5,7 @@ import type { FactionData } from '@/models/FactionData.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import { MockGitHubClient } from '@/__mocks__/MockGitHubClient.js';
 import type { FactionConfig } from '@/config/factionMap.js';
-import type { BattleScribeCatalogue } from '@armoury/providers-bsdata/types';
+import type { BattleScribeCatalogue } from '@armoury/providers-bsdata';
 import { parseFactionData } from '@/data/FactionDataParser.js';
 
 vi.mock('../../data/FactionDataParser.js', () => ({
@@ -16,7 +16,7 @@ vi.mock('../../data/FactionDataParser.js', () => ({
  * Mock the BSData XML parser module.
  * Prevents actual XML parsing in tests — returns mock BattleScribe catalogue structures.
  */
-vi.mock('@armoury/providers-bsdata/xmlParser', () => ({
+vi.mock('@armoury/providers-bsdata', () => ({
     parseCatalogue: vi.fn((content: string) => {
         // Return a minimal mock catalogue based on content marker
         const mockCatalogue: BattleScribeCatalogue = {
@@ -320,7 +320,7 @@ describe('FactionDAO', () => {
          * Test: fetchRemoteData() parses catalogue via parseCatalogue().
          */
         it('fetchRemoteData() parses catalogue via parseCatalogue()', async () => {
-            const { parseCatalogue } = await import('@armoury/providers-bsdata/xmlParser');
+            const { parseCatalogue } = await import('@armoury/providers-bsdata');
             const config = createFactionConfig();
             const dao = new FactionDAO(adapter, githubClient, config);
 

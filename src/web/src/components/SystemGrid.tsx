@@ -31,7 +31,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
-import type { GameSystemManifest, GameSystem } from '@armoury/data-dao/types';
+import type { GameSystemManifest, GameSystem } from '@armoury/data-dao';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';

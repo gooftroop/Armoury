@@ -22,9 +22,9 @@ import {
     type BattleScribeCharacteristicType,
     type BattleScribeCategory,
     ensureArray,
-} from '@armoury/providers-bsdata/types';
-import { parseConstraints } from '@armoury/validation/constraints/parser';
-import type { ParsedConstraint } from '@armoury/validation/constraints/types';
+} from '@armoury/providers-bsdata';
+import { parseConstraints } from '@armoury/validation';
+import type { ParsedConstraint } from '@armoury/validation';
 import type { CoreRules, ProfileTypeInfo, CostTypeInfo, SharedRule } from '@/models/CoreRules.js';
 
 /**
@@ -138,14 +138,15 @@ function extractSharedRules(gs: BattleScribeGameSystem['gameSystem']): SharedRul
         description: rule.description,
     }));
 
-    const hasSaveRule = sharedRules.some((rule) => rule.name.toLowerCase().includes('save'));
+    const hasSaveRule = sharedRules.some((rule: { name: string }) => rule.name.toLowerCase().includes('save'));
 
     if (!hasSaveRule) {
         const profileTypes = ensureArray(gs.profileTypes?.profileType);
-        const unitProfile = profileTypes.find((profile) => profile['@_name'] === 'Unit');
+        const unitProfile = profileTypes.find((profile: { '@_name': string }) => profile['@_name'] === 'Unit');
         const characteristicTypes = ensureArray(unitProfile?.characteristicTypes?.characteristicType);
         const hasSaveCharacteristic = characteristicTypes.some(
-            (characteristic) => characteristic['@_name'] === 'SV' || characteristic['@_name'] === 'Save',
+            (characteristic: { '@_name': string }) =>
+                characteristic['@_name'] === 'SV' || characteristic['@_name'] === 'Save',
         );
 
         if (hasSaveCharacteristic) {

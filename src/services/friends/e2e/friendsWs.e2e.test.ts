@@ -2,9 +2,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import type { Friend, UserContext, WebSocketEvent } from '@/types.js';
 import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
 import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
-import type { BroadcastRecord } from '@armoury/e2e/mockBroadcaster.js';
-import { createMockBroadcaster } from '@armoury/e2e/mockBroadcaster.js';
-import { createTestUserContext, createWebSocketEvent } from '@armoury/e2e/helpers.js';
+import type { BroadcastRecord } from '@armoury/e2e';
+import { createMockBroadcaster } from '@armoury/e2e';
+import { createTestUserContext, createWebSocketEvent } from '@armoury/e2e';
 import { wsRouter } from '@/wsRouter.js';
 
 const mockBroadcast = createMockBroadcaster();

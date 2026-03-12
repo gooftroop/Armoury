@@ -1,6 +1,6 @@
-import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
-import type { Match as CoreMatch } from '@armoury/models/MatchModel';
-import { BaseDAO } from '@armoury/data-dao/dao/BaseDAO';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { Match as CoreMatch } from '@armoury/models';
+import { BaseDAO } from '@armoury/data-dao';
 import type { MatchData } from '@/models/MatchData.js';
 import { Match } from '@/models/Match.js';
 

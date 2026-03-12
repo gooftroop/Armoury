@@ -1,7 +1,7 @@
 import type { DatabaseAdapter } from '@/adapter.js';
 import { BaseDAO } from '@/dao/BaseDAO.js';
 import { registerEntityCodec, type EntityCodec } from '@/codec.js';
-import type { UserPresence } from '@armoury/models/UserPresenceModel';
+import type { UserPresence } from '@armoury/models';
 
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;

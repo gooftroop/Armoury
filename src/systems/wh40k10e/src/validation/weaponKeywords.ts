@@ -1,4 +1,4 @@
-import type { Threshold } from '@armoury/validation/effects/types';
+import type { Threshold } from '@armoury/validation';
 import type { WeaponKeyword } from '@/types/effects.js';
 
 /**

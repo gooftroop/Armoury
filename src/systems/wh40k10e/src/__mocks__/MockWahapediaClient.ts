@@ -1,4 +1,4 @@
-import type { IWahapediaClient, IWahapediaParser } from '@armoury/clients-wahapedia/types';
+import type { IWahapediaClient, IWahapediaParser } from '@armoury/clients-wahapedia';
 
 /**
  * Mock Wahapedia client for testing.

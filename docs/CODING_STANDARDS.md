@@ -23,7 +23,7 @@ Use constants and enums instead of hardcoded string or number literals.
 
 ```typescript
 // Good
-import { Platform } from '@shared/types/enums.ts';
+import { Platform } from '@armoury/models';
 if (adapter.platform === Platform.SQLite) { ... }
 
 // Bad
@@ -137,7 +137,7 @@ Order imports as follows:
 import { describe, it, expect } from 'vitest';
 import type { Unit } from '@wh40k10e/models/UnitModel.js';
 import { FactionDataModel } from '@wh40k10e/models/FactionDataModel.js';
-import type { DatabaseAdapter } from '@shared/data/adapter.js';
+import type { DatabaseAdapter } from '@armoury/data-context';
 import { makeArmy } from '@/e2e/__fixtures__/makeArmy.js';
 
 // Bad — relative import
@@ -154,16 +154,16 @@ import type { Unit } from '@wh40k10e/models/UnitModel.ts';
 
 ```typescript
 // Good
-import { Platform } from '@shared/types/enums.js';
-import type { CrusadeUnitRank } from '@shared/data/models/CrusadeRulesModel.js';
+import { Platform } from '@armoury/models';
+import type { CrusadeUnitRank } from '@armoury/data-dao';
 import { FactionDataModel } from '@wh40k10e/models/FactionDataModel.js';
 import { makeAccount } from '@/utils/makeAccount.js';
 
 // Bad — missing extension
-import { Platform } from '@shared/types/enums';
+import { Platform } from '@armoury/models';
 
 // Bad — .ts extension
-import { Platform } from '@shared/types/enums.ts';
+import { Platform } from '@armoury/models';
 ```
 
 ## Naming Conventions
@@ -292,7 +292,7 @@ Guidelines:
 
 ```typescript
 // Good - deduplicated in utils/response.ts
-import { jsonResponse, errorResponse } from '@campaigns/src/utils/response.ts';
+import { jsonResponse, errorResponse } from '@campaigns/src/utils/response.js';
 
 // Bad - duplicated across route files
 function jsonResponse(statusCode: number, payload: unknown): ApiResponse { ... }
@@ -329,9 +329,9 @@ Use barrel files at module boundaries to define the public API. Use named re-exp
 
 ```typescript
 // src/shared/data/index.ts
-export { createAdapter, type AdapterFactoryConfig } from '@shared/data/factory.ts';
-export { registerHydrator, getHydrator, clearHydrationRegistry } from '@shared/data/hydration.ts';
-export type { DatabaseAdapter, EntityType, EntityMap } from '@shared/data/adapter.ts';
+export { createAdapter, type AdapterFactoryConfig } from '@armoury/data-dao';
+export { registerHydrator, getHydrator, clearHydrationRegistry } from '@armoury/data-dao';
+export type { DatabaseAdapter, EntityType, EntityMap } from '@armoury/data-context';
 ```
 
 Use `// === Section Name ===` separators for logical groupings in larger barrel files:
@@ -339,13 +339,13 @@ Use `// === Section Name ===` separators for logical groupings in larger barrel 
 ```typescript
 // === Core Exports (game-system-agnostic) ===
 
-export { createAdapter } from '@shared/data/factory.ts';
-export { Platform } from '@shared/types/enums.ts';
+export { createAdapter } from '@armoury/data-dao';
+export { Platform } from '@armoury/models';
 
 // === DataContext (v2 DAO-based API) ===
 
-export { DataContext } from '@shared/data/DataContext.ts';
-export { DataContextBuilder } from '@shared/data/DataContextBuilder.ts';
+export { DataContext } from '@armoury/data-context';
+export { DataContextBuilder } from '@armoury/data-context';
 ```
 
 ## Types
@@ -377,15 +377,15 @@ Use `import type { X }` when importing only types. This enables tree-shaking and
 
 ```typescript
 // Good — type-only import
-import type { Unit } from '@shared/types/entities.ts';
-import type { DatabaseAdapter } from '@shared/data/adapter.ts';
+import type { Unit } from '@armoury/models';
+import type { DatabaseAdapter } from '@armoury/data-context';
 
 // Good — mixed import (values + types)
-import { Platform } from '@shared/types/enums.ts';
-import { registerEntityCodec, type EntityCodec } from '@shared/data/codec.ts';
+import { Platform } from '@armoury/models';
+import { registerEntityCodec, type EntityCodec } from '@armoury/data-dao';
 
 // Bad — importing types without 'type' keyword
-import { Unit } from '@shared/types/entities.ts';
+import { Unit } from '@armoury/models';
 ```
 
 ### Type Guards
@@ -457,7 +457,7 @@ Create `make*` functions in `__fixtures__/` that accept `Partial<T>` overrides a
 
 ```typescript
 // __fixtures__/makeArmy.ts
-import type { Army } from '@shared/systems/wh40k10e/models/ArmyModel.ts';
+import type { Army } from '@armoury/models';
 
 /** Creates a minimal Army fixture. */
 export function makeArmy(overrides: Partial<Army> = {}): Army {
@@ -478,7 +478,7 @@ export function makeArmy(overrides: Partial<Army> = {}): Army {
 When testing code that uses global registries (codec, hydration, schema), call the registry's `clear*` function in `beforeEach` to prevent cross-test pollution.
 
 ```typescript
-import { clearCodecRegistry } from '@shared/data/codec.ts';
+import { clearCodecRegistry } from '@armoury/data-dao';
 
 describe('codec registry', () => {
     beforeEach(() => {
@@ -532,10 +532,10 @@ const token = process.env.GITHUB_TOKEN;
 
 ## Error Handling
 
-Use typed error classes from `@armoury/shared/types/errors`:
+Use typed error classes from `@armoury/models`:
 
 ```typescript
-import { GitHubApiError, isGitHubApiError } from '@armoury/shared';
+import { GitHubApiError, isGitHubApiError } from '@armoury/models';
 
 try {
     await client.downloadFile(path);

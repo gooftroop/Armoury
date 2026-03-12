@@ -185,8 +185,8 @@ function createWh40k10eSystem(): Wh40k10eSystem;
 
 ```typescript
 import { DataContext, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 // Register the system (once during app initialization)
 wh40k10eSystem.register();
@@ -214,7 +214,7 @@ await dc.close();
 ```typescript
 import { createAdapter, Platform } from '@armoury/shared';
 import { createGitHubClient } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
+import { wh40k10eSystem } from '@armoury/systems';
 
 const adapter = await createAdapter({ platform: Platform.SQLite });
 const githubClient = createGitHubClient({ token: process.env.GITHUB_TOKEN });
@@ -232,7 +232,7 @@ console.log(`Necrons has ${necrons.units.length} units`);
 ### Access entity kinds and validation rules
 
 ```typescript
-import { wh40k10eSystem, EntityKind } from '@shared/systems/wh40k10e/system.js';
+import { wh40k10eSystem, EntityKind } from '@armoury/systems';
 
 // List all entity kinds
 for (const entityKind of wh40k10eSystem.entityKinds) {

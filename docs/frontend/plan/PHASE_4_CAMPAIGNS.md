@@ -462,9 +462,9 @@ Phase 4 is complete when all of the following are true:
 import { useSuspenseQuery, useMutation } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState, useMemo } from 'react';
-import type { Campaign } from '@shared/models/CampaignModel.js';
+import type { Campaign } from '@armoury/models';
 import type { Army } from '@wh40k10e/models/ArmyModel.js';
-import type { CampaignStatus } from '@shared/types/enums.js';
+import type { CampaignStatus } from '@armoury/models';
 import { campaignListOptions } from '@shared/frontend/queries/campaigns.js';
 import { joinCampaignMutation } from '@shared/frontend/mutations/campaigns.js';
 import { armyListOptions } from '@shared/frontend/queries/armies.js';

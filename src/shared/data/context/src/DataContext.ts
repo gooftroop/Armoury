@@ -1,11 +1,11 @@
-import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
-import type { IGitHubClient } from '@armoury/clients-github/types';
-import type { GameSystem } from '@armoury/data-dao/types';
-import type { ArmyDAO, CampaignDAO, GameContextResult } from '@armoury/data-dao/types';
-import { AccountDAO } from '@armoury/data-dao/dao/AccountDAO';
-import { FriendDAO } from '@armoury/data-dao/dao/FriendDAO';
-import { MatchDAO } from '@armoury/data-dao/dao/MatchDAO';
-import { UserDAO } from '@armoury/data-dao/dao/UserDAO';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { GameSystem } from '@armoury/data-dao';
+import type { ArmyDAO, CampaignDAO, GameContextResult } from '@armoury/data-dao';
+import { AccountDAO } from '@armoury/data-dao';
+import { FriendDAO } from '@armoury/data-dao';
+import { MatchDAO } from '@armoury/data-dao';
+import { UserDAO } from '@armoury/data-dao';
 import { DataContextBuilder } from '@/DataContextBuilder.js';
 
 /**

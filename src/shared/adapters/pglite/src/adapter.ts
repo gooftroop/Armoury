@@ -5,12 +5,12 @@
  * All platform-specific PGlite concerns are isolated here.
  */
 
-import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@armoury/data-dao/adapter';
-import { Platform } from '@armoury/data-dao/types';
-import { getEntityCodec } from '@armoury/data-dao/codec';
-import type { FileSyncStatus } from '@armoury/data-dao/types';
-import { DatabaseError } from '@armoury/data-dao/types';
-import { getMergedDSQLSchema } from '@armoury/data-dao/schema';
+import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@armoury/data-dao';
+import { Platform } from '@armoury/data-dao';
+import { getEntityCodec } from '@armoury/data-dao';
+import type { FileSyncStatus } from '@armoury/data-dao';
+import { DatabaseError } from '@armoury/data-dao';
+import { getMergedDSQLSchema } from '@armoury/data-dao';
 import { generateAllTablesDDL } from '@/ddl.js';
 
 type PGliteInstance = {

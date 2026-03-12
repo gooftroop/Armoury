@@ -1,4 +1,4 @@
-import type { NumericExpression } from '@armoury/validation/effects/types';
+import type { NumericExpression } from '@armoury/validation';
 import type { GameEffect, RuleTiming, StructuredRule } from '@/types/effects.js';
 
 /**

@@ -24,7 +24,7 @@ import {
     type BattleScribeCost,
     type BattleScribeCategoryLink,
     ensureArray,
-} from '@armoury/providers-bsdata/types';
+} from '@armoury/providers-bsdata';
 import type { Ability, Detachment, Enhancement, Stratagem, Weapon } from '@/types/entities.js';
 import type {
     Unit,
@@ -36,7 +36,7 @@ import type {
     LeaderInfo,
 } from '@/models/UnitModel.js';
 import { parseWeaponKeywords } from '@/validation/weaponKeywords.js';
-import { parseConstraints } from '@armoury/validation/constraints/parser';
+import { parseConstraints } from '@armoury/validation';
 import {
     parseAbilities,
     parseFactionRule,

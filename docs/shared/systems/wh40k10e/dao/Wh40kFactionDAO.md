@@ -156,8 +156,8 @@ protected getRemoteFilePath(): string;
 Standalone factions (e.g., Necrons, Tyranids, Astra Militarum) have a single catalogue file and use `Wh40kFactionDAO` directly.
 
 ```typescript
-import { Wh40kFactionDAO } from '@shared/systems/wh40k10e/dao/Wh40kFactionDAO.js';
-import { FACTION_MAP } from '@shared/systems/wh40k10e/config/factionMap.js';
+import { Wh40kFactionDAO } from '@armoury/systems';
+import { FACTION_MAP } from '@armoury/systems';
 
 export class NecronDAO {
     private readonly factionDAO: Wh40kFactionDAO;
@@ -181,9 +181,9 @@ export class NecronDAO {
 Space Marines chapters (e.g., Blood Angels, Dark Angels) extend `SpaceMarinesDAO` and merge chapter-specific data onto the Space Marines base data.
 
 ```typescript
-import { SpaceMarinesDAO } from '@shared/systems/wh40k10e/dao/factions/SpaceMarinesDAO.js';
-import { Wh40kFactionDAO } from '@shared/systems/wh40k10e/dao/Wh40kFactionDAO.js';
-import { FACTION_MAP } from '@shared/systems/wh40k10e/config/factionMap.js';
+import { SpaceMarinesDAO } from '@armoury/systems';
+import { Wh40kFactionDAO } from '@armoury/systems';
+import { FACTION_MAP } from '@armoury/systems';
 
 export class BloodAngelsDAO extends SpaceMarinesDAO {
     private readonly chapterDAO: Wh40kFactionDAO;
@@ -228,8 +228,8 @@ export class BloodAngelsDAO extends SpaceMarinesDAO {
 ```typescript
 import { createAdapter, Platform } from '@armoury/shared';
 import { createGitHubClient } from '@armoury/shared';
-import { Wh40kFactionDAO } from '@shared/systems/wh40k10e/dao/Wh40kFactionDAO.js';
-import { FACTION_MAP } from '@shared/systems/wh40k10e/config/factionMap.js';
+import { Wh40kFactionDAO } from '@armoury/systems';
+import { FACTION_MAP } from '@armoury/systems';
 
 const adapter = await createAdapter({ platform: Platform.IndexedDB });
 const githubClient = createGitHubClient({ token: process.env.GITHUB_TOKEN });
@@ -248,8 +248,8 @@ const freshNecrons = await necronDAO.refresh();
 
 ```typescript
 import { DataContext, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 const dc = await DataContext.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
@@ -269,7 +269,7 @@ const necronUnits = units.filter(u => u.factionId === 'necron');
 ### Multi-file faction (Space Marines)
 
 ```typescript
-import { FACTION_MAP } from '@shared/systems/wh40k10e/config/factionMap.js';
+import { FACTION_MAP } from '@armoury/systems';
 
 // Space Marines has multiple catalogue files
 console.log(FACTION_MAP['space-marines'].files);

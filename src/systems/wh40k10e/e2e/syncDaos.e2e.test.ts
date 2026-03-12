@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { GitHubFileInfo, IGitHubClient } from '@armoury/clients-github/types';
-import { GitHubClient } from '@armoury/clients-github/client';
+import type { GitHubFileInfo, IGitHubClient } from '@armoury/clients-github';
+import { GitHubClient } from '@armoury/clients-github';
 import { wh40k10eSystem } from '../src/system.js';
 import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
 import { SpaceMarinesDAO } from '../src/dao/factions/SpaceMarinesDAO.js';

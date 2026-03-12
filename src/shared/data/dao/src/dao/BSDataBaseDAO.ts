@@ -17,7 +17,7 @@
  */
 
 import type { DatabaseAdapter } from '@/adapter.js';
-import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { IGitHubClient } from '@armoury/clients-github';
 import { RemoteDataDAO } from '@/dao/RemoteDataDAO.js';
 
 /**

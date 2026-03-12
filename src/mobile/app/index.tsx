@@ -27,7 +27,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth0 } from 'react-native-auth0';
 import { Button, H1, Paragraph, ScrollView, YStack } from 'tamagui';
-import type { GameSystem, GameSystemManifest } from '@armoury/data-dao/types';
+import type { GameSystem, GameSystemManifest } from '@armoury/data-dao';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import { systemManifests } from '@/lib/discoverSystems.js';

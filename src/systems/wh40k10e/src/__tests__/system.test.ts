@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { wh40k10eSystem, EntityKind } from '@/system.js';
-import { hasEntityCodec, clearCodecRegistry } from '@armoury/data-dao/codec';
-import { hasHydrator, clearHydrationRegistry } from '@armoury/data-dao/hydration';
-import { getSchemaExtensions, clearSchemaExtensions } from '@armoury/data-dao/schema';
-import { PluginRegistry } from '@armoury/data-dao/pluginRegistry';
+import { hasEntityCodec, clearCodecRegistry } from '@armoury/data-dao';
+import { hasHydrator, clearHydrationRegistry } from '@armoury/data-dao';
+import { getSchemaExtensions, clearSchemaExtensions } from '@armoury/data-dao';
+import { PluginRegistry } from '@armoury/data-dao';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import { MockGitHubClient } from '@/__mocks__/MockGitHubClient.js';
 

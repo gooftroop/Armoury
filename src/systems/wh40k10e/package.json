@@ -11,11 +11,6 @@
             "browser": "./dist/browser/index.js",
             "default": "./dist/node/index.js"
         },
-        "./*": {
-            "types": "./dist/*.d.ts",
-            "browser": "./dist/browser/*.js",
-            "default": "./dist/node/*.js"
-        },
         "./system": {
             "types": "./dist/system.d.ts",
             "browser": "./dist/browser/system.js",

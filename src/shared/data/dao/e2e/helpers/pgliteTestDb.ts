@@ -1,4 +1,4 @@
-import { getMergedDSQLSchema } from '@armoury/data-dao/schema';
+import { getMergedDSQLSchema } from '@armoury/data-dao';
 import { generateAllTablesDDL } from '@armoury/adapters-pglite';
 
 type PGliteInstance = {

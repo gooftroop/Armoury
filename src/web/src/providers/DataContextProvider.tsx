@@ -23,8 +23,8 @@
  */
 
 import * as React from 'react';
-import type { DataContext } from '@armoury/data-context/DataContext';
-import type { GameSystem } from '@armoury/data-dao/types';
+import type { DataContext } from '@armoury/data-context';
+import type { GameSystem } from '@armoury/data-dao';
 /**
  * Possible states for the overall DataContext initialization lifecycle.
  *
@@ -137,7 +137,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
              * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
              */
-            const { DataContext: DC } = await import('@armoury/data-context/DataContext');
+            const { DataContext: DC } = await import('@armoury/data-context');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
             const dc = await DC.builder().system(system).adapter(adapter).build();

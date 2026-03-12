@@ -215,7 +215,7 @@ export default function ArmyDetailPage({ params }: Props) {
 // src/web/src/components/armies/ArmyDetailClient.tsx
 'use client';
 import { use } from 'react';
-import type { Army } from '@shared/types/entities.js';
+import type { Army } from '@armoury/models';
 
 interface Props { armyPromise: Promise<Army> }
 
@@ -460,7 +460,7 @@ export function SubmitButton({ label, loadingLabel = 'Saving…' }: Props) {
 
 import { useOptimistic, useTransition } from 'react';
 import { deleteArmy } from '@web/src/actions/armies.js';
-import type { Army } from '@shared/types/entities.js';
+import type { Army } from '@armoury/models';
 
 interface Props { armies: Army[] }
 
@@ -710,7 +710,7 @@ import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { verifySession } from '@web/src/dal/session.js';
 import { db } from '@web/src/dal/db.js';
-import type { ArmyDTO } from '@shared/types/dtos.js';
+import type { ArmyDTO } from '@armoury/models';
 
 /**
  * Returns all armies belonging to the current user.
@@ -1322,7 +1322,7 @@ export default function ArmiesPage() {
 ```typescript
 // app/[locale]/[gameSystem]/reference/[unitId]/page.tsx
 
-import { fetchAllUnits } from '@shared/providers/bsdata/index.js';
+import { fetchAllUnits } from '@armoury/providers-bsdata';
 
 /**
  * Pre-build pages for all known unit IDs.

@@ -1,5 +1,5 @@
-import type { DatabaseAdapter, EntityMap, EntityType, FileSyncStatus, QueryOptions } from '@armoury/data-dao/types';
-import { Platform } from '@armoury/data-dao/types';
+import type { DatabaseAdapter, EntityMap, EntityType, FileSyncStatus, QueryOptions } from '@armoury/data-dao';
+import { Platform } from '@armoury/data-dao';
 
 /**
  * In-memory mock implementation of the campaigns database adapter.

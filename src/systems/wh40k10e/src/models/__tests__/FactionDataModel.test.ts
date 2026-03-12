@@ -7,7 +7,7 @@ import type {
     BattleScribeProfile,
     BattleScribeSelectionEntry,
     BattleScribeRule,
-} from '@armoury/providers-bsdata/types';
+} from '@armoury/providers-bsdata';
 
 /** Builds a minimal BattleScribe profile with characteristics. */
 const buildProfile = (id: string, name: string, typeName: string, characteristics: Record<string, string>) => {

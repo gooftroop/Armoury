@@ -1,4 +1,4 @@
-import type { IGitHubClient, GitHubFileInfo } from '@armoury/clients-github/index';
+import type { IGitHubClient, GitHubFileInfo } from '@armoury/clients-github';
 
 /**
  * Mock GitHub client for testing.

@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
 import type { ChapterApproved } from '@/models/ChapterApproved.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import type { IWahapediaClient } from '@armoury/clients-wahapedia/types';
-import type { EntityType } from '@armoury/data-dao/adapter';
+import type { IWahapediaClient } from '@armoury/clients-wahapedia';
+import type { EntityType } from '@armoury/data-dao';
 
 const CHAPTER_APPROVED_STORE = 'chapterApproved' as EntityType;
 const CHAPTER_APPROVED_ID = 'chapter-approved-2025-26';

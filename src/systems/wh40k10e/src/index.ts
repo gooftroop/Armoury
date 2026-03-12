@@ -4,7 +4,7 @@
 
 import type { FactionData } from '@/models/FactionData.js';
 import type { Army } from '@/models/ArmyModel.js';
-import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
+import type { Campaign, CampaignParticipant } from '@armoury/models';
 import type { MatchData } from '@/models/MatchData.js';
 import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
 import type { ChapterApproved } from '@/models/ChapterApproved.js';
@@ -64,8 +64,8 @@ export type { FactionData } from '@/models/FactionData.js';
 export type { FactionRule } from '@/models/FactionData.js';
 export type { CoreRules } from '@/models/CoreRules.js';
 export type { ProfileTypeInfo, CostTypeInfo, SharedRule } from '@/models/CoreRules.js';
-export type { Account, UserPreferences } from '@armoury/models/AccountModel';
-export type { Friend, FriendStatus } from '@armoury/models/FriendModel';
+export type { Account, UserPreferences } from '@armoury/models';
+export type { Friend, FriendStatus } from '@armoury/models';
 export type {
     MatchData,
     GamePhase,
@@ -93,13 +93,7 @@ export type {
     CrusadeParticipantData,
     CrusadeUnitProgression,
 } from '@/models/CampaignModel.js';
-export type {
-    Campaign,
-    CampaignParticipant,
-    CampaignPhase,
-    CampaignRanking,
-    CampaignStatus,
-} from '@armoury/models/CampaignModel';
+export type { Campaign, CampaignParticipant, CampaignPhase, CampaignRanking, CampaignStatus } from '@armoury/models';
 export type {
     CrusadeUnitRank,
     RankThreshold,
@@ -115,7 +109,7 @@ export type {
     CrusadeRules,
 } from '@/models/CrusadeRulesModel.js';
 export { mergeCatalogues } from '@/models/mergeCatalogues.js';
-export { CampaignDAO } from '@armoury/data-dao/dao/CampaignDAO';
+export { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
 
 // Config
 export { FACTION_MAP, getFactionConfig, getAllFactionIds } from '@/config/factionMap.js';
@@ -153,7 +147,7 @@ export type {
     ConstantValue,
     DiceExpression,
     RawExpression,
-} from '@armoury/validation/effects/types';
+} from '@armoury/validation';
 
 export type {
     WeaponKeyword,
@@ -241,7 +235,7 @@ export type {
     StructuredRule,
 } from '@/types/effects.js';
 
-export { parseGameSystem, parseCatalogue } from '@armoury/providers-bsdata/xmlParser';
+export { parseGameSystem, parseCatalogue } from '@armoury/providers-bsdata';
 
 export { extractUnits, extractWeapons, extractAbilities } from '@/data/extractors.js';
 
@@ -250,4 +244,4 @@ export type {
     BattleScribeCatalogue,
     BattleScribeSelectionEntry,
     BattleScribeProfile,
-} from '@armoury/providers-bsdata/types';
+} from '@armoury/providers-bsdata';

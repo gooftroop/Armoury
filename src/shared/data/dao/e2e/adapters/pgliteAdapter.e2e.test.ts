@@ -7,7 +7,7 @@ import {
     makeCoreMatch,
     makeFriend,
 } from '../__fixtures__/index.js';
-import { DatabaseError } from '@armoury/data-dao/types';
+import { DatabaseError } from '@armoury/data-dao';
 
 describe('PGliteAdapter E2E', () => {
     let adapter: PGliteAdapter;

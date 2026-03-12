@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { GitHubClient } from '@armoury/clients-github/client';
+import { GitHubClient } from '@armoury/clients-github';
 import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
 import { wh40k10eSystem } from '../src/system.js';
 import { BloodAngelsDAO } from '../src/dao/factions/BloodAngelsDAO.js';

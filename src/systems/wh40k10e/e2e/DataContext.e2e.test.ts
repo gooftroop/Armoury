@@ -18,11 +18,11 @@
  */
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { DataContext } from '@armoury/data-context/DataContext';
+import { DataContext } from '@armoury/data-context';
 import { wh40k10eSystem } from '../src/system.js';
 import type { GameData } from '../src/dao/GameData.js';
-import type { Friend } from '@armoury/models/FriendModel';
-import { GitHubClient } from '@armoury/clients-github/client';
+import type { Friend } from '@armoury/models';
+import { GitHubClient } from '@armoury/clients-github';
 import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
 import { makeAccount, makeFriend } from '../../shared/data/e2e/__fixtures__/index.js';
 import { makeArmy, makeCampaign, makeMatch } from './__fixtures__/index.js';

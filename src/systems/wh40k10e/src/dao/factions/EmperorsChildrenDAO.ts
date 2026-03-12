@@ -1,5 +1,5 @@
-import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
-import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
 import type { FactionData } from '@/models/FactionData.js';
 import { FactionDAO } from '@/dao/FactionDAO.js';
 import { FACTION_MAP } from '@/config/factionMap.js';

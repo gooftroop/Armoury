@@ -13,7 +13,7 @@ import * as Sentry from '@sentry/aws-serverless';
 import { extractUserContext } from '@/middleware/auth.js';
 import { formatErrorResponse } from '@/middleware/errorHandler.js';
 import { router } from '@/router.js';
-import type { DatabaseAdapter } from '@armoury/data-dao/types';
+import type { DatabaseAdapter } from '@armoury/data-dao';
 import type { ApiResponse } from '@/types.js';
 import { getServiceConfig } from '@/utils/secrets.js';
 

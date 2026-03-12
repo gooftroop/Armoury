@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { MatchDAO } from '@/dao/MatchDAO.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import type { Match } from '@armoury/models/MatchModel';
+import type { Match } from '@armoury/models';
 
 function makeMatch(overrides: Partial<Match> = {}): Match {
     return {

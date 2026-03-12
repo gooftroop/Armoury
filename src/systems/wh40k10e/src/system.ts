@@ -4,20 +4,20 @@ import type {
     PluginValidationRule,
     EntityHydrator,
     GameSystem,
-} from '@armoury/data-dao/types';
-import type { SchemaExtension } from '@armoury/data-dao/schema';
-import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
-import type { IGitHubClient } from '@armoury/clients-github/types';
-import type { GameContextResult } from '@armoury/data-dao/types';
-import { registerPluginEntity } from '@armoury/data-dao/adapter';
-import { registerHydrator } from '@armoury/data-dao/hydration';
-import { registerEntityCodec } from '@armoury/data-dao/codec';
-import { registerSchemaExtension } from '@armoury/data-dao/schema';
+} from '@armoury/data-dao';
+import type { SchemaExtension } from '@armoury/data-dao';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { GameContextResult } from '@armoury/data-dao';
+import { registerPluginEntity } from '@armoury/data-dao';
+import { registerHydrator } from '@armoury/data-dao';
+import { registerEntityCodec } from '@armoury/data-dao';
+import { registerSchemaExtension } from '@armoury/data-dao';
 import type { FactionData } from '@/models/FactionData.js';
 import type { CoreRules } from '@/models/CoreRules.js';
 import { hydrateCoreRules } from '@/models/CoreRules.js';
 import { hydrateFactionData } from '@/models/FactionData.js';
-import type { ValidationResult } from '@armoury/validation/types';
+import type { ValidationResult } from '@armoury/validation';
 import type { Army } from '@/models/ArmyModel.js';
 import type { ChapterApproved } from '@/models/ChapterApproved.js';
 import { hydrateChapterApproved } from '@/models/ChapterApproved.js';
@@ -27,10 +27,10 @@ import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
 import type { Weapon, Ability, Stratagem, Detachment } from '@/types/entities.js';
 import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
 import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
-import { createWahapediaClient } from '@armoury/clients-wahapedia/index';
+import { createWahapediaClient } from '@armoury/clients-wahapedia';
 import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
 import { ArmyDAO } from '@/dao/ArmyDAO.js';
-import { CampaignDAO } from '@armoury/data-dao/dao/CampaignDAO';
+import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
 
 import { GameData } from '@/dao/GameData.js';
 import {

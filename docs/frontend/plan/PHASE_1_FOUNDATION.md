@@ -401,7 +401,7 @@ import type { Army } from '@wh40k10e/models/ArmyModel.js';
 import type { Faction } from '@wh40k10e/types/entities.js';
 import { armyListOptions, factionListOptions } from '@shared/frontend/queries/armies.js';
 import { deleteArmyMutation, duplicateArmyMutation } from '@shared/frontend/mutations/armies.js';
-import { getQueryClient } from '@web/lib/queryClient.ts';
+import { getQueryClient } from '@web/lib/queryClient.js';
 
 // ---------------------------------------------------------------------------
 // Render component — pure props, zero data hooks

@@ -4,7 +4,7 @@
  * Represents a complete unit datasheet including stat profiles,
  * composition options, equipped weapons, wargear, abilities, and leader rules.
  */
-import type { ParsedConstraint } from '@armoury/validation/constraints/types';
+import type { ParsedConstraint } from '@armoury/validation';
 import type { StructuredRule } from '@/types/effects.js';
 import type { Entity } from '@/types/entities.js';
 import type { Weapon } from '@/types/entities.js';

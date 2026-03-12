@@ -1,4 +1,4 @@
-import type { Match } from '@armoury/models/MatchModel';
+import type { Match } from '@armoury/models';
 import { makeMatch } from '../../../../systems/e2e/__fixtures__/makeMatch.js';
 
 export function makeCoreMatch(overrides: Partial<Match> = {}): Match {

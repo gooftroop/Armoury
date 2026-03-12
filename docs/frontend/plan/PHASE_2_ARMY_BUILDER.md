@@ -484,7 +484,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import type { Army } from '@wh40k10e/models/ArmyModel.js';
 import type { Unit } from '@wh40k10e/types/entities.js';
-import type { ValidationError } from '@shared/types/validation.js';
+import type { ValidationError } from '@armoury/models';
 import { armyDetailOptions, unitCatalogOptions } from '@shared/frontend/queries/armies.js';
 import { updateArmyMutation, addUnitMutation, removeUnitMutation } from '@shared/frontend/mutations/armies.js';
 

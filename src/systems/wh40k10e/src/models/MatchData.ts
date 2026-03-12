@@ -7,7 +7,7 @@
  * live in the core Match model (@models/MatchModel).
  */
 
-import type { MatchDataBase } from '@armoury/models/MatchModel';
+import type { MatchDataBase } from '@armoury/models';
 import type { BattleSize } from '@/models/ArmyModel.js';
 
 // ============ GAME PHASE ============

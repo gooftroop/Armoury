@@ -17,7 +17,7 @@
  * @module discover-systems
  */
 
-import type { GameSystemManifest } from '@armoury/data-dao/types';
+import type { GameSystemManifest } from '@armoury/data-dao';
 
 /**
  * Statically imported manifest for wh40k10e.

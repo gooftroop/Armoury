@@ -53,7 +53,7 @@
 
 import * as cheerio from 'cheerio';
 
-import type { IWahapediaParser } from '@armoury/clients-wahapedia/types';
+import type { IWahapediaParser } from '@armoury/clients-wahapedia';
 
 import type { ChapterApproved } from '@/models/ChapterApproved.js';
 import type {

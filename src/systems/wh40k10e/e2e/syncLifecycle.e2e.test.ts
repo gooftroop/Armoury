@@ -6,15 +6,15 @@ import '../src/index.js';
 import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
 import { MockGitHubClient } from '../src/__mocks__/MockGitHubClient.js';
 import type { ChapterApproved } from '../src/models/ChapterApproved.js';
-import { clearCodecRegistry } from '@armoury/data-dao/codec';
-import { clearHydrationRegistry } from '@armoury/data-dao/hydration';
-import { clearSchemaExtensions } from '@armoury/data-dao/schema';
-import { PluginRegistry } from '@armoury/data-dao/pluginRegistry';
-import type { BattleScribeGameSystem } from '@armoury/providers-bsdata/types';
+import { clearCodecRegistry } from '@armoury/data-dao';
+import { clearHydrationRegistry } from '@armoury/data-dao';
+import { clearSchemaExtensions } from '@armoury/data-dao';
+import { PluginRegistry } from '@armoury/data-dao';
+import type { BattleScribeGameSystem } from '@armoury/providers-bsdata';
 import { makeCoreRules, makeCrusadeRules, makeFactionData } from './__fixtures__/index.js';
-import { parseGameSystem } from '@armoury/providers-bsdata/xmlParser';
+import { parseGameSystem } from '@armoury/providers-bsdata';
 
-vi.mock('@armoury/providers-bsdata/xmlParser', () => ({
+vi.mock('@armoury/providers-bsdata', () => ({
     parseGameSystem: vi.fn(),
 }));
 

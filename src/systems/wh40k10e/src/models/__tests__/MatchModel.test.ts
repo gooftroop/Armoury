@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Match as CoreMatch } from '@armoury/models/MatchModel';
+import type { Match as CoreMatch } from '@armoury/models';
 import type { MatchData } from '@/models/MatchData.js';
 import { createDefaultUnitFlags, createDefaultGameState } from '@/models/MatchData.js';
 import { Match } from '@/models/Match.js';

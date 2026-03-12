@@ -1,4 +1,4 @@
-import type { Friend } from '@armoury/models/FriendModel';
+import type { Friend } from '@armoury/models';
 export function makeFriend(overrides: Partial<Friend> = {}): Friend {
     return {
         id: 'friend-1',

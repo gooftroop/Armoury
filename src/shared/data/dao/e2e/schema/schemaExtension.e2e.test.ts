@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { registerSchemaExtension, clearSchemaExtensions, getMergedDSQLSchema } from '@armoury/data-dao/schema';
+import { registerSchemaExtension, clearSchemaExtensions, getMergedDSQLSchema } from '@armoury/data-dao';
 import { createTestDatabase } from '../helpers/pgliteTestDb.js';
 import { PGliteAdapter } from '@armoury/adapters-pglite';
 

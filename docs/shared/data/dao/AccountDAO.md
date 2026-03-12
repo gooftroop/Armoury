@@ -88,7 +88,7 @@ await accounts.delete('user-1');
 
 ```typescript
 import { DataContext, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
+import { wh40k10eSystem } from '@armoury/systems';
 
 const dc = await DataContext.builder()
     .system(wh40k10eSystem)

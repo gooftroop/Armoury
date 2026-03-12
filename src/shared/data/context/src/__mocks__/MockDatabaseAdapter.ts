@@ -1,5 +1,5 @@
-import { Platform } from '@armoury/data-dao/types';
-import type { DatabaseAdapter, EntityMap, EntityType, FileSyncStatus, QueryOptions } from '@armoury/data-dao/types';
+import { Platform } from '@armoury/data-dao';
+import type { DatabaseAdapter, EntityMap, EntityType, FileSyncStatus, QueryOptions } from '@armoury/data-dao';
 
 /**
  * @requirements

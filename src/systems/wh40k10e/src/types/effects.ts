@@ -5,7 +5,7 @@
  * encode game-specific concepts (weapon keywords, engagement range, battle-shock,
  * Deep Strike, etc.) that belong in the game system plugin.
  */
-import type { Threshold, NumericExpression, GamePhase, AttackKind, RollKind } from '@armoury/validation/effects/types';
+import type { Threshold, NumericExpression, GamePhase, AttackKind, RollKind } from '@armoury/validation';
 
 /**
  * Weapon keyword token parsed from rules text.

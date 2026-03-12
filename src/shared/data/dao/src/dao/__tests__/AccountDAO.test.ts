@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { AccountDAO } from '@/dao/AccountDAO.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import type { Account } from '@armoury/models/AccountModel';
+import type { Account } from '@armoury/models';
 
 function makeAccount(overrides: Partial<Account> = {}): Account {
     return {

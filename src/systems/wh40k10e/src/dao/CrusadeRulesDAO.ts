@@ -1,5 +1,5 @@
-import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
-import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
 import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
 import { BaseDAO } from '@/dao/BaseDAO.js';
 

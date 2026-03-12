@@ -648,10 +648,10 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useCallback, useState, useMemo } from 'react';
-import type { Match } from '@shared/models/MatchModel.js';
+import type { Match } from '@armoury/models';
 import type { Unit } from '@wh40k10e/types/entities.js';
 import { matchDetailOptions } from '@shared/frontend/queries/matches.js';
-import { useMatchSync } from '@web/hooks/useMatchSync.ts';
+import { useMatchSync } from '@web/hooks/useMatchSync.js';
 
 // ---------------------------------------------------------------------------
 // RxJS → React Query bridge: useMatchSync() subscribes to the MatchStream

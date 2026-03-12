@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { BSDataBaseDAO } from '@/dao/BSDataBaseDAO.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { IGitHubClient } from '@armoury/clients-github';
 import { registerPluginEntity } from '@/adapter.js';
 
 /**

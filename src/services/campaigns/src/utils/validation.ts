@@ -1,4 +1,4 @@
-import type { CampaignStatus } from '@armoury/models/CampaignModel';
+import type { CampaignStatus } from '@armoury/models';
 
 import type {
     CreateCampaignRequest,

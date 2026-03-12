@@ -11,10 +11,10 @@
             "browser": "./dist/browser/index.js",
             "default": "./dist/node/index.js"
         },
-        "./*": {
-            "types": "./dist/*.d.ts",
-            "browser": "./dist/browser/*.js",
-            "default": "./dist/node/*.js"
+        "./types": {
+            "types": "./dist/types.d.ts",
+            "browser": "./dist/browser/types.js",
+            "default": "./dist/node/types.js"
         }
     },
     "scripts": {

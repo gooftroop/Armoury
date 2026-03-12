@@ -103,7 +103,7 @@ export function useArmyPointTotal(armyId: string): number | undefined {
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
-import type { Army, ArmyUnit } from '@shared/types/entities.js';
+import type { Army, ArmyUnit } from '@armoury/models';
 
 /**
  * Returns units whose point cost exceeds a given threshold.
@@ -132,7 +132,7 @@ When the derived value depends on both server data and client-side state (URL pa
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { armyListOptions } from '@shared/frontend/armies/queries.js';
-import type { Army } from '@shared/types/entities.js';
+import type { Army } from '@armoury/models';
 
 interface FilteredArmiesResult {
     readonly armies: Army[];
@@ -164,7 +164,7 @@ export function useFilteredArmies(): FilteredArmiesResult {
 // src/web/hooks/useArmySortedUnits.ts
 import { useQuery } from '@tanstack/react-query';
 import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
-import type { ArmyUnit } from '@shared/types/entities.js';
+import type { ArmyUnit } from '@armoury/models';
 
 type SortField = 'name' | 'points' | 'models';
 type SortDirection = 'asc' | 'desc';
@@ -248,7 +248,7 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { presenceOptions } from '@shared/frontend/presence/queries.js';
 import type { IPresenceStream } from '@armoury/streams';
-import type { PresenceState } from '@shared/types/entities.js';
+import type { PresenceState } from '@armoury/models';
 
 /**
  * Bridges real-time presence updates from the PresenceStream into the

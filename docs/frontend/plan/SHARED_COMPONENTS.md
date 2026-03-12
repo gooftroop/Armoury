@@ -655,8 +655,8 @@ All shared components use named exports. No default exports except where Next.js
 
 ```
 // Correct
-export { ShellLayout } from './ShellLayout.ts';
-export type { ShellLayoutProps } from './ShellLayout.ts';
+export { ShellLayout } from './ShellLayout.js';
+export type { ShellLayoutProps } from './ShellLayout.js';
 
 // Incorrect
 export default ShellLayout;

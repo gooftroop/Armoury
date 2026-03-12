@@ -141,7 +141,7 @@ Structured data models for app-level features.
 
 ### Validation
 
-Army validation engine, rules, constraints, and effect types. All validation exports are re-exported from `@shared/validation/index.js` via wildcard.
+Army validation engine, rules, constraints, and effect types. All validation exports are re-exported from `@armoury/validation` via wildcard.
 
 | Export                                            | Kind     | Description                                           |
 | ------------------------------------------------- | -------- | ----------------------------------------------------- |
@@ -195,8 +195,8 @@ BattleScribe XML parsing and data extraction functions.
 
 ```typescript
 import { DataContext, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 const dc = await DataContext.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
@@ -225,7 +225,7 @@ await dc.close();
 
 ```typescript
 import { DataManager, PluginRegistry, Platform } from '@armoury/shared';
-import { wh40k10ePlugin, EntityKind } from '@shared/systems/wh40k10e/plugin.js';
+import { wh40k10ePlugin, EntityKind } from '@armoury/systems';
 
 PluginRegistry.register(wh40k10ePlugin);
 

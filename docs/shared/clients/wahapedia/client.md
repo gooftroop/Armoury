@@ -126,7 +126,7 @@ console.log(`Fetched ${html.length} bytes`);
 
 ```typescript
 import { createWahapediaClient } from '@armoury/shared';
-import { ChapterApprovedParser } from '@shared/systems/wh40k10e/data/ChapterApprovedParser.js';
+import { ChapterApprovedParser } from '@armoury/systems';
 
 const client = createWahapediaClient();
 const parser = new ChapterApprovedParser();

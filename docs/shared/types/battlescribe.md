@@ -522,4 +522,4 @@ ensureArray([1, 2, 3]); // [1, 2, 3]
 ensureArray(undefined); // []
 ```
 
-Note: `ensureArray` is not exported from the public `@armoury/shared` barrel file. It is available internally within the shared package via `@shared/types/battlescribe.js`.
+Note: `ensureArray` is not exported from the public `@armoury/shared` barrel file. It is available internally within the shared package at `src/shared/types/battlescribe.ts`.

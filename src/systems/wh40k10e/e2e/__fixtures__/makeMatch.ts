@@ -1,4 +1,4 @@
-import type { Match } from '@armoury/models/MatchModel';
+import type { Match } from '@armoury/models';
 
 /** Creates a minimal core Match fixture. */
 export function makeMatch(overrides: Partial<Match> = {}): Match {

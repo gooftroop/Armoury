@@ -9,7 +9,7 @@ import {
     makeFriend,
     makeUserPresence,
 } from '../__fixtures__/index.js';
-import { DatabaseError } from '@armoury/data-dao/types';
+import { DatabaseError } from '@armoury/data-dao';
 
 describe('DSQLAdapter E2E', () => {
     let adapter: DSQLAdapter;

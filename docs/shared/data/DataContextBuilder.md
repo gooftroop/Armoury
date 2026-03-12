@@ -125,8 +125,8 @@ async build(): Promise<DataContext<TGameData>>;
 
 ```typescript
 import { DataContext } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 const dc = await DataContext.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
@@ -141,8 +141,8 @@ await dc.close();
 
 ```typescript
 import { DataContext, createGitHubClient } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 const githubClient = createGitHubClient({
     token: process.env.GITHUB_TOKEN,
@@ -161,8 +161,8 @@ await dc.close();
 
 ```typescript
 import { DataContext, createAdapter, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 // Create adapter with custom configuration
 const adapter = await createAdapter({

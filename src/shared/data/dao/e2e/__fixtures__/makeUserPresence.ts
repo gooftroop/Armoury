@@ -1,4 +1,4 @@
-import type { UserPresence } from '@armoury/models/UserPresenceModel';
+import type { UserPresence } from '@armoury/models';
 export function makeUserPresence(overrides: Partial<UserPresence> = {}): UserPresence {
     return {
         userId: 'auth0|user-1',

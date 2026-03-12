@@ -1,4 +1,4 @@
-import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
+import type { Campaign, CampaignParticipant } from '@armoury/models';
 
 export function makeCoreCampaign(overrides: Partial<Campaign> = {}): Campaign {
     return {

@@ -1,7 +1,7 @@
-import type { DatabaseAdapter } from '@armoury/data-dao/adapter';
-import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
 import type { Faction } from '@/types/entities.js';
-import { parseGameSystem } from '@armoury/providers-bsdata/xmlParser';
+import { parseGameSystem } from '@armoury/providers-bsdata';
 import type { CoreRules } from '@/models/CoreRules.js';
 import { parseCoreRules } from '@/data/CoreRulesParser.js';
 import { BaseDAO } from '@/dao/BaseDAO.js';

@@ -60,6 +60,36 @@ export function createConfig(tsconfigPath = './tsconfig.json', tsconfigRootDir =
                 '@typescript-eslint/no-non-null-assertion': 'off',
             },
         },
+        {
+            rules: {
+                'no-restricted-imports': [
+                    'error',
+                    {
+                        patterns: [
+                            {
+                                group: ['@shared/*'],
+                                message:
+                                    "src/shared is not a workspace. Import from the appropriate @armoury/* package barrel instead (e.g., '@armoury/data-dao', '@armoury/models').",
+                            },
+                            {
+                                group: ['@armoury/*/*'],
+                                message:
+                                    "Only import from barrel files using '@armoury/<package>' — never from subpaths like '@armoury/<package>/subpath'.",
+                            },
+                        ],
+                    },
+                ],
+                'no-restricted-syntax': [
+                    'error',
+                    {
+                        selector:
+                            'ImportDeclaration[source.value=/\\.tsx?$/]',
+                        message:
+                            "Do not use .ts or .tsx extensions in import paths. Use .js or .jsx extensions instead.",
+                    },
+                ],
+            },
+        },
     ];
 }
 

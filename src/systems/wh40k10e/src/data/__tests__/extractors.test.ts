@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { extractUnits, extractWeapons, extractAbilities } from '@/data/extractors.js';
-import type {
-    BattleScribeCatalogue,
-    BattleScribeProfile,
-    BattleScribeSelectionEntry,
-} from '@armoury/providers-bsdata/types';
+import type { BattleScribeCatalogue, BattleScribeProfile, BattleScribeSelectionEntry } from '@armoury/providers-bsdata';
 
 /**
  * Builds a minimal BattleScribe profile with characteristics.

@@ -211,7 +211,7 @@ protected async updateSyncStatus(sha: string): Promise<void>;
 import { BSDataBaseDAO } from '@armoury/shared';
 import type { DatabaseAdapter, IGitHubClient } from '@armoury/shared';
 import { FactionDataModel } from '../models/FactionDataModel.js';
-import { parseCatalogue } from '@shared/providers/bsdata/xmlParser.js';
+import { parseCatalogue } from '@armoury/providers-bsdata';
 
 export class SpaceMarinesDAO extends BSDataBaseDAO<FactionDataModel> {
     constructor(adapter: DatabaseAdapter, githubClient: IGitHubClient) {

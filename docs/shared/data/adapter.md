@@ -94,7 +94,7 @@ Subclasses: `SQLiteAdapter`, `IndexedDBAdapter`, `DSQLAdapter`.
 
 ### `Platform` (re-export)
 
-Re-exports the `Platform` enum from `@shared/types/enums.js` for convenience.
+Re-exports the `Platform` enum from `@armoury/shared` for convenience.
 
 ## Usage Example
 

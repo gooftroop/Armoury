@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { parseCatalogue } from '@armoury/providers-bsdata/xmlParser';
+import { parseCatalogue } from '@armoury/providers-bsdata';
 import { extractUnits } from '@/data/extractors.js';
 import { parseWeaponKeywords } from '@/validation/weaponKeywords.js';
 import { parseAbility, parseDetachmentRule } from '@/validation/abilityParser.js';

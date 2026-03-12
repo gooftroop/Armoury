@@ -1,7 +1,7 @@
 import type { Army, ArmyUnit } from '@/models/ArmyModel.js';
 import type { FactionData } from '@/models/FactionData.js';
 import type { Unit } from '@/models/UnitModel.js';
-import type { ParsedConstraint } from '@armoury/providers-bsdata/constraintTypes';
+import type { ParsedConstraint } from '@armoury/providers-bsdata';
 import type { ValidationResult } from '@/validation/types.js';
 
 /**

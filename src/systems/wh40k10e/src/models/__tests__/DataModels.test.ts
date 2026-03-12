@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import type { Account } from '@armoury/models/AccountModel';
+import type { Account } from '@armoury/models';
 import type { Army, ArmyUnit, ArmyVersion } from '@/models/ArmyModel.js';
-import type { Friend } from '@armoury/models/FriendModel';
-import type { Match } from '@armoury/models/MatchModel';
-import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
+import type { Friend } from '@armoury/models';
+import type { Match } from '@armoury/models';
+import type { Campaign, CampaignParticipant } from '@armoury/models';
 import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
 import type { CrusadeParticipantData } from '@/models/CampaignModel.js';
 

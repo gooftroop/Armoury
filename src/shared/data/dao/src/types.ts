@@ -1,10 +1,10 @@
-import type { Account } from '@armoury/models/AccountModel';
-import type { Friend } from '@armoury/models/FriendModel';
-import type { Match } from '@armoury/models/MatchModel';
-import type { UserPresence } from '@armoury/models/UserPresenceModel';
-import type { User } from '@armoury/models/UserModel';
-import type { Campaign, CampaignParticipant } from '@armoury/models/CampaignModel';
-import type { IGitHubClient } from '@armoury/clients-github/types';
+import type { Account } from '@armoury/models';
+import type { Friend } from '@armoury/models';
+import type { Match } from '@armoury/models';
+import type { UserPresence } from '@armoury/models';
+import type { User } from '@armoury/models';
+import type { Campaign, CampaignParticipant } from '@armoury/models';
+import type { IGitHubClient } from '@armoury/clients-github';
 
 /**
  * Supported database platforms for the adapter pattern.
@@ -275,7 +275,7 @@ export interface GameSystemManifest {
     manifestVersion: string;
 }
 
-export type { IGitHubClient, GitHubFileInfo } from '@armoury/clients-github/types';
+export type { IGitHubClient, GitHubFileInfo } from '@armoury/clients-github';
 
 /** Error thrown when database operations fail. */
 export class DatabaseError extends Error {

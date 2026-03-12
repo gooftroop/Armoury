@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createTestDatabase } from '../helpers/pgliteTestDb.js';
 import { PGliteAdapter } from '@armoury/adapters-pglite';
-import { AccountDAO } from '@armoury/data-dao/dao/AccountDAO';
-import { FriendDAO } from '@armoury/data-dao/dao/FriendDAO';
-import { CampaignDAO } from '@armoury/data-dao/dao/CampaignDAO';
-import { CampaignParticipantDAO } from '@armoury/data-dao/dao/CampaignParticipantDAO';
-import { MatchDAO } from '@armoury/data-dao/dao/MatchDAO';
-import { UserPresenceDAO } from '@armoury/data-dao/dao/UserPresenceDAO';
+import { AccountDAO } from '@armoury/data-dao';
+import { FriendDAO } from '@armoury/data-dao';
+import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
+import { CampaignParticipantDAO } from '@armoury/data-dao';
+import { MatchDAO } from '@armoury/data-dao';
+import { UserPresenceDAO } from '@armoury/data-dao';
 import {
     makeAccount,
     makeCampaignParticipant,
