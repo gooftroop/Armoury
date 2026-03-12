@@ -38,20 +38,20 @@ Stories are tagged with one of:
 
 Section codes map to the headings below:
 
-| Code | Section |
-|------|---------|
-| GLB | Global |
-| UDD | Unit Detail Drawer |
-| MCD | Match Creation Drawer |
-| MJN | Match Joining |
-| ULV | Unit List View |
-| LP | Landing Page |
-| PRO | Profile Page |
-| APG | Army Page (The Forge) |
-| MPG | Matches Page (The War Ledger) |
-| CPG | Campaigns Page |
-| ALY | Allies Page |
-| REF | Reference Page |
+| Code | Section                       |
+| ---- | ----------------------------- |
+| GLB  | Global                        |
+| UDD  | Unit Detail Drawer            |
+| MCD  | Match Creation Drawer         |
+| MJN  | Match Joining                 |
+| ULV  | Unit List View                |
+| LP   | Landing Page                  |
+| PRO  | Profile Page                  |
+| APG  | Army Page (The Forge)         |
+| MPG  | Matches Page (The War Ledger) |
+| CPG  | Campaigns Page                |
+| ALY  | Allies Page                   |
+| REF  | Reference Page                |
 
 ## UX Constraints
 
@@ -68,11 +68,11 @@ These rules apply globally to all views across web and mobile.
 5. **Error states**: Every async operation must have a defined error state. Errors must be surfaced to the user with a message and, where appropriate, a retry action. Silent failures are not acceptable.
 
 6. **Unit Detail Drawer Behavioral Rules**: The unit detail drawer appears in multiple contexts (Reference, Army Creation browsing, Army Builder configuration, Match tracking). The same layout and visual structure is used across all contexts — only the data displayed changes based on context:
-   - **Reference and Army Creation (read-only):** All unit data is displayed. No model list or HP bar. Used when browsing unit information before adding to army.
-   - **Army Builder (configuration):** Model list is visible with the ability to add models and configure wargear per model. No HP bar.
-   - **Match (tracking):** Model list with adjustable HP bar and equipped wargear stats plus enhancements (if applicable). Model count and loadout are read-only — cannot be changed during a match.
-   - **Basic vs. Guided unit list items:** Both modes show the same unit list. In basic mode, each unit item shows a summary of models and wargear, total HP, and all interactive state tags. In guided mode, each unit item shows unit information but only the toggleable states relevant to the current phase, only the wargear relevant to the current phase, and total HP.
-   - All unit detail drawers must use the same layout and visual structure. Only the data shown changes.
+    - **Reference and Army Creation (read-only):** All unit data is displayed. No model list or HP bar. Used when browsing unit information before adding to army.
+    - **Army Builder (configuration):** Model list is visible with the ability to add models and configure wargear per model. No HP bar.
+    - **Match (tracking):** Model list with adjustable HP bar and equipped wargear stats plus enhancements (if applicable). Model count and loadout are read-only — cannot be changed during a match.
+    - **Basic vs. Guided unit list items:** Both modes show the same unit list. In basic mode, each unit item shows a summary of models and wargear, total HP, and all interactive state tags. In guided mode, each unit item shows unit information but only the toggleable states relevant to the current phase, only the wargear relevant to the current phase, and total HP.
+    - All unit detail drawers must use the same layout and visual structure. Only the data shown changes.
 
 ---
 
@@ -80,17 +80,17 @@ These rules apply globally to all views across web and mobile.
 
 > **Agent instruction:** Do NOT read section files unless you are actively implementing stories for that page. Load lazily — only the section you are working on.
 
-| Section | Stories | File |
-|---------|---------|------|
-| Global (GLB) | US-GLB-01 – US-GLB-12 | [docs/stories/GLB.md](docs/stories/GLB.md) |
-| Unit Detail Drawer (UDD) | US-UDD-01 – US-UDD-28 | [docs/stories/UDD.md](docs/stories/UDD.md) |
+| Section                     | Stories               | File                                       |
+| --------------------------- | --------------------- | ------------------------------------------ |
+| Global (GLB)                | US-GLB-01 – US-GLB-12 | [docs/stories/GLB.md](docs/stories/GLB.md) |
+| Unit Detail Drawer (UDD)    | US-UDD-01 – US-UDD-28 | [docs/stories/UDD.md](docs/stories/UDD.md) |
 | Match Creation Drawer (MCD) | US-MCD-01 – US-MCD-12 | [docs/stories/MCD.md](docs/stories/MCD.md) |
-| Match Joining (MJN) | US-MJN-01 – US-MJN-03 | [docs/stories/MJN.md](docs/stories/MJN.md) |
-| Unit List View (ULV) | US-ULV-01 – US-ULV-10 | [docs/stories/ULV.md](docs/stories/ULV.md) |
-| Landing Page (LP) | US-LP-01 – US-LP-06 | [docs/stories/LP.md](docs/stories/LP.md) |
-| Profile Page (PRO) | US-PRO-01 – US-PRO-09 | [docs/stories/PRO.md](docs/stories/PRO.md) |
-| Army Page (APG) | US-APG-01 – US-APG-19 | [docs/stories/APG.md](docs/stories/APG.md) |
-| Matches Page (MPG) | US-MPG-01 – US-MPG-42 | [docs/stories/MPG.md](docs/stories/MPG.md) |
-| Campaigns Page (CPG) | US-CPG-01 – US-CPG-23 | [docs/stories/CPG.md](docs/stories/CPG.md) |
-| Allies Page (ALY) | US-ALY-01 – US-ALY-10 | [docs/stories/ALY.md](docs/stories/ALY.md) |
-| Reference Page (REF) | US-REF-01 – US-REF-09 | [docs/stories/REF.md](docs/stories/REF.md) |
+| Match Joining (MJN)         | US-MJN-01 – US-MJN-03 | [docs/stories/MJN.md](docs/stories/MJN.md) |
+| Unit List View (ULV)        | US-ULV-01 – US-ULV-10 | [docs/stories/ULV.md](docs/stories/ULV.md) |
+| Landing Page (LP)           | US-LP-01 – US-LP-06   | [docs/stories/LP.md](docs/stories/LP.md)   |
+| Profile Page (PRO)          | US-PRO-01 – US-PRO-09 | [docs/stories/PRO.md](docs/stories/PRO.md) |
+| Army Page (APG)             | US-APG-01 – US-APG-19 | [docs/stories/APG.md](docs/stories/APG.md) |
+| Matches Page (MPG)          | US-MPG-01 – US-MPG-42 | [docs/stories/MPG.md](docs/stories/MPG.md) |
+| Campaigns Page (CPG)        | US-CPG-01 – US-CPG-23 | [docs/stories/CPG.md](docs/stories/CPG.md) |
+| Allies Page (ALY)           | US-ALY-01 – US-ALY-10 | [docs/stories/ALY.md](docs/stories/ALY.md) |
+| Reference Page (REF)        | US-REF-01 – US-REF-09 | [docs/stories/REF.md](docs/stories/REF.md) |

@@ -42,23 +42,25 @@
 
 **RESEARCH DECISION TREE:**
 ```
+
 Need to find a file/pattern?
-  → grep, glob, LSP (direct, 0 cost)
+→ grep, glob, LSP (direct, 0 cost)
 
 Need to understand one library's API?
-  → codesearch, context7_query-docs (direct, 0 cost)
+→ codesearch, context7_query-docs (direct, 0 cost)
 
 Need to fetch a specific doc/URL?
-  → webfetch (direct, 0 cost)
+→ webfetch (direct, 0 cost)
 
 Need multi-file reasoning across modules?
-  → 1 explore agent (targeted, ~3-6 requests)
+→ 1 explore agent (targeted, ~3-6 requests)
 
 Need to synthesize multiple external sources?
-  → 1 librarian agent (targeted, ~3-6 requests)
+→ 1 librarian agent (targeted, ~3-6 requests)
 
 Need architectural review or are stuck after 2+ attempts?
-  → oracle (expensive but high value, ~5-15 requests)
+→ oracle (expensive but high value, ~5-15 requests)
+
 ```
 
 **ONLY AFTER YOU HAVE:**
@@ -118,14 +120,17 @@ Neither extreme works:
 Before starting any non-trivial phase, present:
 
 ```
+
 Estimated request budget:
+
 - Research: ~X requests (direct tools + N agents for [reason])
 - Planning: ~X requests (direct todos / plan agent)
 - Implementation: ~X requests (self / N agents at ~X each)
 - Verification: ~X requests (tests, diagnostics)
-Total: ~X requests
+- Total: ~X requests
 
 Quality trade-off: [What agent usage buys vs self-execution]
+
 ```
 
 ### IMPLEMENTATION CONFIRMATION (MANDATORY)
@@ -204,6 +209,7 @@ Misunderstood requirements waste all downstream requests. Present your plan, get
 ### CATEGORY + SKILL DELEGATION
 
 ```
+
 // Frontend work
 task(category="visual-engineering", load_skills=["frontend-ui-ux", "accessibility"])
 
@@ -215,6 +221,7 @@ task(category="quick", load_skills=["git-master"])
 
 // Documentation
 task(category="writing", load_skills=["docs-writer"])
+
 ```
 
 **YOU SHOULD SELF-EXECUTE WHEN:**
@@ -263,14 +270,22 @@ Write these criteria explicitly. Share with user if scope is non-trivial.
 ### Test Plan Template (MANDATORY for non-trivial tasks)
 
 ```
+
 ## Test Plan
+
 ### Objective: [What we're verifying]
+
 ### Prerequisites: [Setup needed]
+
 ### Test Cases:
+
 1. [Test Name]: [Input] → [Expected Output] → [How to verify]
 2. ...
+
 ### Success Criteria: ALL test cases pass
+
 ### How to Execute: [Exact commands/steps]
+
 ```
 
 ### Execution & Evidence Requirements

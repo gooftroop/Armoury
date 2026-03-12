@@ -4,12 +4,12 @@ Behavioral rules for LLM agents on this monorepo. For coding conventions, see `d
 
 ## Documentation Map
 
-| Document | Contains | When to Read |
-|----------|----------|--------------|
-| `docs/CODING_STANDARDS.md` | Code style, naming, exports, types, testing, error handling | **Phase 3 only** — before writing or modifying code |
-| `docs/shared/REQUIREMENTS.md` | Data architecture and data flow requirements | When working on `@armoury/data` or `@armoury/models` |
-| `docs/tooling.md` | Shared configs, workspace scripts, adding workspaces | When modifying tooling configs or adding workspaces |
-| `docs/services/` | Lambda service documentation | When working on `@armoury/authorizer` or `@armoury/campaigns` |
+| Document                      | Contains                                                    | When to Read                                                  |
+| ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| `docs/CODING_STANDARDS.md`    | Code style, naming, exports, types, testing, error handling | **Phase 3 only** — before writing or modifying code           |
+| `docs/shared/REQUIREMENTS.md` | Data architecture and data flow requirements                | When working on `@armoury/data` or `@armoury/models`          |
+| `docs/tooling.md`             | Shared configs, workspace scripts, adding workspaces        | When modifying tooling configs or adding workspaces           |
+| `docs/services/`              | Lambda service documentation                                | When working on `@armoury/authorizer` or `@armoury/campaigns` |
 
 ### Document Loading Strategy
 
@@ -63,14 +63,14 @@ src/
 
 Each workspace defines path aliases in its `tsconfig.json`. Vitest configs mirror these in `resolve.alias`.
 
-| Alias | Resolves To | Available In |
-|-------|-------------|--------------|
-| `@shared/*` | `src/shared/*` | All workspaces |
-| `@streams/*` | `src/shared/streams/*` | `@armoury/streams` |
-| `@wh40k10e/*` | `src/systems/src/wh40k10e/*` | `@armoury/systems`, `@armoury/shared` (tests only) |
-| `@web/*` | `src/web/*` | `@armoury/web` |
-| `@mobile/*` | `src/mobile/*` | `@armoury/mobile` |
-| `@campaigns/*` | `src/services/campaigns/*` | `@armoury/campaigns` |
+| Alias          | Resolves To                  | Available In                                       |
+| -------------- | ---------------------------- | -------------------------------------------------- |
+| `@shared/*`    | `src/shared/*`               | All workspaces                                     |
+| `@streams/*`   | `src/shared/streams/*`       | `@armoury/streams`                                 |
+| `@wh40k10e/*`  | `src/systems/src/wh40k10e/*` | `@armoury/systems`, `@armoury/shared` (tests only) |
+| `@web/*`       | `src/web/*`                  | `@armoury/web`                                     |
+| `@mobile/*`    | `src/mobile/*`               | `@armoury/mobile`                                  |
+| `@campaigns/*` | `src/services/campaigns/*`   | `@armoury/campaigns`                               |
 
 Always use `.ts` extensions for relative imports and `.js` extensions for aliased (non-relative) imports. TypeScript cannot rewrite non-relative import extensions in declaration output (TS2877), so aliased imports must use `.js`. See `docs/CODING_STANDARDS.md` for import rules.
 
@@ -237,37 +237,37 @@ Agent spawns consume requests proportional to their complexity (spawn + internal
 
 **Direct Tools vs Agent Spawns:**
 
-| Need | Direct Tool (0 extra requests) | Agent Spawn (3-20+ requests) |
-|---|---|---|
-| Find a file by name | `glob` | ~~explore~~ |
-| Find a pattern in code | `grep`, `ast_grep_search` | ~~explore~~ |
-| Navigate to a definition | `lsp_goto_definition` | ~~explore~~ |
-| Get a file outline | `lsp_symbols` (documentSymbol) | ~~explore~~ |
-| Look up one library's API | `codesearch`, `context7_query-docs` | ~~librarian~~ |
-| Fetch a specific URL/doc | `webfetch` | ~~librarian~~ |
-| Multi-file reasoning across modules | Direct tools may miss connections | `explore` ✓ |
-| Synthesize multiple external sources | Direct tools return raw data | `librarian` ✓ |
-| Architectural trade-off analysis | Beyond direct tool capability | `oracle` ✓ |
-| Complex planning with unknowns | Needs interview-style reasoning | `plan` agent ✓ |
+| Need                                 | Direct Tool (0 extra requests)      | Agent Spawn (3-20+ requests) |
+| ------------------------------------ | ----------------------------------- | ---------------------------- |
+| Find a file by name                  | `glob`                              | ~~explore~~                  |
+| Find a pattern in code               | `grep`, `ast_grep_search`           | ~~explore~~                  |
+| Navigate to a definition             | `lsp_goto_definition`               | ~~explore~~                  |
+| Get a file outline                   | `lsp_symbols` (documentSymbol)      | ~~explore~~                  |
+| Look up one library's API            | `codesearch`, `context7_query-docs` | ~~librarian~~                |
+| Fetch a specific URL/doc             | `webfetch`                          | ~~librarian~~                |
+| Multi-file reasoning across modules  | Direct tools may miss connections   | `explore` ✓                  |
+| Synthesize multiple external sources | Direct tools return raw data        | `librarian` ✓                |
+| Architectural trade-off analysis     | Beyond direct tool capability       | `oracle` ✓                   |
+| Complex planning with unknowns       | Needs interview-style reasoning     | `plan` agent ✓               |
 
 **Rule**: Use direct tools for deterministic lookups. Use agents when their model's reasoning adds measurable quality over what direct tools provide.
 
 **Agent Spawn Decision Matrix:**
 
-|  | Low Complexity | High Complexity |
-|---|---|---|
-| **Familiar Domain** | Self + direct tools (0 requests) | Self + oracle review (~10 requests) |
-| **Unfamiliar Domain** | Librarian + self (~5 requests) | Librarian + plan agent + specialist (~20-30 requests) |
+|                       | Low Complexity                   | High Complexity                                       |
+| --------------------- | -------------------------------- | ----------------------------------------------------- |
+| **Familiar Domain**   | Self + direct tools (0 requests) | Self + oracle review (~10 requests)                   |
+| **Unfamiliar Domain** | Librarian + self (~5 requests)   | Librarian + plan agent + specialist (~20-30 requests) |
 
 **Planning Scale — Always plan, scale the method:**
 
-| Complexity | Method | Request Cost |
-|---|---|---|
-| Trivial (1-2 steps, obvious) | Direct todos | 0 |
-| Simple (3-5 steps, clear scope) | Direct tool exploration → todos | 0 |
-| Medium (5+ steps, some unknowns) | Exploration → todos → user confirmation | 0 |
-| Complex (many unknowns, cross-cutting) | Plan agent (superior model reasoning) | 5-10 |
-| Very complex (architectural, ambiguous) | Metis → plan agent → momus review | 15-25 |
+| Complexity                              | Method                                  | Request Cost |
+| --------------------------------------- | --------------------------------------- | ------------ |
+| Trivial (1-2 steps, obvious)            | Direct todos                            | 0            |
+| Simple (3-5 steps, clear scope)         | Direct tool exploration → todos         | 0            |
+| Medium (5+ steps, some unknowns)        | Exploration → todos → user confirmation | 0            |
+| Complex (many unknowns, cross-cutting)  | Plan agent (superior model reasoning)   | 5-10         |
+| Very complex (architectural, ambiguous) | Metis → plan agent → momus review       | 15-25        |
 
 ### File Reading Strategy
 
@@ -312,28 +312,29 @@ One retry with the same parameters is acceptable. A second failure on the same t
 
 Category selection directly controls which model runs the task. Choose the cheapest category that can handle the work:
 
-| Category | Default Model | Cost | Use When |
-|---|---|---|---|
-| `quick` | Claude Haiku 4.5 | Lowest | Single file edits, typo fixes, simple writes |
-| `writing` | Kimi K2P5 | Low | Documentation, prose, markdown files |
-| `unspecified-low` | Claude Sonnet 4.6 | Mid | Moderate tasks that don't fit other categories |
-| `visual-engineering` | Gemini 3.1 Pro | Mid-High | Frontend, UI/UX, styling |
-| `artistry` | Gemini 3.1 Pro | Mid-High | Creative, unconventional problem-solving |
-| `deep` | GPT-5.3 Codex | High | Autonomous problem-solving, hairy bugs |
-| `ultrabrain` | GPT-5.3 Codex (xhigh) | Highest | Genuinely hard logic, complex architecture |
-| `unspecified-high` | GPT-5.4 (high) | Highest | High-effort tasks that don't fit other categories |
+| Category             | Default Model         | Cost     | Use When                                          |
+| -------------------- | --------------------- | -------- | ------------------------------------------------- |
+| `quick`              | Claude Haiku 4.5      | Lowest   | Single file edits, typo fixes, simple writes      |
+| `writing`            | Kimi K2P5             | Low      | Documentation, prose, markdown files              |
+| `unspecified-low`    | Claude Sonnet 4.6     | Mid      | Moderate tasks that don't fit other categories    |
+| `visual-engineering` | Gemini 3.1 Pro        | Mid-High | Frontend, UI/UX, styling                          |
+| `artistry`           | Gemini 3.1 Pro        | Mid-High | Creative, unconventional problem-solving          |
+| `deep`               | GPT-5.3 Codex         | High     | Autonomous problem-solving, hairy bugs            |
+| `ultrabrain`         | GPT-5.3 Codex (xhigh) | Highest  | Genuinely hard logic, complex architecture        |
+| `unspecified-high`   | GPT-5.4 (high)        | Highest  | High-effort tasks that don't fit other categories |
 
 Agent subagent_types also have fixed model tiers:
 
-| Agent | Default Model | Cost |
-|---|---|---|
-| `explore` | Grok Code Fast 1 / Haiku 4.5 | Lowest |
-| `librarian` | Gemini 3 Flash | Low |
-| `oracle` | GPT-5.4 / Gemini 3.1 Pro / Opus 4.6 | Highest |
-| `metis` | Opus 4.6 / GPT-5.4 | Highest |
-| `momus` | GPT-5.4 / Opus 4.6 | Highest |
+| Agent       | Default Model                       | Cost    |
+| ----------- | ----------------------------------- | ------- |
+| `explore`   | Grok Code Fast 1 / Haiku 4.5        | Lowest  |
+| `librarian` | Gemini 3 Flash                      | Low     |
+| `oracle`    | GPT-5.4 / Gemini 3.1 Pro / Opus 4.6 | Highest |
+| `metis`     | Opus 4.6 / GPT-5.4                  | Highest |
+| `momus`     | GPT-5.4 / Opus 4.6                  | Highest |
 
 **Decision tree**:
+
 1. Can Haiku handle it? (simple, explicit instructions, single concern) -> `quick`
 2. Is it documentation or prose? -> `writing`
 3. Is it moderate, non-specialized work? -> `unspecified-low`
@@ -343,6 +344,7 @@ Agent subagent_types also have fixed model tiers:
 7. Still unsure + high effort? -> `unspecified-high`
 
 **Rules**:
+
 - Default to the cheapest viable category. Escalate only when quality demands it.
 - `explore` and `librarian` are cheap per-spawn but compound quickly. Prefer direct tools (grep, LSP, codesearch, context7) for deterministic lookups; reserve agent spawns for tasks requiring multi-step reasoning.
 - `oracle`, `metis`, `momus` are expensive. Use only when their specialized reasoning is required.
