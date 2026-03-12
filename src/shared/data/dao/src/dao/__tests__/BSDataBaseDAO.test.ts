@@ -17,7 +17,7 @@ class TestModel {
     }
 }
 
-declare module '../../types.ts' {
+declare module '../../types.js' {
     interface PluginEntityMap {
         testEntity: TestModel;
     }

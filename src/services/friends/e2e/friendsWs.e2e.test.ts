@@ -1,15 +1,15 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Friend, UserContext, WebSocketEvent } from '../src/types.ts';
-import { createE2EAdapter, resetDatabase } from '../src/__testing__/e2eAdapter.ts';
-import type { LocalDatabaseAdapter } from '../src/utils/localAdapter.ts';
-import type { BroadcastRecord } from '../../__testing__/mockBroadcaster.ts';
-import { createMockBroadcaster } from '../../__testing__/mockBroadcaster.ts';
-import { createTestUserContext, createWebSocketEvent } from '../../__testing__/helpers.ts';
-import { wsRouter } from '../src/wsRouter.ts';
+import type { Friend, UserContext, WebSocketEvent } from '@/types.js';
+import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
+import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
+import type { BroadcastRecord } from '@armoury/e2e/mockBroadcaster.js';
+import { createMockBroadcaster } from '@armoury/e2e/mockBroadcaster.js';
+import { createTestUserContext, createWebSocketEvent } from '@armoury/e2e/helpers.js';
+import { wsRouter } from '@/wsRouter.js';
 
 const mockBroadcast = createMockBroadcaster();
 
-vi.mock('../src/utils/broadcast.ts', () => ({
+vi.mock('@/utils/broadcast.js', () => ({
     createBroadcaster: () => mockBroadcast.broadcaster,
 }));
 

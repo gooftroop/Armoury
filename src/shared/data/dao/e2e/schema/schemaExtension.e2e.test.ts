@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { registerSchemaExtension, clearSchemaExtensions, getMergedDSQLSchema } from '@armoury/data-dao/schema';
-import { createTestDatabase } from '../helpers/pgliteTestDb.ts';
+import { createTestDatabase } from '../helpers/pgliteTestDb.js';
 import { PGliteAdapter } from '@armoury/adapters-pglite';
 
 type ColumnBuilder = { primaryKey: () => ColumnBuilder; notNull: () => ColumnBuilder };

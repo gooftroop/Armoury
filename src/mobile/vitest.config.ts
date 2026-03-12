@@ -10,6 +10,7 @@ export default mergeConfig(
     defineConfig({
         resolve: {
             alias: {
+                '#': path.resolve(__dirname, '.'),
                 '@sentry/react-native': path.resolve(__dirname, '__mocks__/@sentry/react-native.ts'),
                 'react-native': path.resolve(__dirname, '__mocks__/react-native.ts'),
                 tamagui: path.resolve(__dirname, '__mocks__/tamagui.ts'),

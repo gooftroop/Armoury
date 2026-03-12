@@ -72,7 +72,7 @@ Each workspace defines path aliases in its `tsconfig.json`. Vitest configs mirro
 | `@mobile/*`    | `src/mobile/*`               | `@armoury/mobile`                                  |
 | `@campaigns/*` | `src/services/campaigns/*`   | `@armoury/campaigns`                               |
 
-Always use `.ts` extensions for relative imports and `.js` extensions for aliased (non-relative) imports. TypeScript cannot rewrite non-relative import extensions in declaration output (TS2877), so aliased imports must use `.js`. See `docs/CODING_STANDARDS.md` for import rules.
+Always use `.js` (or `.jsx`) extensions in import paths. Always use aliased imports — no relative imports. See `docs/CODING_STANDARDS.md` for import rules.
 
 ## File Organization
 

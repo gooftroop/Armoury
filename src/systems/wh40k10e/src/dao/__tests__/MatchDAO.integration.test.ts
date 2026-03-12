@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MatchDAO } from '@/dao/MatchDAO.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import { makeMatch } from '../../../e2e/__fixtures__/makeMatch.ts';
+import { makeMatch } from '../../../e2e/__fixtures__/makeMatch.js';
 import type { Match as CoreMatch, MatchOutcome, MatchPlayer, MatchScore, MatchTurn } from '@armoury/models/MatchModel';
 import type { MatchData } from '@/models/MatchData.js';
 import { Match } from '@/models/Match.js';

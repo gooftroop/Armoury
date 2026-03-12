@@ -1,5 +1,5 @@
-import type { Unit } from '../../src/models/UnitModel.ts';
-import type { Weapon } from '../../src/types/entities.ts';
+import type { Unit } from '../../src/models/UnitModel.js';
+import type { Weapon } from '../../src/types/entities.js';
 
 export function makeCaptainInTerminatorArmour(): Unit {
     const stormBolter: Weapon = {

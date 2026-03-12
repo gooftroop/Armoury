@@ -1,6 +1,6 @@
-import type { Unit } from '../../src/models/UnitModel.ts';
-import type { Weapon } from '../../src/types/entities.ts';
-import { makeBoltRifle } from './makeBoltRifle.ts';
+import type { Unit } from '../../src/models/UnitModel.js';
+import type { Weapon } from '../../src/types/entities.js';
+import { makeBoltRifle } from './makeBoltRifle.js';
 
 export function makeIntercessorSquad(): Unit {
     const boltRifle = makeBoltRifle();

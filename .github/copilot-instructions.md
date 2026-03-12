@@ -38,23 +38,22 @@ TypeScript monorepo for managing tabletop game army data using community data fi
 
 ## Import Rules
 
-- Prefer aliased imports over relative imports everywhere.
-- **Relative imports use `.ts` extension** (TypeScript rewrites these automatically).
-- **Aliased imports use `.js` extension** (TypeScript cannot rewrite non-relative paths in `.d.ts` output — TS2877).
-- Import order: external packages, aliased internal, relative.
+- Always use aliased imports — no relative imports.
+- **All imports use `.js` extension** (or `.jsx` for JSX files). Do not use `.ts`/`.tsx` extensions in import paths.
+- Import order: external packages, then aliased internal.
 
 ```typescript
 // Good
 import { describe, it, expect } from 'vitest';
 import type { Unit } from '@wh40k10e/models/UnitModel.js';
 import { Platform } from '@shared/types/enums.js';
-import { makeArmy } from '../__fixtures__/makeArmy.ts';
+import { makeArmy } from '@/e2e/__fixtures__/makeArmy.js';
 
-// Bad — wrong extension on aliased import
+// Bad — relative import
+import { makeArmy } from '../__fixtures__/makeArmy.js';
+
+// Bad — .ts extension
 import { Platform } from '@shared/types/enums.ts';
-
-// Bad — relative when alias is available
-import type { Unit } from '../../models/UnitModel.ts';
 ```
 
 ## Naming Conventions

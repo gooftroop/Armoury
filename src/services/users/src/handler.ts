@@ -99,7 +99,7 @@ interface LocalAdapterConstructor {
  * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
  */
 const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.ts')) as unknown as {
+const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
     LocalDatabaseAdapter: LocalAdapterConstructor;
 };
 

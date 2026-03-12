@@ -39,7 +39,7 @@ interface LocalAdapterConstructor {
 }
 
 const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.ts')) as unknown as {
+const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
     LocalDatabaseAdapter: LocalAdapterConstructor;
 };
 

@@ -483,9 +483,9 @@ db.query('...');
 ## Project-Specific Rules (from AGENTS.md & CODING_STANDARDS.md)
 
 ### Imports
-- Aliased (non-relative) imports **MUST** use `.js` extensions. `.ts` causes TS2877. Flag as P1.
-- Relative imports **MUST** use `.ts` extensions.
-- Import order: external packages → aliased internal → relative.
+- All imports **MUST** use `.js` (or `.jsx`) extensions. `.ts`/`.tsx` in imports is a P1 flag.
+- No relative imports — always use a path alias. Relative imports are a P1 flag.
+- Import order: external packages → aliased internal.
 
 ### Exports
 - Named exports only. Default exports only for `page.tsx`, `layout.tsx`, Expo entry.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import RootLayout from '../app/_layout.tsx';
+import RootLayout from '#/app/_layout.js';
 
 /**
  * Test Plan for _layout.tsx

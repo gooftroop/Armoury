@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DataContext } from '@armoury/data-context/DataContext';
-import type { GameData } from '../src/dao/GameData.ts';
-import { wh40k10eSystem } from '../src/system.ts';
+import type { GameData } from '../src/dao/GameData.js';
+import { wh40k10eSystem } from '../src/system.js';
 import { GitHubClient } from '@armoury/clients-github/client';
-import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.ts';
+import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
 import { hasEntityCodec } from '@armoury/data-dao/codec';
 import 'dotenv/config';
 

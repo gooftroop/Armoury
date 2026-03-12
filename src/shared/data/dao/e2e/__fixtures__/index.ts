@@ -1,5 +1,5 @@
-export { makeAccount } from './makeAccount.ts';
-export { makeCoreCampaign, makeCampaignParticipant } from './makeCoreCampaign.ts';
-export { makeCoreMatch } from './makeCoreMatch.ts';
-export { makeFriend } from './makeFriend.ts';
-export { makeUserPresence } from './makeUserPresence.ts';
+export { makeAccount } from './makeAccount.js';
+export { makeCoreCampaign, makeCampaignParticipant } from './makeCoreCampaign.js';
+export { makeCoreMatch } from './makeCoreMatch.js';
+export { makeFriend } from './makeFriend.js';
+export { makeUserPresence } from './makeUserPresence.js';

@@ -30,6 +30,8 @@
         "src/shared/providers/bsdata",
         "src/shared/validation",
         "src/shared/streams",
+        "src/shared/e2e",
+        "src/shared/ui",
         "src/systems/wh40k10e",
         "src/web",
         "src/mobile",

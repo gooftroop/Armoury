@@ -83,7 +83,7 @@ async get<T extends EntityType>(store: T, id: string): Promise<EntityMap[T] | nu
 
 ### Imports
 
-Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports.
+Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports. Always use `.js` extensions.
 
 ```typescript
 // Good
@@ -94,7 +94,7 @@ import type { Unit } from '@shared/types/entities.js';
 import type { Unit } from '../../types/entities';
 ```
 
-Always use `.js` extensions in aliased imports.
+Always use `.js` extensions in imports.
 
 ### Pure Functions
 

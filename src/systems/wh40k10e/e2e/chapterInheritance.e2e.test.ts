@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { GitHubClient } from '@armoury/clients-github/client';
-import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.ts';
-import { wh40k10eSystem } from '../src/system.ts';
-import { BloodAngelsDAO } from '../src/dao/factions/BloodAngelsDAO.ts';
-import { SpaceMarinesDAO } from '../src/dao/factions/SpaceMarinesDAO.ts';
-import type { FactionData } from '../src/models/FactionData.ts';
+import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
+import { wh40k10eSystem } from '../src/system.js';
+import { BloodAngelsDAO } from '../src/dao/factions/BloodAngelsDAO.js';
+import { SpaceMarinesDAO } from '../src/dao/factions/SpaceMarinesDAO.js';
+import type { FactionData } from '../src/models/FactionData.js';
 import 'dotenv/config';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;

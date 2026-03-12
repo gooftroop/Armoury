@@ -85,7 +85,7 @@ Every exported function, class, interface, type, and field must have JSDoc docum
 
 ### Imports
 
-Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports. Always use `.js` extensions in aliased imports.
+Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports. Always use `.js` extensions.
 
 ```typescript
 // Good

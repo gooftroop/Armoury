@@ -911,7 +911,7 @@ Query option factories are pure TypeScript with no React imports. They live in `
 | `factionListOptions` | `src/shared/frontend/queries/factions.ts`    | `ArmyCreationContainer` via `useFactions()`          |
 | `gameSystemsOptions` | `src/shared/frontend/queries/gameSystems.ts` | `GameSystemSelectorContainer` via `useGameSystems()` |
 
-All factories use `.js` extensions on aliased imports (`@shared/...`) and `.ts` extensions on relative imports, per the import rules in `AGENTS.md`.
+All imports use `.js` extensions, per the import rules in `AGENTS.md`.
 
 #### Aliased imports in Phase 1
 

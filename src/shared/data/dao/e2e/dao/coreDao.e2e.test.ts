@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createTestDatabase } from '../helpers/pgliteTestDb.ts';
+import { createTestDatabase } from '../helpers/pgliteTestDb.js';
 import { PGliteAdapter } from '@armoury/adapters-pglite';
 import { AccountDAO } from '@armoury/data-dao/dao/AccountDAO';
 import { FriendDAO } from '@armoury/data-dao/dao/FriendDAO';
@@ -14,7 +14,7 @@ import {
     makeCoreMatch,
     makeFriend,
     makeUserPresence,
-} from '../__fixtures__/index.ts';
+} from '../__fixtures__/index.js';
 
 describe('Core DAO E2E Tests', () => {
     let adapter: PGliteAdapter;

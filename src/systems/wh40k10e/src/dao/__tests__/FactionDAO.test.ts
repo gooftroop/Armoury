@@ -8,7 +8,7 @@ import type { FactionConfig } from '@/config/factionMap.js';
 import type { BattleScribeCatalogue } from '@armoury/providers-bsdata/types';
 import { parseFactionData } from '@/data/FactionDataParser.js';
 
-vi.mock('../../data/FactionDataParser.ts', () => ({
+vi.mock('../../data/FactionDataParser.js', () => ({
     parseFactionData: vi.fn(),
 }));
 
@@ -40,7 +40,7 @@ vi.mock('@armoury/providers-bsdata/xmlParser', () => ({
  * Mock the merge-catalogues module.
  * Prevents actual catalogue merging logic — returns a simple merged result.
  */
-vi.mock('../../models/mergeCatalogues.ts', () => ({
+vi.mock('../../models/mergeCatalogues.js', () => ({
     mergeCatalogues: vi.fn((...catalogues: BattleScribeCatalogue[]) => {
         // Return the last catalogue (simulating merge override behavior)
         return catalogues[catalogues.length - 1];
@@ -360,7 +360,7 @@ describe('FactionDAO', () => {
          * Test: fetchRemoteData() handles multi-catalogue download (downloads all files in factionConfig.files).
          */
         it('fetchRemoteData() handles multi-catalogue download (downloads all files in factionConfig.files)', async () => {
-            const { mergeCatalogues } = await import('../../models/mergeCatalogues.ts');
+            const { mergeCatalogues } = await import('../../models/mergeCatalogues.js');
             const config = createFactionConfig({
                 files: ['Library.cat', 'Faction.cat'],
             });
@@ -599,7 +599,7 @@ describe('FactionDAO', () => {
             const config = createFactionConfig({ files: [] });
             const dao = new FactionDAO(adapter, githubClient, config);
 
-            const { mergeCatalogues } = await import('../../models/mergeCatalogues.ts');
+            const { mergeCatalogues } = await import('../../models/mergeCatalogues.js');
             vi.mocked(mergeCatalogues).mockImplementation((...catalogues) => {
                 if (catalogues.length === 0) {
                     throw new Error('Cannot merge empty catalogue list');

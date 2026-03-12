@@ -664,12 +664,10 @@ export default ShellLayout;
 
 #### Import Extensions
 
-Following the project-wide rule:
+All imports use `.js` (or `.jsx`) extensions via path aliases — no relative imports:
 
-- Aliased (non-relative) imports use `.js` extension: `import { ShellLayout } from '@web/components/shared/ShellLayout.js'`
-- Relative imports within a workspace use `.ts` extension: `import { StatLine } from './StatLine.ts'`
-
-This rule exists because TypeScript with `NodeNext` module resolution cannot rewrite non-relative import paths in declaration output (TS2877). Using `.js` on aliased paths ensures the emitted `.d.ts` files resolve correctly in downstream consumers.
+- `import { ShellLayout } from '@web/components/shared/ShellLayout.js'`
+- `import { StatLine } from '@web/components/units/StatLine.js'`
 
 #### Barrel File
 

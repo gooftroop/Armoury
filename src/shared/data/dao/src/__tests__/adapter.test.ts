@@ -41,7 +41,7 @@ interface TestUnit {
  * Extend PluginEntityMap with game-specific entity types used in these tests.
  * This mirrors the declaration merging that the wh40k10e plugin performs at runtime.
  */
-declare module '../types.ts' {
+declare module '../types.js' {
     interface PluginEntityMap {
         unit: TestUnit;
         factionModel: MockHydratableEntity;

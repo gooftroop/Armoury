@@ -8,7 +8,7 @@ type TestEntity = {
     name: string;
 };
 
-declare module '../../types.ts' {
+declare module '../../types.js' {
     interface PluginEntityMap {
         baseTestEntity: TestEntity;
     }

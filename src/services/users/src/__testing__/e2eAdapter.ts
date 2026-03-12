@@ -1,4 +1,4 @@
-import { LocalDatabaseAdapter } from '../utils/localAdapter.ts';
+import { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 
 const E2E_CONFIG = {
     host: 'localhost',

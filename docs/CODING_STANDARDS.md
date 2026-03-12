@@ -130,44 +130,39 @@ Available aliases (see each workspace's `tsconfig.json` for exact mappings):
 Order imports as follows:
 
 1. External packages (node_modules)
-2. Aliased internal imports (`@shared/...`, `@wh40k10e/...`, etc.)
-3. Relative imports (only when aliased import is not possible)
+2. Aliased internal imports (`@shared/...`, `@wh40k10e/...`, `@/...`, etc.)
 
 ```typescript
-// Good — aliased imports (use .js extension)
+// Good — aliased imports with .js extension
 import { describe, it, expect } from 'vitest';
 import type { Unit } from '@wh40k10e/models/UnitModel.js';
 import { FactionDataModel } from '@wh40k10e/models/FactionDataModel.js';
 import type { DatabaseAdapter } from '@shared/data/adapter.js';
+import { makeArmy } from '@/e2e/__fixtures__/makeArmy.js';
 
-// Acceptable — relative imports in e2e/fixtures (use .ts extension)
-import { makeArmy } from '../../../e2e/__fixtures__/makeArmy.ts';
+// Bad — relative import
+import type { Unit } from '../../models/UnitModel.js';
+import { FactionDataModel } from './FactionDataModel.js';
 
-// Bad — relative imports when alias is available
-import type { Unit } from '../../models/UnitModel.ts';
-import { FactionDataModel } from './FactionDataModel.ts';
+// Bad — .ts extension
+import type { Unit } from '@wh40k10e/models/UnitModel.ts';
 ```
 
 ### File Extensions
 
-**Relative imports use `.ts` extensions.** This is enabled by `allowImportingTsExtensions` and `rewriteRelativeImportExtensions` in the base tsconfig. TypeScript rewrites `.ts` to `.js` in emitted declaration files automatically.
-
-**Aliased (non-relative) imports use `.js` extensions.** TypeScript cannot rewrite non-relative import extensions in declaration output (TS2877), so aliased imports must use `.js` extensions to ensure `.d.ts` files are valid.
+**All imports use `.js` (or `.jsx`) extensions.** Do not use `.ts`/`.tsx` extensions in import paths. TypeScript with `NodeNext` module resolution requires output-compatible extensions in import specifiers.
 
 ```typescript
-// Good — .ts extension on relative import
-import { makeAccount } from './makeAccount.ts';
-import { parseXml } from '../utils/xmlParser.ts';
-
-// Good — .js extension on aliased import
+// Good
 import { Platform } from '@shared/types/enums.js';
 import type { CrusadeUnitRank } from '@shared/data/models/CrusadeRulesModel.js';
 import { FactionDataModel } from '@wh40k10e/models/FactionDataModel.js';
+import { makeAccount } from '@/utils/makeAccount.js';
 
 // Bad — missing extension
 import { Platform } from '@shared/types/enums';
 
-// Bad — .ts extension on aliased import (causes TS2877 in declaration output)
+// Bad — .ts extension
 import { Platform } from '@shared/types/enums.ts';
 ```
 

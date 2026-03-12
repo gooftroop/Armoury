@@ -1,4 +1,4 @@
-import type { Weapon } from '../../src/types/entities.ts';
+import type { Weapon } from '../../src/types/entities.js';
 
 export function makeBoltRifle(): Weapon {
     return {

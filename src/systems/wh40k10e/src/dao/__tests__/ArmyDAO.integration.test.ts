@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ArmyDAO } from '@/dao/ArmyDAO.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import { makeArmy } from '../../../e2e/__fixtures__/makeArmy.ts';
+import { makeArmy } from '../../../e2e/__fixtures__/makeArmy.js';
 import type { Army, ArmyUnit, ArmyVersion } from '@/models/ArmyModel.js';
 
 function makeArmyUnit(overrides: Partial<ArmyUnit> = {}): ArmyUnit {

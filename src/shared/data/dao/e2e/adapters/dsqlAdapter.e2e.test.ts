@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { DSQLAdapter } from '@armoury/adapters-dsql';
-import { getDSQLTestConfig, setupDSQLTestDatabase, truncateDSQLTestDatabase } from '../helpers/dsqlTestDb.ts';
+import { getDSQLTestConfig, setupDSQLTestDatabase, truncateDSQLTestDatabase } from '../helpers/dsqlTestDb.js';
 import {
     makeAccount,
     makeCampaignParticipant,
@@ -8,7 +8,7 @@ import {
     makeCoreMatch,
     makeFriend,
     makeUserPresence,
-} from '../__fixtures__/index.ts';
+} from '../__fixtures__/index.js';
 import { DatabaseError } from '@armoury/data-dao/types';
 
 describe('DSQLAdapter E2E', () => {

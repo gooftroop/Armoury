@@ -19,13 +19,13 @@ vi.mock('jose', () => {
     };
 });
 
-vi.mock('../jwks.ts', () => {
+vi.mock('../jwks.js', () => {
     return {
         getJwks: vi.fn().mockReturnValue('mock-jwks'),
     };
 });
 
-vi.mock('../utils/secrets.ts', () => {
+vi.mock('../utils/secrets.js', () => {
     return {
         getServiceConfig: vi.fn().mockResolvedValue({
             auth0Domain: 'test.auth0.com',

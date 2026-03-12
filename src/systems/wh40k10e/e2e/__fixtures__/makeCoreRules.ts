@@ -1,4 +1,4 @@
-import type { CoreRules } from '../../src/models/CoreRules.ts';
+import type { CoreRules } from '../../src/models/CoreRules.js';
 
 export function makeCoreRules(overrides: Partial<CoreRules> = {}): CoreRules {
     const defaults = {

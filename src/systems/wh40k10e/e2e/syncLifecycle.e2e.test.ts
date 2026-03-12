@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CoreRulesDAO } from '../src/dao/CoreRulesDAO.ts';
-import { GameData, type GameDataDeps } from '../src/dao/GameData.ts';
-import { wh40k10eSystem } from '../src/system.ts';
-import '../src/index.ts';
-import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.ts';
-import { MockGitHubClient } from '../src/__mocks__/MockGitHubClient.ts';
-import type { ChapterApproved } from '../src/models/ChapterApproved.ts';
+import { CoreRulesDAO } from '../src/dao/CoreRulesDAO.js';
+import { GameData, type GameDataDeps } from '../src/dao/GameData.js';
+import { wh40k10eSystem } from '../src/system.js';
+import '../src/index.js';
+import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
+import { MockGitHubClient } from '../src/__mocks__/MockGitHubClient.js';
+import type { ChapterApproved } from '../src/models/ChapterApproved.js';
 import { clearCodecRegistry } from '@armoury/data-dao/codec';
 import { clearHydrationRegistry } from '@armoury/data-dao/hydration';
 import { clearSchemaExtensions } from '@armoury/data-dao/schema';
 import { PluginRegistry } from '@armoury/data-dao/pluginRegistry';
 import type { BattleScribeGameSystem } from '@armoury/providers-bsdata/types';
-import { makeCoreRules, makeCrusadeRules, makeFactionData } from './__fixtures__/index.ts';
+import { makeCoreRules, makeCrusadeRules, makeFactionData } from './__fixtures__/index.js';
 import { parseGameSystem } from '@armoury/providers-bsdata/xmlParser';
 
 vi.mock('@armoury/providers-bsdata/xmlParser', () => ({

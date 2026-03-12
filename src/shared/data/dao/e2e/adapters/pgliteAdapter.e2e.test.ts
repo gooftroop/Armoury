@@ -6,7 +6,7 @@ import {
     makeCoreCampaign,
     makeCoreMatch,
     makeFriend,
-} from '../__fixtures__/index.ts';
+} from '../__fixtures__/index.js';
 import { DatabaseError } from '@armoury/data-dao/types';
 
 describe('PGliteAdapter E2E', () => {

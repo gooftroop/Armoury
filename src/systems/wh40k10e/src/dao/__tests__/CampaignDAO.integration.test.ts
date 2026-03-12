@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CampaignDAO } from '@armoury/data-dao/dao/CampaignDAO';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
-import { makeCampaign } from '../../../e2e/__fixtures__/makeCampaign.ts';
+import { makeCampaign } from '../../../e2e/__fixtures__/makeCampaign.js';
 import type { CampaignPhase, CampaignRanking, Campaign } from '@armoury/models/CampaignModel';
 
 function makeCampaignPhase(overrides: Partial<CampaignPhase> = {}): CampaignPhase {

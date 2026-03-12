@@ -1,8 +1,8 @@
-import type { FactionData } from '../../src/models/FactionData.ts';
-import type { Ability, Detachment, Enhancement, Stratagem } from '../../src/types/entities.ts';
-import { makeCaptainInTerminatorArmour } from './makeCaptainInTerminatorArmour.ts';
-import { makeIntercessorSquad } from './makeIntercessorSquad.ts';
-import { makePowerFist } from './makePowerFist.ts';
+import type { FactionData } from '../../src/models/FactionData.js';
+import type { Ability, Detachment, Enhancement, Stratagem } from '../../src/types/entities.js';
+import { makeCaptainInTerminatorArmour } from './makeCaptainInTerminatorArmour.js';
+import { makeIntercessorSquad } from './makeIntercessorSquad.js';
+import { makePowerFist } from './makePowerFist.js';
 
 export function makeFactionData(overrides: Partial<FactionData> = {}): FactionData {
     const intercessors = makeIntercessorSquad();

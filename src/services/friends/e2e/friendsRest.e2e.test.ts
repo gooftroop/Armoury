@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Friend, SendFriendRequestPayload, UserContext } from '../src/types.ts';
-import { router } from '../src/router.ts';
-import { createE2EAdapter, resetDatabase } from '../src/__testing__/e2eAdapter.ts';
-import type { LocalDatabaseAdapter } from '../src/utils/localAdapter.ts';
+import type { Friend, SendFriendRequestPayload, UserContext } from '@/types.js';
+import { router } from '@/router.js';
+import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
+import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 
 let adapter: LocalDatabaseAdapter;
 

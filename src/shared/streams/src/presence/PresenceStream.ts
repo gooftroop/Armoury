@@ -88,7 +88,7 @@ export class PresenceStream implements IPresenceStream {
      * Observable of the underlying WebSocket connection state.
      * Proxied directly from the client — no transformation applied.
      */
-    readonly connectionState$: Observable<import('./../types.ts').ConnectionState>;
+    readonly connectionState$: Observable<import('./../types.js').ConnectionState>;
 
     /**
      * Creates a new PresenceStream.

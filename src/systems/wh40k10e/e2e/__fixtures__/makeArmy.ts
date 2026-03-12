@@ -1,4 +1,4 @@
-import type { Army } from '../../src/models/ArmyModel.ts';
+import type { Army } from '../../src/models/ArmyModel.js';
 
 export function makeArmy(overrides: Partial<Army> = {}): Army {
     return {
