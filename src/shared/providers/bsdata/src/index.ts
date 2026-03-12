@@ -4,6 +4,7 @@
  * Format-level parsing only; game-system-specific logic belongs in plugins.
  */
 export { parseGameSystem, parseCatalogue } from '@providers-bsdata/xmlParser.js';
+export { getCharacteristicValue, extractProfileCharacteristics } from '@providers-bsdata/xmlParser.js';
 
 export type {
     BattleScribeGameSystem,
