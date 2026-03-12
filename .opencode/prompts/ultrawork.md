@@ -127,7 +127,7 @@ Estimated request budget:
 - Planning: ~X requests (direct todos / plan agent)
 - Implementation: ~X requests (self / N agents at ~X each)
 - Verification: ~X requests (tests, diagnostics)
-  Total: ~X requests
+- Total: ~X requests
 
 Quality trade-off: [What agent usage buys vs self-execution]
 
