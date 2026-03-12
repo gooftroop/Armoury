@@ -2,6 +2,10 @@
 
 Behavioral rules for LLM agents on this monorepo. For coding conventions, see `docs/CODING_STANDARDS.md`.
 
+## Sisyphus Compatibility
+
+This file is designed to work with the Sisyphus agent's built-in system prompt. If a rule in this file conflicts with Sisyphus's immutable behavior on **delegation decisions**, **TODO continuation flow**, or **communication tone**, the system prompt takes precedence. In all other domains (phase workflow, project conventions, coding standards, git workflow), this file takes precedence.
+
 ## Documentation Map
 
 | Document                      | Contains                                                    | When to Read                                                  |
@@ -61,18 +65,25 @@ src/
 
 ## Path Aliases
 
-Each workspace defines path aliases in its `tsconfig.json`. Vitest configs mirror these in `resolve.alias`.
+Each workspace defines path aliases in its `tsconfig.json`. Vitest configs mirror these in `resolve.alias`. Use the workspace-specific alias for within-workspace imports.
 
-| Alias          | Resolves To                  | Available In                                       |
-| -------------- | ---------------------------- | -------------------------------------------------- |
-| `@shared/*`    | `src/shared/*`               | All workspaces                                     |
-| `@streams/*`   | `src/shared/streams/*`       | `@armoury/streams`                                 |
-| `@wh40k10e/*`  | `src/systems/src/wh40k10e/*` | `@armoury/systems`, `@armoury/shared` (tests only) |
-| `@web/*`       | `src/web/*`                  | `@armoury/web`                                     |
-| `@mobile/*`    | `src/mobile/*`               | `@armoury/mobile`                                  |
-| `@campaigns/*` | `src/services/campaigns/*`   | `@armoury/campaigns`                               |
+| Alias                  | Resolves To                           | Available In                                       |
+| ---------------------- | ------------------------------------- | -------------------------------------------------- |
+| `@data/*`              | `src/shared/data/src/*`               | `@armoury/data`                                    |
+| `@models/*`            | `src/shared/models/src/*`             | `@armoury/models`, `@armoury/data`, `@armoury/wh40k10e` |
+| `@wh40k10e/*`          | `src/systems/wh40k10e/src/*`          | `@armoury/systems`, `@armoury/data` (tests only)   |
+| `@web/*`               | `src/web/*`                           | `@armoury/web`                                     |
+| `@mobile/*`            | `src/mobile/*`                        | `@armoury/mobile`                                  |
+| `@campaigns/*`         | `src/services/campaigns/*`            | `@armoury/campaigns`                               |
+| `@streams/*`           | `src/shared/streams/*`                | `@armoury/streams`                                 |
+| `@validation/*`        | `src/shared/validation/src/*`         | `@armoury/validation`, `@armoury/wh40k10e`         |
+| `@providers-bsdata/*`  | `src/shared/providers/bsdata/src/*`   | `@armoury/providers-bsdata`, `@armoury/wh40k10e`   |
+| `@clients-github/*`    | `src/shared/clients/github/src/*`     | `@armoury/clients-github`, `@armoury/data`         |
+| `@clients-wahapedia/*` | `src/shared/clients/wahapedia/src/*`  | `@armoury/clients-wahapedia`                       |
 
-Always use `.ts` extensions for relative imports and `.js` extensions for aliased (non-relative) imports. TypeScript cannot rewrite non-relative import extensions in declaration output (TS2877), so aliased imports must use `.js`. See `docs/CODING_STANDARDS.md` for import rules.
+**Note:** `src/shared/` is NOT a workspace — it is an organizational directory containing multiple workspaces (`@armoury/data`, `@armoury/models`, etc.). There is no `@shared/*` alias. Never use `@shared/` in imports.
+
+Always use `.js` extensions on all imports — both aliased and relative. Never use `.ts` or `.tsx` extensions in import specifiers. See `docs/CODING_STANDARDS.md` for full import rules.
 
 ## File Organization
 
@@ -155,21 +166,34 @@ Key rules that apply at all phases (not just implementation):
 - Comment **why**, not **what**. JSDoc on public APIs only.
 - Tests should be meaningful — do not add tests purely for coverage.
 
-## Phase-Based Workflow (MANDATORY)
+## Phase-Based Workflow
 
-Every task follows phases. Complete each phase and get explicit human approval before advancing. Never skip phases. Never auto-advance.
+Every task follows phases. The number of phases and gates depends on task risk level.
+
+### Risk-Based Phase Gates
+
+Not all tasks need the same ceremony. Classify risk first, then apply the matching gate pattern:
+
+| Risk Level | Examples | Required Gates |
+|-----------|----------|---------------|
+| **Trivial** | Typo fixes, comment updates, single-line config changes | **No gate** — execute, present result. No approval needed before acting. |
+| **Low** | Doc edits, single-file changes in established patterns, test additions | Combine Phase 1+2 → present plan → Phase 3 → Phase 4 |
+| **Medium** | Feature in established patterns, multi-file edits, refactors within one module | Full Phase 1 → 2 → 3 → 4 with gates at each boundary |
+| **High** | Cross-module refactors, schema changes, new architecture patterns, security-sensitive changes | Full Phase 1 → 2 → 3 → 4 with gates + Oracle review before Phase 3 |
+
+When uncertain about risk level, **default to Medium**. The human can always say "just do it" to skip gates.
 
 ### Phase 1 — Discovery
 
 Understand the problem before proposing solutions. Read relevant code, identify root cause or affected areas, list unknowns and risks.
 
-**Gate**: Present findings → wait for human approval.
+**Gate** (Medium/High risk): Present findings → wait for human approval.
 
 ### Phase 2 — Plan
 
 Break work into the smallest possible incremental changes. Identify blocking vs. parallelizable work. Each increment should be a single, independently mergeable PR. Include a test plan.
 
-**Gate**: Present plan → wait for human approval.
+**Gate** (Medium/High risk): Present plan → wait for human approval.
 
 ### Phase 3 — Implementation (per increment)
 
@@ -177,13 +201,13 @@ Break work into the smallest possible incremental changes. Identify blocking vs.
 
 Implement one increment at a time. Run linting, type checks, and tests on affected packages. Summarize what changed and what was verified.
 
-**Gate**: After each increment → wait for human feedback.
+**Gate** (Medium/High risk): After each increment → wait for human feedback.
 
 ### Phase 4 — Integration
 
 Commit, push, create PR. Load `mastering-github-cli` skill. Worktree skill should already be loaded from Phase 3.
 
-**Gate**: Present PR for review before starting the next increment.
+**Gate** (Medium/High risk): Present PR for review before starting the next increment.
 
 ### Phase Gate Approval Signals
 
@@ -194,6 +218,27 @@ The phase gates above require human approval to advance. Recognize these approva
 - **Conditional approval**: "Proceed with [option]", "Do [X] first, then [Y]"
 
 If the human expresses forward intent and there are pending tasks in your todo list, **continue working**. Do not re-ask for permission that was already granted. Silence after a gate presentation (no response at all) is the only case where you should wait — an explicit message with forward language is approval.
+
+### Approval Persistence
+
+**An approved plan remains approved across the entire implementation phase.** Once the human approves a plan:
+
+- Do not re-ask for permission to perform operations that are part of the approved plan (builds, tests, linting, multi-file edits, npm install in worktrees).
+- Each completed increment within the plan gets a brief summary, not a new approval request.
+- Only re-ask if you encounter a significant deviation from the approved plan (unexpected error, scope change, new risk discovered).
+
+**Routine operations that never require confirmation** (when part of an approved plan or trivial task):
+- Running builds, tests, linting, typechecks
+- `npm install` in worktrees
+- Git commits (but NOT force push)
+- File creation/editing within the approved scope
+- Running formatters
+
+**Destructive operations that always require confirmation** (even within an approved plan):
+- `git push --force`, `git reset --hard`, branch deletion on remote
+- Production deployments, database migrations
+- `rm -rf` on directories outside `.worktrees/`
+- Any operation that cannot be undone
 
 ### TODO Continuation
 
@@ -206,6 +251,15 @@ The system may inject a `TODO CONTINUATION` directive when you have incomplete t
 
 **Never stall on a TODO continuation when prior approval was given.** The purpose of phase gates is to get human input at decision points — once input is received, execute until the next gate or until all tasks are complete.
 
+### Approval Recovery After Compaction
+
+When context is compacted (long sessions), approval state may be lost. To recover:
+
+1. Check your todo list — items marked `completed` indicate prior phases were approved.
+2. Check the last human message — forward intent signals still apply.
+3. If both indicate prior approval, **resume work at the current phase**. Do not restart from Phase 1.
+4. If uncertain, present a one-line summary: "Resuming [task] at Phase [N] — prior phases were approved. OK to continue?"
+
 ## Agile Delivery
 
 - **Commit small, commit fast.** Each PR is one focused, reviewable change.
@@ -216,11 +270,11 @@ The system may inject a `TODO CONTINUATION` directive when you have incomplete t
 
 You are a partner, not an autonomous executor. The human drives decisions.
 
-- **Never auto-advance between phases.** Always present results and wait.
+- **Never auto-advance between phases** (at Medium/High risk). Always present results and wait.
 - **Never assume approval.** Silence is not consent. Ask explicitly.
 - **Never expand scope.** If you discover additional work, report it — don't do it.
 - **Present options, not decisions.** When tradeoffs exist, lay them out. Let the human choose.
-- **Ask before large operations.** Before running builds, installs, or multi-file changes — confirm.
+- **Ask before destructive operations.** See the destructive operations list above. Routine operations within an approved plan do not require confirmation.
 
 ### When You Are Stuck
 
@@ -233,26 +287,18 @@ If you have attempted a fix twice without success:
 
 ## Resource Efficiency
 
-### Quality-Cost Optimization (QCO)
+### Delegation Efficiency
 
-Agent spawns consume requests proportional to their complexity (spawn + internal reasoning + result collection). Direct tool calls within a single turn are free. The goal is not minimum requests — it is maximum ROI: quality × success rate / requests consumed.
+Agent spawns consume requests proportional to their complexity. Direct tool calls within a single turn are free. The goal is maximum ROI: quality × success rate / requests consumed.
 
-**Direct Tools vs Agent Spawns:**
+**Core principle**: Delegate by default (this aligns with Sisyphus's system behavior), but delegate *efficiently*. Optimize by reducing redundancy, scope, and round-trips — not by avoiding delegation.
 
-| Need                                 | Direct Tool (0 extra requests)      | Agent Spawn (3-20+ requests) |
-| ------------------------------------ | ----------------------------------- | ---------------------------- |
-| Find a file by name                  | `glob`                              | ~~explore~~                  |
-| Find a pattern in code               | `grep`, `ast_grep_search`           | ~~explore~~                  |
-| Navigate to a definition             | `lsp_goto_definition`               | ~~explore~~                  |
-| Get a file outline                   | `lsp_symbols` (documentSymbol)      | ~~explore~~                  |
-| Look up one library's API            | `codesearch`, `context7_query-docs` | ~~librarian~~                |
-| Fetch a specific URL/doc             | `webfetch`                          | ~~librarian~~                |
-| Multi-file reasoning across modules  | Direct tools may miss connections   | `explore` ✓                  |
-| Synthesize multiple external sources | Direct tools return raw data        | `librarian` ✓                |
-| Architectural trade-off analysis     | Beyond direct tool capability       | `oracle` ✓                   |
-| Complex planning with unknowns       | Needs interview-style reasoning     | `plan` agent ✓               |
+**Efficiency guidelines**:
 
-**Rule**: Use direct tools for deterministic lookups. Use agents when their model's reasoning adds measurable quality over what direct tools provide.
+- Use direct tools (grep, glob, LSP, codesearch, context7) to pin down specifics *after* delegation surfaces the broad picture. Don't re-search what you already delegated.
+- When explore/librarian results arrive, extract what you need and cancel the agent. Don't let background agents run indefinitely.
+- Prefer 2 targeted agents over 5 broad ones. Scale up to 3-5 only when questions are genuinely independent and each requires multi-step reasoning.
+- One follow-up per question maximum. If a delegated search didn't find it, try a different tool or approach — don't retry the same query.
 
 **Agent Spawn Decision Matrix:**
 
@@ -261,54 +307,17 @@ Agent spawns consume requests proportional to their complexity (spawn + internal
 | **Familiar Domain**   | Self + direct tools (0 requests) | Self + oracle review (~10 requests)                   |
 | **Unfamiliar Domain** | Librarian + self (~5 requests)   | Librarian + plan agent + specialist (~20-30 requests) |
 
-**Planning Scale — Always plan, scale the method:**
-
-| Complexity                              | Method                                  | Request Cost |
-| --------------------------------------- | --------------------------------------- | ------------ |
-| Trivial (1-2 steps, obvious)            | Direct todos                            | 0            |
-| Simple (3-5 steps, clear scope)         | Direct tool exploration → todos         | 0            |
-| Medium (5+ steps, some unknowns)        | Exploration → todos → user confirmation | 0            |
-| Complex (many unknowns, cross-cutting)  | Plan agent (superior model reasoning)   | 5-10         |
-| Very complex (architectural, ambiguous) | Metis → plan agent → momus review       | 15-25        |
-
-### File Reading Strategy
-
-Match your reading depth to your current task phase:
-
-- **Planning/Exploration**: Use `documentSymbol` LSP for file outlines, `goToDefinition` for symbol navigation, and `grep` for locating content. Read only the sections you need with `offset`/`limit`.
-- **Implementation**: Read what you need to write correct code — including full files when you're modifying them or need to match surrounding patterns. Don't artificially restrict yourself.
-- **General rule**: Never read a file you don't intend to use. The waste is reading irrelevant files, not reading relevant ones thoroughly.
-
-### Symbol Navigation
-
-Prefer LSP tools over grep for navigating code:
-
-- `lsp_goto_definition` — jump to where a symbol is defined (zero false positives, one round-trip)
-- `lsp_find_references` — find all usages of a symbol across the workspace
-- `lsp_symbols` (documentSymbol) — get a file's outline without reading the full content
-- Fall back to `grep` only for: text in comments/strings, cross-file pattern discovery, or when LSP is unavailable
-
-### Parallel Operations
-
-Parallelize independent tool calls — never issue sequential reads for independent files:
-
-- When reading 2+ independent files, issue all reads in a single message turn
-- Batch independent grep searches, LSP lookups, and file reads together
-- Fire `explore`/`librarian` agents in background — never block on them
-- Cancel background agents you no longer need (individually by task ID, never cancel-all)
-- Prefer parallel direct tool calls over parallel agent spawns when they produce equivalent results. Five parallel grep calls in one turn cost zero extra requests; five parallel explore agents cost 15-25+ requests.
-
 ### Delegation Scope & Retry Discipline
 
-You are accountable for the tokens you and your subagents consume. Prefer more, smaller delegations over fewer, larger ones — it is better to delegate 4 focused tasks of 10 items each than 2 broad tasks of 20 items each. Smaller scopes are cheaper to retry if they fail and reduce the blast radius of a timeout or bad output. Use cheaper agent categories (e.g., `quick`, `writing`) liberally as long as quality is not sacrificed.
+Prefer more, smaller delegations over fewer, larger ones — 4 focused tasks of 10 items each beats 2 broad tasks of 20 items. Smaller scopes are cheaper to retry and reduce blast radius of failures.
 
-When a delegated task fails, times out, or produces incomplete results, do not blindly retry with the same parameters. Stop and evaluate:
+When a delegated task fails, times out, or produces incomplete results:
 
 - **Why** did it fail? (scope too large, output too long, ambiguous instructions)
-- **What** can be reduced? (split into smaller chunks, narrow the scope, simplify the deliverable)
+- **What** can be reduced? (split into smaller chunks, narrow the scope)
 - **Propose** the adjusted approach to the human before retrying.
 
-One retry with the same parameters is acceptable. A second failure on the same task requires a different strategy — do not attempt a third time without changing the approach.
+One retry with the same parameters is acceptable. A second failure requires a different strategy.
 
 ### Model Selection Heuristics
 
@@ -337,50 +346,47 @@ Agent subagent_types also have fixed model tiers:
 
 **Decision tree**:
 
-1. Can Haiku handle it? (simple, explicit instructions, single concern) -> `quick`
-2. Is it documentation or prose? -> `writing`
-3. Is it moderate, non-specialized work? -> `unspecified-low`
-4. Is it frontend/UI? -> `visual-engineering`
-5. Does it require deep autonomous reasoning? -> `deep`
-6. Is it genuinely hard, logic-heavy? -> `ultrabrain`
-7. Still unsure + high effort? -> `unspecified-high`
+1. Can Haiku handle it? (simple, explicit instructions, single concern) → `quick`
+2. Is it documentation or prose? → `writing`
+3. Is it moderate, non-specialized work? → `unspecified-low`
+4. Is it frontend/UI? → `visual-engineering`
+5. Does it require deep autonomous reasoning? → `deep`
+6. Is it genuinely hard, logic-heavy? → `ultrabrain`
+7. Still unsure + high effort? → `unspecified-high`
 
 **Rules**:
 
 - Default to the cheapest viable category. Escalate only when quality demands it.
-- `explore` and `librarian` are cheap per-spawn but compound quickly. Prefer direct tools (grep, LSP, codesearch, context7) for deterministic lookups; reserve agent spawns for tasks requiring multi-step reasoning.
+- `explore` and `librarian` are cheap per-spawn but compound quickly. Prefer direct tools for deterministic lookups; reserve agent spawns for multi-step reasoning.
 - `oracle`, `metis`, `momus` are expensive. Use only when their specialized reasoning is required.
 - When delegating to `quick`, prompts MUST be exhaustively explicit (Haiku has limited reasoning).
-- Agent spawns have compounding request cost: spawn + internal reasoning turns + result collection. A single `explore` agent may consume 3-6 requests total. Factor this into cheapest-viable-category decisions.
-- When direct tools (grep, LSP, codesearch, context7) can answer a question with equivalent quality, prefer them over agent spawns.
 
-### Phase Cost Estimation
+### File Reading Strategy
 
-Before executing any non-trivial phase, present a rough cost estimate to the human:
+Match your reading depth to your current task phase:
 
-```
-Phase: [Phase name]
+- **Planning/Exploration**: Use `documentSymbol` LSP for file outlines, `goToDefinition` for symbol navigation, and `grep` for locating content. Read only the sections you need with `offset`/`limit`.
+- **Implementation**: Read what you need to write correct code — including full files when you're modifying them or need to match surrounding patterns.
+- **General rule**: Never read a file you don't intend to use. The waste is reading irrelevant files, not reading relevant ones thoroughly.
 
-Estimated operations:
-  - [N] file reads (~X lines each)
-  - [N] file writes/edits
-  - [N] delegated tasks: [categories] → [models]
-  - [N] agent calls: [types]
+### Symbol Navigation
 
-Request budget:
-  - Direct tool operations: [N] (0 extra requests)
-  - Agent spawns: [N] × ~[X] requests each = ~[total]
-  - Quality trade-off: [What agent usage buys vs self-execution]
+Prefer LSP tools over grep for navigating code:
 
-Relative cost: [Cheap / Moderate / Expensive / Very Expensive]
-Confidence: [High / Medium / Low] (low = more unknowns, actual cost may vary)
-```
+- `lsp_goto_definition` — jump to where a symbol is defined (zero false positives, one round-trip)
+- `lsp_find_references` — find all usages of a symbol across the workspace
+- `lsp_symbols` (documentSymbol) — get a file's outline without reading the full content
+- Fall back to `grep` only for: text in comments/strings, cross-file pattern discovery, or when LSP is unavailable
 
-This is not a precise dollar estimate. It is a relative cost classification so the human can make informed go/no-go decisions. Present it inline before starting the phase. If the human does not object, proceed.
+### Parallel Operations
 
-### Large File Decomposition
+Parallelize independent tool calls — never issue sequential reads for independent files:
 
-If a file exceeds ~300 lines or is growing beyond what can be efficiently read, written, or delegated in a single pass, proactively suggest decomposing it into smaller files with a lazy-load index. Do not wait for the file to cause problems — propose the split as soon as the size trend is apparent. This applies to both source code and documentation.
+- When reading 2+ independent files, issue all reads in a single message turn
+- Batch independent grep searches, LSP lookups, and file reads together
+- Fire `explore`/`librarian` agents in background — never block on them
+- Cancel background agents you no longer need (individually by task ID, never cancel-all)
+- Prefer parallel direct tool calls over parallel agent spawns when they produce equivalent results. Five parallel grep calls in one turn cost zero extra requests; five parallel explore agents cost 15-25+ requests.
 
 ### General Rules
 
@@ -390,7 +396,6 @@ If a file exceeds ~300 lines or is growing beyond what can be efficiently read, 
 - Keep your current todo list updated — it is rehydrated after compaction.
 - **Lazy-load documents**: Do not read `docs/CODING_STANDARDS.md` or other detailed docs until entering the phase that needs them. See Document Loading Strategy above.
 - Prefer direct tools for deterministic lookups (file finding, pattern matching, single-doc queries). Reserve agent spawns for tasks requiring multi-step reasoning or model quality that exceeds your own capability.
-- Always confirm with the user before starting implementation phases — this prevents wasted requests on misunderstood requirements.
 - **Load `git-worktree-agent-workflow` skill before any implementation intent is carried out.** If you are about to write, edit, or create any source file, the worktree skill must already be loaded. No exceptions unless the human explicitly says "skip worktree" or "work on main".
 
 ## Research Protocol
@@ -399,11 +404,10 @@ When performing research: (1) Define specific questions — research is done whe
 
 ## Anti-Patterns (NEVER DO)
 
-- Implementing before the human approves your plan.
+- Implementing before the human approves your plan (at Medium/High risk — trivial/low risk tasks may proceed immediately).
 - Expanding scope beyond what was requested.
 - Reading files you don't intend to use, or re-reading files already in context.
 - Echoing back large blocks of code the human can already see.
-- Running builds or installs without confirming first.
 - Iterating on a broken fix more than twice without stopping to reassess.
 - Creating long-lived feature branches instead of small incremental PRs.
 - Doing refactoring, cleanup, or "improvements" that weren't requested.
@@ -413,4 +417,5 @@ When performing research: (1) Define specific questions — research is done whe
 - Letting a file grow past ~300 lines without proposing decomposition.
 - Spawning explore/librarian agents for lookups that grep, glob, LSP, or codesearch can handle directly.
 - Spawning 5+ agents in parallel when 1-2 targeted agents plus direct tools would produce equivalent results.
-- Starting implementation without user confirmation — misunderstood requirements waste all downstream requests.
+- Starting implementation without user confirmation (at Medium/High risk) — misunderstood requirements waste all downstream requests.
+- Re-asking for confirmation on routine operations (builds, tests, linting) that are part of an already-approved plan.
