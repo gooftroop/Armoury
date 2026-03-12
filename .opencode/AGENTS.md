@@ -16,8 +16,8 @@ Behavioral rules for LLM agents on this monorepo. For coding conventions, see `d
 **Do NOT read documentation files upfront.** Read them lazily, only when entering the relevant phase or scope:
 
 - **Discovery/Planning** (Phase 1-2): Use this file (AGENTS.md) and `grep` only. Do not read CODING_STANDARDS.md or other docs.
-- **Implementation** (Phase 3): Read `docs/CODING_STANDARDS.md` before writing code. Read workspace-specific docs only for the workspace you're modifying.
-- **Integration** (Phase 4): Load `git-worktree-agent-workflow` and `mastering-github-cli` skills. Do not re-read coding standards.
+- **Implementation** (Phase 3): Load `git-worktree-agent-workflow` skill **before any code changes**. Read `docs/CODING_STANDARDS.md` before writing code. Read workspace-specific docs only for the workspace you're modifying.
+- **Integration** (Phase 4): Load `mastering-github-cli` skill. Do not re-read coding standards.
 - **Never read a doc "just in case"** — grep for the specific section you need if unsure.
 
 ## Project Overview
@@ -136,7 +136,7 @@ Runtime dependencies (excluding shared tooling). Use this to assess **blast radi
 
 Available skills in `.opencode/skills/`. Load via the `skill` tool only when needed — do not read SKILL.md files upfront.
 
-**Git & CI**: `git-worktree-agent-workflow` (Phase 4), `mastering-github-cli` (Phase 4), `gh-fix-ci`, `gh-address-comments`, `code-reviewer`
+**Git & CI**: `git-worktree-agent-workflow` (**before any code changes — Phase 3+**), `mastering-github-cli` (Phase 4), `gh-fix-ci`, `gh-address-comments`, `code-reviewer`
 **Frontend**: `accessibility`, `core-web-vitals`, `perf-web-optimization`, `seo`, `figma`, `figma-implement-design`
 **Security**: `security-best-practices`, `security-threat-model`
 **Docs & Design**: `docs-writer`, `technical-design-doc-creator`
@@ -173,13 +173,15 @@ Break work into the smallest possible incremental changes. Identify blocking vs.
 
 ### Phase 3 — Implementation (per increment)
 
+**⚠️ MANDATORY: Load `git-worktree-agent-workflow` skill BEFORE writing any code.** All code changes MUST happen inside a git worktree — no exceptions unless the human explicitly says "skip worktree" or "work on main".
+
 Implement one increment at a time. Run linting, type checks, and tests on affected packages. Summarize what changed and what was verified.
 
 **Gate**: After each increment → wait for human feedback.
 
 ### Phase 4 — Integration
 
-Commit, push, create PR. Load `git-worktree-agent-workflow` and `mastering-github-cli` skills for all code changes.
+Commit, push, create PR. Load `mastering-github-cli` skill. Worktree skill should already be loaded from Phase 3.
 
 **Gate**: Present PR for review before starting the next increment.
 
@@ -389,6 +391,7 @@ If a file exceeds ~300 lines or is growing beyond what can be efficiently read, 
 - **Lazy-load documents**: Do not read `docs/CODING_STANDARDS.md` or other detailed docs until entering the phase that needs them. See Document Loading Strategy above.
 - Prefer direct tools for deterministic lookups (file finding, pattern matching, single-doc queries). Reserve agent spawns for tasks requiring multi-step reasoning or model quality that exceeds your own capability.
 - Always confirm with the user before starting implementation phases — this prevents wasted requests on misunderstood requirements.
+- **Load `git-worktree-agent-workflow` skill before any implementation intent is carried out.** If you are about to write, edit, or create any source file, the worktree skill must already be loaded. No exceptions unless the human explicitly says "skip worktree" or "work on main".
 
 ## Research Protocol
 
