@@ -16,24 +16,28 @@ vi.mock('../../data/FactionDataParser.js', () => ({
  * Mock the BSData XML parser module.
  * Prevents actual XML parsing in tests — returns mock BattleScribe catalogue structures.
  */
-vi.mock('@armoury/providers-bsdata', () => ({
-    parseCatalogue: vi.fn((content: string) => {
-        // Return a minimal mock catalogue based on content marker
-        const mockCatalogue: BattleScribeCatalogue = {
-            catalogue: {
-                '@_id': content.includes('chapter') ? 'chapter-cat-id' : 'base-cat-id',
-                '@_name': content.includes('chapter') ? 'Chapter Catalogue' : 'Base Catalogue',
-                '@_revision': '1',
-                '@_battleScribeVersion': '2.03',
-                '@_library': 'false',
-                '@_gameSystemId': 'sys-id',
-                '@_gameSystemRevision': '1',
-            },
-        };
+vi.mock('@armoury/providers-bsdata', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@armoury/providers-bsdata')>();
+    return {
+        ...actual,
+        parseCatalogue: vi.fn((content: string) => {
+            // Return a minimal mock catalogue based on content marker
+            const mockCatalogue: BattleScribeCatalogue = {
+                catalogue: {
+                    '@_id': content.includes('chapter') ? 'chapter-cat-id' : 'base-cat-id',
+                    '@_name': content.includes('chapter') ? 'Chapter Catalogue' : 'Base Catalogue',
+                    '@_revision': '1',
+                    '@_battleScribeVersion': '2.03',
+                    '@_library': 'false',
+                    '@_gameSystemId': 'sys-id',
+                    '@_gameSystemRevision': '1',
+                },
+            };
 
-        return mockCatalogue;
-    }),
-}));
+            return mockCatalogue;
+        }),
+    };
+});
 
 /**
 

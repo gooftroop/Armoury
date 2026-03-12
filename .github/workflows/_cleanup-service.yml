@@ -65,7 +65,7 @@ jobs:
               if: inputs.has-migrations
               env:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
-              run: node --import=tsx src/services/__testing__/dbSchema.ts drop "${DB_SCHEMA}"
+              run: node --import=tsx src/shared/e2e/src/dbSchema.ts drop "${DB_SCHEMA}"
 
             - name: Install Serverless Framework
               run: npm install -g serverless

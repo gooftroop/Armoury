@@ -107,7 +107,7 @@ jobs:
                     --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
                     --query 'Parameter.Value' --output text)
                   DSQL_REGION="${{ vars.AWS_REGION || 'us-east-1' }}"
-                  DSQL_TOKEN=$(node --import=tsx src/services/__testing__/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
+                  DSQL_TOKEN=$(node --import=tsx src/shared/e2e/src/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
                   echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
                   echo "DSQL_REGION=${DSQL_REGION}" >> "${GITHUB_ENV}"
                   echo "::add-mask::${DSQL_TOKEN}"
@@ -117,7 +117,7 @@ jobs:
               if: inputs.has-migrations && github.event_name == 'pull_request'
               env:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
-              run: node --import=tsx src/services/__testing__/dbSchema.ts create "${DB_SCHEMA}"
+              run: node --import=tsx src/shared/e2e/src/dbSchema.ts create "${DB_SCHEMA}"
 
             - name: Run migrations
               if: inputs.has-migrations
@@ -290,7 +290,7 @@ jobs:
                     --name "/armoury/production/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
                     --query 'Parameter.Value' --output text)
                   DSQL_REGION="${{ vars.AWS_REGION || 'us-east-1' }}"
-                  DSQL_TOKEN=$(node --import=tsx src/services/__testing__/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
+                  DSQL_TOKEN=$(node --import=tsx src/shared/e2e/src/dbSchema.ts token "${DSQL_REGION}" "${DSQL_CLUSTER_ENDPOINT}")
                   echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
                   echo "DSQL_REGION=${DSQL_REGION}" >> "${GITHUB_ENV}"
                   echo "::add-mask::${DSQL_TOKEN}"
