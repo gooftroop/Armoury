@@ -1,0 +1,91 @@
+/**
+ * Wahapedia proxy API route.
+ *
+ * Forwards requests to wahapedia.ru server-side to bypass browser CORS restrictions.
+ * The browser cannot fetch wahapedia.ru directly because it does not set Access-Control-Allow-Origin.
+ * This route acts as a same-origin proxy: browser → Next.js API → wahapedia.ru → response.
+ *
+ * @requirements
+ * 1. Must accept POST requests with a JSON body containing a `url` string.
+ * 2. Must forward the request server-side to the given URL with a User-Agent header.
+ * 3. Must return the HTML content as text/html on success.
+ * 4. Must return a JSON error with appropriate HTTP status on failure.
+ * 5. Must reject requests where the URL does not point to wahapedia.ru.
+ *
+ * @module api/wahapedia
+ */
+
+/** User-Agent header sent with all proxied requests. */
+const USER_AGENT = 'Armoury/1.0 (Community Tool)';
+
+/** Allowed hostname for proxied requests. */
+const ALLOWED_HOST = 'wahapedia.ru';
+
+/**
+ * Validates that a URL string points to wahapedia.ru.
+ *
+ * @param url - The URL to validate.
+ * @returns True if the URL is a valid wahapedia.ru URL.
+ */
+function isAllowedUrl(url: string): boolean {
+    try {
+        const parsed = new URL(url);
+
+        return parsed.hostname === ALLOWED_HOST || parsed.hostname.endsWith(`.${ALLOWED_HOST}`);
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * POST handler for the Wahapedia proxy route.
+ *
+ * Accepts a JSON body with `{ url: string }`, fetches the URL server-side,
+ * and returns the HTML content. Rejects URLs not pointing to wahapedia.ru.
+ *
+ * @param request - The incoming HTTP request.
+ * @returns The proxied HTML response or a JSON error.
+ */
+export async function POST(request: Request): Promise<Response> {
+    let body: unknown;
+
+    try {
+        body = await request.json();
+    } catch {
+        return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const { url } = body as { url?: string };
+
+    if (!url || typeof url !== 'string') {
+        return Response.json({ error: 'Missing required field: url' }, { status: 400 });
+    }
+
+    if (!isAllowedUrl(url)) {
+        return Response.json({ error: `URL must point to ${ALLOWED_HOST}` }, { status: 403 });
+    }
+
+    try {
+        const response = await fetch(url, {
+            headers: { 'User-Agent': USER_AGENT },
+        });
+
+        if (!response.ok) {
+            return Response.json(
+                { error: `Upstream HTTP ${response.status} ${response.statusText}` },
+                { status: response.status },
+            );
+        }
+
+        const html = await response.text();
+
+        return new Response(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown proxy error';
+
+        return Response.json({ error: message }, { status: 502 });
+    }
+}

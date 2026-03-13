@@ -105,58 +105,70 @@ export class GameData {
 
     /**
      * Eagerly syncs all reference data DAOs in parallel.
-     * Uses Promise.allSettled so individual failures (e.g. network down) don't prevent startup.
-     * Failed DAOs will retry on next direct access via their getter.
-     * Logs a warning if any DAOs fail to sync.
+     *
+     * Uses Promise.allSettled so one DAO failure does not abort the others.
+     * After all settle, if any failed, throws an error listing the failed DAOs
+     * so the caller (DataContextBuilder / DataContextProvider) can surface
+     * the failure to the user.
+     *
+     * @throws Error if one or more DAOs fail to sync, with a message listing failures.
      */
     async sync(): Promise<void> {
-        const results = await Promise.allSettled([
-            this.deps.chapterApprovedDAO.load(),
-            this.deps.coreRulesDAO.load(),
-            this.deps.crusadeRulesDAO.load(),
-            this.deps.aeldariDAO.load(),
-            this.deps.drukhariDAO.load(),
-            this.deps.chaosSpaceMarinesDAO.load(),
-            this.deps.chaosDaemonsDAO.load(),
-            this.deps.chaosKnightsDAO.load(),
-            this.deps.deathGuardDAO.load(),
-            this.deps.emperorsChildrenDAO.load(),
-            this.deps.thousandSonsDAO.load(),
-            this.deps.worldEatersDAO.load(),
-            this.deps.adeptaSororitasDAO.load(),
-            this.deps.adeptusCustodesDAO.load(),
-            this.deps.adeptusMechanicusDAO.load(),
-            this.deps.agentsOfTheImperiumDAO.load(),
-            this.deps.astraMilitarumDAO.load(),
-            this.deps.imperialKnightsDAO.load(),
-            this.deps.greyKnightsDAO.load(),
-            this.deps.spaceMarinesDAO.load(),
-            this.deps.blackTemplarsDAO.load(),
-            this.deps.bloodAngelsDAO.load(),
-            this.deps.darkAngelsDAO.load(),
-            this.deps.deathwatchDAO.load(),
-            this.deps.spaceWolvesDAO.load(),
-            this.deps.ultramarinesDAO.load(),
-            this.deps.imperialFistsDAO.load(),
-            this.deps.ironHandsDAO.load(),
-            this.deps.ravenGuardDAO.load(),
-            this.deps.salamandersDAO.load(),
-            this.deps.whiteScarsDAO.load(),
-            this.deps.genestealerCultsDAO.load(),
-            this.deps.leaguesOfVotannDAO.load(),
-            this.deps.necronDAO.load(),
-            this.deps.orksDAO.load(),
-            this.deps.tauEmpireDAO.load(),
-            this.deps.tyranidsDAO.load(),
-            this.deps.adeptusTitanicusDAO.load(),
-            this.deps.titanicusTraitorisDAO.load(),
-            this.deps.unalignedForcesDAO.load(),
-        ]);
+        const daoEntries: Array<[string, Promise<unknown>]> = [
+            ['ChapterApproved', this.deps.chapterApprovedDAO.load()],
+            ['CoreRules', this.deps.coreRulesDAO.load()],
+            ['CrusadeRules', this.deps.crusadeRulesDAO.load()],
+            ['Aeldari', this.deps.aeldariDAO.load()],
+            ['Drukhari', this.deps.drukhariDAO.load()],
+            ['ChaosSpaceMarines', this.deps.chaosSpaceMarinesDAO.load()],
+            ['ChaosDaemons', this.deps.chaosDaemonsDAO.load()],
+            ['ChaosKnights', this.deps.chaosKnightsDAO.load()],
+            ['DeathGuard', this.deps.deathGuardDAO.load()],
+            ['EmperorsChildren', this.deps.emperorsChildrenDAO.load()],
+            ['ThousandSons', this.deps.thousandSonsDAO.load()],
+            ['WorldEaters', this.deps.worldEatersDAO.load()],
+            ['AdeptaSororitas', this.deps.adeptaSororitasDAO.load()],
+            ['AdeptusCustodes', this.deps.adeptusCustodesDAO.load()],
+            ['AdeptusMechanicus', this.deps.adeptusMechanicusDAO.load()],
+            ['AgentsOfTheImperium', this.deps.agentsOfTheImperiumDAO.load()],
+            ['AstraMilitarum', this.deps.astraMilitarumDAO.load()],
+            ['ImperialKnights', this.deps.imperialKnightsDAO.load()],
+            ['GreyKnights', this.deps.greyKnightsDAO.load()],
+            ['SpaceMarines', this.deps.spaceMarinesDAO.load()],
+            ['BlackTemplars', this.deps.blackTemplarsDAO.load()],
+            ['BloodAngels', this.deps.bloodAngelsDAO.load()],
+            ['DarkAngels', this.deps.darkAngelsDAO.load()],
+            ['Deathwatch', this.deps.deathwatchDAO.load()],
+            ['SpaceWolves', this.deps.spaceWolvesDAO.load()],
+            ['Ultramarines', this.deps.ultramarinesDAO.load()],
+            ['ImperialFists', this.deps.imperialFistsDAO.load()],
+            ['IronHands', this.deps.ironHandsDAO.load()],
+            ['RavenGuard', this.deps.ravenGuardDAO.load()],
+            ['Salamanders', this.deps.salamandersDAO.load()],
+            ['WhiteScars', this.deps.whiteScarsDAO.load()],
+            ['GenestealerCults', this.deps.genestealerCultsDAO.load()],
+            ['LeaguesOfVotann', this.deps.leaguesOfVotannDAO.load()],
+            ['Necrons', this.deps.necronDAO.load()],
+            ['Orks', this.deps.orksDAO.load()],
+            ['TauEmpire', this.deps.tauEmpireDAO.load()],
+            ['Tyranids', this.deps.tyranidsDAO.load()],
+            ['AdeptusTitanicus', this.deps.adeptusTitanicusDAO.load()],
+            ['TitanicusTraitoris', this.deps.titanicusTraitorisDAO.load()],
+            ['UnalignedForces', this.deps.unalignedForcesDAO.load()],
+        ];
 
-        const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+        const results = await Promise.allSettled(daoEntries.map(([, promise]) => promise));
+
+        const failures = results
+            .map((result, index) => ({ result, name: daoEntries[index]![0] }))
+            .filter(
+                (entry): entry is { result: PromiseRejectedResult; name: string } => entry.result.status === 'rejected',
+            );
 
         if (failures.length > 0) {
-            console.warn(`[GameData.sync] ${failures.length}/${results.length} DAOs failed to sync`);
+            const names = failures.map((f) => f.name).join(', ');
+
+            throw new Error(`Failed to sync ${failures.length}/${results.length} DAOs: ${names}`);
         }
     }
 
