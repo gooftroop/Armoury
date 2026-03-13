@@ -28,7 +28,7 @@ One external constraint applies to References: the Unit Detail Drawer must be in
 
 ### 8.1 References
 
-**Route:** `/[gameSystem]/references`
+**Route:** `/wh40k10e/references`
 **Complexity:** M | **Estimated Effort:** 3 days
 **Stories:** REF-01, REF-02, REF-03, REF-04, REF-05, REF-06, REF-07, REF-08, REF-09
 **UX Issues:** RF-01, RF-02, RF-03, RF-04
@@ -40,7 +40,7 @@ One external constraint applies to References: the Unit Detail Drawer must be in
 
 The game system reference hub. All content is read-only. Data comes from the game system plugin catalog (`@armoury/systems` via bsdata). No user-specific data beyond eventual bookmarks.
 
-Per **C-03** (resolved in Phase 1): `/[gameSystem]/references` is the one unauthenticated-accessible route under the game-scoped shell on web. Mobile requires authentication for all routes. Unauthenticated web visitors see a read-only banner; any action requiring an account triggers an auth prompt. No personal data endpoints are called while unauthenticated.
+Per **C-03** (resolved in Phase 1): `/wh40k10e/references` is the one unauthenticated-accessible route under the game-scoped shell on web. Mobile requires authentication for all routes. Unauthenticated web visitors see a read-only banner; any action requiring an account triggers an auth prompt. No personal data endpoints are called while unauthenticated.
 
 **Layout and Structure**
 
@@ -69,7 +69,7 @@ Per **C-03** (resolved in Phase 1): `/[gameSystem]/references` is the one unauth
 
 **Description**
 
-Account settings page. Not game-system-scoped (no `[gameSystem]` in route). Covers profile editing, preferences, game system management, and destructive account actions.
+Account settings page. Not game-system-scoped (no `wh40k10e` in route). Covers profile editing, preferences, game system management, and destructive account actions.
 
 **C-04 Resolution — Dark-Only V1**
 
@@ -126,7 +126,7 @@ Skeleton placeholders during load. Error state with retry on failure.
 
 ### 8.4 Tournaments (Placeholder)
 
-**Route:** `/[gameSystem]/tournaments`
+**Route:** `/wh40k10e/tournaments`
 **Complexity:** S | **Estimated Effort:** 1 day
 **Stories:** US-TRN-001 (out-of-scope for V1 — see Orphaned Story Disposition)
 **UX Issues:** None
@@ -213,10 +213,10 @@ Phase 5 is predominantly read-only — references, account settings, and profile
 
 | Entity                            | Route/Params                            | Stories   |
 | --------------------------------- | --------------------------------------- | --------- |
-| Selected game system              | `/[gameSystem]/references` path segment | US-REF-01 |
+| Selected game system              | `/wh40k10e/references` path segment | US-REF-01 |
 | Active tab (core rules / faction) | `?tab=core-rules` or `?tab=<factionId>` | US-REF-02 |
 | Search query                      | `?q=<search>`                           | US-REF-03 |
-| Profile sub-section               | `/[gameSystem]/profile?section=matches` | US-PRF-01 |
+| Profile sub-section               | `/wh40k10e/profile?section=matches` | US-PRF-01 |
 
 ### Tier 3: Remote State (React Query)
 
@@ -270,7 +270,7 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 - Rule tiles (stratagems, core rules) render full-width.
 - Unit tiles open the Unit Detail Drawer in read-only (reference) mode.
 - Unauthenticated web visitors see a read-only banner; no personal data endpoints called.
-- Page accessible at `/[gameSystem]/references` without authentication on web.
+- Page accessible at `/wh40k10e/references` without authentication on web.
 
 **Account / Settings (8.2)**
 
@@ -290,7 +290,7 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 
 **Tournaments (8.4)**
 
-- Route `/[gameSystem]/tournaments` renders without errors.
+- Route `/wh40k10e/tournaments` renders without errors.
 - Page uses standard shell and header pattern.
 - "Coming Soon" message present; no data fetching beyond shell.
 
@@ -300,11 +300,11 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 
 ### End-to-End Acceptance Tests
 
-- [ ] References page at `/[gameSystem]/references` is accessible to unauthenticated users on web; `UnauthBanner` is visible and no authenticated-only interactions are rendered.
+- [ ] References page at `/wh40k10e/references` is accessible to unauthenticated users on web; `UnauthBanner` is visible and no authenticated-only interactions are rendered.
 - [ ] `ReferenceSearchBar` auto-focuses on page load; typing filters units and stratagems across the active tab in real time.
 - [ ] `ReferenceTabBar` renders a "Core Rules" tab and one tab per faction from `factionListOptions`; switching tabs resets `ReferenceFilterPanel` state.
 - [ ] `StratagemBrowserTab` displays CP cost, timing, effect text, and detachment tag for each stratagem scoped to the active faction and detachment.
-- [ ] Account page at `/account` (no `[gameSystem]` segment) renders the profile edit section, theme preference section with "Dark (default)" as the only active option, and the Data & Sync section with last-synced timestamps.
+- [ ] Account page at `/account` (no `wh40k10e` segment) renders the profile edit section, theme preference section with "Dark (default)" as the only active option, and the Data & Sync section with last-synced timestamps.
 - [ ] "Sync Now" on Account page triggers a bsdata pull for the selected game system and updates the last-synced timestamp on completion.
 - [ ] Profile page Match History section renders the last 20 completed matches paginated; "Load more" appends the next page without a full reload.
 
@@ -336,13 +336,13 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 > The render component receives everything via props and contains zero hooks except `useCallback`/`useMemo`.
 
 ```tsx
-// File: src/web/app/[gameSystem]/references/page.tsx
+// File: src/web/app/wh40k10e/references/page.tsx
 
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useCallback, useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Faction, Unit } from '@wh40k10e/types/entities.js';
-import { factionListOptions, unitCatalogOptions } from '@shared/frontend/queries/references.js';
+import { factionListOptions, unitCatalogOptions } from '@armoury/clients-rules';
 
 // ---------------------------------------------------------------------------
 // Render component — pure props, zero data hooks
@@ -441,7 +441,7 @@ export function ReferencesContainer({ gameSystem }: { gameSystem: string }) {
 
 Phase 5 covers four pages. Three are functional (References, Account, Profile); one is a placeholder stub (Tournaments).
 
-**§8.1 References** — `src/web/src/app/[gameSystem]/references/page.tsx`
+**§8.1 References** — `src/web/src/app/wh40k10e/references/page.tsx`
 
 - `ReferencesContainer` — orchestrational; owns data fetching, tab state, and filter state.
 - `ReferencesView` — render; receives all data and callbacks as props, no hooks.
@@ -456,7 +456,7 @@ Phase 5 covers four pages. Three are functional (References, Account, Profile); 
 
 **§8.2 Account / Settings** — `src/web/src/app/account/page.tsx`
 
-This page is NOT game-system-scoped. No `[gameSystem]` segment in the route.
+This page is NOT game-system-scoped. No `wh40k10e` segment in the route.
 
 - `AccountContainer` — orchestrational; owns account query, mutation dispatch, and dialog state.
 - `AccountView` — render; receives account data and all callbacks.
@@ -482,7 +482,7 @@ Also NOT game-system-scoped.
 - `ArmyShowcaseSection` — the user's own armies plus any shared armies visible to permitted friends. Fulfils PRO-03.
 - `PrivacySettingsDisplay` — shows current visibility settings. Links to Account page for editing.
 
-**§8.4 Tournaments (Placeholder)** — `src/web/src/app/[gameSystem]/tournaments/page.tsx`
+**§8.4 Tournaments (Placeholder)** — `src/web/src/app/wh40k10e/tournaments/page.tsx`
 
 - `TournamentsPlaceholder` — static page. Renders the standard shell and page header, displays a "Coming Soon" message, and optionally shows an email signup for feature updates.
 - No data fetching beyond what the shell already performs.
@@ -650,12 +650,12 @@ Phase 5 has no pending mockup dependencies that gate implementation. All four pa
 
 **Upstream dependencies**
 
-- Phase 1 shell and auth middleware is a soft dependency for all pages. §8.1 requires the unauthenticated access route (`/[gameSystem]/references`) implemented in Phase 1 auth middleware (C-03). All other pages require an authenticated session.
+- Phase 1 shell and auth middleware is a soft dependency for all pages. §8.1 requires the unauthenticated access route (`/wh40k10e/references`) implemented in Phase 1 auth middleware (C-03). All other pages require an authenticated session.
 - Phase 2 Unit Detail Drawer (reference mode) is required for §8.1 `UnitBrowserTab`. The drawer itself does not need to be re-implemented, only consumed.
 
 **Constraints**
 
-- C-03: unauthenticated read access to `/[gameSystem]/references` is enforced at the Next.js middleware level in Phase 1, not in Phase 5 components. Phase 5 only renders the `UnauthBanner` based on session state.
+- C-03: unauthenticated read access to `/wh40k10e/references` is enforced at the Next.js middleware level in Phase 1, not in Phase 5 components. Phase 5 only renders the `UnauthBanner` based on session state.
 - C-04: dark-only enforcement requires no theme-switching infrastructure in V1. `ThemeProvider` is a static value. No work deferred within Phase 5 on this constraint.
 
 **Parallelization**
@@ -671,12 +671,12 @@ Phase 5 has no pending mockup dependencies that gate implementation. All four pa
 
 | Page        | Path                                                |
 | ----------- | --------------------------------------------------- |
-| References  | `src/web/src/app/[gameSystem]/references/page.tsx`  |
+| References  | `src/web/src/app/wh40k10e/references/page.tsx`  |
 | Account     | `src/web/src/app/account/page.tsx`                  |
 | Profile     | `src/web/src/app/profile/page.tsx`                  |
-| Tournaments | `src/web/src/app/[gameSystem]/tournaments/page.tsx` |
+| Tournaments | `src/web/src/app/wh40k10e/tournaments/page.tsx` |
 
-Account and Profile have no `[gameSystem]` segment. They are user-scoped, not game-system-scoped.
+Account and Profile have no `wh40k10e` segment. They are user-scoped, not game-system-scoped.
 
 **Components**
 
@@ -692,9 +692,9 @@ Each domain directory has a barrel `index.ts` exporting only the public-facing c
 
 | Factory file                                | Queries                                                                                       |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `src/shared/frontend/queries/references.ts` | `factionListOptions`, `coreRulesOptions`, `unitCatalogOptions`                                |
-| `src/shared/frontend/queries/account.ts`    | `accountOptions`, `updateAccountMutation`, `syncGameSystemMutation`                           |
-| `src/shared/frontend/queries/profile.ts`    | `profileOptions`, `matchHistoryOptions`, `armyListOptions` (re-export from Phase 1/2 factory) |
+| `src/shared/clients/rules/src/queries.ts`   | `factionListOptions`, `coreRulesOptions`, `unitCatalogOptions`                                |
+| `src/shared/clients/users/src/queries.ts`   | `accountOptions`, `updateAccountMutation`, `syncGameSystemMutation`                           |
+| `src/shared/clients/users/src/queries.ts`   | `profileOptions`, `matchHistoryOptions`, `armyListOptions` (re-export from Phase 1/2 factory) |
 
 `unitCatalogOptions` and `armyListOptions` are not duplicated. They are imported from the factories defined in Phase 2 and re-exported from the Phase 5 query files for co-location with the feature that consumes them.
 

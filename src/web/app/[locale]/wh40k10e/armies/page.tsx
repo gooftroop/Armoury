@@ -23,7 +23,6 @@ import { ForgeContainer } from '@/components/forge/index.js';
 export interface ArmiesPageProps {
     params: Promise<{
         locale: string;
-        gameSystem: string;
     }>;
 }
 

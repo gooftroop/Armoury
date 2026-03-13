@@ -2,7 +2,7 @@
 
 **Purpose:** Canonical reference for all state management decisions across the Armoury web and mobile applications.
 
-**Scope:** `@armoury/web` (Next.js 15), `@armoury/mobile` (Expo 53/React Native), and `src/shared/frontend/` (pure TypeScript shared modules).
+**Scope:** `@armoury/web` (Next.js 15), `@armoury/mobile` (Expo 53/React Native), and `src/shared/clients/` (pure TypeScript shared modules).
 
 **Related Documents:**
 
@@ -230,7 +230,7 @@ export default async function ArmiesPage({ searchParams }: Props): Promise<JSX.E
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 
 interface Props {
     id: string;
@@ -643,7 +643,7 @@ Consuming the filters in the list component:
 
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { armyListOptions } from '@shared/frontend/armies/queries.js';
+import { armyListOptions } from '@armoury/clients-armies';
 import { parseArmyListFilters } from '@web/lib/urlParams.js';
 
 /** Army list — derives filters from URL, passes them to React Query. */
@@ -676,7 +676,7 @@ Expo Router provides analogous hooks. `useLocalSearchParams` reads params for th
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { armyListOptions } from '@shared/frontend/armies/queries.js';
+import { armyListOptions } from '@armoury/clients-armies';
 import { parseArmyListFilters } from '@mobile/lib/urlParams.js';
 
 /** Mobile army list — same URL-driven pattern as web, using Expo Router hooks. */
@@ -919,7 +919,7 @@ import { useMemo } from 'react';
 import { useDataContext } from '@web/src/providers/DataContextProvider.js';
 import { useGameSystem } from '@web/src/providers/GameSystemProvider.js';
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 
 /**
  * Derives validation results from Context-provided singletons + query data.
@@ -1113,7 +1113,7 @@ const ArmyListContext = createContext<Army[]>([]);
 
 // ✅ CORRECT: Use React Query directly
 import { useQuery } from '@tanstack/react-query';
-import { armyListOptions } from '@shared/frontend/armies/queries.js';
+import { armyListOptions } from '@armoury/clients-armies';
 
 export function useArmyList() {
     return useQuery(armyListOptions());
@@ -1252,9 +1252,9 @@ The file layout enforces separation of concerns between pure TypeScript shared c
 
 | Concern                                 | Location                            | Example Path                                      |
 | --------------------------------------- | ----------------------------------- | ------------------------------------------------- |
-| Query key factories + `queryOptions`    | `src/shared/frontend/<feature>/`    | `src/shared/frontend/armies/queries.ts`           |
-| Mutation option factories               | `src/shared/frontend/<feature>/`    | `src/shared/frontend/armies/mutations.ts`         |
-| Business logic (validators, formatters) | `src/shared/frontend/<feature>/`    | `src/shared/frontend/armies/formatters.ts`        |
+| Query key factories + `queryOptions`    | `src/shared/clients/<feature>/`    | `src/shared/clients/armies/src/queries.ts`           |
+| Mutation option factories               | `src/shared/clients/<feature>/`    | `src/shared/clients/armies/src/mutations.ts`         |
+| Business logic (validators, formatters) | `src/shared/clients/<feature>/`    | `src/shared/clients/armies/src/formatters.ts`        |
 | Types and interfaces                    | `src/shared/types/`                 | `src/shared/types/entities.ts`                    |
 | RxJS stream facades                     | `src/shared/streams/src/<feature>/` | `src/shared/streams/src/matches/MatchStream.ts`   |
 | Web-specific hooks                      | `src/web/hooks/`                    | `src/web/hooks/useArmy.ts`                        |
@@ -1268,12 +1268,12 @@ The file layout enforces separation of concerns between pure TypeScript shared c
 
 ### 12.1 The Shared Boundary Rule
 
-`src/shared/frontend/` must contain **pure TypeScript only**. No React, no hooks, no JSX. Violations break the mobile build because Expo does not bundle Next.js or React DOM APIs.
+`src/shared/clients/` must contain **pure TypeScript only**. No React, no hooks, no JSX. Violations break the mobile build because Expo does not bundle Next.js or React DOM APIs.
 
 The boundary is enforced by the `@armoury/shared` package's `tsconfig.json`, which does not include `@types/react` or JSX settings. Any import of a React API will fail type-checking.
 
 ```
-src/shared/frontend/
+src/shared/clients/
 ├── armies/
 │   ├── queries.ts          ← queryOptions factories (pure TS)
 │   ├── mutations.ts        ← MutationOptions factories (pure TS)
@@ -1328,7 +1328,7 @@ The migration timeline aligns with FRONTEND_PLAN.md phases. Each phase builds on
 | QueryClientProvider wiring       | ✅ Done    | `src/web/src/components/providers.tsx`                        |
 | DataContextProvider              | ✅ Done    | `src/web/src/providers/DataContextProvider.tsx`               |
 | Mobile QueryClient               | 🔲 Pending | Add `focusManager` + `onlineManager` (React Native App State) |
-| `src/shared/frontend/` structure | 🔲 Pending | Create directory, add first query factories                   |
+| `src/shared/clients/` structure | 🔲 Pending | Create directory, add first query factories                   |
 | Army query key factories         | 🔲 Pending | `armyDetailOptions`, `armyListOptions`                        |
 | Auth query factories             | 🔲 Pending | `currentUserOptions`                                          |
 | `renderWithQuery` test utility   | 🔲 Pending | Shared across all future tests                                |
@@ -1382,11 +1382,11 @@ export const queryClient = new QueryClient({
 
 ```typescript
 // Optimistic update skeleton for army name edit (Phase 2)
-// src/shared/frontend/armies/mutations.ts
+// src/shared/clients/armies/mutations.ts
 import type { MutationOptions } from '@tanstack/react-query';
 import type { UpdateArmyInput, Army } from '@armoury/models';
-import { armyDetailOptions, armyListOptions } from '@shared/frontend/armies/queries.js';
-import { updateArmy } from '@shared/frontend/armies/service.js';
+import { armyDetailOptions, armyListOptions } from '@armoury/clients-armies';
+import { updateArmy } from '@armoury/clients-armies';
 
 /**
  * Mutation options for updating an army with optimistic updates.
@@ -1480,7 +1480,7 @@ export default function MatchLayout({
 // Campaign state is managed server-side. The client reads campaign phase
 // from React Query and dispatches mutations to transition between phases.
 // If a client-side state machine is needed, evaluate XState (see §10).
-// src/shared/frontend/campaigns/queries.ts
+// src/shared/clients/campaigns/queries.ts
 
 export function campaignDetailOptions(campaignId: string) {
     return queryOptions<Campaign>({
@@ -1503,10 +1503,10 @@ export function campaignDetailOptions(campaignId: string) {
 
 ```typescript
 // Reference data query options — never goes stale (Phase 5)
-// src/shared/frontend/reference/queries.ts
+// src/shared/clients/reference/queries.ts
 import { queryOptions } from '@tanstack/react-query';
 import type { FactionReference } from '@armoury/models';
-import { listFactions } from '@shared/frontend/reference/service.js';
+import { listFactions } from '@armoury/clients-rules';
 
 /**
  * Query options for faction reference data.
@@ -1528,13 +1528,13 @@ export function factionListOptions(gameSystem: string) {
 
 ```typescript
 // Server Component prefetch for reference data (Phase 5, web only)
-// src/web/src/app/reference/[gameSystem]/page.tsx
+// src/web/src/app/reference/wh40k10e/page.tsx
 import {
     dehydrate,
     HydrationBoundary,
     QueryClient,
 } from '@tanstack/react-query';
-import { factionListOptions } from '@shared/frontend/reference/queries.js';
+import { factionListOptions } from '@armoury/clients-rules';
 import { FactionBrowser } from '@web/src/components/FactionBrowser.js';
 
 interface ReferencePageProps {

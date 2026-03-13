@@ -2,7 +2,7 @@
 
 **Purpose:** Canonical reference for global and reactive state management via RxJS in the Armoury applications.
 
-**Scope:** `@armoury/streams`, `src/shared/frontend/`, and platform-specific RxJS integrations in `@armoury/web` and `@armoury/mobile`.
+**Scope:** `@armoury/streams`, shared `@armoury/clients-*` packages, and platform-specific RxJS integrations in `@armoury/web` and `@armoury/mobile`.
 
 **Parent document:** [State Management Architecture](./plan/STATE_MANAGEMENT.md)
 
@@ -256,7 +256,7 @@ The preferred integration point between RxJS streams and React components in Rea
 
 ```typescript
 // src/web/src/hooks/useObservable.ts
-// React hook — place in platform workspace (web or mobile), NOT in src/shared/frontend/
+// React hook — place in platform workspace (web or mobile), NOT in shared clients packages
 // @requirements FE-052, FE-059
 
 import { useSyncExternalStore } from 'react';
@@ -559,7 +559,7 @@ This is the critical integration pattern for real-time features. RxJS is the tra
 
 import { type QueryClient } from '@tanstack/react-query';
 import { type MatchStream } from '@armoury/streams';
-import { matchDetailOptions } from '@shared/frontend/matches/queries.js';
+import { matchDetailOptions } from '@armoury/clients-matches';
 import type { Match } from '@armoury/models';
 
 /**
@@ -636,7 +636,7 @@ Consuming the bridged data — the component has no knowledge of RxJS:
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { matchDetailOptions } from '@shared/frontend/matches/queries.js';
+import { matchDetailOptions } from '@armoury/clients-matches';
 
 interface Props {
     matchId: string;

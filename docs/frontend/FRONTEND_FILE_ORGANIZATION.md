@@ -39,8 +39,8 @@ src/
 │   │   └── wahapedia/         → Wahapedia API client
 │   ├── types/                 → Core types, enums, errors, interfaces
 │   ├── validation/            → Game-agnostic validation engine
-│   ├── frontend/              → Pure TypeScript shared frontend modules (NO React)
-│   │   └── utils/             → Shared frontend utilities
+│   ├── clients/               → Pure TypeScript shared client modules (NO React)
+│   │   └── <domain>/src/      → Domain client APIs (armies, matches, users, etc.)
 │   └── streams/               → @armoury/streams (RxJS reactive facades)
 │
 ├── systems/                   → @armoury/systems (game system plugins)
@@ -56,10 +56,10 @@ src/
 ├── web/                       → @armoury/web (Next.js 15)
 │   └── src/
 │       ├── app/               → Next.js App Router (routes only)
-│       │   └── [locale]/[gameSystem]/
+		│   └── [locale]/wh40k10e/
 │       │       ├── (marketing)/   → Public pages
-│       │       ├── (app)/         → Authenticated app pages
-│       │       │   ├── armies/
+		│       ├── (marketing)/   → Public pages
+		│       ├── armies/        → Authenticated app pages
 │       │       │   ├── matches/
 │       │       │   └── campaigns/
 │       │       └── reference/     → Game reference data
@@ -197,7 +197,7 @@ Is the component used across multiple feature domains?
 | **Routing**         | Next.js App Router (`src/web/src/app/`) | Expo Router (`src/mobile/src/app/`) |
 | **Shared logic**    | Import from `@shared/*`                 | Import from `@shared/*`             |
 
-> **Shared frontend modules** (`src/shared/frontend/`) are pure TypeScript — no React, no JSX. They define interfaces and utilities consumed by both platforms.
+> **Shared client modules** (`src/shared/clients/`) are pure TypeScript — no React, no JSX. They define query/mutation factories and utilities consumed by both platforms.
 
 ---
 
@@ -227,7 +227,7 @@ What are you creating?
 │
 ├── Utility Function
 │   ├── Is it platform-agnostic?
-│   │   └── src/shared/frontend/utils/ (or src/shared/types/ for type utils)
+│   │   └── src/shared/clients/<domain>/src/ (or src/shared/types/ for type utils)
 │   ├── Is it web-specific?
 │   │   └── src/web/src/utils/
 │   └── Is it mobile-specific?
@@ -346,7 +346,7 @@ export const experimental_ppr = true;
 
 ```typescript
 // ✅ Correct — page is an orchestrator
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx
+// app/[locale]/wh40k10e/armies/page.tsx
 export default async function ArmiesPage() {
     const session = await auth0.getSession();
     const armies = await getArmies(session.user.sub);

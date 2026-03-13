@@ -10,7 +10,7 @@ export default mergeConfig(
     defineConfig({
         resolve: {
             alias: {
-                '@providers-bsdata': path.resolve(__dirname, 'src'),
+                '@': path.resolve(__dirname, 'src'),
             },
         },
         test: {

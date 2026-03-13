@@ -4,7 +4,7 @@
 As a player, I want to send a friend request via multiple methods so that I can connect with other players conveniently regardless of platform.
 
 **Acceptance Criteria:**
-- [ ] The Allies Page (`/[locale]/[gameSystem]/social`) presents an "Add Friend" flow with tabs: **By Name**, **By Code**, **By QR**, **By NFC**.
+- [ ] The Allies Page (`/[locale]/wh40k10e/social`) presents an "Add Friend" flow with tabs: **By Name**, **By Code**, **By QR**, **By NFC**.
 - [ ] **By Name**: Searching for players by `User.displayName` and sending a request.
 - [ ] **By Code**: Entering a friend code (from `User.friendCode`) to send a request directly.
 - [ ] **By QR**: Scanning a QR code encoding the friend's code or profile URL to send a request.

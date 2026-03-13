@@ -2,7 +2,7 @@
 
 **Purpose:** Define the product requirements for the frontend architecture, component patterns, state management, navigation, UI frameworks, and cross-platform code sharing across Armoury's web and mobile applications. This document specifies what the frontend layer must support — not how to implement it.
 
-**Scope:** Web (`@armoury/web`, Next.js 15) and Mobile (`@armoury/mobile`, Expo 53 + React Native 0.79). Shared frontend code in `src/shared/frontend/`. Game-agnostic shell with plugin-provided game-specific content.
+**Scope:** Web (`@armoury/web`, Next.js 15) and Mobile (`@armoury/mobile`, Expo 53 + React Native 0.79). Shared frontend code in `src/shared/clients/`. Game-agnostic shell with plugin-provided game-specific content.
 
 **Audience:** Frontend engineers, UI/UX designers, AI agents implementing frontend features.
 
@@ -45,11 +45,11 @@
 
 ## 1. Overview
 
-Armoury's frontend spans two platforms — a Next.js 15 web application and an Expo 53 React Native mobile application — sharing pure TypeScript business logic, query definitions, and data utilities through a common `src/shared/frontend/` module. All React components (web) and React Native components (mobile) live in their respective platform workspaces. The architecture enforces strict separation between platform-specific UI code and shared pure TypeScript modules, enabling feature parity across platforms with native UX on each.
+Armoury's frontend spans two platforms — a Next.js 15 web application and an Expo 53 React Native mobile application — sharing pure TypeScript business logic, query definitions, and data utilities through a common `src/shared/clients/` module. All React components (web) and React Native components (mobile) live in their respective platform workspaces. The architecture enforces strict separation between platform-specific UI code and shared pure TypeScript modules, enabling feature parity across platforms with native UX on each.
 
 Primary objectives:
 
-- Share pure TypeScript frontend logic (business logic, query/mutation factories, types, utilities) across web and mobile via `src/shared/frontend/` as long as it does not introduce anti-patterns or tech debt
+- Share pure TypeScript frontend logic (business logic, query/mutation factories, types, utilities) across web and mobile via `src/shared/clients/` as long as it does not introduce anti-patterns or tech debt
 - Keep all React components in `src/web/` and all React Native components in `src/mobile/` — no components in shared
 - Enforce the orchestrational/render component split within each platform workspace
 - Use @tanstack/react-query (v5) as the single source of truth for all remote/async state
@@ -64,7 +64,7 @@ Primary objectives:
 | ------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Web (`src/web/`)                | Early — root layout, providers (React Query), home page, Sentry instrumentation | Next.js 15, App Router, Radix UI, Tailwind v4, React Query v5                          |
 | Mobile (`src/mobile/`)          | Early — App.tsx shell with Tamagui config                                       | Expo 53, React Native 0.79, Tamagui v2                                                 |
-| Shared (`src/shared/frontend/`) | Not yet created                                                                 | Pure TypeScript: query factories, mutation factories, business logic, types, utilities |
+| Shared (`src/shared/clients/`) | Not yet created                                                                 | Pure TypeScript: query factories, mutation factories, business logic, types, utilities |
 
 ---
 
@@ -74,14 +74,14 @@ Primary objectives:
 
 | ID     | Requirement                                                                                                                                                   | Priority | Notes                                               |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------- |
-| FE-001 | `src/shared/frontend/` must contain only pure TypeScript modules — no React components, no React Native components, no React hooks                            | Critical | Shared code must have zero React/RN dependency      |
+| FE-001 | `src/shared/clients/` must contain only pure TypeScript modules — no React components, no React Native components, no React hooks                            | Critical | Shared code must have zero React/RN dependency      |
 | FE-002 | All React components (orchestrational and render) must reside in `src/web/`                                                                                   | Critical | Web workspace owns all web components               |
 | FE-003 | All React Native components must reside in `src/mobile/`                                                                                                      | Critical | Mobile workspace owns all mobile components         |
-| FE-004 | Custom React hooks must reside in the platform workspace that uses them (`src/web/` or `src/mobile/`), not in `src/shared/frontend/`                          | Critical | Hooks import React — they are platform code         |
-| FE-005 | Query key factories and `queryOptions` definitions (pure TypeScript, no React imports) must reside in `src/shared/frontend/<feature>/queries.ts`              | High     | Co-located with feature, consumed by both platforms |
-| FE-006 | Mutation option factories (pure TypeScript configuration objects, no `useMutation` hook wrappers) must reside in `src/shared/frontend/<feature>/mutations.ts` | High     | Co-located with feature, consumed by both platforms |
-| FE-007 | Business logic functions (pure transformations, formatters, validators) must reside in `src/shared/frontend/<feature>/` or `src/shared/`                      | High     | No React imports                                    |
-| FE-008 | Shared TypeScript type definitions and interfaces must reside in `src/shared/frontend/<feature>/types.ts` or `src/shared/types/`                              | High     | Consumed by both platforms                          |
+| FE-004 | Custom React hooks must reside in the platform workspace that uses them (`src/web/` or `src/mobile/`), not in `src/shared/clients/`                          | Critical | Hooks import React — they are platform code         |
+| FE-005 | Query key factories and `queryOptions` definitions (pure TypeScript, no React imports) must reside in `src/shared/clients/<feature>/queries.ts`              | High     | Co-located with feature, consumed by both platforms |
+| FE-006 | Mutation option factories (pure TypeScript configuration objects, no `useMutation` hook wrappers) must reside in `src/shared/clients/<feature>/mutations.ts` | High     | Co-located with feature, consumed by both platforms |
+| FE-007 | Business logic functions (pure transformations, formatters, validators) must reside in `src/shared/clients/<feature>/` or `src/shared/`                      | High     | No React imports                                    |
+| FE-008 | Shared TypeScript type definitions and interfaces must reside in `src/shared/clients/<feature>/types.ts` or `src/shared/types/`                              | High     | Consumed by both platforms                          |
 
 ### 2.2 Platform-Specific File Extensions
 
@@ -95,10 +95,10 @@ Primary objectives:
 
 | ID     | Requirement                                                                                       | Priority | Notes                                                         |
 | ------ | ------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------- |
-| FE-013 | `src/shared/frontend/` must not import from `src/web/`, `src/mobile/`, `react`, or `react-native` | Critical | Shared code is pure TypeScript with zero framework dependency |
-| FE-014 | `src/web/` and `src/mobile/` may import from `src/shared/frontend/` and `src/shared/`             | Critical | Platform code depends on shared code                          |
+| FE-013 | `src/shared/clients/` must not import from `src/web/`, `src/mobile/`, `react`, or `react-native` | Critical | Shared code is pure TypeScript with zero framework dependency |
+| FE-014 | `src/web/` and `src/mobile/` may import from `src/shared/clients/` and `src/shared/`             | Critical | Platform code depends on shared code                          |
 | FE-015 | Render components must not import `@tanstack/react-query` or any data-fetching library directly   | High     | Data access only via props from orchestrational components    |
-| FE-016 | Business logic modules in `src/shared/frontend/` must not import React or any UI framework        | Critical | Pure TypeScript functions only                                |
+| FE-016 | Business logic modules in `src/shared/clients/` must not import React or any UI framework        | Critical | Pure TypeScript functions only                                |
 
 ---
 
@@ -226,9 +226,9 @@ State solutions must be evaluated in this order. Use the first option that satis
 
 | ID     | Requirement                                                                                | Priority | Notes                                           |
 | ------ | ------------------------------------------------------------------------------------------ | -------- | ----------------------------------------------- |
-| FE-080 | All game-specific routes must be scoped under `/[gameSystem]/` dynamic segment             | Critical | E.g., `/wh40k10e/armies`, `/aos/matches`        |
-| FE-081 | Game-system-agnostic pages (Account, Profile) must live outside the `[gameSystem]` segment | Critical | `/account`, `/profile`                          |
-| FE-082 | Modal routes must be URL-addressable and preserve back-stack navigation                    | High     | E.g., `/[gameSystem]/armies/[armyId]/units/add` |
+| FE-080 | All game-specific routes must be scoped under `/wh40k10e/` dynamic segment             | Critical | E.g., `/wh40k10e/armies`, `/aos/matches`        |
+| FE-081 | Game-system-agnostic pages (Account, Profile) must live outside the `wh40k10e` segment | Critical | `/account`, `/profile`                          |
+| FE-082 | Modal routes must be URL-addressable and preserve back-stack navigation                    | High     | E.g., `/wh40k10e/armies/[armyId]/units/add` |
 | FE-083 | Browser back/forward navigation must work natively for all routes                          | Critical | GLB-010 from UI REQUIREMENTS                    |
 | FE-084 | Active match mode (Basic/Guided) must be stored in URL query parameter                     | High     | `?mode=basic` or `?mode=guided`                 |
 | FE-085 | Deep links must work for all pages — every screen is directly accessible via URL           | Critical | See IA URL Schema                               |
@@ -241,22 +241,22 @@ The complete URL schema is defined in `docs/design/INFORMATION_ARCHITECTURE.md` 
 | ------------------------------ | ---------------------------------------------- | ------------- |
 | Landing / Game System Selector | `/`                                            | No            |
 | Login                          | `/login`                                       | No            |
-| The Forge (Army List)          | `/[gameSystem]/armies`                         | Yes           |
-| Army Creation                  | `/[gameSystem]/armies/new`                     | Yes           |
-| Army Detail (Builder)          | `/[gameSystem]/armies/[armyId]`                | Yes           |
-| Unit Add Modal                 | `/[gameSystem]/armies/[armyId]/units/add`      | Yes           |
-| Unit Config & Datasheet        | `/[gameSystem]/armies/[armyId]/units/[unitId]` | Yes           |
-| Unit Datasheet (Read-Only)     | `/[gameSystem]/references/units/[unitId]`      | No            |
-| War Ledger (Matches)           | `/[gameSystem]/matches`                        | Yes           |
-| Match Detail                   | `/[gameSystem]/matches/[matchId]`              | Yes           |
-| Command Post                   | `/[gameSystem]/matches/[matchId]/command-post` | Yes           |
-| Campaigns                      | `/[gameSystem]/campaigns`                      | Yes           |
-| Campaign Detail                | `/[gameSystem]/campaigns/[campaignId]`         | Yes           |
-| Allies (Social)                | `/[gameSystem]/social`                         | Yes           |
-| References                     | `/[gameSystem]/references`                     | No            |
+| The Forge (Army List)          | `/wh40k10e/armies`                         | Yes           |
+| Army Creation                  | `/wh40k10e/armies/new`                     | Yes           |
+| Army Detail (Builder)          | `/wh40k10e/armies/[armyId]`                | Yes           |
+| Unit Add Modal                 | `/wh40k10e/armies/[armyId]/units/add`      | Yes           |
+| Unit Config & Datasheet        | `/wh40k10e/armies/[armyId]/units/[unitId]` | Yes           |
+| Unit Datasheet (Read-Only)     | `/wh40k10e/references/units/[unitId]`      | No            |
+| War Ledger (Matches)           | `/wh40k10e/matches`                        | Yes           |
+| Match Detail                   | `/wh40k10e/matches/[matchId]`              | Yes           |
+| Command Post                   | `/wh40k10e/matches/[matchId]/command-post` | Yes           |
+| Campaigns                      | `/wh40k10e/campaigns`                      | Yes           |
+| Campaign Detail                | `/wh40k10e/campaigns/[campaignId]`         | Yes           |
+| Allies (Social)                | `/wh40k10e/social`                         | Yes           |
+| References                     | `/wh40k10e/references`                     | No            |
 | Account                        | `/account`                                     | Yes           |
 | Profile                        | `/profile`                                     | Yes           |
-| Tournaments                    | `/[gameSystem]/tournaments`                    | Yes           |
+| Tournaments                    | `/wh40k10e/tournaments`                    | Yes           |
 
 ### 6.3 Mobile Routing (Expo Router)
 
@@ -273,8 +273,8 @@ The complete URL schema is defined in `docs/design/INFORMATION_ARCHITECTURE.md` 
 
 | ID     | Requirement                                                                                        | Priority | Notes                    |
 | ------ | -------------------------------------------------------------------------------------------------- | -------- | ------------------------ |
-| FE-096 | `[gameSystem]` segment must scope all game-specific content and navigation                         | Critical | E.g., `wh40k10e`, `aos`  |
-| FE-097 | Switching game systems must navigate to the new `[gameSystem]` root with unsaved-edit confirmation | High     | Confirm if dirty state   |
+| FE-096 | `wh40k10e` segment must scope all game-specific content and navigation                         | Critical | E.g., `wh40k10e`, `aos`  |
+| FE-097 | Switching game systems must navigate to the new `wh40k10e` root with unsaved-edit confirmation | High     | Confirm if dirty state   |
 | FE-098 | Plugins must provide game system ID (slug), display name, and icon for navigation rendering        | Critical | Plugin-provided metadata |
 | FE-099 | The last-used game system must be remembered in user preferences for next launch                   | High     | `Account.preferences`    |
 
@@ -579,7 +579,7 @@ All features below must be implemented across web and mobile as specified in `do
 | 24  | Profile                             | `/profile`                         | Account (section)   | High     |
 | 25  | Tournaments (Placeholder)           | `/[gs]/tournaments`                | —                   | Medium   |
 
-`[gs]` = `[gameSystem]` dynamic segment.
+`[gs]` = `wh40k10e` dynamic segment.
 
 ---
 

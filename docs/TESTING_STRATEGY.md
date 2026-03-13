@@ -146,7 +146,7 @@ export default mergeConfig(
                 '@data': path.resolve(__dirname, 'src'),
                 '@models': path.resolve(__dirname, '../models/src'),
                 '@clients-github': path.resolve(__dirname, '../clients/github/src'),
-                '@providers-bsdata': path.resolve(__dirname, '../providers/bsdata/src'),
+                '@': path.resolve(__dirname, '../providers/bsdata/src'),
             },
         },
         test: {

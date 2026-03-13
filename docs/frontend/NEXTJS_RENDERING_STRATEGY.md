@@ -48,7 +48,7 @@ Every file in `app/` is a Server Component unless it carries `'use client'`. Ser
 - Cannot use hooks, browser APIs, or event handlers
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx — Server Component
+// app/[locale]/wh40k10e/armies/page.tsx — Server Component
 // No 'use client' → runs entirely on the server
 
 import { auth0 } from '@web/src/lib/auth0.js';
@@ -80,7 +80,7 @@ The most common RSC mistake is placing `'use client'` too high in the tree, caus
 export default function ArmiesPage() { /* ... */ }
 
 // ✅ Correct — only the interactive filter widget is a Client Component
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx (Server Component)
+// app/[locale]/wh40k10e/armies/page.tsx (Server Component)
 export default async function ArmiesPage() {
     const armies = await getArmies(userId);
 
@@ -160,7 +160,7 @@ export const verifySession = cache(async (): Promise<Session> => {
 `async` components work as Server Components. Wrap them in `<Suspense>` to stream partial HTML — the shell renders immediately, and the async content streams in when ready.
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx
+// app/[locale]/wh40k10e/armies/page.tsx
 import { Suspense } from 'react';
 import { ArmySkeleton } from '@web/src/components/armies/ArmySkeleton.js';
 import { ArmyList } from '@web/src/components/armies/ArmyList.js';
@@ -192,7 +192,7 @@ async function ArmyList() {
 Pass an unresolved Promise from a Server Component to a Client Component and read it with `React.use()`. This enables streaming: the server starts sending HTML before the data resolves.
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/[id]/page.tsx (Server Component)
+// app/[locale]/wh40k10e/armies/[id]/page.tsx (Server Component)
 import { use } from 'react';
 import { getArmy } from '@web/src/dal/armies.js';
 import { ArmyDetailClient } from '@web/src/components/armies/ArmyDetailClient.js';
@@ -302,7 +302,7 @@ export async function renameArmy(
 **Inline** — define directly inside a Server Component (rare; useful for one-off form handlers):
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/[id]/edit/page.tsx (Server Component)
+// app/[locale]/wh40k10e/armies/[id]/edit/page.tsx (Server Component)
 export default async function EditArmyPage({ params }) {
     const { id } = await params;
 
@@ -819,9 +819,9 @@ Server Component creates a `QueryClient`, prefetches, dehydrates into `Hydration
 In TanStack Query v5.40+, you can pass a **pending Promise** to `prefetchQuery` and dehydrate it while it's still in-flight. The client receives the hydrated pending state and waits for the promise to stream in — enabling sub-waterfall performance.
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx (Server Component)
+// app/[locale]/wh40k10e/armies/page.tsx (Server Component)
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
-import { armyListOptions } from '@shared/frontend/armies/queries.js';
+import { armyListOptions } from '@armoury/clients-armies';
 
 export default async function ArmiesPage() {
     const queryClient = new QueryClient();
@@ -847,7 +847,7 @@ export default async function ArmiesPage() {
 ### 6.3 Multiple Parallel Prefetches
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/[id]/page.tsx (Server Component)
+// app/[locale]/wh40k10e/armies/[id]/page.tsx (Server Component)
 export default async function ArmyDetailPage({ params }) {
     const { id } = await params;
     const queryClient = new QueryClient();
@@ -975,7 +975,7 @@ After a Server Action completes successfully and the page re-renders (via `reval
 import { useActionState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { renameArmy } from '@web/src/actions/armies.js';
-import { armyKeys } from '@shared/frontend/armies/queries.js';
+import { armyKeys } from '@armoury/clients-armies';
 
 export function RenameArmyForm({ army }: Props) {
     const queryClient = useQueryClient();
@@ -1075,7 +1075,7 @@ export const verifySession = cache(async () => {
 Usage in a page:
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx (Server Component)
+// app/[locale]/wh40k10e/armies/page.tsx (Server Component)
 export default async function ArmiesPage() {
     // verifySession() redirects if not authenticated — no if-check needed at call site
     const session = await verifySession();
@@ -1092,7 +1092,7 @@ export default async function ArmiesPage() {
 Auth session state is not exposed to Client Components directly. If a Client Component needs auth status (e.g., to show a user avatar), fetch it via React Query:
 
 ```typescript
-// src/shared/frontend/auth/queries.ts (pure TypeScript — no React)
+// src/shared/clients/users/src/session.ts (pure TypeScript — no React)
 import { queryOptions } from '@tanstack/react-query';
 
 // staleTime: 0 — auth state must always be fresh (FE-072)
@@ -1256,7 +1256,7 @@ Next.js opts a route into **dynamic rendering** the moment any of these APIs are
 These module-level exports control a route's rendering mode directly. Prefer `'use cache'` (§13) for fine-grained control; use segment config only when you need a route-wide override:
 
 ```typescript
-// app/[locale]/[gameSystem]/reference/[id]/page.tsx
+// app/[locale]/wh40k10e/reference/[id]/page.tsx
 
 // Force static — error if dynamic APIs are used
 export const dynamic = 'force-static';
@@ -1290,7 +1290,7 @@ const nextConfig: NextConfig = {
 Then opt individual routes in:
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx
+// app/[locale]/wh40k10e/armies/page.tsx
 export const experimental_ppr = true;
 
 export default function ArmiesPage() {
@@ -1320,7 +1320,7 @@ export default function ArmiesPage() {
 `generateStaticParams` tells Next.js which path segments to pre-build at compile time. Without it, dynamic route segments (`[id]`, `[slug]`) are rendered on first request.
 
 ```typescript
-// app/[locale]/[gameSystem]/reference/[unitId]/page.tsx
+// app/[locale]/wh40k10e/reference/[unitId]/page.tsx
 
 import { fetchAllUnits } from '@armoury/providers-bsdata';
 
@@ -1358,9 +1358,9 @@ export default async function UnitReferencePage({
 For nested dynamic segments, each segment level exports its own `generateStaticParams`. The parent's results are passed as `parentParams` to the child:
 
 ```typescript
-// app/[locale]/[gameSystem]/reference/[factionId]/[unitId]/page.tsx
+// app/[locale]/wh40k10e/reference/[factionId]/[unitId]/page.tsx
 
-// Parent segment: app/[locale]/[gameSystem]/reference/[factionId]/layout.tsx
+// Parent segment: app/[locale]/wh40k10e/reference/[factionId]/layout.tsx
 export async function generateStaticParams() {
     const factions = await fetchFactions();
     return factions.map((f) => ({ factionId: f.id }));
@@ -1462,7 +1462,7 @@ Use a consistent hierarchy so on-demand invalidation is surgical:
 When you cannot control individual `fetch()` calls (e.g., third-party SDK), `fetchCache` overrides caching behavior for all fetches in a route segment:
 
 ```typescript
-// app/[locale]/[gameSystem]/reference/layout.tsx
+// app/[locale]/wh40k10e/reference/layout.tsx
 
 // Force all fetches in this segment to cache — even if the SDK doesn't set cache options
 export const fetchCache = 'force-cache';
@@ -1725,8 +1725,8 @@ The Router Cache has two distinct TTL categories that control how long RSC Paylo
 
 **What this means for Armoury**:
 
-- **Reference pages** (`/reference/[gameSystem]/[unitId]`): Prefetched links stay in Router Cache for 5 minutes. Direct navigation fetches fresh data every time.
-- **App pages** (`/(app)/armies`): Zero Router Cache by default — every navigation triggers a server roundtrip. This is correct for user-specific data.
+- **Reference pages** (`/reference/wh40k10e/[unitId]`): Prefetched links stay in Router Cache for 5 minutes. Direct navigation fetches fresh data every time.
+- **App pages** (`/armies`): Zero Router Cache by default — every navigation triggers a server roundtrip. This is correct for user-specific data.
 - **Marketing pages** (`/(marketing)`): Zero Router Cache on direct navigation; 5 minutes on prefetched links.
 
 ```typescript
@@ -1776,7 +1776,7 @@ The client progressively renders as chunks arrive — no full-page spinner, no w
 `loading.js` in the `app/` directory creates an automatic `<Suspense>` boundary around the page. It shows while the page's Server Components are resolving:
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/loading.tsx
+// app/[locale]/wh40k10e/armies/loading.tsx
 // Shown instantly while ArmiesPage (async Server Component) is resolving
 export default function ArmiesLoading() {
     return (
@@ -1801,7 +1801,7 @@ export default function ArmiesLoading() {
 For pages with multiple independent data sections, use separate `<Suspense>` boundaries so a slow fetch in one section does not block others:
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/[id]/page.tsx
+// app/[locale]/wh40k10e/armies/[id]/page.tsx
 export default async function ArmyDetailPage({ params }) {
     const { id } = await params;
 
@@ -1831,7 +1831,7 @@ export default async function ArmyDetailPage({ params }) {
 `error.js` is the error boundary for a route segment. It catches errors thrown by Server Components and replaces the segment with an error UI.
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/error.tsx
+// app/[locale]/wh40k10e/armies/error.tsx
 'use client'; // error.js MUST be a Client Component
 
 import { useEffect } from 'react';
@@ -1929,13 +1929,13 @@ Is the content identical for all users (public, unauthenticated)?
 | Route Pattern                         | Mode                                | Rationale                                 |
 | ------------------------------------- | ----------------------------------- | ----------------------------------------- |
 | `/(marketing)/**`                     | Static                              | No user data, infrequent updates          |
-| `/reference/[gameSystem]/[unitId]`    | ISR (24h + webhook)                 | Shared data, updated by BSData releases   |
-| `/reference/[gameSystem]/[factionId]` | ISR (24h + webhook)                 | Same as unit pages                        |
-| `/(app)/armies`                       | PPR (static shell + dynamic list)   | Nav is static; army list is user-specific |
-| `/(app)/armies/[id]`                  | PPR (static shell + dynamic detail) | Header shell static; roster dynamic       |
-| `/(app)/armies/[id]/edit`             | Dynamic                             | Fully user-specific mutation page         |
-| `/(app)/matches/**`                   | Dynamic                             | Real-time match state, user-specific      |
-| `/(app)/campaigns/**`                 | Dynamic                             | User-specific campaign data               |
+| `/reference/wh40k10e/[unitId]`    | ISR (24h + webhook)                 | Shared data, updated by BSData releases   |
+| `/reference/wh40k10e/[factionId]` | ISR (24h + webhook)                 | Same as unit pages                        |
+| `/armies`                       | PPR (static shell + dynamic list)   | Nav is static; army list is user-specific |
+| `/armies/[id]`                  | PPR (static shell + dynamic detail) | Header shell static; roster dynamic       |
+| `/armies/[id]/edit`             | Dynamic                             | Fully user-specific mutation page         |
+| `/matches/**`                   | Dynamic                             | Real-time match state, user-specific      |
+| `/campaigns/**`                 | Dynamic                             | User-specific campaign data               |
 | `/auth/**`                            | Dynamic                             | Auth callbacks — always dynamic           |
 
 ### 15.3 Fetch Configuration Quick Reference
@@ -2009,7 +2009,7 @@ export async function getCachedFactions(gameSystem: string) {
 ```
 
 ```typescript
-// app/[locale]/[gameSystem]/reference/[factionId]/page.tsx
+// app/[locale]/wh40k10e/reference/[factionId]/page.tsx
 // Component-level: cache the entire component's RSC output
 export default async function FactionPage({ params }) {
     'use cache';
@@ -2161,7 +2161,7 @@ Page (dynamic — reads cookies)
 4. Dynamic components render fresh on every request
 
 ```typescript
-// app/[locale]/[gameSystem]/(app)/armies/page.tsx
+// app/[locale]/wh40k10e/armies/page.tsx
 import { Suspense } from 'react';
 
 // The page itself is dynamic (reads session)

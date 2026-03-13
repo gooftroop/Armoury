@@ -35,7 +35,7 @@ This phase ships five things: the app shell and navigation wrapper, Auth0 integr
 
 **Implementation Notes:**
 
-- Next.js App Router root layout with `[gameSystem]` dynamic segment for all game-scoped routes.
+- Next.js App Router root layout with `wh40k10e` dynamic segment for all game-scoped routes.
 - Expo Router tab layout mirrors web navigation structure.
 - Responsive shell: side nav at >=768px, bottom tab bar at <768px (US-GLB-09, US-GLB-10).
 - Profile popover in header via Radix Popover (web) or Tamagui Sheet (mobile).
@@ -64,7 +64,7 @@ This phase ships five things: the app shell and navigation wrapper, Auth0 integr
 
 **Conflict C-03 Resolution — Unauthenticated Web Access to References:**
 
-The plan previously implied all `/[gameSystem]/*` routes required authentication. Stories (L-03, US-AUTH-005) and the conflict analysis clarify the rule: the landing page (`/`) is fully public. All `/[gameSystem]/*` routes require authentication _except_ `/[gameSystem]/references`, which is the one unauthenticated-accessible game-scoped route on web (not mobile). Auth middleware checks the route pattern, not just token existence. A read-only banner is shown for unauthenticated users on the references route; create and edit actions are blocked with an auth prompt. No personal data endpoints are called while unauthenticated.
+The plan previously implied all `/wh40k10e/*` routes required authentication. Stories (L-03, US-AUTH-005) and the conflict analysis clarify the rule: the landing page (`/`) is fully public. All `/wh40k10e/*` routes require authentication _except_ `/wh40k10e/references`, which is the one unauthenticated-accessible game-scoped route on web (not mobile). Auth middleware checks the route pattern, not just token existence. A read-only banner is shown for unauthenticated users on the references route; create and edit actions are blocked with an auth prompt. No personal data endpoints are called while unauthenticated.
 
 **Implementation Notes:**
 
@@ -73,13 +73,13 @@ The plan previously implied all `/[gameSystem]/*` routes required authentication
 - Protected route middleware in Next.js performs server-side session check against route pattern.
 - Expo Router auth guard with secure token storage via expo-secure-store.
 - Token refresh handled by Auth0 SDK. Access token attached to API calls via interceptor.
-- Post-login redirect to last visited page or default (`/[gameSystem]/armies`).
+- Post-login redirect to last visited page or default (`/wh40k10e/armies`).
 - Playwright E2E tests run against Auth0 test tenant.
 
 **Acceptance Criteria:**
 
-- Unauthenticated users can access `/` and `/[gameSystem]/references` on web.
-- All other `/[gameSystem]/*` routes redirect unauthenticated users to `/login`.
+- Unauthenticated users can access `/` and `/wh40k10e/references` on web.
+- All other `/wh40k10e/*` routes redirect unauthenticated users to `/login`.
 - Post-login redirect restores the originally requested URL.
 - Read-only banner renders on the references route when unauthenticated.
 - Mobile routes are fully gated; no unauthenticated game-scoped access on mobile.
@@ -117,7 +117,7 @@ The plan previously implied all `/[gameSystem]/*` routes required authentication
 
 - Game system selection grid. V1 supports only Warhammer 40K 10th Edition, but the tile grid renders generically to establish the multi-system pattern.
 - Plugin registry provides game system metadata: name, icon, description, theme tokens.
-- Selecting a game system navigates to `/[gameSystem]/armies` (The Forge).
+- Selecting a game system navigates to `/wh40k10e/armies` (The Forge).
 - Selection persists to user preferences (server-side for authenticated users; localStorage for anonymous).
 - If offline before first sync, show offline indicator and disable selection until local data exists.
 - Mobile: identical flow via Expo Router, full-screen selector.
@@ -136,7 +136,7 @@ The plan previously implied all `/[gameSystem]/*` routes required authentication
 
 ### 4.4 The Forge (Army List)
 
-**Route:** `/[gameSystem]/armies`
+**Route:** `/wh40k10e/armies`
 **Complexity:** M | **Estimated Effort:** 4 days
 **Blocked by Missing Mockups:** No
 
@@ -169,7 +169,7 @@ The plan previously implied all `/[gameSystem]/*` routes required authentication
 - Swipe-to-delete on mobile with confirmation. Context menu on web for delete and duplicate.
 - Army cards navigate to the Army Detail page on tap.
 - Render-as-you-fetch with skeleton placeholders during load.
-- FAB or header action for "New Army" navigating to `/[gameSystem]/armies/new`.
+- FAB or header action for "New Army" navigating to `/wh40k10e/armies/new`.
 - Cached list shown with offline indicator when offline and cached data exists.
 
 **Acceptance Criteria:**
@@ -186,7 +186,7 @@ The plan previously implied all `/[gameSystem]/*` routes required authentication
 
 ### 4.5 Army Creation Page
 
-**Route:** `/[gameSystem]/armies/new`
+**Route:** `/wh40k10e/armies/new`
 **Complexity:** M | **Estimated Effort:** 3 days
 **Blocked by Missing Mockups:** No
 
@@ -298,7 +298,7 @@ State that survives refresh and is shareable via URL.
 
 | Entity                     | Route/Params                     | Stories                                    |
 | -------------------------- | -------------------------------- | ------------------------------------------ |
-| Selected game system       | `/[gameSystem]/...` path segment | US-LND-03, US-LND-04                       |
+| Selected game system       | `/wh40k10e/...` path segment | US-LND-03, US-LND-04                       |
 | Army list filters (future) | `?faction=...&points=...`        | Prepared in Phase 1, fully used in Phase 2 |
 
 ### Tier 3: Remote State (React Query)
@@ -339,7 +339,7 @@ Phase 1 is complete when all of the following are true:
 
 1. The app shell renders without errors on web (320px to 1440px) and mobile; no horizontal scroll at any breakpoint.
 2. Auth0 login and logout flows complete end-to-end on both platforms.
-3. Unauthenticated users can access `/` and `/[gameSystem]/references` on web; all other game-scoped routes redirect to `/login`.
+3. Unauthenticated users can access `/` and `/wh40k10e/references` on web; all other game-scoped routes redirect to `/login`.
 4. The landing page displays game system tiles with full-bleed illustrations, no "Planned" tags, and a visible registration CTA in primary color.
 5. The Forge renders an army list with faction splash cards, unit count badges, and Deploy buttons in primary style; duplicate and delete (with match-block guard) function correctly.
 6. Army Creation form enforces the faction-first detachment rule (AC-01) and hides the detachment selector for single-detachment factions (US-APG-12).
@@ -353,13 +353,13 @@ Phase 1 is complete when all of the following are true:
 
 ### End-to-End Acceptance Tests
 
-- [ ] Unauthenticated user visiting `/[gameSystem]/armies` is redirected to `/login`; after Auth0 login completes, they are returned to the original route.
+- [ ] Unauthenticated user visiting `/wh40k10e/armies` is redirected to `/login`; after Auth0 login completes, they are returned to the original route.
 - [ ] Auth0 logout flow clears the session cookie and redirects to `/`; subsequent navigation to a protected route redirects to `/login` again.
 - [ ] Game System Selector page at `/` renders all available game system tiles with full-bleed illustrations and no "Planned" tags visible.
-- [ ] The Forge at `/[gameSystem]/armies` renders the army list with faction splash cards, unit count badges, and functional Deploy buttons.
+- [ ] The Forge at `/wh40k10e/armies` renders the army list with faction splash cards, unit count badges, and functional Deploy buttons.
 - [ ] Duplicate army action on The Forge creates a copy with a "(Copy)" suffix and the new entry appears immediately in the list.
 - [ ] Delete army on The Forge is blocked when the army has an in-progress match; the guard UI prevents deletion and shows an explanatory message.
-- [ ] Army Creation form at `/[gameSystem]/armies/new` blocks submission when no faction is selected (AC-01 enforcement).
+- [ ] Army Creation form at `/wh40k10e/armies/new` blocks submission when no faction is selected (AC-01 enforcement).
 - [ ] Detachment selector is hidden for single-detachment factions (US-APG-12) and visible for multi-detachment factions.
 
 ### Component Tests (Orchestrational)
@@ -392,15 +392,15 @@ Phase 1 is complete when all of the following are true:
 > The render component receives everything via props and contains zero hooks except `useCallback`/`useMemo`.
 
 ```tsx
-// File: src/web/app/[gameSystem]/forge/page.tsx
+// File: src/web/app/wh40k10e/forge/page.tsx
 
 import { HydrationBoundary, dehydrate, useSuspenseQuery, useMutation } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import type { Army } from '@wh40k10e/models/ArmyModel.js';
 import type { Faction } from '@wh40k10e/types/entities.js';
-import { armyListOptions, factionListOptions } from '@shared/frontend/queries/armies.js';
-import { deleteArmyMutation, duplicateArmyMutation } from '@shared/frontend/mutations/armies.js';
+import { armyListOptions, factionListOptions } from '@armoury/clients-armies';
+import { deleteArmyMutation, duplicateArmyMutation } from '@armoury/clients-armies';
 import { getQueryClient } from '@web/lib/queryClient.js';
 
 // ---------------------------------------------------------------------------
@@ -471,7 +471,7 @@ export function ForgeContainer({ gameSystem }: { gameSystem: string }) {
         (armyId: string) => {
             window.location.href = `/${gameSystem}/army/${armyId}`;
         },
-        [gameSystem],
+        wh40k10e,
     );
 
     return (
@@ -519,7 +519,7 @@ This section maps each Phase 1 page to its concrete component tree. Each entry n
 
 **Page-level component**
 
-- `RootLayout` — `src/web/src/app/[gameSystem]/layout.tsx` (Next.js App Router root layout; default export required by framework). Wraps every game-scoped route with the full provider stack, shell chrome, and navigation.
+- `RootLayout` — `src/web/src/app/wh40k10e/layout.tsx` (Next.js App Router root layout; default export required by framework). Wraps every game-scoped route with the full provider stack, shell chrome, and navigation.
 - Mobile equivalent: `TabLayout` — `src/mobile/src/app/(tabs)/_layout.tsx`. Provides the Expo Router tab navigator with the same provider stack.
 
 **Orchestrational container**
@@ -580,7 +580,7 @@ This section maps each Phase 1 page to its concrete component tree. Each entry n
 
 **Page-level component**
 
-- `ForgePage` — `src/web/src/app/[gameSystem]/armies/page.tsx` (default export). SSR-prefetches the army list via `HydrationBoundary` + `armyListOptions` before handing off to `ForgeContainer`.
+- `ForgePage` — `src/web/src/app/wh40k10e/armies/page.tsx` (default export). SSR-prefetches the army list via `HydrationBoundary` + `armyListOptions` before handing off to `ForgeContainer`.
 
 **Orchestrational container**
 
@@ -601,7 +601,7 @@ This section maps each Phase 1 page to its concrete component tree. Each entry n
 
 **Page-level component**
 
-- `ArmyCreationPage` — `src/web/src/app/[gameSystem]/armies/new/page.tsx` (default export). Prefetches the faction list before rendering. Redirects to The Forge on successful creation.
+- `ArmyCreationPage` — `src/web/src/app/wh40k10e/armies/new/page.tsx` (default export). Prefetches the faction list before rendering. Redirects to The Forge on successful creation.
 
 **Orchestrational container**
 
@@ -882,8 +882,8 @@ Next.js App Router requires default exports for page and layout files. All other
 
 | File type   | Path pattern                                      | Export style                   |
 | ----------- | ------------------------------------------------- | ------------------------------ |
-| Root layout | `src/web/src/app/[gameSystem]/layout.tsx`         | Default (required by Next.js)  |
-| Page        | `src/web/src/app/[gameSystem]/[route]/page.tsx`   | Default (required by Next.js)  |
+| Root layout | `src/web/src/app/wh40k10e/layout.tsx`         | Default (required by Next.js)  |
+| Page        | `src/web/src/app/wh40k10e/[route]/page.tsx`   | Default (required by Next.js)  |
 | Middleware  | `src/web/src/middleware.ts`                       | Named (`config`, `middleware`) |
 | Component   | `src/web/src/components/[domain]/[Component].tsx` | Named                          |
 | Hook        | `src/web/src/hooks/[useHook].ts`                  | Named                          |
@@ -903,13 +903,13 @@ Expo Router layout files follow the same default-export convention as Next.js. A
 
 #### Shared query factories (`@armoury/shared`)
 
-Query option factories are pure TypeScript with no React imports. They live in `src/shared/frontend/queries/` and are imported by both web and mobile platform hooks. The hooks that call `useQuery()` live in each platform workspace; the factories do not.
+Query option factories are pure TypeScript with no React imports. They live in `src/shared/clients/` and are imported by both web and mobile platform hooks. The hooks that call `useQuery()` live in each platform workspace; the factories do not.
 
 | Factory              | Path                                         | Consumed by                                          |
 | -------------------- | -------------------------------------------- | ---------------------------------------------------- |
-| `armyListOptions`    | `src/shared/frontend/queries/armies.ts`      | `ForgeContainer` via `useArmies()`                   |
-| `factionListOptions` | `src/shared/frontend/queries/factions.ts`    | `ArmyCreationContainer` via `useFactions()`          |
-| `gameSystemsOptions` | `src/shared/frontend/queries/gameSystems.ts` | `GameSystemSelectorContainer` via `useGameSystems()` |
+| `armyListOptions`    | `src/shared/clients/armies/src/queries.ts`   | `ForgeContainer` via `useArmies()`                   |
+| `factionListOptions` | `src/shared/clients/factions/src/queries.ts` | `ArmyCreationContainer` via `useFactions()`          |
+| `gameSystemsOptions` | `src/shared/clients/queries/gameSystems.ts`  | `GameSystemSelectorContainer` via `useGameSystems()` |
 
 All imports use `.js` extensions, per the import rules in `AGENTS.md`.
 
@@ -918,7 +918,7 @@ All imports use `.js` extensions, per the import rules in `AGENTS.md`.
 Web components import shared query factories with the `@shared/` alias and `.js` extension:
 
 ```
-import { armyListOptions } from '@shared/frontend/queries/armies.js';
+import { armyListOptions } from '@armoury/clients-armies';
 ```
 
 Cross-workspace imports from `@armoury/systems` (game system plugin data) are accessed through `GameSystemContext`, not through direct imports, keeping Phase 1 game-agnostic per Constraint F.

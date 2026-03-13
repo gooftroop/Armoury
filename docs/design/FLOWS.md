@@ -43,7 +43,7 @@
 ```
 [Landing / Game System Selector] → {Select game system} → [~Loading: Data Sync] → [Login] → [Army List page (∅ Empty)]
 ```
-**Routes:** `/` → `/[gameSystem]/armies` (after sync) → `/login` (if unauthenticated) → `/[gameSystem]/armies`
+**Routes:** `/` → `/wh40k10e/armies` (after sync) → `/login` (if unauthenticated) → `/wh40k10e/armies`
 
 **Details:**
 - **[Landing / Game System Selector]**
@@ -71,7 +71,7 @@
 ```
 The Forge → {Tap "Add Army"} → (Faction Picker Modal) → {Select faction} → [Army Creation page] → {Fill name, detachment, points} → {Tap "Create"} → [Army page]
 ```
-**Routes:** `/[gameSystem]/armies` → `/[gameSystem]/armies/new` → `/[gameSystem]/armies/[armyId]`
+**Routes:** `/wh40k10e/armies` → `/wh40k10e/armies/new` → `/wh40k10e/armies/[armyId]`
 
 **Details:**
 - **The Forge**
@@ -99,7 +99,7 @@ The Forge → {Tap "Add Army"} → (Faction Picker Modal) → {Select faction} �
 ```
 [Army page] → {Tap "+" on section} → (Unit Add modal) → {Browse/search units} → {Tap "Add"} → [Army page (unit added)] → {Tap unit} → [Unit Configuration & Datasheet page] → {Configure loadout} → {Back} → [Army page (updated)]
 ```
-**Routes:** `/[gameSystem]/armies/[armyId]` → `/[gameSystem]/armies/[armyId]/units/add` → `/[gameSystem]/armies/[armyId]/units/[unitId]`
+**Routes:** `/wh40k10e/armies/[armyId]` → `/wh40k10e/armies/[armyId]/units/add` → `/wh40k10e/armies/[armyId]/units/[unitId]`
 
 **Details:**
 - **[Army page]**
@@ -131,7 +131,7 @@ The Forge → {Tap "Add Army"} → (Faction Picker Modal) → {Select faction} �
 ```
 War Ledger → {Tap "Create Match"} → (Match Creation Drawer) → {Select army, set name/date} → {Create} → [Match page (planning)] → {Tap "Link Opponent"} → (QR Code Modal) → {Opponent scans} → [Match page (linked)] → {Tap "Start"} → [Active Match]
 ```
-**Routes:** `/[gameSystem]/matches` → `/[gameSystem]/matches/new` → `/[gameSystem]/matches/[matchId]`
+**Routes:** `/wh40k10e/matches` → `/wh40k10e/matches/new` → `/wh40k10e/matches/[matchId]`
 
 **Details:**
 - **(Match Creation Drawer)**
@@ -166,13 +166,13 @@ War Ledger → {Tap "Create Match"} → (Match Creation Drawer) → {Select army
 ```
 [Active Match] → {Choose Basic mode} → [Basic Turn View] → {Track VP/CP, view units, use actions} → {End Turn} → [Opponent's Turn View] → ... → {End Round} → [Next Round] → ... → [Match Conclusion]
 ```
-**Routes:** `/[gameSystem]/matches/[matchId]?mode=basic`
+**Routes:** `/wh40k10e/matches/[matchId]?mode=basic`
 
 **Summary (see MATCH_EXPERIENCE.md for full detail):**
 - **[Basic Turn View]**
   - Single scroll view: round/turn header, VP/CP counters, unit list, action list.
   - “End Turn” CTA at bottom; becomes “End Round” for last player.
-  - Command Post accessible via button (route: `/[gameSystem]/matches/[matchId]/command-post`).
+  - Command Post accessible via button (route: `/wh40k10e/matches/[matchId]/command-post`).
 - **[Opponent’s Turn View]**
   - Show defensive options + reactive abilities, keep VP/CP visible.
 
@@ -189,7 +189,7 @@ War Ledger → {Tap "Create Match"} → (Match Creation Drawer) → {Select army
 ```
 [Active Match] → {Choose Guided mode} → [Command Phase] → {Process abilities, gain CP} → {Next Phase} → [Movement Phase] → [Shooting Phase] → [Charge Phase] → [Fight Phase] → {End Turn} → [Opponent's Turn (phase-aware)] → ... → [Match Conclusion]
 ```
-**Routes:** `/[gameSystem]/matches/[matchId]?mode=guided`
+**Routes:** `/wh40k10e/matches/[matchId]?mode=guided`
 
 **Summary (see MATCH_EXPERIENCE.md for full detail):**
 - **Phase header** shows stepper + round/turn + VP/CP counters.
@@ -210,7 +210,7 @@ War Ledger → {Tap "Create Match"} → (Match Creation Drawer) → {Select army
 ```
 [Active Match] → {Tap "End Match"} → (Confirmation Dialog) → [Reconciliation Screen] → {Both players confirm} → [Match Summary (past)]
 ```
-**Routes:** `/[gameSystem]/matches/[matchId]`
+**Routes:** `/wh40k10e/matches/[matchId]`
 
 **Details:**
 - **(Confirmation Dialog)** uses `Dialog`/`Sheet` depending on screen size.
@@ -226,7 +226,7 @@ War Ledger → {Tap "Create Match"} → (Match Creation Drawer) → {Select army
 ```
 Campaigns → {Tap "Create"} → [Campaign Creation page] → {Set type, name, dates, stages, rules} → {Create} → [Campaign page]
 ```
-**Routes:** `/[gameSystem]/campaigns` → `/[gameSystem]/campaigns/new` → `/[gameSystem]/campaigns/[campaignId]`
+**Routes:** `/wh40k10e/campaigns` → `/wh40k10e/campaigns/new` → `/wh40k10e/campaigns/[campaignId]`
 
 **Details:**
 - Type picker: Custom vs Crusade (generic labels in UI).
@@ -243,7 +243,7 @@ Campaigns → {Tap "Create"} → [Campaign Creation page] → {Set type, name, d
 ```
 [Campaign page] → {View standings} → {Tap army section} → {Tap unit} → [Campaign Unit page] → {Spend points, assign honours/scars} → {Back} → [Campaign page]
 ```
-**Routes:** `/[gameSystem]/campaigns/[campaignId]` → `/[gameSystem]/campaigns/[campaignId]/units/[unitId]`
+**Routes:** `/wh40k10e/campaigns/[campaignId]` → `/wh40k10e/campaigns/[campaignId]/units/[unitId]`
 
 **Details:**
 - Dashboard shows standings, phases, and participant armies.
@@ -258,7 +258,7 @@ Campaigns → {Tap "Create"} → [Campaign Creation page] → {Set type, name, d
 ```
 [Campaign page] → {Tap "Play Match"} → [Match Creation (campaign-scoped)] → {Link opponent} → [Active Match (campaign banner)] → {Play match} → [Match Conclusion (campaign)] → {Mark dealers/awards} → {Confirm} → [Campaign page (updated)]
 ```
-**Routes:** `/[gameSystem]/campaigns/[campaignId]` → `/[gameSystem]/matches/new` → `/[gameSystem]/matches/[matchId]`
+**Routes:** `/wh40k10e/campaigns/[campaignId]` → `/wh40k10e/matches/new` → `/wh40k10e/matches/[matchId]`
 
 **Details:**
 - Campaign banner on match header indicates campaign context.
@@ -277,7 +277,7 @@ Receiving side:
 ```
 Allies → {See pending request} → {Accept/Reject} → [Social page (friend added)]
 ```
-**Routes:** `/[gameSystem]/social`
+**Routes:** `/wh40k10e/social`
 
 **Details:**
 - Modal tabs for Code/QR/NFC (NFC Android-only).
@@ -392,7 +392,7 @@ Valid (green) ↔ Warnings (amber) ↔ Errors (red)
 - **Army card** → “Deploy” button (opens `Command Post` for that army when in a match).
 - **Match card** → tap opens match page directly in correct mode (past/future/active).
 - **Campaign notification** → deep links to `[Campaign page]` dashboard.
-- **Share army** → generates shareable URL/deeplink to `/[gameSystem]/armies/[armyId]`.
+- **Share army** → generates shareable URL/deeplink to `/wh40k10e/armies/[armyId]`.
 
 ---
 
@@ -411,24 +411,24 @@ Valid (green) ↔ Warnings (amber) ↔ Errors (red)
 
 - `/` → [Landing / Game System Selector]
 - `/login` → [Login]
-- `/[gameSystem]/armies` → The Forge
-- `/[gameSystem]/armies/new` → [Army Creation page]
-- `/[gameSystem]/armies/[armyId]` → [Army page]
-- `/[gameSystem]/armies/[armyId]/units/add` → [Unit Add modal]
-- `/[gameSystem]/armies/[armyId]/units/[unitId]` → [Unit Configuration & Datasheet page]
-- `/[gameSystem]/references/units/[unitId]` → [Unit Datasheet page]
-- `/[gameSystem]/matches` → War Ledger
-- `/[gameSystem]/matches/new` → [Match Creation]
-- `/[gameSystem]/matches/[matchId]` → [Match page]
-- `/[gameSystem]/matches/[matchId]/command-post` → Command Post
-- `/[gameSystem]/campaigns` → Campaigns
-- `/[gameSystem]/campaigns/new` → [Campaign Creation page]
-- `/[gameSystem]/campaigns/[campaignId]` → [Campaign page]
-- `/[gameSystem]/campaigns/[campaignId]/units/[unitId]` → [Campaign Unit page]
-- `/[gameSystem]/campaigns/[campaignId]/matches` → [Campaign Matches page]
-- `/[gameSystem]/campaigns/[campaignId]/manage` → [Campaign Management page]
-- `/[gameSystem]/social` → Allies
-- `/[gameSystem]/references` → References
+- `/wh40k10e/armies` → The Forge
+- `/wh40k10e/armies/new` → [Army Creation page]
+- `/wh40k10e/armies/[armyId]` → [Army page]
+- `/wh40k10e/armies/[armyId]/units/add` → [Unit Add modal]
+- `/wh40k10e/armies/[armyId]/units/[unitId]` → [Unit Configuration & Datasheet page]
+- `/wh40k10e/references/units/[unitId]` → [Unit Datasheet page]
+- `/wh40k10e/matches` → War Ledger
+- `/wh40k10e/matches/new` → [Match Creation]
+- `/wh40k10e/matches/[matchId]` → [Match page]
+- `/wh40k10e/matches/[matchId]/command-post` → Command Post
+- `/wh40k10e/campaigns` → Campaigns
+- `/wh40k10e/campaigns/new` → [Campaign Creation page]
+- `/wh40k10e/campaigns/[campaignId]` → [Campaign page]
+- `/wh40k10e/campaigns/[campaignId]/units/[unitId]` → [Campaign Unit page]
+- `/wh40k10e/campaigns/[campaignId]/matches` → [Campaign Matches page]
+- `/wh40k10e/campaigns/[campaignId]/manage` → [Campaign Management page]
+- `/wh40k10e/social` → Allies
+- `/wh40k10e/references` → References
 - `/account` → [Account page]
 - `/profile` → [Profile page]
 

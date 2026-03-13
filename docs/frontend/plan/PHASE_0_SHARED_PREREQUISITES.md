@@ -89,14 +89,14 @@ All React Context providers below must be defined with their type and a `createC
 
 | Context                | File                                               | Default Value | Wired In            |
 | ---------------------- | -------------------------------------------------- | ------------- | ------------------- |
-| `GameSystemContext`    | `src/shared/frontend/context/GameSystemContext.ts` | `null`        | Phase 1 root layout |
-| `DataContext`          | `src/shared/frontend/context/DataContext.ts`       | `null`        | Phase 1 root layout |
+| `GameSystemContext`    | `src/web/src/providers/GameSystemProvider.tsx` | `null`        | Phase 1 root layout |
+| `DataContext`          | `src/web/src/providers/DataContextProvider.tsx`       | `null`        | Phase 1 root layout |
 | Web `ThemeProvider`    | `src/web/src/providers/ThemeProvider.tsx`          | Dark static   | Phase 1             |
 | Mobile `ThemeProvider` | `src/mobile/src/providers/ThemeProvider.tsx`       | Dark static   | Phase 1             |
 
 **`ThemeProvider`** is dark-only and static per Conflict C-04. No switching logic in V1. The provider exists to satisfy Tamagui/Radix theme tree requirements, not to enable toggling.
 
-> Note: `src/shared/frontend/` is pure TypeScript with no React or platform imports. `GameSystemContext` and `DataContext` must export plain TypeScript types alongside the `createContext` call. The `createContext` import comes from React but lives in `.ts` files only because these files are consumed exclusively by React workspaces. If this restriction conflicts with lint rules, move the context factory to web/mobile workspace boundaries and export only the TypeScript types from `@armoury/shared/frontend`.
+> Note: `src/shared/clients/` is pure TypeScript with no React or platform imports. `GameSystemContext` and `DataContext` must export plain TypeScript types alongside the `createContext` call. The `createContext` import comes from React but lives in `.ts` files only because these files are consumed exclusively by React workspaces. If this restriction conflicts with lint rules, move the context factory to web/mobile workspace boundaries and export only the TypeScript types from `@armoury/clients-*`.
 
 ---
 
@@ -106,17 +106,17 @@ Query factory files must exist with exported function signatures and query key d
 
 | Factory File                                 | Exports                                                                                                                                                                                                            | Provided By Phase | Consumed By Phase(s) |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- | -------------------- |
-| `src/shared/frontend/queries/armies.ts`      | `armyListOptions`, `createArmyMutation`                                                                                                                                                                            | 1                 | 2, 3, 4, 5           |
-| `src/shared/frontend/queries/factions.ts`    | `factionListOptions`                                                                                                                                                                                               | 1                 | 2, 5                 |
-| `src/shared/frontend/queries/gameSystems.ts` | `gameSystemsOptions`                                                                                                                                                                                               | 1                 | All                  |
-| `src/shared/frontend/queries/units.ts`       | `unitCatalogOptions`                                                                                                                                                                                               | 2                 | 3, 5                 |
-| `src/shared/frontend/queries/matches.ts`     | `matchListOptions`, `matchDetailOptions`, `matchSummaryOptions`                                                                                                                                                    | 3                 | 4                    |
-| `src/shared/frontend/queries/missions.ts`    | `missionOptions`, `missionDetailOptions`                                                                                                                                                                           | 3                 | —                    |
-| `src/shared/frontend/queries/campaigns.ts`   | `campaignListOptions`, `campaignDetailOptions`, `campaignParticipantsOptions`, `crusadeUnitOptions`, `createCampaignMutation`, `updateCampaignMutation`, `transitionCampaignMutation`, `inviteParticipantMutation` | 4                 | —                    |
-| `src/shared/frontend/queries/friends.ts`     | `friendListOptions`, `friendRequestMutations`                                                                                                                                                                      | 4                 | —                    |
-| `src/shared/frontend/queries/references.ts`  | `factionListOptions`, `coreRulesOptions`, `unitCatalogOptions`                                                                                                                                                     | 5                 | —                    |
-| `src/shared/frontend/queries/account.ts`     | `accountOptions`, `updateAccountMutation`, `syncGameSystemMutation`                                                                                                                                                | 5                 | —                    |
-| `src/shared/frontend/queries/profile.ts`     | `profileOptions`, `matchHistoryOptions`, `armyListOptions` (re-export)                                                                                                                                             | 5                 | —                    |
+| `src/shared/clients/armies/src/queries.ts`      | `armyListOptions`, `createArmyMutation`                                                                                                                                                                            | 1                 | 2, 3, 4, 5           |
+| `src/shared/clients/factions/src/queries.ts`    | `factionListOptions`                                                                                                                                                                                               | 1                 | 2, 5                 |
+| `src/shared/clients/rules/src/gameSystems.ts` | `gameSystemsOptions`                                                                                                                                                                                               | 1                 | All                  |
+| `src/shared/clients/rules/src/units.ts`       | `unitCatalogOptions`                                                                                                                                                                                               | 2                 | 3, 5                 |
+| `src/shared/clients/matches/src/queries.ts`     | `matchListOptions`, `matchDetailOptions`, `matchSummaryOptions`                                                                                                                                                    | 3                 | 4                    |
+| `src/shared/clients/missions/src/queries.ts`    | `missionOptions`, `missionDetailOptions`                                                                                                                                                                           | 3                 | —                    |
+| `src/shared/clients/campaigns/src/queries.ts`   | `campaignListOptions`, `campaignDetailOptions`, `campaignParticipantsOptions`, `crusadeUnitOptions`, `createCampaignMutation`, `updateCampaignMutation`, `transitionCampaignMutation`, `inviteParticipantMutation` | 4                 | —                    |
+| `src/shared/clients/friends/src/queries.ts`     | `friendListOptions`, `friendRequestMutations`                                                                                                                                                                      | 4                 | —                    |
+| `src/shared/clients/rules/src/references.ts`  | `factionListOptions`, `coreRulesOptions`, `unitCatalogOptions`                                                                                                                                                     | 5                 | —                    |
+| `src/shared/clients/users/src/account.ts`     | `accountOptions`, `updateAccountMutation`, `syncGameSystemMutation`                                                                                                                                                | 5                 | —                    |
+| `src/shared/clients/users/src/profile.ts`     | `profileOptions`, `matchHistoryOptions`, `armyListOptions` (re-export)                                                                                                                                             | 5                 | —                    |
 
 **Phase 0 requirement applies only to cross-phase factories**: `armies.ts`, `factions.ts`, `gameSystems.ts`, `units.ts`, and `matches.ts`. Factories consumed only within their own phase (missions, campaigns, friends, references, account, profile) can be created inline during that phase.
 
@@ -238,7 +238,7 @@ Waiting on a mockup doesn't mean the surrounding work stalls. Each outstanding m
 | Unit Detail Drawer (visual shell)  | Shared Components §3.5 | P2, P3, P4, P5     | Same component, different drawer mode (reference, builder, match)    |
 | Match Creation Drawer              | Phase 3 §6.2           | Phase 4 §7.3, §7.5 | Context object with `armyId?`, `campaignId?`, `opponentScope` (C-07) |
 | `CampaignFormContainer`            | Phase 4 §7.2           | Phase 4 §7.6       | `mode` prop: `'create' \| 'manage'`                                  |
-| `armyListOptions` query factory    | Phase 1                | Phase 2, 3, 4, 5   | Direct import from `@shared/frontend/queries/armies.js`              |
+| `armyListOptions` query factory    | Phase 1                | Phase 2, 3, 4, 5   | Direct import from `@armoury/clients-armies`              |
 | `unitCatalogOptions` query factory | Phase 2                | Phase 5            | Re-exported from Phase 5 references query file                       |
 | `matchDetailOptions` query factory | Phase 3                | Phase 4            | Direct import                                                        |
 
@@ -319,7 +319,7 @@ Both platform apps import tokens, themes, and components from `@armoury/ui`. The
 - Components used only on web — these live in `src/web/src/components/`.
 - Components used only on mobile — these live in `src/mobile/src/components/`.
 - React hooks — hooks import React and must live in the platform workspace that uses them.
-- Pure TypeScript utilities (formatters, validators, query factories) — these live in `src/shared/frontend/`.
+- Pure TypeScript utilities (formatters, validators, query factories) — these live in `src/shared/clients/`.
 
 > **Decision rule:** If a component is used on both platforms, it belongs in `@armoury/ui`. If it is used only on one platform (even if used multiple times there), it belongs in that platform's `src/components/` directory. Tokens, themes, and styles always belong in `@armoury/ui` regardless of which platform consumes them.
 
@@ -594,7 +594,7 @@ export { Button } from './Button.web.jsx'; // overridden by bundler
 Every component in `@armoury/ui` must define its props in a `*.types.ts` file that has **zero platform imports**. This file may only import from:
 
 - Other `*.types.ts` files within `@armoury/ui`
-- `src/shared/frontend/types/`
+- `src/shared/types/src/`
 - Pure TypeScript utility types (`React.ReactNode` is allowed as it is type-only)
 
 ```typescript

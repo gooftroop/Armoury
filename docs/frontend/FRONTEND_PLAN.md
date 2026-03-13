@@ -59,14 +59,14 @@ This section defines how agents must structure business logic itself.
 
 ### 4a. Extraction Signals
 
-Extract business logic into a dedicated module in `src/shared/frontend/` when **any** of the following are true:
+Extract business logic into a dedicated module in `src/shared/clients/` when **any** of the following are true:
 
 | Signal                     | Threshold                                                                     | Action                                               |
 | -------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------- |
 | Conditional nesting        | ≥ 3 levels of `if`/`switch`/ternary                                           | Extract to a named function or decision engine       |
 | Function/hook length       | > 60 lines of logic (excluding imports, types, JSX)                           | Split into composable functions                      |
 | Duplicated branching       | Same condition checked in 2+ places                                           | Extract to a shared predicate or strategy            |
-| Testing requires rendering | Business logic can only be tested by mounting a component                     | Extract to pure TypeScript in `src/shared/frontend/` |
+| Testing requires rendering | Business logic can only be tested by mounting a component                     | Extract to pure TypeScript in `src/shared/clients/` |
 | Multiple concerns          | A single function handles validation AND transformation AND state transitions | Split into one function per concern                  |
 
 When in doubt, ask: _"Can I unit-test this logic by importing a plain function, without rendering anything?"_ If no, extract.
@@ -93,7 +93,7 @@ Pure Function  →  Predicate/Guard  →  Strategy Map  →  State Machine  → 
 **Pure function** — simple extraction:
 
 ```typescript
-// src/shared/frontend/match/scoring.ts
+// src/shared/clients/matches/src/scoring.ts
 export function calculateVictoryPoints(primaryScore: number, secondaryScores: ReadonlyArray<SecondaryScore>): number {
     return primaryScore + secondaryScores.reduce((sum, s) => sum + s.points, 0);
 }
@@ -117,8 +117,8 @@ function getDrawerConfig(mode: DrawerMode, unit: Unit) {
     // ... grows with every new mode
 }
 
-// ✅ After: strategy map in src/shared/frontend/
-// src/shared/frontend/drawer/drawerConfig.ts
+// ✅ After: strategy map in src/shared/clients/
+// src/shared/clients/matches/src/drawerConfig.ts
 import type { DrawerMode, Unit, DrawerConfig } from '@armoury/models';
 
 const strategies: Record<DrawerMode, (unit: Unit) => DrawerConfig> = {
@@ -139,7 +139,7 @@ export function resolveDrawerConfig(mode: DrawerMode, unit: Unit): DrawerConfig 
 **State machine** — match phase transitions:
 
 ```typescript
-// src/shared/frontend/match/matchPhase.ts
+// src/shared/clients/matches/src/matchPhase.ts
 import type { MatchPhase } from '@armoury/models';
 
 const transitions: Record<MatchPhase, ReadonlyArray<MatchPhase>> = {
@@ -162,12 +162,12 @@ export function nextPhases(current: MatchPhase): ReadonlyArray<MatchPhase> {
 
 | Logic Type                   | Location                                | Why                                                   |
 | ---------------------------- | --------------------------------------- | ----------------------------------------------------- |
-| Game-agnostic business logic | `src/shared/frontend/<domain>/`         | Shared by web + mobile, pure TypeScript, no React     |
+| Game-agnostic business logic | `src/shared/clients/<domain>/src/`      | Shared by web + mobile, pure TypeScript, no React     |
 | Game-specific business logic | `src/systems/src/<game>/<domain>/`      | Plugin-scoped, game-specific rules                    |
 | React hook wiring            | `src/web/hooks/` or `src/mobile/hooks/` | Platform-specific, consumes extracted logic           |
 | Orchestrational components   | `src/web/` or `src/mobile/`             | Platform-specific, composes hooks + render components |
 
-The boundary is: **logic that can be expressed without React imports goes in `src/shared/frontend/` or `src/systems/`**. Hooks and components consume that logic — they don't contain it.
+The boundary is: **logic that can be expressed without React imports goes in `src/shared/clients/` or `src/systems/`**. Hooks and components consume that logic — they don't contain it.
 
 ### 4e. Anti-Pattern: The Monolithic Hook
 
@@ -200,9 +200,9 @@ The fix is not "make the hook shorter" — it's **extract the logic into testabl
 
 ```typescript
 // ✅ The hook becomes thin wiring; logic lives in pure functions.
-import { canTransition, nextPhases } from '@shared/frontend/match/matchPhase.js';
-import { calculateVictoryPoints } from '@shared/frontend/match/scoring.js';
-import { resolveVisiblePanels } from '@shared/frontend/match/panels.js';
+import { canTransition, nextPhases } from '@armoury/clients-matches';
+import { calculateVictoryPoints } from '@armoury/clients-matches';
+import { resolveVisiblePanels } from '@armoury/clients-matches';
 
 function useMatchState(matchId: string) {
     const stream = useContext(MatchStreamContext);
@@ -361,7 +361,7 @@ Anti-pattern: a single `@armoury/shared-frontend` that accumulates everything.
 | Data layer (adapters, DAOs) | `src/shared/data/`              | Web, Mobile, Services              | DatabaseAdapter, ArmyDAO            |
 | External API clients        | `src/shared/clients/<service>/` | Varies per client                  | GitHubClient, WahapediaClient       |
 | RxJS stream facades         | `src/shared/streams/`           | Web, Mobile                        | MatchStream, PresenceStream         |
-| Query/mutation factories    | `src/shared/frontend/queries/`  | Web, Mobile                        | armyListOptions, createArmyMutation |
+| Query/mutation factories    | `src/shared/clients/<domain>/src/` | Web, Mobile                     | armyListOptions, createArmyMutation |
 | Shared types & interfaces   | `src/shared/types/`             | All workspaces                     | Platform enum, error classes        |
 | Validation engine           | `src/shared/validation/`        | Web, Mobile, Systems               | ValidationRule, ValidationEngine    |
 | Game system plugins         | `src/systems/src/<game>/`       | Web, Mobile (via @armoury/systems) | wh40k10e models, DAOs, types        |
@@ -372,7 +372,7 @@ Anti-pattern: a single `@armoury/shared-frontend` that accumulates everything.
 | Lambda services             | `src/services/<service>/`       | Deployed independently             | authorizer, campaigns               |
 | Shared tooling configs      | `src/tooling/<tool>/`           | All workspaces (devDep)            | ESLint, TypeScript, Vitest configs  |
 
-### 9c. The `src/shared/frontend/` Boundary
+### 9c. The `src/shared/clients/` Boundary
 
 This is the critical boundary for code sharing between web and mobile.
 
@@ -392,7 +392,7 @@ This is the critical boundary for code sharing between web and mobile.
 - Platform-specific imports (`react-dom`, `react-native`, `next/navigation`, `expo-router`)
 - CSS, Tailwind classes, StyleSheet objects
 
-Both Next.js and Expo consume `src/shared/frontend/`. React hooks or JSX create platform coupling. Pure TypeScript functions are universally consumable.
+Both Next.js and Expo consume `src/shared/clients/` packages. React hooks or JSX create platform coupling. Pure TypeScript functions are universally consumable.
 
 ### 9d. Package Naming Conventions
 

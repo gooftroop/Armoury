@@ -77,7 +77,7 @@ For components with complex local state, test through the rendered output. If bu
 ```typescript
 // src/web/hooks/__tests__/armyEditorUtils.test.ts
 import { describe, it, expect } from 'vitest';
-import { calculatePointsTotal, validateArmyComposition } from '@shared/frontend/armies/validators.js';
+import { calculatePointsTotal, validateArmyComposition } from '@armoury/clients-armies';
 import { makeUnit } from '../__fixtures__/makeUnit.js';
 
 describe('calculatePointsTotal', () => {
@@ -199,7 +199,7 @@ Seed the cache with `queryClient.setQueryData` to test loading, success, and err
 import { describe, it, expect } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { ArmyDetail } from '@web/src/components/ArmyDetail.js';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 import {
     createTestQueryClient,
     renderWithQuery,
@@ -241,13 +241,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DeleteArmyButton } from '@web/src/components/DeleteArmyButton.js';
-import * as armyService from '@shared/frontend/armies/service.js';
+import * as armyService from '@armoury/clients-armies';
 import {
     createTestQueryClient,
     renderWithQuery,
 import { createTestQueryClient, renderWithQuery } from '../__utils__/renderWithQuery.js';
 
-vi.mock('@shared/frontend/armies/service.js');
+vi.mock('@armoury/clients-armies');
 
 describe('DeleteArmyButton', () => {
     beforeEach(() => {
@@ -398,7 +398,7 @@ import { Subject } from 'rxjs';
 import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMatchSync } from '@web/hooks/useMatchSync.js';
-import { matchDetailOptions } from '@shared/frontend/matches/queries.js';
+import { matchDetailOptions } from '@armoury/clients-matches';
 import { makeMatch } from '../__fixtures__/makeMatch.js';
 import type { IMatchStream } from '@armoury/streams';
 import type { Match } from '@armoury/models';
