@@ -77,5 +77,85 @@
     },
     "loading": {
         "default": "Loading..."
+    },
+    "forge": {
+        "title": "The Forge",
+        "subtitle": "Your armies, ready for battle",
+        "emptyState": {
+            "title": "No armies yet",
+            "description": "Create your first army to get started.",
+            "action": "Create Army"
+        },
+        "filters": {
+            "label": "Filters",
+            "faction": "Faction",
+            "allFactions": "All Factions",
+            "points": "Points",
+            "allPoints": "All Sizes",
+            "sort": "Sort By",
+            "sortNewest": "Newest First",
+            "sortOldest": "Oldest First",
+            "sortName": "Name (A–Z)",
+            "sortNameDesc": "Name (Z–A)",
+            "sortPoints": "Points (Low–High)",
+            "sortPointsDesc": "Points (High–Low)",
+            "clear": "Clear Filters"
+        },
+        "actions": {
+            "deploy": "Deploy",
+            "duplicate": "Duplicate",
+            "delete": "Delete",
+            "createArmy": "Create Army"
+        },
+        "deleteConfirm": {
+            "title": "Delete Army",
+            "description": "Are you sure you want to delete \"{armyName}\"? This action cannot be undone.",
+            "confirm": "Delete",
+            "cancel": "Cancel"
+        },
+        "card": {
+            "units": "{count, plural, =0 {No units} one {# unit} other {# units}}",
+            "points": "{current} / {limit} pts",
+            "lastModified": "Last modified {date}"
+        }
+    },
+    "armyCreation": {
+        "title": "Create Army",
+        "form": {
+            "name": "Army Name",
+            "namePlaceholder": "Enter army name",
+            "faction": "Faction",
+            "factionPlaceholder": "Select a faction",
+            "detachment": "Detachment",
+            "detachmentPlaceholder": "Select a detachment",
+            "battleSize": "Battle Size",
+            "battleSizePlaceholder": "Select battle size"
+        },
+        "battleSizes": {
+            "Incursion": "Incursion (1000 pts)",
+            "StrikeForce": "Strike Force (2000 pts)",
+            "Onslaught": "Onslaught (3000 pts)"
+        },
+        "validation": {
+            "nameRequired": "Army name is required",
+            "nameMaxLength": "Army name must be {max} characters or fewer",
+            "factionRequired": "Select a faction",
+            "detachmentRequired": "Select a detachment",
+            "battleSizeRequired": "Select a battle size"
+        },
+        "actions": {
+            "create": "Create Army",
+            "creating": "Creating…",
+            "cancel": "Cancel"
+        },
+        "success": "Army \"{armyName}\" created successfully",
+        "error": "Failed to create army. Please try again."
+    },
+    "shared": {
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "loading": "Loading…",
+        "noResults": "No results found"
     }
 }
