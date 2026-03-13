@@ -14,6 +14,7 @@ import { parseGameSystem } from '@armoury/providers-bsdata';
 // Mock the xml-parser module
 vi.mock('@armoury/providers-bsdata', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@armoury/providers-bsdata')>();
+
     return { ...actual, parseGameSystem: vi.fn() };
 });
 

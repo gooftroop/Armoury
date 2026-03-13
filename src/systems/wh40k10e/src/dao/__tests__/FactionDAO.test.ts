@@ -18,6 +18,7 @@ vi.mock('../../data/FactionDataParser.js', () => ({
  */
 vi.mock('@armoury/providers-bsdata', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@armoury/providers-bsdata')>();
+
     return {
         ...actual,
         parseCatalogue: vi.fn((content: string) => {
