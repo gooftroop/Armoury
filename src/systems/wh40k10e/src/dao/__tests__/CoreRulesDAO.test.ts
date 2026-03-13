@@ -12,9 +12,10 @@ import type { Faction } from '@/types/entities.js';
 import { parseGameSystem } from '@armoury/providers-bsdata';
 
 // Mock the xml-parser module
-vi.mock('@armoury/providers-bsdata', () => ({
-    parseGameSystem: vi.fn(),
-}));
+vi.mock('@armoury/providers-bsdata', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@armoury/providers-bsdata')>();
+    return { ...actual, parseGameSystem: vi.fn() };
+});
 
 const CORE_RULES_FILE = 'Warhammer%2040%2C000.gst';
 const CORE_RULES_SYNC_KEY = 'core:wh40k-10e.gst';
