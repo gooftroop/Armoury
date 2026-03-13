@@ -1,4 +1,4 @@
-> **Document Status:** This document defines the **target architecture** for component design in the Armoury monorepo. Code examples use planned component names (e.g., `ArmyListContainer`, `ArmyCard`) from [FRONTEND_PLAN.md](./FRONTEND_PLAN.md) to illustrate patterns — these components do not exist in code yet. The `src/shared/frontend/` directory referenced throughout is a **Phase 0 planned directory** (see [PHASE_0_SHARED_PREREQUISITES.md](./plan/PHASE_0_SHARED_PREREQUISITES.md)) that has not been created. Where existing code is referenced, it is noted explicitly. All patterns and guidelines are approved architectural decisions ready for implementation.
+> **Document Status:** This document defines the **target architecture** for component design in the Armoury monorepo. Code examples use planned component names (e.g., `ArmyListContainer`, `ArmyCard`) from [FRONTEND_PLAN.md](./FRONTEND_PLAN.md) to illustrate patterns — these components do not exist in code yet. The `src/shared/clients/` directory referenced throughout is a **Phase 0 planned directory** (see [PHASE_0_SHARED_PREREQUISITES.md](./plan/PHASE_0_SHARED_PREREQUISITES.md)) that has not been created. Where existing code is referenced, it is noted explicitly. All patterns and guidelines are approved architectural decisions ready for implementation.
 
 # Component Architecture
 
@@ -169,7 +169,7 @@ function ArmyListView({ armies, isLoading, filters, onDelete }: ArmyListViewProp
 
 - Render components must NOT import `@tanstack/react-query` or any data-fetching library directly (FE-015).
 - Both the orchestrational and render component live in the same platform workspace (`src/web/` or `src/mobile/`).
-- Query/mutation factories live in `src/shared/frontend/` _(Phase 0 — planned, not yet created; current query factories are in `src/shared/clients/_/queries/`)\* as pure TypeScript (FE-002).
+- Query/mutation factories live in `src/shared/clients/` _(Phase 0 — planned, not yet created; current query factories are in `src/shared/clients/_/queries/`)\* as pure TypeScript (FE-002).
 
 ### Pattern 2: Children Composition
 
@@ -529,14 +529,14 @@ function ArmyDetailContainer({ armyId }: { armyId: string }) {
     }
     ```
 
-5. **Hooks live in the platform workspace that uses them.** Never put React hooks in `src/shared/frontend/` (FE-002). The shared layer contains only `queryOptions` factories, mutation functions, and pure TypeScript utilities. _(Note: `src/shared/frontend/` is a Phase 0 planned directory — see [PHASE_0_SHARED_PREREQUISITES.md](./plan/PHASE_0_SHARED_PREREQUISITES.md). Current query factories are in `src/shared/clients/_/queries/`.)\*
+5. **Hooks live in the platform workspace that uses them.** Never put React hooks in `src/shared/clients/` (FE-002). The shared layer contains only `queryOptions` factories, mutation functions, and pure TypeScript utilities. _(Note: `src/shared/clients/` is a Phase 0 planned directory — see [PHASE_0_SHARED_PREREQUISITES.md](./plan/PHASE_0_SHARED_PREREQUISITES.md). Current query factories are in `src/shared/clients/_/queries/`.)\*
 
 ### Platform-Agnostic Hook Logic
 
-When hook logic is identical across web and mobile, extract the **pure TypeScript** part into `src/shared/frontend/` _(Phase 0 — planned, not yet created)_ and wrap it in platform-specific hooks:
+When hook logic is identical across web and mobile, extract the **pure TypeScript** part into `src/shared/clients/` _(Phase 0 — planned, not yet created)_ and wrap it in platform-specific hooks:
 
 ```typescript
-// src/shared/frontend/utils/armyFilters.ts — pure TS, no React (planned path)
+// src/shared/clients/utils/armyFilters.ts — pure TS, no React (planned path)
 export function parseArmyFilters(params: Record<string, string | undefined>): ArmyFilters {
     return {
         faction: params['faction'] ?? undefined,
@@ -546,7 +546,7 @@ export function parseArmyFilters(params: Record<string, string | undefined>): Ar
 }
 
 // src/web/src/hooks/useArmyFilters.ts — web hook using shared logic
-import { parseArmyFilters } from '@shared/frontend/utils/armyFilters.js';
+import { parseArmyFilters } from '@armoury/clients-armies';
 
 export function useArmyFilters() {
     const searchParams = useSearchParams();
@@ -555,7 +555,7 @@ export function useArmyFilters() {
 }
 
 // src/mobile/src/hooks/useArmyFilters.ts — mobile hook using shared logic
-import { parseArmyFilters } from '@shared/frontend/utils/armyFilters.js';
+import { parseArmyFilters } from '@armoury/clients-armies';
 
 export function useArmyFilters() {
     const params = useLocalSearchParams<Record<string, string>>();
@@ -602,7 +602,7 @@ Is it derived from other state?
 | ---- | ---------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1    | `useState`             | Dropdown open/closed, input value, selected tab        | Scoped to one component. Reset on unmount.                                                                                                                                   |
 | 2    | URL params             | Filters, pagination, sort order, selected army ID      | Shareable, bookmarkable. Use `useSearchParams` (web) or `useLocalSearchParams` (mobile).                                                                                     |
-| 3    | React Query            | Army list, match details, faction data, user profile   | All server/async data. Never store in useState. Use `queryOptions` factories from `src/shared/frontend/` _(Phase 0 planned; currently in `src/shared/clients/_/queries/`)\*. |
+| 3    | React Query            | Army list, match details, faction data, user profile   | All server/async data. Never store in useState. Use `queryOptions` factories from `src/shared/clients/` _(Phase 0 planned; currently in `src/shared/clients/_/queries/`)\*. |
 | 4    | RxJS `BehaviorSubject` | Presence map, WebSocket streams, real-time match state | Global reactive state. Subscribe via `useSyncExternalStore`. See [RXJS_STATE.md](./RXJS_STATE.md).                                                                           |
 | 5    | React Context          | Theme, locale, auth session                            | LAST RESORT. Document why other tiers don't work. Never for server data or frequently-changing values.                                                                       |
 
@@ -652,7 +652,7 @@ Is it a hook used ONLY by this component?
 
 Is it a utility function used ONLY by this component?
 ├── YES → ComponentName/utils.ts (or inline if short)
-└── NO → src/{web|mobile}/src/utils/ or src/shared/frontend/utils/ *(Phase 0 planned)*
+└── NO → src/{web|mobile}/src/utils/ or src/shared/clients/utils/ *(Phase 0 planned)*
 
 Is it a style definition (CVA variants, class helpers)?
 ├── YES → ComponentName/styles.ts
@@ -774,7 +774,7 @@ The project's cross-platform strategy is:
 
 ```
 ┌──────────────────────────────────────────┐
-│      src/shared/frontend/ (Phase 0)    │
+│      src/shared/clients/ (Phase 0)    │
 │     Pure TypeScript — no React, no JSX   │
 │  (query factories, business logic, types)│
 └──────────────┬───────────────────────────┘
@@ -794,12 +794,12 @@ The project's cross-platform strategy is:
 1. **Shared layer is pure TypeScript** — no React, no hooks, no JSX, no platform APIs (FE-002).
 2. **UI components are platform-specific** — web components in `src/web/`, mobile components in `src/mobile/`.
 3. **Hooks are platform-specific** — they wrap shared `queryOptions` factories or pure TS utilities.
-4. **Business logic is shared** — validators, formatters, transformers, query factories live in `src/shared/frontend/` _(Phase 0 planned; currently query factories are in `src/shared/clients/_/queries/`)\*.
+4. **Business logic is shared** — validators, formatters, transformers, query factories live in `src/shared/clients/` _(Phase 0 planned; currently query factories are in `src/shared/clients/_/queries/`)\*.
 
 ### Pattern: Shared Query Factory + Platform Hook
 
 ```typescript
-// src/shared/frontend/queries/armies.ts — pure TS (planned path)
+// src/shared/clients/armies/src/queries.ts — pure TS (planned path)
 export const armyListOptions = (filters: ArmyFilters) =>
     queryOptions({
         queryKey: ['armies', 'list', filters] as const,
@@ -840,10 +840,10 @@ Metro (mobile) and webpack (web) resolve the correct file automatically based on
 
 | Code                     | Location                                                                                       | Why                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------- |
-| `queryOptions()` factory | `src/shared/frontend/queries/` _(Phase 0 planned; currently `src/shared/clients/_/queries/`)\* | Pure TS, used by both platforms |
+| `queryOptions()` factory | `src/shared/clients/queries/` _(Phase 0 planned; currently `src/shared/clients/_/queries/`)\* | Pure TS, used by both platforms |
 | `useQuery()` hook        | `src/{web\|mobile}/src/hooks/`                                                                 | React hook = platform-specific  |
-| Validator function       | `src/shared/frontend/utils/` _(Phase 0 planned)_                                               | Pure TS logic                   |
-| Date formatter           | `src/shared/frontend/utils/` _(Phase 0 planned)_                                               | Pure TS logic                   |
+| Validator function       | `src/shared/clients/utils/` _(Phase 0 planned)_                                               | Pure TS logic                   |
+| Date formatter           | `src/shared/clients/utils/` _(Phase 0 planned)_                                               | Pure TS logic                   |
 | React component          | `src/{web\|mobile}/src/components/`                                                            | UI is platform-specific         |
 | TypeScript interface     | `src/shared/types/`                                                                            | Cross-cutting type              |
 | Component-scoped type    | `ComponentName/types.ts`                                                                       | Colocated                       |
@@ -1200,7 +1200,7 @@ describe('useArmyFilters', () => {
 Pure functions — no React, no rendering:
 
 ```typescript
-// src/shared/frontend/__tests__/armyFilters.test.ts (planned path)
+// src/shared/clients/__tests__/armyFilters.test.ts (planned path)
 describe('parseArmyFilters', () => {
     it('returns defaults when no params provided', () => {
         expect(parseArmyFilters({})).toEqual({
@@ -1509,7 +1509,7 @@ import { Image } from 'expo-image';
 
 ## Agent Guidance: Preventing Spaghetti Without an Adapter Layer
 
-> **Context:** An earlier planning iteration introduced a phantom "frontend adapter" layer (`src/shared/frontend/adapters/`, `src/{web|mobile}/src/adapters/`, `src/systems/src/{gameSystem}/adapters/`) intended to prevent behavior variants from spaghettifying components. That layer was never implemented because **the existing architecture already solves this problem through simpler, proven patterns**. This section documents the actual anti-spaghetti strategy so future agents do not re-introduce unnecessary abstraction.
+> **Context:** An earlier planning iteration introduced a phantom "frontend adapter" layer (`src/shared/clients/adapters/`, `src/{web|mobile}/src/adapters/`, `src/systems/src/{gameSystem}/adapters/`) intended to prevent behavior variants from spaghettifying components. That layer was never implemented because **the existing architecture already solves this problem through simpler, proven patterns**. This section documents the actual anti-spaghetti strategy so future agents do not re-introduce unnecessary abstraction.
 
 ### Why the Adapter Layer Was Removed
 

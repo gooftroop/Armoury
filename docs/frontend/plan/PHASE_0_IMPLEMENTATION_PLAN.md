@@ -15,7 +15,7 @@
 
 - All interfaces pass `tsc --noEmit`
 - No Phase 2+ code merged until all interface contracts are stable
-- `npm install` succeeds with the new workspaces (`@armoury/frontend-context`, `@armoury/frontend-queries`, `@armoury/ui`)
+- `npm install` succeeds with the new workspaces (`@armoury/clients-armies`, `@armoury/clients-rules`, `@armoury/clients-factions`, `@armoury/clients-crusades`, `@armoury/clients-missions`, `@armoury/clients-matches`, `@armoury/clients-campaigns`, `@armoury/clients-friends`, `@armoury/clients-users`, `@armoury/ui`)
 - `turbo run typecheck` passes for all new and affected workspaces
 
 **Working Context**:
@@ -33,11 +33,11 @@ The following questions were raised during planning and resolved with the user:
 1. **Error contract location** → `src/shared/data/src/errors.ts` — collocated with existing data layer error types. No new workspace needed.
 
 2. **Frontend workspace structure** → Two separate workspaces:
-   - `src/shared/frontend/context/` → workspace `@armoury/frontend-context` with its own `package.json` and `tsconfig.json`
-   - `src/shared/frontend/queries/` → workspace `@armoury/frontend-queries` with its own `package.json` and `tsconfig.json`
+   - `src/web/src/providers/` and `src/mobile/src/providers/` for React context providers (no standalone workspace package)
+   - `src/shared/clients/` with client workspaces (`@armoury/clients-*`)
    - These follow the monorepo convention: `@armoury/{name}`, one slash only, no `@shared` prefix in package names.
 
-3. **TanStack Query dependency** → `devDependency` on `@armoury/frontend-queries`. Type-only usage, no runtime cost.
+3. **TanStack Query dependency** → `devDependency` on the relevant `@armoury/clients-*` package. Type-only usage, no runtime cost.
 
 ---
 
@@ -49,15 +49,15 @@ Six task groups, ordered by dependency. Groups 1–4 can be parallelized. Group 
 
 **Deliverable**: `GameSystemContext` and `DataContext` type definitions with `createContext` calls.
 
-**Workspace**: `@armoury/frontend-context` at `src/shared/frontend/context/`
+**Location**: platform providers in `src/web/src/providers/` and `src/mobile/src/providers/`
 
 | # | File | Exports | Notes |
 |---|------|---------|-------|
-| 1.1 | `src/shared/frontend/context/package.json` | — | Workspace config, `@armoury/frontend-context` |
-| 1.2 | `src/shared/frontend/context/tsconfig.json` | — | Extends base, Bundler moduleResolution, jsx: react-jsx |
-| 1.3 | `src/shared/frontend/context/src/GameSystemContext.ts` | `GameSystemContextValue` (interface), `GameSystemContext` (React.Context) | Default value: `null`. |
-| 1.4 | `src/shared/frontend/context/src/DataContext.ts` | `DataContextValue` (interface), `DataContext` (React.Context) | Default value: `null`. |
-| 1.5 | `src/shared/frontend/context/src/index.ts` | Barrel re-export of 1.3 and 1.4 | Types and values separated. |
+| 1.1 | `src/web/src/providers/GameSystemProvider.tsx` | `GameSystemContextValue` (interface), `GameSystemContext` (React.Context) | Web provider/context entrypoint |
+| 1.2 | `src/web/src/providers/DataContextProvider.tsx` | `DataContextValue` (interface), `DataContext` (React.Context) | Web provider/context entrypoint |
+| 1.3 | `src/mobile/src/providers/GameSystemProvider.tsx` | `GameSystemContextValue` (interface), `GameSystemContext` (React.Context) | Mobile provider/context entrypoint |
+| 1.4 | `src/mobile/src/providers/DataContextProvider.tsx` | `DataContextValue` (interface), `DataContext` (React.Context) | Mobile provider/context entrypoint |
+| 1.5 | `src/shared/types/src/contexts.ts` | Shared context value type exports (type-only) | Keeps shared layer React-free. |
 
 **Type Signatures**:
 
@@ -97,19 +97,19 @@ export const DataContext = createContext<DataContextValue | null>(null);
 
 **Deliverable**: Cross-phase query factory files with exported function signatures and query key definitions. Bodies are `throw new Error('Not implemented')` stubs.
 
-**Workspace**: `@armoury/frontend-queries` at `src/shared/frontend/queries/`
+**Workspace location**: `src/shared/clients/` (`@armoury/clients-*`)
 
 | # | File | Exports | Consumed By |
 |---|------|---------|-------------|
-| 2.1 | `src/shared/frontend/queries/package.json` | — | Workspace config, `@armoury/frontend-queries` |
-| 2.2 | `src/shared/frontend/queries/tsconfig.json` | — | Extends base, Bundler moduleResolution |
-| 2.3 | `src/shared/frontend/queries/src/keys.ts` | `queryKeys` object (centralized key factory) | All query files |
-| 2.4 | `src/shared/frontend/queries/src/armies.ts` | `armyListOptions`, `createArmyMutation` | P2, P3, P4, P5 |
-| 2.5 | `src/shared/frontend/queries/src/factions.ts` | `factionListOptions` | P2, P5 |
-| 2.6 | `src/shared/frontend/queries/src/gameSystems.ts` | `gameSystemsOptions` | All |
-| 2.7 | `src/shared/frontend/queries/src/units.ts` | `unitCatalogOptions` | P3, P5 |
-| 2.8 | `src/shared/frontend/queries/src/matches.ts` | `matchListOptions`, `matchDetailOptions`, `matchSummaryOptions` | P4 |
-| 2.9 | `src/shared/frontend/queries/src/index.ts` | Barrel re-export of 2.3–2.8 | — |
+| 2.1 | `src/shared/clients/armies/package.json` | — | Workspace config, `@armoury/clients-armies` |
+| 2.2 | `src/shared/clients/rules/package.json` | — | Workspace config, `@armoury/clients-rules` |
+| 2.3 | `src/shared/clients/armies/src/queries.ts` | `armyListOptions`, `createArmyMutation` | P2, P3, P4, P5 |
+| 2.4 | `src/shared/clients/factions/src/queries.ts` | `factionListOptions` | P2, P5 |
+| 2.5 | `src/shared/clients/rules/src/gameSystems.ts` | `gameSystemsOptions` | All |
+| 2.6 | `src/shared/clients/rules/src/units.ts` | `unitCatalogOptions` | P3, P5 |
+| 2.7 | `src/shared/clients/matches/src/queries.ts` | `matchListOptions`, `matchDetailOptions`, `matchSummaryOptions` | P4 |
+| 2.8 | `src/shared/clients/src/keys.ts` | `queryKeys` object (centralized key factory) | All query files |
+| 2.9 | `src/shared/clients/src/index.ts` | Barrel re-export of client query factories | — |
 
 **Type Signatures** (example — `armies.ts`):
 
@@ -333,7 +333,7 @@ This is the largest task group. It creates the workspace, directory structure, p
 | 5A.1 | Move `src/ui/` → `src/shared/ui/` | Git mv to preserve history. Copy existing `types.ts` and `index.ts`. |
 | 5A.2 | Create `src/shared/ui/package.json` | Per §11.4 — subpath exports for tokens, themes, styles, components. |
 | 5A.3 | Create `src/shared/ui/tsconfig.json` | Per §11.5 — Bundler module resolution, jsx: react-jsx. |
-| 5A.4 | Update root `package.json` workspaces | Add `"src/shared/ui"`, `"src/shared/frontend/context"`, `"src/shared/frontend/queries"`. Remove `"src/ui"` if present (it's not currently in workspaces). |
+| 5A.4 | Update root `package.json` workspaces | Add `"src/shared/ui"` and the new `"src/shared/clients/*"` workspaces. Remove `"src/ui"` if present (it's not currently in workspaces). |
 | 5A.5 | Run `npm install` | Verify workspace links resolve. |
 
 #### 5B — Design Tokens
@@ -413,8 +413,8 @@ Plus barrel files:
 | 6.1 | `npm install` succeeds | `npm install` exit code 0 |
 | 6.2 | `@armoury/ui` typechecks | `turbo run typecheck --filter=@armoury/ui` |
 | 6.3 | `@armoury/streams` typechecks | `turbo run typecheck --filter=@armoury/streams` |
-| 6.4 | `@armoury/frontend-context` typechecks | `turbo run typecheck --filter=@armoury/frontend-context` |
-| 6.5 | `@armoury/frontend-queries` typechecks | `turbo run typecheck --filter=@armoury/frontend-queries` |
+| 6.4 | Web/mobile providers typecheck | `turbo run typecheck --filter=@armoury/web --filter=@armoury/mobile` |
+| 6.5 | `@armoury/clients-*` packages typecheck | `turbo run typecheck --filter=@armoury/clients-*` |
 | 6.6 | `@armoury/data` typechecks (error contract) | `turbo run typecheck --filter=@armoury/data` |
 | 6.7 | Full monorepo typecheck | `npm run typecheck` |
 | 6.8 | Lint passes | `npm run lint` |
@@ -439,7 +439,7 @@ Task Group 5B–5F (UI Scaffold)  ──────┘
 **Parallelizable**: Groups 1, 2, 3, 4, and 5A can all start simultaneously.
 **Sequential**: 5B–5F depend on 5A. Group 6 depends on all others.
 
-**Cross-group dependency**: Group 2 (`@armoury/frontend-queries`) imports `ApiErrorResponse` from Group 4 (`@armoury/data`). Both workspaces must be registered in root `package.json` before `npm install`.
+**Cross-group dependency**: Group 2 (`@armoury/clients-*`) imports `ApiErrorResponse` from Group 4 (`@armoury/data`). Workspaces must be registered in root `package.json` before `npm install`.
 
 ---
 
@@ -494,11 +494,11 @@ Complete ordered list of every file to create or modify. Agent must verify each 
 ### New Directories
 
 ```
-src/shared/frontend/                        (new)
-src/shared/frontend/context/                (new — workspace root)
-src/shared/frontend/context/src/            (new)
-src/shared/frontend/queries/                (new — workspace root)
-src/shared/frontend/queries/src/            (new)
+src/shared/clients/                         (new)
+src/web/src/providers/                      (existing provider location)
+src/mobile/src/providers/                   (existing provider location)
+src/shared/clients/armies/                  (new — workspace root)
+src/shared/clients/rules/                   (new — workspace root)
 src/shared/streams/src/social/              (new)
 src/shared/streams/src/campaigns/           (new)
 src/shared/ui/                              (moved from src/ui/)
@@ -524,22 +524,22 @@ src/shared/ui/src/components/separator/
 ### New Files (by Task Group)
 
 **Group 1 — Context Scaffolds** (5 files):
-- [ ] `src/shared/frontend/context/package.json`
-- [ ] `src/shared/frontend/context/tsconfig.json`
-- [ ] `src/shared/frontend/context/src/GameSystemContext.ts`
-- [ ] `src/shared/frontend/context/src/DataContext.ts`
-- [ ] `src/shared/frontend/context/src/index.ts`
+- [ ] `src/shared/types/src/contexts.ts` (shared context value types only)
+- [ ] `src/web/src/providers/GameSystemProvider.tsx`
+- [ ] `src/web/src/providers/DataContextProvider.tsx`
+- [ ] `src/mobile/src/providers/GameSystemProvider.tsx`
+- [ ] `src/mobile/src/providers/DataContextProvider.tsx`
 
 **Group 2 — Query Factory Shells** (9 files):
-- [ ] `src/shared/frontend/queries/package.json`
-- [ ] `src/shared/frontend/queries/tsconfig.json`
-- [ ] `src/shared/frontend/queries/src/keys.ts`
-- [ ] `src/shared/frontend/queries/src/armies.ts`
-- [ ] `src/shared/frontend/queries/src/factions.ts`
-- [ ] `src/shared/frontend/queries/src/gameSystems.ts`
-- [ ] `src/shared/frontend/queries/src/units.ts`
-- [ ] `src/shared/frontend/queries/src/matches.ts`
-- [ ] `src/shared/frontend/queries/src/index.ts`
+- [ ] `src/shared/clients/armies/package.json`
+- [ ] `src/shared/clients/rules/package.json`
+- [ ] `src/shared/clients/src/keys.ts`
+- [ ] `src/shared/clients/armies/src/queries.ts`
+- [ ] `src/shared/clients/factions/src/queries.ts`
+- [ ] `src/shared/clients/rules/src/gameSystems.ts`
+- [ ] `src/shared/clients/rules/src/units.ts`
+- [ ] `src/shared/clients/matches/src/queries.ts`
+- [ ] `src/shared/clients/src/index.ts`
 
 **Group 3 — Stream Facade Shells** (2 new files, 2 modified):
 - [ ] `src/shared/streams/src/social/FriendPresenceStream.ts` (new)
@@ -598,7 +598,7 @@ src/shared/ui/src/components/separator/
 - [ ] `src/shared/ui/src/components/separator/index.ts`
 
 **Modified Files**:
-- [ ] `package.json` (root — add `src/shared/ui`, `src/shared/frontend/context`, `src/shared/frontend/queries` to workspaces)
+- [ ] `package.json` (root — add `src/shared/ui` and `src/shared/clients/*` workspaces)
 
 **Deleted/Moved**:
 - [ ] `src/ui/` → `src/shared/ui/` (git mv)
@@ -608,9 +608,9 @@ src/shared/ui/src/components/separator/
 ## 7. Definition of Done (from PHASE_0 §9 + §11.11)
 
 ### Core Contracts
-- [ ] `GameSystemContext` type and `createContext` call merged in `@armoury/frontend-context`
-- [ ] `DataContext` type and `createContext` call merged in `@armoury/frontend-context`
-- [ ] Cross-phase query factory shells created with type signatures in `@armoury/frontend-queries`: `armies.ts`, `factions.ts`, `gameSystems.ts`, `units.ts`, `matches.ts`
+- [ ] `GameSystemContext` and `DataContext` providers/contexts merged in web/mobile provider layer
+- [ ] Shared context value types exported from `src/shared/types/src/contexts.ts`
+- [ ] Cross-phase query factory shells created with type signatures across `@armoury/clients-armies`, `@armoury/clients-factions`, `@armoury/clients-rules`, and `@armoury/clients-matches`
 - [ ] `ApiErrorResponse` and `ApiErrorCode` defined with type guard in `@armoury/data`
 
 ### Stream Facades
@@ -631,8 +631,8 @@ src/shared/ui/src/components/separator/
 - [ ] `turbo run typecheck --filter=@armoury/ui` passes
 
 ### New Workspaces
-- [ ] `@armoury/frontend-context` registered in root workspaces and typechecks
-- [ ] `@armoury/frontend-queries` registered in root workspaces and typechecks
+- [ ] Provider layer in `@armoury/web` and `@armoury/mobile` typechecks
+- [ ] `@armoury/clients-*` workspaces registered in root workspaces and typecheck
 
 ### Verification
 - [ ] All interfaces pass `tsc --noEmit` on affected packages

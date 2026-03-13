@@ -188,7 +188,7 @@ Phase 4 §7.7 (Allies page) can begin during Phase 3 because:
 
 - [ ] Shell Layout, Navigation, Theme System implemented and merged
 - [ ] Unit Detail Drawer with mock implementations for UD-13/UD-15
-- [ ] All shared frontend interfaces defined in `@armoury/shared/frontend`
+- [ ] All shared frontend interfaces defined in `src/shared/clients/`
 - [ ] Query factory templates created
 - [ ] UI Primitives, Data Patterns, Form Components available
 - [ ] Mockup design references (UD-13, UD-15) tracked with design team for Week 2

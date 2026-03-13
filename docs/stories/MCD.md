@@ -108,7 +108,7 @@ As a player, I want to create a campaign match from the Campaign Detail page so 
 - [ ] If the player has exactly one army for that campaign (`CampaignParticipant.armyId`), the army is auto-assigned and displayed in a read-only summary.
 - [ ] If the campaign is a Crusade campaign, the drawer confirms which Crusade army will be used.
 - [ ] Opponent selection is limited to campaign participants, not the full friends list.
-- [ ] When no active campaigns exist, the section shows an empty state with a link to `/[locale]/[gameSystem]/campaigns`.
+- [ ] When no active campaigns exist, the section shows an empty state with a link to `/[locale]/wh40k10e/campaigns`.
 
 **Data References:** `Match.campaignId`, `CampaignParticipant`, `GET /campaigns`, `CampaignParticipant.armyId`, `Campaign.participants`
 

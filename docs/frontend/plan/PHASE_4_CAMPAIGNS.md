@@ -25,7 +25,7 @@ The two pending mockups (Campaign Management Page, Campaign Summary/Completed) w
 
 ### 7.1 Campaigns List
 
-**Route:** `/[gameSystem]/campaigns`
+**Route:** `/wh40k10e/campaigns`
 **Complexity:** M | **Estimated Effort:** 3 days
 **Stories:** CPG-10, CPG-11, CPG-13
 **UX Issues:** CP-01, CP-02, CP-03, CP-04
@@ -55,7 +55,7 @@ The two pending mockups (Campaign Management Page, Campaign Summary/Completed) w
 
 ### 7.2 Campaign Creation
 
-**Route:** `/[gameSystem]/campaigns/new`
+**Route:** `/wh40k10e/campaigns/new`
 **Complexity:** L | **Estimated Effort:** 4 days
 **Stories:** CPG-08, CPG-09, CPG-23
 **UX Issues:** CD-09, CD-12
@@ -81,7 +81,7 @@ The two pending mockups (Campaign Management Page, Campaign Summary/Completed) w
 
 ### 7.3 Campaign Dashboard
 
-**Route:** `/[gameSystem]/campaigns/[campaignId]`
+**Route:** `/wh40k10e/campaigns/[campaignId]`
 **Complexity:** L | **Estimated Effort:** 5 days
 **Stories:** CPG-01, CPG-02, CPG-03, CPG-07, CPG-13, CPG-14, CPG-15, CPG-16, CPG-17, CPG-18, CPG-19, CPG-20
 **UX Issues:** CD-01, CD-02, CD-03, CD-04, CD-05, CD-06, CD-07, CD-08
@@ -120,7 +120,7 @@ The two pending mockups (Campaign Management Page, Campaign Summary/Completed) w
 
 ### 7.4a Campaign Units (Crusade Mechanics)
 
-**Route:** `/[gameSystem]/campaigns/[campaignId]/units/[unitId]` (crusade overlay)
+**Route:** `/wh40k10e/campaigns/[campaignId]/units/[unitId]` (crusade overlay)
 **Complexity:** L | **Estimated Effort:** 5 days
 **Stories:** CPG-04
 **UX Issues:** None assigned to this section
@@ -139,7 +139,7 @@ The two pending mockups (Campaign Management Page, Campaign Summary/Completed) w
 
 ### 7.5 Campaign Matches
 
-**Route:** `/[gameSystem]/campaigns/[campaignId]/matches`
+**Route:** `/wh40k10e/campaigns/[campaignId]/matches`
 **Complexity:** M | **Estimated Effort:** 3 days
 **Stories:** MCD-06, MCD-07, CPG-22
 **UX Issues:** CD-10, CD-11
@@ -169,7 +169,7 @@ The two pending mockups (Campaign Management Page, Campaign Summary/Completed) w
 
 ### 7.6 Campaign Management
 
-**Route:** `/[gameSystem]/campaigns/[campaignId]/manage`
+**Route:** `/wh40k10e/campaigns/[campaignId]/manage`
 **Complexity:** L | **Estimated Effort:** 5 days
 **Stories:** CPG-05, CPG-06, CPG-07, CPG-12, CPG-21
 **UX Issues:** CD-07, CD-09
@@ -195,7 +195,7 @@ The two pending mockups (Campaign Management Page, Campaign Summary/Completed) w
 
 ### 7.7 Allies (Social)
 
-**Route:** `/[gameSystem]/social`
+**Route:** `/wh40k10e/social`
 **Complexity:** M | **Estimated Effort:** 4 days
 **Stories:** ALY-01, ALY-02, ALY-03, ALY-04, ALY-05, ALY-06, ALY-07, ALY-08, ALY-09
 **UX Issues:** SA-01, SA-02, SA-03, SA-04, SA-05
@@ -336,7 +336,7 @@ Phase 4 introduces campaign lifecycle state and social/presence features. Campai
 
 | Entity                                             | Route/Params                                        | Stories |
 | -------------------------------------------------- | --------------------------------------------------- | ------- |
-| Campaign ID                                        | `/[gameSystem]/campaigns/[campaignId]` path segment | CPG-01  |
+| Campaign ID                                        | `/wh40k10e/campaigns/[campaignId]` path segment | CPG-01  |
 | Campaign sub-page (dashboard/units/matches/manage) | `?view=dashboard`                                   | CPG-02  |
 | Allies filters                                     | `?filter=online` or `?filter=pending`               | SA-01   |
 
@@ -418,9 +418,9 @@ Phase 4 is complete when all of the following are true:
 
 ### End-to-End Acceptance Tests
 
-- [ ] Campaigns List at `/[gameSystem]/campaigns` groups campaigns by status with correct `CampaignStatus` badges; COMPLETED campaigns route to Campaign Summary, not the Dashboard.
+- [ ] Campaigns List at `/wh40k10e/campaigns` groups campaigns by status with correct `CampaignStatus` badges; COMPLETED campaigns route to Campaign Summary, not the Dashboard.
 - [ ] `CampaignJoinSheet` presents the user's eligible armies before confirming; joining without selecting an army is blocked.
-- [ ] Campaign Creation multi-step form at `/[gameSystem]/campaigns/new` reveals `startingSupplyLimit` and `startingRequisitionPoints` fields only when Crusade format is selected in step 2.
+- [ ] Campaign Creation multi-step form at `/wh40k10e/campaigns/new` reveals `startingSupplyLimit` and `startingRequisitionPoints` fields only when Crusade format is selected in step 2.
 - [ ] Campaign Dashboard header shows campaign name, "Play Match" button, and "Manage" button with no standalone page header component and no phase progress bar.
 - [ ] Match Creation Drawer opened from Campaign Matches omits the army selector step and includes the Crusade agenda step for Crusade-format campaigns; opponent list contains only campaign participants.
 - [ ] Campaign Management page (organizer-only) renders participant invitation controls (username search, friend list, invite link) and a delete campaign flow requiring typed confirmation.
@@ -457,7 +457,7 @@ Phase 4 is complete when all of the following are true:
 > The render component receives everything via props and contains zero hooks except `useCallback`/`useMemo`.
 
 ```tsx
-// File: src/web/app/[gameSystem]/campaigns/page.tsx
+// File: src/web/app/wh40k10e/campaigns/page.tsx
 
 import { useSuspenseQuery, useMutation } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
@@ -465,9 +465,9 @@ import { useCallback, useState, useMemo } from 'react';
 import type { Campaign } from '@armoury/models';
 import type { Army } from '@wh40k10e/models/ArmyModel.js';
 import type { CampaignStatus } from '@armoury/models';
-import { campaignListOptions } from '@shared/frontend/queries/campaigns.js';
-import { joinCampaignMutation } from '@shared/frontend/mutations/campaigns.js';
-import { armyListOptions } from '@shared/frontend/queries/armies.js';
+import { campaignListOptions } from '@armoury/clients-campaigns';
+import { joinCampaignMutation } from '@armoury/clients-campaigns';
+import { armyListOptions } from '@armoury/clients-armies';
 
 // ---------------------------------------------------------------------------
 // Render component — pure props, zero data hooks
@@ -569,7 +569,7 @@ export function CampaignListContainer({ gameSystem }: { gameSystem: string }) {
 
 #### §7.1 Campaigns List
 
-**Route:** `src/web/src/app/[gameSystem]/campaigns/page.tsx`
+**Route:** `src/web/src/app/wh40k10e/campaigns/page.tsx`
 
 - `CampaignListContainer` — orchestrational. Owns the query, join sheet open state, and army selection logic. No visual markup.
 - `CampaignListView` — render component. Receives items, loading state, and callbacks as props. No hooks.
@@ -581,7 +581,7 @@ export function CampaignListContainer({ gameSystem }: { gameSystem: string }) {
 
 #### §7.2 Campaign Creation
 
-**Route:** `src/web/src/app/[gameSystem]/campaigns/new/page.tsx`
+**Route:** `src/web/src/app/wh40k10e/campaigns/new/page.tsx`
 
 - `CampaignFormContainer` — orchestrational. Shared with §7.6 via a `mode: 'create' | 'manage'` prop (CPG-21). In `'create'` mode, submitting calls `createCampaignMutation`. In `'manage'` mode, it calls `updateCampaignMutation`.
 - `CampaignCreationForm` — multi-step form rendered inside `CampaignFormContainer`. Steps: (1) name and description, (2) format selection, (3) point limits and round count, (4) schedule, (5) army restrictions, (6) scoring rules.
@@ -590,7 +590,7 @@ export function CampaignListContainer({ gameSystem }: { gameSystem: string }) {
 
 #### §7.3 Campaign Dashboard
 
-**Route:** `src/web/src/app/[gameSystem]/campaigns/[campaignId]/page.tsx`
+**Route:** `src/web/src/app/wh40k10e/campaigns/[campaignId]/page.tsx`
 
 - `CampaignDashboardContainer` — orchestrational. Mounts `CampaignNotificationStream`. Owns drawer-open state (drawer is NOT auto-opened on mount, CPG-20).
 - `CampaignDashboardView` — render component. Accepts campaign data, participant list, standings, and callbacks.
@@ -605,7 +605,7 @@ export function CampaignListContainer({ gameSystem }: { gameSystem: string }) {
 
 #### §7.4a Campaign Units (Crusade)
 
-**Route:** `/[gameSystem]/campaigns/[campaignId]/units/[unitId]`
+**Route:** `/wh40k10e/campaigns/[campaignId]/units/[unitId]`
 
 - Renders the Phase 2 Unit Detail Drawer in reference context (Constraint A from Phase 2 architecture). No new drawer implementation.
 - `CrusadeUnitOverlay` — layered on top of the base unit card. Displays: XP total, current rank, earned battle honours, active battle scars, kill tally, and total matches played.
@@ -613,7 +613,7 @@ export function CampaignListContainer({ gameSystem }: { gameSystem: string }) {
 
 #### §7.5 Campaign Matches
 
-**Route:** `/[gameSystem]/campaigns/[campaignId]/matches`
+**Route:** `/wh40k10e/campaigns/[campaignId]/matches`
 
 - Reuses Phase 3 match card components from War Ledger without modification.
 - Reuses the Phase 3 Match Creation Drawer with a campaign context object injected: `{ armyId, campaignId, opponentScope: 'campaign-participants' }`. The drawer uses this context to scope opponent selection to campaign participants (C-07).
@@ -622,7 +622,7 @@ export function CampaignListContainer({ gameSystem }: { gameSystem: string }) {
 
 #### §7.6 Campaign Management
 
-**Route:** `/[gameSystem]/campaigns/[campaignId]/manage`
+**Route:** `/wh40k10e/campaigns/[campaignId]/manage`
 
 - Role-gated to campaign organizer. Non-organizers receive a redirect or forbidden state.
 - Shares `CampaignFormContainer` with §7.2 using `mode: 'manage'` (CPG-21). The form component itself is identical; only the mutation and pre-population differ.
@@ -632,7 +632,7 @@ export function CampaignListContainer({ gameSystem }: { gameSystem: string }) {
 
 #### §7.7 Allies (Social)
 
-**Route:** `/[gameSystem]/social`
+**Route:** `/wh40k10e/social`
 
 - `AlliesContainer` — orchestrational. Mounts `FriendPresenceStream`. Owns add-friend sheet visibility and active tab state.
 - `AlliesView` — render component. Receives friend list, request list, filter state, and callbacks.
@@ -691,7 +691,7 @@ State tiers follow the same convention as Phase 3: Tier 1 is local `useState`/`u
 Both streams follow the same `BehaviorSubject` + `useSyncExternalStore` pattern established by the Phase 3 match streams in `@armoury/streams`.
 
 - `FriendPresenceStream` — mounted at app shell level. Always active when the user is authenticated, regardless of which page they're on. Provides presence data to `FriendList` and `FriendRow` via context.
-- `CampaignNotificationStream` — mounted at campaign layout level (`src/web/src/app/[gameSystem]/campaigns/[campaignId]/layout.tsx`). Active only while the user has a campaign open. Drives round-change and match-result notifications.
+- `CampaignNotificationStream` — mounted at campaign layout level (`src/web/src/app/wh40k10e/campaigns/[campaignId]/layout.tsx`). Active only while the user has a campaign open. Drives round-change and match-result notifications.
 
 ---
 
@@ -877,7 +877,7 @@ When any sheet, drawer, or dialog closes, focus returns to the element that orig
 **Campaign pages (Next.js App Router)**
 
 ```
-src/web/src/app/[gameSystem]/campaigns/
+src/web/src/app/wh40k10e/campaigns/
   page.tsx                                  — §7.1 Campaigns List
   new/page.tsx                              — §7.2 Campaign Creation
   [campaignId]/
@@ -886,7 +886,7 @@ src/web/src/app/[gameSystem]/campaigns/
     matches/page.tsx                        — §7.5 Campaign Matches
     manage/page.tsx                         — §7.6 Campaign Management
     units/[unitId]/page.tsx                 — §7.4a Campaign Units (Crusade)
-src/web/src/app/[gameSystem]/social/
+src/web/src/app/wh40k10e/social/
   page.tsx                                  — §7.7 Allies
 ```
 
@@ -950,11 +950,11 @@ src/web/src/hooks/useCampaignNotifications.ts — useSyncExternalStore over Camp
 **Query factories (shared, pure TypeScript, no React)**
 
 ```
-src/shared/frontend/queries/campaigns.ts    — campaignListOptions, campaignDetailOptions,
+src/shared/clients/campaigns/src/queries.ts — campaignListOptions, campaignDetailOptions,
                                               campaignParticipantsOptions, crusadeUnitOptions,
                                               createCampaignMutation, updateCampaignMutation,
                                               transitionCampaignMutation, inviteParticipantMutation
-src/shared/frontend/queries/friends.ts      — friendListOptions, friendRequestMutations
+src/shared/clients/friends/src/queries.ts   — friendListOptions, friendRequestMutations
 ```
 
 Query factories follow the same `queryOptions` / `mutationOptions` pattern from Phase 3. No hooks inside the shared package. Hooks that consume these factories live in `src/web/src/hooks/` and `src/mobile/src/hooks/` respectively.

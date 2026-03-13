@@ -70,7 +70,7 @@ All state transitions are dispatched through `MatchStream` (see §Match Sync Arc
 
 ### 6.1 War Ledger (Match List)
 
-**Route:** `/[gameSystem]/matches`
+**Route:** `/wh40k10e/matches`
 **Complexity:** M | **Effort:** 3 days
 
 **Stories:** MPG-01, MPG-03, MPG-16
@@ -92,7 +92,7 @@ All state transitions are dispatched through `MatchStream` (see §Match Sync Arc
 
 ### 6.2 Match Creation Drawer
 
-> **Rewritten per C-01 and C-07.** There is no standalone route `/[gameSystem]/matches/new`. Match creation is always a drawer.
+> **Rewritten per C-01 and C-07.** There is no standalone route `/wh40k10e/matches/new`. Match creation is always a drawer.
 
 **Route:** N/A (drawer, three entry points)
 **Complexity:** L | **Effort:** 5 days
@@ -134,7 +134,7 @@ All state transitions are dispatched through `MatchStream` (see §Match Sync Arc
 
 ### 6.2a Match Linking (Join Flow)
 
-**Route:** Part of `/[gameSystem]/matches/[matchId]` (state: `LINKING`)
+**Route:** Part of `/wh40k10e/matches/[matchId]` (state: `LINKING`)
 **Complexity:** L | **Effort:** 4 days
 
 **Stories:** MJN-01, MJN-02, MJN-03, MCD-09, MCD-12
@@ -145,7 +145,7 @@ All state transitions are dispatched through `MatchStream` (see §Match Sync Arc
 - **MCD-09:** QR code and numeric join code generated on match creation. QR displayed via `qrcode` library. Numeric code is 6 digits; rate-limited to 10 attempts before a new code must be generated.
 - **MCD-12 (MISSING - side-by-side layout):** Desktop: join code/QR on the left half, friends list (with pending invite status) on the right half. Friends who have already been invited show a "Pending" chip. Uninvited friends show an "Invite" action. Mobile: code block on top, friends list scrollable below.
 - **MJN-01:** Invitee notification includes "Accept" and "Decline" inline actions. Accepting transitions match to `LINKED` and navigates to Match Page (6.3). Declining notifies the host and returns the match to `CREATED`.
-- **MJN-02:** Web users without camera enter the 6-digit numeric code on a dedicated join screen at `/[gameSystem]/matches/join`.
+- **MJN-02:** Web users without camera enter the 6-digit numeric code on a dedicated join screen at `/wh40k10e/matches/join`.
 - **MJN-03:** Mobile users can scan the QR code via camera. Platform-gated: camera permission requested at scan time; graceful fallback to numeric code entry if denied.
 - "Connected" confirmation screen shows both players' names and armies after successful link before proceeding to Setup.
 - Friend request offered during linking if players are not yet connected.
@@ -154,7 +154,7 @@ All state transitions are dispatched through `MatchStream` (see §Match Sync Arc
 
 ### 6.3 Match Page (Setup + Deployment)
 
-**Route:** `/[gameSystem]/matches/[matchId]`
+**Route:** `/wh40k10e/matches/[matchId]`
 **Complexity:** L | **Effort:** 4 days
 
 **Stories:** MPG-04, MPG-05, MPG-11, MPG-12, MPG-14, MPG-30, MPG-31, MPG-35
@@ -177,7 +177,7 @@ All state transitions are dispatched through `MatchStream` (see §Match Sync Arc
 
 ### 6.4 Active Match - Basic Mode
 
-**Route:** `/[gameSystem]/matches/[matchId]?mode=basic`
+**Route:** `/wh40k10e/matches/[matchId]?mode=basic`
 **Complexity:** XL | **Effort:** 10 days
 
 **Stories:** MPG-06, MPG-07, MPG-08, MPG-09, MPG-13, MPG-15, MPG-17, MPG-18, MPG-19, MPG-20, MPG-21, MPG-22, MPG-23, MPG-24, MPG-25, MPG-26, MPG-27, MPG-28, MPG-29, MPG-32, MPG-33, MPG-34, ULV-05, ULV-06
@@ -237,7 +237,7 @@ Each item shows: unit name, detachment label, wargear count summary (e.g., "3 ra
 
 ### 6.5 Active Match - Guided Mode
 
-**Route:** `/[gameSystem]/matches/[matchId]?mode=guided`
+**Route:** `/wh40k10e/matches/[matchId]?mode=guided`
 **Complexity:** XL | **Effort:** 10 days
 
 **Stories:** MPG-37, MPG-38, MPG-39, MPG-40, MPG-41, MPG-42, ULV-07, ULV-08, ULV-09, ULV-10
@@ -281,7 +281,7 @@ All other tags and wargear are collapsed (not hidden - accessible via unit detai
 
 ### 6.5a Match Conclusion + Summary
 
-**Route:** Part of `/[gameSystem]/matches/[matchId]` (states: `CONCLUDING`, `COMPLETED`)
+**Route:** Part of `/wh40k10e/matches/[matchId]` (states: `CONCLUDING`, `COMPLETED`)
 **Complexity:** L | **Effort:** 4 days
 
 **Stories:** MPG-10, MPG-36, MPG-02
@@ -304,7 +304,7 @@ All other tags and wargear are collapsed (not hidden - accessible via unit detai
 
 ### 6.6 Command Post (Stratagems)
 
-**Route:** `/[gameSystem]/matches/[matchId]/command-post`
+**Route:** `/wh40k10e/matches/[matchId]/command-post`
 **Complexity:** L | **Effort:** 5 days
 
 **Stories:** MPG-25, MPG-28
@@ -508,7 +508,7 @@ Phase 3 is the most state-intensive phase — it introduces real-time reactive s
 
 | Entity                     | Route/Params                                   | Stories            |
 | -------------------------- | ---------------------------------------------- | ------------------ |
-| Match ID                   | `/[gameSystem]/matches/[matchId]` path segment | US-MP-01           |
+| Match ID                   | `/wh40k10e/matches/[matchId]` path segment | US-MP-01           |
 | Match mode (basic/guided)  | `?mode=basic` or `?mode=guided`                | US-BM-01, US-GM-01 |
 | Selected unit in match     | `?unitId=<id>`                                 | US-BM-03           |
 | Active phase (guided mode) | `?phase=movement`                              | US-GM-02           |
@@ -605,7 +605,7 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 
 ### End-to-End Acceptance Tests
 
-- [ ] War Ledger at `/[gameSystem]/matches` pins IN_PROGRESS matches to the top of the list; CREATED matches show Delete; IN_PROGRESS matches show Resume.
+- [ ] War Ledger at `/wh40k10e/matches` pins IN_PROGRESS matches to the top of the list; CREATED matches show Delete; IN_PROGRESS matches show Resume.
 - [ ] Deleting a CREATED match removes it from `WarLedgerView`; attempting to delete an IN_PROGRESS match is blocked by the state guard.
 - [ ] Match Creation Drawer opens from the War Ledger empty-state CTA, the army detail Deploy button, and the Campaign Matches page; army selector step is absent when opened from army detail.
 - [ ] Match Linking screen renders join code, QR code, and friends list side-by-side on desktop (>=1024px) and stacked on mobile.
@@ -644,13 +644,13 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 > The render component receives everything via props and contains zero hooks except `useCallback`/`useMemo`.
 
 ```tsx
-// File: src/web/app/[gameSystem]/matches/[matchId]/basic/page.tsx
+// File: src/web/app/wh40k10e/matches/[matchId]/basic/page.tsx
 
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useCallback, useState, useMemo } from 'react';
 import type { Match } from '@armoury/models';
 import type { Unit } from '@wh40k10e/types/entities.js';
-import { matchDetailOptions } from '@shared/frontend/queries/matches.js';
+import { matchDetailOptions } from '@armoury/clients-matches';
 import { useMatchSync } from '@web/hooks/useMatchSync.js';
 
 // ---------------------------------------------------------------------------
@@ -752,7 +752,7 @@ Phase 3 spans eight distinct sections. Each section below lists its orchestratio
 
 #### §6.1 War Ledger (Match List)
 
-**Route:** `src/web/src/app/[gameSystem]/matches/page.tsx`
+**Route:** `src/web/src/app/wh40k10e/matches/page.tsx`
 
 | Component             | Type            | Responsibility                                                                                                                                                               |
 | --------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -783,7 +783,7 @@ The drawer is reused in Phase 4 (§7.3 and §7.5) with a campaign context object
 
 #### §6.2a Match Linking
 
-**Route:** `/[gameSystem]/matches/[matchId]` when match state is `LINKING`
+**Route:** `/wh40k10e/matches/[matchId]` when match state is `LINKING`
 
 Rendered by `MatchPageContainer` (see §6.3) when it detects the LINKING state. Not a separate page.
 
@@ -795,7 +795,7 @@ Rendered by `MatchPageContainer` (see §6.3) when it detects the LINKING state. 
 
 #### §6.3 Match Page (Setup and Deployment)
 
-**Route:** `src/web/src/app/[gameSystem]/matches/[matchId]/page.tsx`
+**Route:** `src/web/src/app/wh40k10e/matches/[matchId]/page.tsx`
 
 | Component             | Type            | Responsibility                                                                                                                                                                                                                                    |
 | --------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -806,7 +806,7 @@ Rendered by `MatchPageContainer` (see §6.3) when it detects the LINKING state. 
 
 #### §6.4 Active Match — Basic Mode
 
-**Route:** `/[gameSystem]/matches/[matchId]?mode=basic`
+**Route:** `/wh40k10e/matches/[matchId]?mode=basic`
 
 | Component                  | Type            | Responsibility                                                                                                                                                                                                                                                                                 |
 | -------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -823,7 +823,7 @@ Rendered by `MatchPageContainer` (see §6.3) when it detects the LINKING state. 
 
 #### §6.5 Active Match — Guided Mode
 
-**Route:** `/[gameSystem]/matches/[matchId]?mode=guided`
+**Route:** `/wh40k10e/matches/[matchId]?mode=guided`
 
 Guided mode shares `MatchHeader`, `HPControl`, `MatchStickyFooter`, and `MatchRightRail` with Basic mode unchanged. The following components are Guided-specific or behave differently:
 
@@ -836,7 +836,7 @@ Guided mode shares `MatchHeader`, `HPControl`, `MatchStickyFooter`, and `MatchRi
 
 #### §6.5a Match Conclusion and Summary
 
-**Route:** `/[gameSystem]/matches/[matchId]` when match state is `CONCLUDING` or `COMPLETED`
+**Route:** `/wh40k10e/matches/[matchId]` when match state is `CONCLUDING` or `COMPLETED`
 
 Rendered by `MatchPageContainer` based on state. Not a separate route.
 
@@ -848,7 +848,7 @@ Rendered by `MatchPageContainer` based on state. Not a separate route.
 
 #### §6.6 Command Post
 
-**Route:** `src/web/src/app/[gameSystem]/matches/[matchId]/command-post`
+**Route:** `src/web/src/app/wh40k10e/matches/[matchId]/command-post`
 
 | Component         | Type            | Responsibility                                                                                                                                                                                                                                                                                                   |
 | ----------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -909,7 +909,7 @@ Several components defined in Phase 3 are consumed across multiple sections or a
 
 #### Match Mode (Constraint C resolution)
 
-Defined in `src/shared/frontend/` and consumed by the match pages in §6.4 and §6.5. The match mode wraps the shared Unit Detail Drawer and applies match-context overrides:
+Defined in `src/shared/clients/` and consumed by the match pages in §6.4 and §6.5. The match mode wraps the shared Unit Detail Drawer and applies match-context overrides:
 
 - Model list is read-only. The unit roster was locked when the match entered SETUP state.
 - HP bar is the primary display field (replaces wound profile in roster context).
@@ -1109,27 +1109,27 @@ The `MatchCreationDrawer` is consumed in Phase 4 at §7.3 (Campaign Match Schedu
 
 | Artifact                          | Path                                                                   |
 | --------------------------------- | ---------------------------------------------------------------------- |
-| War Ledger page                   | `src/web/src/app/[gameSystem]/matches/page.tsx`                        |
-| Match detail page                 | `src/web/src/app/[gameSystem]/matches/[matchId]/page.tsx`              |
-| Command Post page                 | `src/web/src/app/[gameSystem]/matches/[matchId]/command-post/page.tsx` |
+| War Ledger page                   | `src/web/src/app/wh40k10e/matches/page.tsx`                        |
+| Match detail page                 | `src/web/src/app/wh40k10e/matches/[matchId]/page.tsx`              |
+| Command Post page                 | `src/web/src/app/wh40k10e/matches/[matchId]/command-post/page.tsx` |
 | Match components                  | `src/web/src/components/matches/[Component].tsx`                       |
 | Match hooks                       | `src/web/src/hooks/useMatchSync.ts`                                    |
 | Match state hook                  | `src/web/src/hooks/useMatchState.ts`                                   |
 | MatchStream (reactive cache)      | `src/shared/streams/src/matches/MatchStream.ts`                        |
 | MatchesRealtimeClient (WebSocket) | `src/shared/clients/matches/src/realtime.ts`                           |
-| Query factories (matches)         | `src/shared/frontend/queries/matches.ts`                               |
-| Query factories (missions)        | `src/shared/frontend/queries/missions.ts`                              |
-| Match mode config                 | `src/shared/frontend/hooks/useMatchMode.ts`                            |
+| Query factories (matches)         | `src/shared/clients/matches/src/queries.ts`                            |
+| Query factories (missions)        | `src/shared/clients/missions/src/queries.ts`                           |
+| Match mode config                 | `src/shared/clients/matches/src/useMatchMode.ts`                       |
 
 #### Query Factory Exports
 
-`src/shared/frontend/queries/matches.ts` exports:
+`src/shared/clients/matches/src/queries.ts` exports:
 
 - `matchListOptions(filters)` — paginated match list, used in §6.1
 - `matchDetailOptions(matchId)` — single match with full unit states, used in §6.3, §6.4, §6.5
 - `matchSummaryOptions(matchId)` — completed match summary with per-round breakdown, `staleTime: Infinity`, used in §6.5a
 
-`src/shared/frontend/queries/missions.ts` exports:
+`src/shared/clients/missions/src/queries.ts` exports:
 
 - `missionOptions(gameSystem)` — Chapter Approved missions from plugin, used in §6.2
 - `missionDetailOptions(missionId)` — single mission rules text, used in §6.6 Command Post

@@ -117,26 +117,24 @@ When side effects are necessary (I/O, database, etc.), isolate them and document
 
 **Exception**: Relative imports are acceptable in `e2e/`, `__fixtures__/`, and `__testing__/` directories when importing across workspace boundaries where no alias is available.
 
-Available aliases (see each workspace's `tsconfig.json` for exact mappings):
+Available alias conventions (see each workspace's `tsconfig.json` for exact mappings):
 
-| Alias | Available In |
-|-------|--------------|
-| `@shared/*` | All workspaces |
-| `@wh40k10e/*` | `@armoury/systems`, `@armoury/shared` (tests only) |
-| `@web/*` | `@armoury/web` |
-| `@mobile/*` | `@armoury/mobile` |
-| `@campaigns/*` | `@armoury/campaigns` |
+| Alias | Purpose | Available In |
+|-------|---------|--------------|
+| `@/*` | Within-workspace self-reference (`./src/*`) | All workspaces |
+| `#/*` | Workspace root | All workspaces |
+| `@armoury/<package>` | Cross-workspace barrel import | All workspaces |
 
 Order imports as follows:
 
 1. External packages (node_modules)
-2. Aliased internal imports (`@shared/...`, `@wh40k10e/...`, `@/...`, etc.)
+2. Aliased internal imports (`@/...`, `#/...`, `@armoury/<package>`, etc.)
 
 ```typescript
 // Good — aliased imports with .js extension
 import { describe, it, expect } from 'vitest';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import { FactionDataModel } from '@wh40k10e/models/FactionDataModel.js';
+import type { Unit } from '@armoury/systems';
+import { FactionDataModel } from '@armoury/systems';
 import type { DatabaseAdapter } from '@armoury/data-context';
 import { makeArmy } from '@/e2e/__fixtures__/makeArmy.js';
 
@@ -145,7 +143,7 @@ import type { Unit } from '../../models/UnitModel.js';
 import { FactionDataModel } from './FactionDataModel.js';
 
 // Bad — .ts extension
-import type { Unit } from '@wh40k10e/models/UnitModel.ts';
+import type { Unit } from '@/models/UnitModel.ts';
 ```
 
 ### File Extensions
@@ -156,14 +154,14 @@ import type { Unit } from '@wh40k10e/models/UnitModel.ts';
 // Good
 import { Platform } from '@armoury/models';
 import type { CrusadeUnitRank } from '@armoury/data-dao';
-import { FactionDataModel } from '@wh40k10e/models/FactionDataModel.js';
+import { FactionDataModel } from '@/models/FactionDataModel.js';
 import { makeAccount } from '@/utils/makeAccount.js';
 
 // Bad — missing extension
-import { Platform } from '@armoury/models';
+import { makeAccount } from '@/utils/makeAccount';
 
 // Bad — .ts extension
-import { Platform } from '@armoury/models';
+import { makeAccount } from '@/utils/makeAccount.ts';
 ```
 
 ## Naming Conventions
@@ -292,7 +290,7 @@ Guidelines:
 
 ```typescript
 // Good - deduplicated in utils/response.ts
-import { jsonResponse, errorResponse } from '@campaigns/src/utils/response.js';
+import { jsonResponse, errorResponse } from '@/utils/response.js';
 
 // Bad - duplicated across route files
 function jsonResponse(statusCode: number, payload: unknown): ApiResponse { ... }

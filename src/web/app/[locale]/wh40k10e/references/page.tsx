@@ -8,7 +8,6 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 export interface ReferencesPageProps {
     params: Promise<{
         locale: string;
-        gameSystem: string;
     }>;
 }
 

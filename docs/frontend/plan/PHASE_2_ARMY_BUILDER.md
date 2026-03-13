@@ -38,7 +38,7 @@ These constraints govern every page in this phase. Violations block code review 
 
 ### 5.1 Army Detail (Builder) Page
 
-**Route:** `/[gameSystem]/armies/[armyId]`
+**Route:** `/wh40k10e/armies/[armyId]`
 **Complexity:** XL | **Estimated Effort:** 8 days
 
 **Stories:** APG-01, APG-02, APG-03, APG-04, APG-07, APG-10, APG-11, APG-13, APG-14, APG-15, APG-16, APG-17, APG-18
@@ -97,7 +97,7 @@ Unit reordering is supported via drag-and-drop on web and long-press reorder on 
 
 ### 5.2 Unit Add (Two-Step Drawer)
 
-**Route:** `/[gameSystem]/armies/[armyId]/units/add` (drawer overlay, not full navigation)
+**Route:** `/wh40k10e/armies/[armyId]/units/add` (drawer overlay, not full navigation)
 **Complexity:** L | **Estimated Effort:** 5 days
 
 **Stories:** ULV-01, ULV-02, ULV-03, ULV-04, UDD-21, UDD-22
@@ -157,7 +157,7 @@ Unit configuration now lives entirely inside the Unit Detail Drawer when in buil
 
 ### 5.4 Unit Datasheet (Read-Only Reference)
 
-**Route:** `/[gameSystem]/references/units/[unitId]`
+**Route:** `/wh40k10e/references/units/[unitId]`
 **Complexity:** M | **Estimated Effort:** 3 days
 
 **Stories:** UDD-13 through UDD-17 (read-only context), UDD-23, UDD-24, UDD-26, UDD-27, UDD-28
@@ -337,7 +337,7 @@ Phase 2 introduces the most complex local state in the app (the army editor) and
 
 | Entity                          | Route/Params                                 | Stories            |
 | ------------------------------- | -------------------------------------------- | ------------------ |
-| Army ID                         | `/[gameSystem]/armies/[armyId]` path segment | US-AD-01           |
+| Army ID                         | `/wh40k10e/armies/[armyId]` path segment | US-AD-01           |
 | Selected unit ID (drawer)       | `?unitId=<id>` search param                  | US-AD-03, US-UD-01 |
 | Active tab (roster/detachments) | `?tab=roster` search param                   | US-AD-02           |
 
@@ -438,7 +438,7 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 
 ### End-to-End Acceptance Tests
 
-- [ ] Navigating to `/[gameSystem]/armies/[armyId]` renders all eight WH40K 10e category sections (including empty ones) with the `ArmyDetailView` three-column layout on desktop.
+- [ ] Navigating to `/wh40k10e/armies/[armyId]` renders all eight WH40K 10e category sections (including empty ones) with the `ArmyDetailView` three-column layout on desktop.
 - [ ] Tapping a unit in `ArmyDetailView` opens the `UnitDetailDrawer` in builder context without triggering page navigation.
 - [ ] Opening the Unit Catalog Drawer from the empty-army CTA shows units scoped to the army's faction and detachment; adding a unit calls `addUnitMutation` and the unit appears in the correct category section.
 - [ ] Squad size selector in `UnitDetailDrawer` (builder mode) updates `modelCount` and the displayed `totalPoints` in real-time without a round-trip.
@@ -477,7 +477,7 @@ See [Derived State Patterns](../DERIVED_STATE.md) for implementation guidance.
 > The render component receives everything via props and contains zero hooks except `useCallback`/`useMemo`.
 
 ```tsx
-// File: src/web/app/[gameSystem]/army/[armyId]/page.tsx
+// File: src/web/app/wh40k10e/army/[armyId]/page.tsx
 
 import { useSuspenseQuery, useMutation } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
@@ -485,8 +485,8 @@ import { useCallback, useState } from 'react';
 import type { Army } from '@wh40k10e/models/ArmyModel.js';
 import type { Unit } from '@wh40k10e/types/entities.js';
 import type { ValidationError } from '@armoury/models';
-import { armyDetailOptions, unitCatalogOptions } from '@shared/frontend/queries/armies.js';
-import { updateArmyMutation, addUnitMutation, removeUnitMutation } from '@shared/frontend/mutations/armies.js';
+import { armyDetailOptions, unitCatalogOptions } from '@armoury/clients-armies';
+import { updateArmyMutation, addUnitMutation, removeUnitMutation } from '@armoury/clients-armies';
 
 // ---------------------------------------------------------------------------
 // Render component — pure props, zero data hooks
@@ -590,7 +590,7 @@ Phase 2 introduces 5 page sections. Each section breaks down into orchestrationa
 
 #### §5.1 Army Detail (Builder) Page
 
-**Route:** `src/web/src/app/[gameSystem]/armies/[armyId]/page.tsx`
+**Route:** `src/web/src/app/wh40k10e/armies/[armyId]/page.tsx`
 
 **Orchestrational**
 
@@ -655,7 +655,7 @@ Form Components (§3.10), Unit Detail Drawer (§5.5), Skeleton Loaders (§3.6).
 
 #### §5.4 Unit Datasheet (Read-Only Reference)\*\*
 
-**Route:** `src/web/src/app/[gameSystem]/references/units/[unitId]/page.tsx`
+**Route:** `src/web/src/app/wh40k10e/references/units/[unitId]/page.tsx`
 
 This page renders the Unit Detail Drawer in reference context (Constraint A). No builder or match controls are shown.
 
@@ -960,8 +960,8 @@ Next.js App Router pages use default exports (framework requirement). All other 
 
 | Route          | File path                                                         |
 | -------------- | ----------------------------------------------------------------- |
-| Army detail    | `src/web/src/app/[gameSystem]/armies/[armyId]/page.tsx`           |
-| Unit datasheet | `src/web/src/app/[gameSystem]/references/units/[unitId]/page.tsx` |
+| Army detail    | `src/web/src/app/wh40k10e/armies/[armyId]/page.tsx`           |
+| Unit datasheet | `src/web/src/app/wh40k10e/references/units/[unitId]/page.tsx` |
 
 #### Components
 
@@ -982,7 +982,7 @@ Web-specific hooks use named exports. Query factories are pure TypeScript with n
 | -------------------- | --------------------------------------- |
 | Army detail hook     | `src/web/src/hooks/useArmyDetail.ts`    |
 | Unit catalog hook    | `src/web/src/hooks/useUnitCatalog.ts`   |
-| Army queries factory | `src/shared/frontend/queries/armies.ts` |
-| Unit queries factory | `src/shared/frontend/queries/units.ts`  |
+| Army queries factory | `src/shared/clients/armies/src/queries.ts` |
+| Unit queries factory | `src/shared/clients/armies/src/queries.ts`  |
 
 Query factories export `queryOptions` objects only. They contain no `useQuery` calls and no React imports. Hooks in the web workspace wrap the factories with `useQuery` and `useMutation` from TanStack Query.

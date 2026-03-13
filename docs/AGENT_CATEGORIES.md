@@ -122,7 +122,6 @@ src/
 │   ├── clients/     → API clients (github/, wahapedia/)
 │   ├── types/       → Core types, enums, errors, interfaces
 │   ├── validation/  → Game-agnostic validation engine
-│   ├── frontend/    → Pure TypeScript shared frontend modules (NO React)
 │   ├── streams/     → @armoury/streams (RxJS reactive facades over WebSocket clients)
 │   └── e2e/         → Integration tests
 ├── systems/         → @armoury/systems (game system plugins)
@@ -160,7 +159,7 @@ Each workspace defines path aliases in its `tsconfig.json`. Vitest configs mirro
 | `@campaigns/*`         | `src/services/campaigns/*`            | `@armoury/campaigns`                               |
 | `@streams/*`           | `src/shared/streams/*`                | `@armoury/streams`                                 |
 | `@validation/*`        | `src/shared/validation/src/*`         | `@armoury/validation`, `@armoury/wh40k10e`         |
-| `@providers-bsdata/*`  | `src/shared/providers/bsdata/src/*`   | `@armoury/providers-bsdata`, `@armoury/wh40k10e`   |
+| `@/*`                  | `src/shared/providers/bsdata/src/*`   | `@armoury/providers-bsdata`, `@armoury/wh40k10e`   |
 | `@clients-github/*`    | `src/shared/clients/github/src/*`     | `@armoury/clients-github`, `@armoury/data`         |
 | `@clients-wahapedia/*` | `src/shared/clients/wahapedia/src/*`  | `@armoury/clients-wahapedia`                       |
 

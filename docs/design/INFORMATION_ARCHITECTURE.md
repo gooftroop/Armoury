@@ -25,7 +25,7 @@ Text-based hierarchy of all pages and deep links.
 Armoury (Shell)
 ├── / — Landing (Game System Selector)
 ├── /login — Auth0 Login
-└── /[gameSystem]/ — Game System Root
+└── /wh40k10e/ — Game System Root
     ├── armies/ — The Forge (HOME)
     │   ├── new — [Army Creation page]
     │   └── [armyId]/ — [Army page]
@@ -49,7 +49,7 @@ Armoury (Shell)
 ```
 
 **Notes:**
-- `[gameSystem]` is a slug (e.g., `wh40k10e`, `aos`, `horus-heresy`).
+- `wh40k10e` is a slug (e.g., `wh40k10e`, `aos`, `horus-heresy`).
 - Account/Profile are game-system-agnostic; see URL Schema for canonical routes.
 - Unit Datasheet is also exposed under References for read-only public access.
 
@@ -57,39 +57,39 @@ Armoury (Shell)
 
 ## 2. URL Schema (Web — Next.js App Router)
 
-Map every page to its Next.js route. All game-specific routes are scoped under `[gameSystem]`.
+Map every page to its Next.js route. All game-specific routes are scoped under `wh40k10e`.
 
 | Page | Route | Route Type | Auth Required | Notes |
 |------|-------|------------|---------------|-------|
 | [Landing / Game System Selector] | `/` | Static | No | Game system selection & sync | 
 | [Login] | `/login` | Static | No | Auth0 Universal Login | 
-| The Forge | `/[gameSystem]/armies` | Dynamic | Yes | Game system home | 
-| [Army Creation page] | `/[gameSystem]/armies/new` | Dynamic | Yes | | 
-| [Army page] | `/[gameSystem]/armies/[armyId]` | Dynamic | Yes | Builder view | 
-| [Unit Add modal] | `/[gameSystem]/armies/[armyId]/units/add` | Dynamic | Yes | Modal but URL-addressable | 
-| [Unit Configuration & Datasheet page] | `/[gameSystem]/armies/[armyId]/units/[unitId]` | Dynamic | Yes | Interactive | 
-| [Unit Datasheet page] | `/[gameSystem]/references/units/[unitId]` | Dynamic | No | Read-only, public | 
-| War Ledger | `/[gameSystem]/matches` | Dynamic | Yes | List | 
-| [Match Creation] | `/[gameSystem]/matches/new` | Dynamic | Yes | Drawer/screen | 
-| [Match page] | `/[gameSystem]/matches/[matchId]` | Dynamic | Yes | Past/Future/Active modes | 
-| [Active Match — Basic mode] | `/[gameSystem]/matches/[matchId]?mode=basic` | Dynamic | Yes | Mode via query/state | 
-| [Active Match — Guided mode] | `/[gameSystem]/matches/[matchId]?mode=guided` | Dynamic | Yes | Mode via query/state | 
-| Command Post | `/[gameSystem]/matches/[matchId]/command-post` | Dynamic | Yes | In-match reference | 
-| Campaigns | `/[gameSystem]/campaigns` | Dynamic | Yes | List | 
-| [Campaign Creation page] | `/[gameSystem]/campaigns/new` | Dynamic | Yes | | 
-| [Campaign page] | `/[gameSystem]/campaigns/[campaignId]` | Dynamic | Yes | Dashboard | 
-| [Campaign Unit page] | `/[gameSystem]/campaigns/[campaignId]/units/[unitId]` | Dynamic | Yes | | 
-| [Campaign Matches page] | `/[gameSystem]/campaigns/[campaignId]/matches` | Dynamic | Yes | | 
-| [Campaign Management page] | `/[gameSystem]/campaigns/[campaignId]/manage` | Dynamic | Yes | Organizer-only | 
-| Allies | `/[gameSystem]/social` | Dynamic | Yes | Friends | 
-| References | `/[gameSystem]/references` | Dynamic | No | Public | 
+| The Forge | `/wh40k10e/armies` | Dynamic | Yes | Game system home | 
+| [Army Creation page] | `/wh40k10e/armies/new` | Dynamic | Yes | | 
+| [Army page] | `/wh40k10e/armies/[armyId]` | Dynamic | Yes | Builder view | 
+| [Unit Add modal] | `/wh40k10e/armies/[armyId]/units/add` | Dynamic | Yes | Modal but URL-addressable | 
+| [Unit Configuration & Datasheet page] | `/wh40k10e/armies/[armyId]/units/[unitId]` | Dynamic | Yes | Interactive | 
+| [Unit Datasheet page] | `/wh40k10e/references/units/[unitId]` | Dynamic | No | Read-only, public | 
+| War Ledger | `/wh40k10e/matches` | Dynamic | Yes | List | 
+| [Match Creation] | `/wh40k10e/matches/new` | Dynamic | Yes | Drawer/screen | 
+| [Match page] | `/wh40k10e/matches/[matchId]` | Dynamic | Yes | Past/Future/Active modes | 
+| [Active Match — Basic mode] | `/wh40k10e/matches/[matchId]?mode=basic` | Dynamic | Yes | Mode via query/state | 
+| [Active Match — Guided mode] | `/wh40k10e/matches/[matchId]?mode=guided` | Dynamic | Yes | Mode via query/state | 
+| Command Post | `/wh40k10e/matches/[matchId]/command-post` | Dynamic | Yes | In-match reference | 
+| Campaigns | `/wh40k10e/campaigns` | Dynamic | Yes | List | 
+| [Campaign Creation page] | `/wh40k10e/campaigns/new` | Dynamic | Yes | | 
+| [Campaign page] | `/wh40k10e/campaigns/[campaignId]` | Dynamic | Yes | Dashboard | 
+| [Campaign Unit page] | `/wh40k10e/campaigns/[campaignId]/units/[unitId]` | Dynamic | Yes | | 
+| [Campaign Matches page] | `/wh40k10e/campaigns/[campaignId]/matches` | Dynamic | Yes | | 
+| [Campaign Management page] | `/wh40k10e/campaigns/[campaignId]/manage` | Dynamic | Yes | Organizer-only | 
+| Allies | `/wh40k10e/social` | Dynamic | Yes | Friends | 
+| References | `/wh40k10e/references` | Dynamic | No | Public | 
 | [Account page] | `/account` | Static | Yes | Game-system-agnostic | 
 | [Profile page] | `/profile` | Static | Yes | Game-system-agnostic | 
-| [Tournaments page] | `/[gameSystem]/tournaments` | Dynamic | Yes | Placeholder | 
+| [Tournaments page] | `/wh40k10e/tournaments` | Dynamic | Yes | Placeholder | 
 
 **Routing conventions:**
 - Modal routes are URL-addressable and preserve back-stack (e.g., unit add modal).
-- Account/Profile are canonical without `[gameSystem]`.
+- Account/Profile are canonical without `wh40k10e`.
 
 ---
 
@@ -211,7 +211,7 @@ Sub-page labels (e.g., `[Army page]`, `[Campaign Unit page]`) use brackets as de
 |-------|-------------|-----------------|
 | Unauthenticated | Can view References and [Unit Datasheet page]; protected routes redirect to `/login`. | Redirect to `/login` on app load. |
 | Authenticated, no game system | Redirect to `/` (game system selector). | Same behavior. |
-| Authenticated, game system selected | Full access to all `[gameSystem]` routes. | Same behavior. |
+| Authenticated, game system selected | Full access to all `wh40k10e` routes. | Same behavior. |
 | Session expired | Silent token refresh; if failure → `/login`. | Same behavior. |
 
 ---
@@ -255,10 +255,10 @@ Sub-page labels (e.g., `[Army page]`, `[Campaign Unit page]`) use brackets as de
 
 ## 11. Game System Scoping
 
-- `[gameSystem]` segment scopes all game-specific content and navigation.
-- Switching game systems = navigate to a different `[gameSystem]` root.
+- `wh40k10e` segment scopes all game-specific content and navigation.
+- Switching game systems = navigate to a different `wh40k10e` root.
 - Plugins provide game system ID (slug), display name, and icon.
-- Account/Profile are game-system-agnostic and live outside the `[gameSystem]` segment.
+- Account/Profile are game-system-agnostic and live outside the `wh40k10e` segment.
 
 ---
 

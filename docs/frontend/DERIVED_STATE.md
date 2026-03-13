@@ -2,7 +2,7 @@
 
 **Purpose:** Canonical reference for computing derived state across all state tiers — avoiding the "stored derived state" anti-pattern.
 
-**Scope:** `@armoury/web`, `@armoury/mobile`, and `src/shared/frontend/` derived state patterns.
+**Scope:** `@armoury/web`, `@armoury/mobile`, and shared `@armoury/clients-*` derived state patterns.
 
 **Parent document:** [State Management Architecture](./plan/STATE_MANAGEMENT.md)
 
@@ -61,7 +61,7 @@ When the derived value comes entirely from a single React Query result, use the 
 ```typescript
 // src/web/hooks/useArmyUnitCount.ts
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 
 /**
  * Returns the unit count for an army.
@@ -83,7 +83,7 @@ export function useArmyUnitCount(armyId: string): number | undefined {
 ```typescript
 // src/web/hooks/useArmyPointTotal.ts
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 
 /** Returns the total points cost of all units in an army. */
 export function useArmyPointTotal(armyId: string): number | undefined {
@@ -102,7 +102,7 @@ export function useArmyPointTotal(armyId: string): number | undefined {
 // src/web/hooks/useArmyUnitsAbovePoints.ts
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 import type { Army, ArmyUnit } from '@armoury/models';
 
 /**
@@ -131,7 +131,7 @@ When the derived value depends on both server data and client-side state (URL pa
 // src/web/hooks/useFilteredArmies.ts
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { armyListOptions } from '@shared/frontend/armies/queries.js';
+import { armyListOptions } from '@armoury/clients-armies';
 import type { Army } from '@armoury/models';
 
 interface FilteredArmiesResult {
@@ -163,7 +163,7 @@ export function useFilteredArmies(): FilteredArmiesResult {
 ```typescript
 // src/web/hooks/useArmySortedUnits.ts
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 import type { ArmyUnit } from '@armoury/models';
 
 type SortField = 'name' | 'points' | 'models';
@@ -210,7 +210,7 @@ When a real-time stream emits data that matches an entity already managed by Rea
 // src/web/hooks/useMatchSync.ts
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { matchDetailOptions } from '@shared/frontend/matches/queries.js';
+import { matchDetailOptions } from '@armoury/clients-matches';
 import type { IMatchStream } from '@armoury/streams';
 
 /**
@@ -246,7 +246,7 @@ The same bridge pattern applies to presence data:
 // src/web/hooks/usePresenceSync.ts
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { presenceOptions } from '@shared/frontend/presence/queries.js';
+import { presenceOptions } from '@armoury/clients-friends';
 import type { IPresenceStream } from '@armoury/streams';
 import type { PresenceState } from '@armoury/models';
 

@@ -2,7 +2,7 @@
 
 **Purpose:** Consolidate all frontend coding patterns, conventions, and anti-patterns for the Armoury web and mobile applications.
 
-**Scope:** `@armoury/web` (Next.js 15), `@armoury/mobile` (Expo/React Native), and `src/shared/frontend/` (pure TypeScript shared modules).
+**Scope:** `@armoury/web` (Next.js 15), `@armoury/mobile` (Expo/React Native), and `src/shared/clients/` (pure TypeScript shared modules).
 
 **Related Documents:**
 
@@ -123,19 +123,19 @@ These layers must not bleed into each other. A render component should never fet
 
 | Location               | Contains                                                                                                          |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `src/shared/frontend/` | Pure TypeScript modules only: business logic, query/mutation factories, types, utilities                          |
+| `src/shared/clients/` | Pure TypeScript modules only: business logic, query/mutation factories, types, utilities                          |
 | `src/web/`             | Next.js pages/routes, React components, SSR/RSC logic, web-specific hooks, web-only integrations                  |
 | `src/mobile/`          | Expo screens/navigation, React Native components, native modules, mobile-specific hooks, mobile-only integrations |
 
-**Critical Rule:** `src/shared/frontend/` must contain **only pure TypeScript** — no React components, no React Native components, no React hooks, no JSX. React components live in `src/web/`, React Native components live in `src/mobile/`.
+**Critical Rule:** `src/shared/clients/` must contain **only pure TypeScript** — no React components, no React Native components, no React hooks, no JSX. React components live in `src/web/`, React Native components live in `src/mobile/`.
 
 ---
 
 ## 3. Cross-Platform Code Sharing
 
-Share pure TypeScript frontend logic (business logic, query/mutation factories, types, utilities) across web and mobile via `src/shared/frontend/` as long as it does not introduce anti-patterns or tech debt.
+Share pure TypeScript frontend logic (business logic, query/mutation factories, types, utilities) across web and mobile via `src/shared/clients/` as long as it does not introduce anti-patterns or tech debt.
 
-### What Belongs in `src/shared/frontend/`
+### What Belongs in `src/shared/clients/`
 
 - Query key factories and `queryOptions()` definitions
 - Mutation factories
@@ -144,7 +144,7 @@ Share pure TypeScript frontend logic (business logic, query/mutation factories, 
 - Constants and enums
 - Utility functions
 
-### What Does NOT Belong in `src/shared/frontend/`
+### What Does NOT Belong in `src/shared/clients/`
 
 - React components (`*.tsx` with JSX)
 - React hooks (`use*` functions importing from `react`)
@@ -219,7 +219,7 @@ interface ButtonProps {
 
 - **Web components**: `src/web/` — Next.js pages, layouts, React components
 - **Mobile components**: `src/mobile/` — Expo screens, React Native components
-- **No components in shared**: `src/shared/frontend/` is pure TypeScript only
+- **No components in shared**: `src/shared/clients/` is pure TypeScript only
 
 ### Naming
 
@@ -264,7 +264,7 @@ const filteredItems = items.filter((i) => i.active);
 
 - Extract a custom hook when: (a) logic is reused across 2+ components, (b) a component's hook logic exceeds ~15 lines, or (c) logic involves a combination of multiple hooks that form a cohesive unit.
 - Name with `use` prefix. Keep hooks focused — one responsibility per hook.
-- Custom hooks live in the platform workspace that uses them (`src/web/` or `src/mobile/`), not in `src/shared/frontend/`.
+- Custom hooks live in the platform workspace that uses them (`src/web/` or `src/mobile/`), not in `src/shared/clients/`.
 
 ---
 
@@ -299,9 +299,9 @@ function ArmyListView({ armies, isLoading, onDelete }: ArmyListViewProps) {
 **Why this split matters:**
 
 - Render components are platform-specific (web uses `<ul>`, mobile uses `<FlatList>`) — both the orchestrational and render components live in their respective platform workspaces
-- Business logic (pure TS in `src/shared/frontend/`) is testable without rendering
+- Business logic (pure TS in `src/shared/clients/`) is testable without rendering
 - UI is testable without mocking data layers
-- Query/mutation factories in `src/shared/frontend/` are consumed by orchestrational components in both platforms
+- Query/mutation factories in `src/shared/clients/` are consumed by orchestrational components in both platforms
 
 ---
 
@@ -1060,7 +1060,7 @@ test('sets isDeleting state to true', () => {
 
 ### Testing Rules
 
-- Shared business logic tests: `src/shared/frontend/__tests__/` — test pure TypeScript functions directly
+- Shared business logic tests: `src/shared/clients/__tests__/` — test pure TypeScript functions directly
 - Web component tests: `src/web/__tests__/` — test React components with RTL
 - Mobile component tests: `src/mobile/__tests__/` — test React Native components with RNTL
 - Mock React Query with `@tanstack/react-query` test utilities (`QueryClientProvider` wrapper)
@@ -1114,8 +1114,8 @@ test('sets isDeleting state to true', () => {
 | Use array index as `key` for dynamic lists       | Use a stable unique ID                       |
 | Nest ternaries in JSX                            | Extract to variables or early returns        |
 | `// eslint-disable` without justification        | Fix the lint error                           |
-| Place React components in `src/shared/frontend/` | Components go in `src/web/` or `src/mobile/` |
-| Place React hooks in `src/shared/frontend/`      | Hooks go in `src/web/` or `src/mobile/`      |
+| Place React components in `src/shared/clients/` | Components go in `src/web/` or `src/mobile/` |
+| Place React hooks in `src/shared/clients/`      | Hooks go in `src/web/` or `src/mobile/`      |
 | Use React Context for global state               | Use RxJS (`BehaviorSubject`)                 |
 | Suppress type errors with `as any`               | Fix the underlying type issue                |
 | Use empty catch blocks `catch(e) {}`             | Handle or rethrow with typed errors          |

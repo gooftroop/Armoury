@@ -2,7 +2,7 @@
 
 **Purpose:** Canonical reference for all server/remote state management via `@tanstack/react-query`.
 
-**Scope:** `@armoury/web`, `@armoury/mobile`, and `src/shared/frontend/` query factories.
+**Scope:** `@armoury/web`, `@armoury/mobile`, and `src/shared/clients/` query factories.
 
 **Parent document:** [State Management Architecture](./plan/STATE_MANAGEMENT.md)
 
@@ -45,14 +45,14 @@ Query keys are the identity of every cached query. A consistent, hierarchical ke
 2. **Use `as const`** — key arrays must be readonly tuples for type-safe invalidation.
 3. **Structure generic → specific**: `['armies'] → ['armies', 'list'] → ['armies', 'list', { faction }]`.
 4. **Use `queryOptions()`** — wraps key + `queryFn` + `staleTime` together, enabling TypeScript to infer the return type at call sites without explicit generics.
-5. **Keep factories in `src/shared/frontend/`** — they are pure TypeScript with no React dependency and can be used in both web and mobile without duplication.
+5. **Keep factories in `src/shared/clients/`** — they are pure TypeScript with no React dependency and can be used in both web and mobile without duplication.
 
 > **FE-060**: Query keys co-located with `queryOptions()`.
 > **FE-061**: Query keys structured generic → specific, with `as const`.
 > **FE-062**: Factory pattern: `all()`, `lists()`, `list(filters)`, `details()`, `detail(id)`.
 
 ```typescript
-// src/shared/frontend/armies/queries.ts (pure TypeScript — no React)
+// src/shared/clients/armies/src/queries.ts (pure TypeScript — no React)
 // @requirements FE-060, FE-061, FE-062
 
 import { queryOptions } from '@tanstack/react-query';
@@ -131,10 +131,10 @@ useQuery<Army>({ queryKey: ['armies', 'detail', id], queryFn: () => dc.armies.ge
 **Hierarchical invalidation in practice:**
 
 ```typescript
-// src/shared/frontend/armies/mutations.ts (pure TypeScript — no React)
+// src/shared/clients/armies/src/mutations.ts (pure TypeScript — no React)
 
 import { type QueryClient } from '@tanstack/react-query';
-import { armyKeys } from '@shared/frontend/armies/queries.js';
+import { armyKeys } from '@armoury/clients-armies';
 
 /**
  * Invalidate all army-related queries after any army mutation.
@@ -157,7 +157,7 @@ export function invalidateArmyLists(queryClient: QueryClient): Promise<void> {
 
 ## 2. Custom Hooks (Platform-Specific)
 
-Custom hooks that wrap `useQuery` live in `src/web/` or `src/mobile/` — **never** in `src/shared/frontend/`. React is a peer dependency, not a dependency of the shared package.
+Custom hooks that wrap `useQuery` live in `src/web/` or `src/mobile/` — **never** in `src/shared/clients/`. React is a peer dependency, not a dependency of the shared package.
 
 A custom hook adds value when it:
 
@@ -177,7 +177,7 @@ For single-use or straightforward queries, **call `useQuery(options)` directly**
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 
 export function ArmyCard({ id }: { id: string }): JSX.Element {
     const { data: army, isPending } = useQuery(armyDetailOptions(id));
@@ -194,8 +194,8 @@ export function ArmyCard({ id }: { id: string }): JSX.Element {
 // src/web/src/hooks/useArmyWithRoster.ts
 
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
-import { rosterOptions } from '@shared/frontend/rosters/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
+import { rosterOptions } from '@armoury/clients-armies';
 import type { Army, Roster } from '@armoury/models';
 
 interface ArmyWithRoster {
@@ -248,7 +248,7 @@ All writes go through `useMutation`. The pattern for cache consistency is:
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dc } from '@armoury/data';
-import { armyKeys } from '@shared/frontend/armies/queries.js';
+import { armyKeys } from '@armoury/clients-armies';
 
 interface UseDeleteArmyResult {
     deleteArmy: (id: string) => void;
@@ -280,7 +280,7 @@ export function useDeleteArmy(): UseDeleteArmyResult {
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dc } from '@armoury/data';
-import { armyDetailOptions, armyKeys } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions, armyKeys } from '@armoury/clients-armies';
 import type { Army } from '@armoury/models';
 
 interface RenameArmyVariables {
@@ -348,7 +348,7 @@ The pattern has three parts:
 // @requirements FE-068, FE-069
 
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 import { ArmyDetailView } from '@web/components/armies/ArmyDetailView.js';
 
 interface Props {
@@ -383,7 +383,7 @@ export default async function ArmyDetailPage({ params }: Props): Promise<JSX.Ele
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
+import { armyDetailOptions } from '@armoury/clients-armies';
 
 interface Props {
     id: string;
@@ -451,7 +451,7 @@ The global `QueryClient` at `src/web/src/lib/queryClient.ts` sets `staleTime: 3_
 | Session / auth                           | `0`               | `1_800_000` (30 min) | Auth state must always reflect server; errors matter |
 
 ```typescript
-// src/shared/frontend/armies/queries.ts (pure TypeScript — no React)
+// src/shared/clients/armies/src/queries.ts (pure TypeScript — no React)
 
 import { queryOptions } from '@tanstack/react-query';
 import { dc } from '@armoury/data';
@@ -477,7 +477,7 @@ export const armyDetailOptions = (id: string) =>
 ```
 
 ```typescript
-// src/shared/frontend/reference/queries.ts (pure TypeScript — no React)
+// src/shared/clients/rules/src/queries.ts (pure TypeScript — no React)
 
 import { queryOptions } from '@tanstack/react-query';
 import { dc } from '@armoury/data';
@@ -494,7 +494,7 @@ export const factionListOptions = () =>
 ```
 
 ```typescript
-// src/shared/frontend/auth/queries.ts (pure TypeScript — no React)
+// src/shared/clients/users/src/queries.ts (pure TypeScript — no React)
 
 import { queryOptions } from '@tanstack/react-query';
 import { dc } from '@armoury/data';

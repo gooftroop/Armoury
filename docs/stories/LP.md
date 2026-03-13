@@ -17,10 +17,10 @@ As a player, I want to select a game system so that I can enter the app context 
 
 **Acceptance Criteria:**
 - [ ] Game system tiles are clickable
-- [ ] Selecting a system navigates to the army page for that system: `/[locale]/[gameSystem]/armies`
+- [ ] Selecting a system navigates to the army page for that system: `/[locale]/wh40k10e/armies`
 - [ ] Only systems where `GameSystem.status === 'available'` are selectable
 
-**Data References:** `GameSystem.status`, route: `/[locale]/[gameSystem]/armies`
+**Data References:** `GameSystem.status`, route: `/[locale]/wh40k10e/armies`
 
 ---
 
