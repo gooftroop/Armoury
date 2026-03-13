@@ -182,6 +182,7 @@ async function ensureLocalStack(repoRoot: string): Promise<void> {
 
     console.log('[e2e] LocalStack healthy and init hooks complete.');
 }
+
 /**
  * Vitest globalSetup — starts LocalStack (once, shared) then the Docker
  * Compose container for the calling service.

@@ -212,6 +212,7 @@ switch (command) {
             console.error('Missing schema name.');
             process.exit(1);
         }
+
         await createSchema(schemaName);
         break;
     case 'drop':
@@ -219,6 +220,7 @@ switch (command) {
             console.error('Missing schema name.');
             process.exit(1);
         }
+
         await dropSchema(schemaName);
         break;
     case 'url':
@@ -226,18 +228,23 @@ switch (command) {
             console.error('Missing schema name.');
             process.exit(1);
         }
+
         await generateDatabaseUrl(schemaName);
         break;
+
     case 'token': {
         const region = args[1];
         const hostname = args[2];
+
         if (!region || !hostname) {
             console.error('Usage: token <REGION> <HOSTNAME>');
             process.exit(1);
         }
+
         await generateToken(region, hostname);
         break;
     }
+
     default:
         console.error(`Unknown command: ${command}. Use "create", "drop", "url", or "token".`);
         process.exit(1);
