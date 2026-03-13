@@ -9,12 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import {
-    CampaignsApiError,
-    CampaignsNetworkError,
-    isCampaignsApiError,
-    isCampaignsNetworkError,
-} from '@clients-campaigns/types.js';
+import { CampaignsApiError, CampaignsNetworkError, isCampaignsApiError, isCampaignsNetworkError } from '@/types.js';
 
 describe('CampaignsApiError', () => {
     it('sets name, message, and statusCode correctly', () => {

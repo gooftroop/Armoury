@@ -14,7 +14,7 @@
     },
     "scripts": {
         "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
-        "generate:types": "tsc -p tsconfig.build.json",
+        "generate:types": "tsc -p tsconfig.build.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\"",
         "test": "vitest run",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
@@ -28,7 +28,7 @@
         "@armoury/vitest": "*",
         "@armoury/esbuild": "*",
         "@types/ws": "^8.18.1",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.3",
         "prettier": "^3.0.0",
         "vitest": "^4.0.0"
     },

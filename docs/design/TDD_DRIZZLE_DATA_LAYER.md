@@ -137,9 +137,9 @@ Every entity will now have an explicit Drizzle table definition colocated in its
 **Example: CampaignDAO.ts**
 ```typescript
 import { pgTable, text } from 'drizzle-orm/pg-core';
-import type { DatabaseAdapter } from '@shared/data/adapter.js';
-import type { Campaign } from '@shared/models/CampaignModel.js';
-import { BaseDAO } from '@shared/data/dao/BaseDAO.js';
+import type { DatabaseAdapter } from '@armoury/data';
+import type { Campaign } from '@armoury/models';
+import { BaseDAO } from '@armoury/data';
 
 export const campaignsTable = pgTable('campaigns', {
     id: text('id').primaryKey(),

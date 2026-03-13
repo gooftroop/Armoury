@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from '@clients-campaigns/config.js';
-import type { CampaignParams, CampaignParticipant, JoinCampaignRequest } from '@clients-campaigns/types.js';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { CampaignParams, CampaignParticipant, JoinCampaignRequest } from '@/types.js';
 
 /**
  * Adds a new participant to a campaign.

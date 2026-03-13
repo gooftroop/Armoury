@@ -1,4 +1,4 @@
-import type { CrusadeRules } from '@wh40k10e/models/CrusadeRulesModel.js';
+import type { CrusadeRules } from '../../src/models/CrusadeRulesModel.js';
 export function makeCrusadeRules(overrides: Partial<CrusadeRules> = {}): CrusadeRules {
     const defaults: CrusadeRules = {
         id: 'crusade-core',

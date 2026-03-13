@@ -5,8 +5,7 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@validation/*": ["./src/*"],
-            "@providers-bsdata/*": ["../providers/bsdata/dist/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

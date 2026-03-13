@@ -4,35 +4,35 @@ import type {
     PluginValidationRule,
     EntityHydrator,
     GameSystem,
-} from '@data/types.js';
-import type { SchemaExtension } from '@data/schema.js';
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { IGitHubClient } from '@clients-github/types.js';
-import type { GameContextResult } from '@data/types.js';
-import { registerPluginEntity } from '@data/adapter.js';
-import { registerHydrator } from '@data/hydration.js';
-import { registerEntityCodec } from '@data/codec.js';
-import { registerSchemaExtension } from '@data/schema.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-import { hydrateCoreRules } from '@wh40k10e/models/CoreRules.js';
-import { hydrateFactionData } from '@wh40k10e/models/FactionData.js';
-import type { ValidationResult } from '@validation/types.js';
-import type { Army } from '@wh40k10e/models/ArmyModel.js';
-import type { ChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import { hydrateChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { Faction } from '@wh40k10e/types/entities.js';
-import type { CrusadeRules } from '@wh40k10e/models/CrusadeRulesModel.js';
-import type { Weapon, Ability, Stratagem, Detachment } from '@wh40k10e/types/entities.js';
-import { CoreRulesDAO } from '@wh40k10e/dao/CoreRulesDAO.js';
-import { ChapterApprovedDAO } from '@wh40k10e/dao/ChapterApprovedDAO.js';
-import { createWahapediaClient } from '@clients-wahapedia/index.js';
-import { CrusadeRulesDAO } from '@wh40k10e/dao/CrusadeRulesDAO.js';
-import { ArmyDAO } from '@wh40k10e/dao/ArmyDAO.js';
-import { CampaignDAO } from '@data/dao/CampaignDAO.js';
+} from '@armoury/data-dao';
+import type { SchemaExtension } from '@armoury/data-dao';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { GameContextResult } from '@armoury/data-dao';
+import { registerPluginEntity } from '@armoury/data-dao';
+import { registerHydrator } from '@armoury/data-dao';
+import { registerEntityCodec } from '@armoury/data-dao';
+import { registerSchemaExtension } from '@armoury/data-dao';
+import type { FactionData } from '@/models/FactionData.js';
+import type { CoreRules } from '@/models/CoreRules.js';
+import { hydrateCoreRules } from '@/models/CoreRules.js';
+import { hydrateFactionData } from '@/models/FactionData.js';
+import type { ValidationResult } from '@armoury/validation';
+import type { Army } from '@/models/ArmyModel.js';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import { hydrateChapterApproved } from '@/models/ChapterApproved.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { Faction } from '@/types/entities.js';
+import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
+import type { Weapon, Ability, Stratagem, Detachment } from '@/types/entities.js';
+import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
+import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
+import { createWahapediaClient } from '@armoury/clients-wahapedia';
+import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
+import { ArmyDAO } from '@/dao/ArmyDAO.js';
+import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
 
-import { GameData } from '@wh40k10e/dao/GameData.js';
+import { GameData } from '@/dao/GameData.js';
 import {
     AeldariDAO,
     DrukhariDAO,
@@ -71,7 +71,7 @@ import {
     AdeptusTitanicusDAO,
     TitanicusTraitorisDAO,
     UnalignedForcesDAO,
-} from '@wh40k10e/dao/factions/index.js';
+} from '@/dao/factions/index.js';
 import {
     validatePoints,
     validateStrategicReserves,
@@ -84,7 +84,7 @@ import {
     validateTransport,
     validateWargear,
     validateWarlord,
-} from '@wh40k10e/validation/rules/index.js';
+} from '@/validation/rules/index.js';
 
 /**
  * Enum of entity kinds for wh40k10e data access.

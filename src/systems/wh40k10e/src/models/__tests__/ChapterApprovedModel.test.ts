@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { ChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import { hydrateChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import { hydrateChapterApproved } from '@/models/ChapterApproved.js';
 import type {
     PrimaryMission,
     SecondaryMission,
@@ -9,7 +9,7 @@ import type {
     TwistCard,
     TournamentMission,
     TerrainLayout,
-} from '@wh40k10e/models/ChapterApprovedTypes.js';
+} from '@/models/ChapterApprovedTypes.js';
 
 const buildPrimaryMission = (): PrimaryMission => ({
     id: 'mission-1',

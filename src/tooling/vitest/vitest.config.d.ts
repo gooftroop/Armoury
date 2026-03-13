@@ -9,5 +9,10 @@ import type { UserConfig } from 'vitest/config';
  */
 export declare const baseConfig: {
     test: UserConfig['test'];
+    resolve: {
+        alias: {
+            '@': string;
+        };
+    };
 };
 export default baseConfig;

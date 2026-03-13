@@ -1,7 +1,7 @@
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { IGitHubClient } from '@clients-github/types.js';
-import type { CrusadeRules } from '@wh40k10e/models/CrusadeRulesModel.js';
-import { BaseDAO } from '@wh40k10e/dao/BaseDAO.js';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
+import { BaseDAO } from '@/dao/BaseDAO.js';
 
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;

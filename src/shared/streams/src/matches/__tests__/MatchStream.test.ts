@@ -66,7 +66,7 @@ import type {
     UpdateMatchFields,
     ConnectionState,
 } from '@armoury/clients-matches';
-import { MatchStream, createMatchStream } from '../MatchStream.ts';
+import { MatchStream, createMatchStream } from '@/matches/MatchStream.js';
 
 // === Test Helpers ===
 

@@ -1,11 +1,5 @@
-import type {
-    DatabaseAdapter,
-    UserContext,
-    WebSocketEvent,
-    WebSocketResponse,
-    WsRouteHandler,
-} from '@friends/src/types.js';
-import { handleWsConnect, handleWsDefault, handleWsDisconnect } from '@friends/src/routes/wsPresence.js';
+import type { DatabaseAdapter, UserContext, WebSocketEvent, WebSocketResponse, WsRouteHandler } from '@/types.js';
+import { handleWsConnect, handleWsDefault, handleWsDisconnect } from '@/routes/wsPresence.js';
 
 const ROUTE_MAP: Record<string, WsRouteHandler> = {
     $connect: handleWsConnect,

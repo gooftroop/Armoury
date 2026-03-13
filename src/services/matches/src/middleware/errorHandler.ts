@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@matches/src/types.js';
+import type { ApiResponse } from '@/types.js';
 
 /**
  * Formats an error into an API Gateway response with appropriate status code and message.

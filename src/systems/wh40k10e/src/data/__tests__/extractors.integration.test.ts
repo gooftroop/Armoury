@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import { parseCatalogue } from '@providers-bsdata/xmlParser.js';
-import { extractUnits } from '@wh40k10e/data/extractors.js';
-import { parseWeaponKeywords } from '@wh40k10e/validation/weaponKeywords.js';
-import { parseAbility, parseDetachmentRule } from '@wh40k10e/validation/abilityParser.js';
+import { parseCatalogue } from '@armoury/providers-bsdata';
+import { extractUnits } from '@/data/extractors.js';
+import { parseWeaponKeywords } from '@/validation/weaponKeywords.js';
+import { parseAbility, parseDetachmentRule } from '@/validation/abilityParser.js';
 
 const buildCatalogueXml = (): string => `<?xml version="1.0" encoding="UTF-8"?>
 <catalogue id="faction-1" name="Test Faction" revision="1" battleScribeVersion="2.03" gameSystemId="gs-1" gameSystemRevision="1">

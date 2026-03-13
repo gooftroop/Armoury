@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { deleteUser } from '@clients-users/api/deleteUser.js';
-import type { UserParams } from '@clients-users/types.js';
+import { deleteUser } from '@/api/deleteUser.js';
+import type { UserParams } from '@/types.js';
 
 /**
  * Builds React Query mutation options for deleting a user.

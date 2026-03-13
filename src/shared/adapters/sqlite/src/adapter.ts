@@ -6,12 +6,12 @@
  */
 
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@data/adapter.js';
-import { getMergedSQLiteSchema } from '@data/schema.js';
-import { Platform } from '@data/types.js';
-import { getEntityCodec } from '@data/codec.js';
-import type { FileSyncStatus } from '@data/types.js';
-import { DatabaseError } from '@data/types.js';
+import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@armoury/data-dao';
+import { getMergedSQLiteSchema } from '@armoury/data-dao';
+import { Platform } from '@armoury/data-dao';
+import { getEntityCodec } from '@armoury/data-dao';
+import type { FileSyncStatus } from '@armoury/data-dao';
+import { DatabaseError } from '@armoury/data-dao';
 
 type SelectOffsetBuilder = Promise<Record<string, unknown>[]> & {
     offset: (count: number) => Promise<Record<string, unknown>[]>;

@@ -57,7 +57,7 @@ import {
     AlertDialogFooter,
     AlertDialogAction,
     AlertDialogCancel,
-} from '@web/src/components/ui/index.js';
+} from '@/components/ui/index.js';
 
 /** Props for the AccountSettings client component. */
 export interface AccountSettingsProps {

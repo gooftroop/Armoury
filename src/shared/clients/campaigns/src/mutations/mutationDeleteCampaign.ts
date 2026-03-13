@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { deleteCampaign } from '@clients-campaigns/api/deleteCampaign.js';
-import type { CampaignParams } from '@clients-campaigns/types.js';
+import { deleteCampaign } from '@/api/deleteCampaign.js';
+import type { CampaignParams } from '@/types.js';
 
 /**
  * Builds React Query mutation options for deleting a campaign.

@@ -1,6 +1,1 @@
-export type {
-    ParsedConstraint,
-    ConstraintType,
-    ConstraintField,
-    ConstraintScope,
-} from '@providers-bsdata/constraintTypes.js';
+export type { ParsedConstraint, ConstraintType, ConstraintField, ConstraintScope } from '@armoury/providers-bsdata';

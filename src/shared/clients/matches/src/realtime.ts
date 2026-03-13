@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { Subject, BehaviorSubject, filter } from 'rxjs';
 import type { Observable } from 'rxjs';
-import { MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@clients-matches/config.js';
+import { MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
 import type {
     MatchesWsConfig,
     IMatchesRealtimeClient,
@@ -11,7 +11,7 @@ import type {
     MatchUpdatedMessage,
     UpdateMatchFields,
     ConnectionState,
-} from '@clients-matches/types.js';
+} from '@/types.js';
 
 /**
  * Bidirectional WebSocket client for real-time match updates.

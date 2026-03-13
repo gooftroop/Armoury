@@ -119,7 +119,7 @@ function getDrawerConfig(mode: DrawerMode, unit: Unit) {
 
 // ✅ After: strategy map in src/shared/frontend/
 // src/shared/frontend/drawer/drawerConfig.ts
-import type { DrawerMode, Unit, DrawerConfig } from '@shared/types/drawer.js';
+import type { DrawerMode, Unit, DrawerConfig } from '@armoury/models';
 
 const strategies: Record<DrawerMode, (unit: Unit) => DrawerConfig> = {
     reference: () => ({ showModels: false, showHpBar: false, editable: false }),
@@ -140,7 +140,7 @@ export function resolveDrawerConfig(mode: DrawerMode, unit: Unit): DrawerConfig 
 
 ```typescript
 // src/shared/frontend/match/matchPhase.ts
-import type { MatchPhase } from '@shared/types/match.js';
+import type { MatchPhase } from '@armoury/models';
 
 const transitions: Record<MatchPhase, ReadonlyArray<MatchPhase>> = {
     setup: ['deployment'],
@@ -435,8 +435,8 @@ Blast-radius reference from AGENTS.md:
 
 Full rules are in CODING_STANDARDS.md. Key points:
 
-- Aliased imports use `.js` extension: `import { Army } from '@shared/models/Army.js'`
-- Relative imports use `.ts` extension: `import { makeArmy } from '../__fixtures__/makeArmy.ts'`
+- Aliased imports use `.js` extension: `import { Army } from '@armoury/models'`
+- Relative imports use `.js` extension: `import { makeArmy } from '../__fixtures__/makeArmy.js'`
 - Import order: external packages, aliased internal, relative
 - Named exports only (no default exports unless a framework requires it)
 

@@ -5,7 +5,7 @@ import { createTamagui } from 'tamagui';
  * System theme partials imported from generated Tamagui theme files.
  * These are produced by @armoury/theme-generator and copied to public/ by copy-systems.
  */
-import { wh40k10eLight, wh40k10eDark } from '@mobile/public/systems/wh40k10e/theme.tamagui.js';
+import { wh40k10eLight, wh40k10eDark } from '#/public/systems/wh40k10e/theme.tamagui.js';
 const light = {
     background: '#f4f5f7',
     backgroundHover: '#e6e8eb',

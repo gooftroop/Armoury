@@ -5,13 +5,7 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@wh40k10e/*": ["./src/*"],
-            "@data/*": ["../../shared/data/dist/*"],
-            "@models/*": ["../../shared/models/dist/*"],
-            "@clients-github/*": ["../../shared/clients/github/dist/*"],
-            "@clients-wahapedia/*": ["../../shared/clients/wahapedia/dist/*"],
-            "@providers-bsdata/*": ["../../shared/providers/bsdata/dist/*"],
-            "@validation/*": ["../../shared/validation/dist/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

@@ -70,7 +70,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ChapterApprovedParser } from '@wh40k10e/data/ChapterApprovedParser.js';
+import { ChapterApprovedParser } from '@/data/ChapterApprovedParser.js';
 
 // ─── Accessor Type for Private Methods ────────────────────────────────────────
 
@@ -323,7 +323,7 @@ const buildTwistCardFragment = (name: string, rulesText: string): string => {
  * Fragments are single-quoted and comma-separated, matching Wahapedia's JS array format.
  */
 const wrapJsArray = (varName: string, fragments: string[]): string => {
-    const escaped = fragments.map((f) => f.replace(/'/g, "\\'"));
+    const escaped = fragments.map((f) => f.replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
 
     return `var ${varName} = ['${escaped.join("', '")}'];`;
 };

@@ -1,6 +1,6 @@
 import ky from 'ky';
-import { MATCHES_BASE_URL } from '@clients-matches/config.js';
-import type { Match } from '@clients-matches/types.js';
+import { MATCHES_BASE_URL } from '@/config.js';
+import type { Match } from '@/types.js';
 
 /**
  * Fetches all matches from the matches service.

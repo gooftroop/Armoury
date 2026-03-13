@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CoreRulesDAO } from '@wh40k10e/dao/CoreRulesDAO.js';
-import { CrusadeRulesDAO } from '@wh40k10e/dao/CrusadeRulesDAO.js';
-import { FactionDAO } from '@wh40k10e/dao/FactionDAO.js';
-import { getFactionConfig } from '@wh40k10e/config/factionMap.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { MockGitHubClient } from '@wh40k10e/__mocks__/MockGitHubClient.js';
-import { clearCodecRegistry } from '@data/codec.js';
-import { clearHydrationRegistry } from '@data/hydration.js';
-import { clearSchemaExtensions } from '@data/schema.js';
-import { PluginRegistry } from '@data/pluginRegistry.js';
+import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
+import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
+import { FactionDAO } from '@/dao/FactionDAO.js';
+import { getFactionConfig } from '@/config/factionMap.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { MockGitHubClient } from '@/__mocks__/MockGitHubClient.js';
+import { clearCodecRegistry } from '@armoury/data-dao';
+import { clearHydrationRegistry } from '@armoury/data-dao';
+import { clearSchemaExtensions } from '@armoury/data-dao';
+import { PluginRegistry } from '@armoury/data-dao';
 
 const CORE_RULES_FILE = 'Warhammer%2040%2C000.gst';
 const CORE_RULES_SYNC_KEY = 'core:wh40k-10e.gst';

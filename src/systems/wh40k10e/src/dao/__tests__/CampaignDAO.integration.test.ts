@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CampaignDAO } from '@data/dao/CampaignDAO.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { makeCampaign } from '../../../e2e/__fixtures__/makeCampaign.ts';
-import type { CampaignPhase, CampaignRanking, Campaign } from '@models/CampaignModel.js';
+import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { makeCampaign } from '../../../e2e/__fixtures__/makeCampaign.js';
+import type { CampaignPhase, CampaignRanking, Campaign } from '@armoury/models';
 
 function makeCampaignPhase(overrides: Partial<CampaignPhase> = {}): CampaignPhase {
     return {

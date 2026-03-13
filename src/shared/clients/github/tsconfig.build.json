@@ -5,7 +5,7 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@clients-github/*": ["./src/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

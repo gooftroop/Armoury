@@ -117,8 +117,8 @@ private async needsSync(): Promise<boolean> {
 
 ```typescript
 import { DataContext, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 const dc = await DataContext.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
@@ -141,7 +141,7 @@ for (const mission of chapterApproved.missions) {
 ```typescript
 import { createAdapter, Platform } from '@armoury/shared';
 import { createWahapediaClient } from '@armoury/shared';
-import { ChapterApprovedDAO } from '@shared/systems/wh40k10e/dao/ChapterApprovedDAO.js';
+import { ChapterApprovedDAO } from '@armoury/systems';
 
 const adapter = await createAdapter({ platform: Platform.IndexedDB });
 const wahapediaClient = createWahapediaClient();

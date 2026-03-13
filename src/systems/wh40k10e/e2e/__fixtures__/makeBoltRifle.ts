@@ -1,4 +1,4 @@
-import type { Weapon } from '@wh40k10e/types/entities.js';
+import type { Weapon } from '../../src/types/entities.js';
 
 export function makeBoltRifle(): Weapon {
     return {

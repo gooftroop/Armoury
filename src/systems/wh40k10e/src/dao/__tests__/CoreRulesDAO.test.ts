@@ -1,20 +1,22 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { CoreRulesDAO } from '@wh40k10e/dao/CoreRulesDAO.js';
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { MockGitHubClient } from '@wh40k10e/__mocks__/MockGitHubClient.js';
-import { clearCodecRegistry } from '@data/codec.js';
-import { clearHydrationRegistry } from '@data/hydration.js';
-import { clearSchemaExtensions } from '@data/schema.js';
-import { PluginRegistry } from '@data/pluginRegistry.js';
-import type { BattleScribeGameSystem } from '@providers-bsdata/types.js';
-import type { Faction } from '@wh40k10e/types/entities.js';
-import { parseGameSystem } from '@providers-bsdata/xmlParser.js';
+import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
+import type { CoreRules } from '@/models/CoreRules.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import { MockGitHubClient } from '@/__mocks__/MockGitHubClient.js';
+import { clearCodecRegistry } from '@armoury/data-dao';
+import { clearHydrationRegistry } from '@armoury/data-dao';
+import { clearSchemaExtensions } from '@armoury/data-dao';
+import { PluginRegistry } from '@armoury/data-dao';
+import type { BattleScribeGameSystem } from '@armoury/providers-bsdata';
+import type { Faction } from '@/types/entities.js';
+import { parseGameSystem } from '@armoury/providers-bsdata';
 
 // Mock the xml-parser module
-vi.mock('@providers-bsdata/xmlParser.js', () => ({
-    parseGameSystem: vi.fn(),
-}));
+vi.mock('@armoury/providers-bsdata', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@armoury/providers-bsdata')>();
+
+    return { ...actual, parseGameSystem: vi.fn() };
+});
 
 const CORE_RULES_FILE = 'Warhammer%2040%2C000.gst';
 const CORE_RULES_SYNC_KEY = 'core:wh40k-10e.gst';

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FACTION_MAP, getAllFactionIds, getFactionConfig } from '@wh40k10e/config/factionMap.js';
+import { FACTION_MAP, getAllFactionIds, getFactionConfig } from '@/config/factionMap.js';
 
 /** Defines the faction map test suite. */
 const factionMapSuite = () => {

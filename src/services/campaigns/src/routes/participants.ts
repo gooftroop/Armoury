@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
 
-import type { DatabaseAdapter } from '@data/types.js';
-import type { Campaign, CampaignParticipant } from '@models/CampaignModel.js';
-import type { ApiResponse, PathParameters, RouteHandler, UserContext } from '@campaigns/src/types.js';
-import { errorResponse, jsonResponse } from '@campaigns/src/utils/response.js';
-import { parseJoinCampaignRequest, parseUpdateParticipantRequest } from '@campaigns/src/utils/validation.js';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { Campaign, CampaignParticipant } from '@armoury/models';
+import type { ApiResponse, PathParameters, RouteHandler, UserContext } from '@/types.js';
+import { errorResponse, jsonResponse } from '@/utils/response.js';
+import { parseJoinCampaignRequest, parseUpdateParticipantRequest } from '@/utils/validation.js';
 
 /**
  * Adds a participant to a campaign.

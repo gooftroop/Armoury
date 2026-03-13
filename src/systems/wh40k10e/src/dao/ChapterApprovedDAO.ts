@@ -1,9 +1,9 @@
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { IWahapediaClient } from '@clients-wahapedia/types.js';
-import type { ChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import { hydrateChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import { ChapterApprovedParser } from '@wh40k10e/data/ChapterApprovedParser.js';
-import { TTLSyncBaseDAO } from '@data/dao/TTLSyncBaseDAO.js';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IWahapediaClient } from '@armoury/clients-wahapedia';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import { hydrateChapterApproved } from '@/models/ChapterApproved.js';
+import { ChapterApprovedParser } from '@/data/ChapterApprovedParser.js';
+import { TTLSyncBaseDAO } from '@armoury/data-dao';
 
 type ColumnBuilder = {
     primaryKey: () => ColumnBuilder;

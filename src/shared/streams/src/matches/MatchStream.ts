@@ -21,7 +21,7 @@ import type {
     MatchesServerMessage,
     ConnectionState,
 } from '@armoury/clients-matches';
-import type { IMatchStream } from '@streams/types.js';
+import type { IMatchStream } from '@/types.js';
 
 /**
  * @requirements

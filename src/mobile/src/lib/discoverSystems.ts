@@ -17,7 +17,7 @@
  * @module discover-systems
  */
 
-import type { GameSystemManifest } from '@armoury/data';
+import type { GameSystemManifest } from '@armoury/data-dao';
 
 /**
  * Statically imported manifest for wh40k10e.
@@ -25,7 +25,7 @@ import type { GameSystemManifest } from '@armoury/data';
  * Metro bundles JSON files as modules, so this resolves at build time.
  * The path is relative to the mobile workspace root (`src/mobile/`).
  */
-import wh40k10eManifest from '@mobile/public/systems/wh40k10e/manifest.json';
+import wh40k10eManifest from '#/public/systems/wh40k10e/manifest.json';
 
 /**
  * All discovered game system manifests, sorted alphabetically by ID.

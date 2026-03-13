@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
 
-import type { Army, ArmyUnit } from '@wh40k10e/models/ArmyModel.js';
-import type { Unit, WargearOption } from '@wh40k10e/models/UnitModel.js';
-import type { Enhancement } from '@wh40k10e/types/entities.js';
-import type { ValidationResult } from '@validation/types.js';
-import { validateArmy } from '@wh40k10e/validation/engine.js';
-import { makeArmy } from '../../../e2e/__fixtures__/makeArmy.ts';
-import { makeFactionData } from '../../../e2e/__fixtures__/makeFactionData.ts';
-import { makeCoreRules } from '../../../e2e/__fixtures__/makeCoreRules.ts';
-import { makeIntercessorSquad } from '../../../e2e/__fixtures__/makeIntercessorSquad.ts';
-import { makeCaptainInTerminatorArmour } from '../../../e2e/__fixtures__/makeCaptainInTerminatorArmour.ts';
+import type { Army, ArmyUnit } from '@/models/ArmyModel.js';
+import type { Unit, WargearOption } from '@/models/UnitModel.js';
+import type { Enhancement } from '@/types/entities.js';
+import type { ValidationResult } from '@armoury/validation';
+import { validateArmy } from '@/validation/engine.js';
+import { makeArmy } from '../../../e2e/__fixtures__/makeArmy.js';
+import { makeFactionData } from '../../../e2e/__fixtures__/makeFactionData.js';
+import { makeCoreRules } from '../../../e2e/__fixtures__/makeCoreRules.js';
+import { makeIntercessorSquad } from '../../../e2e/__fixtures__/makeIntercessorSquad.js';
+import { makeCaptainInTerminatorArmour } from '../../../e2e/__fixtures__/makeCaptainInTerminatorArmour.js';
 
 const buildArmyUnit = (unit: Unit, overrides: Partial<ArmyUnit> = {}): ArmyUnit => {
     const composition = unit.composition[0];

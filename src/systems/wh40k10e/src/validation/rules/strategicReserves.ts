@@ -1,6 +1,6 @@
-import type { Army } from '@wh40k10e/models/ArmyModel.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { ValidationResult } from '@wh40k10e/validation/types.js';
+import type { Army } from '@/models/ArmyModel.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { ValidationResult } from '@/validation/types.js';
 
 /**
  * Validate Strategic Reserves points limit.

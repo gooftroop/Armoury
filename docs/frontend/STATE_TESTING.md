@@ -39,7 +39,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ArmyCardView } from '@web/src/components/ArmyCardView.js';
-import { makeArmy } from '../__fixtures__/makeArmy.ts';
+import { makeArmy } from '../__fixtures__/makeArmy.js';
 
 describe('ArmyCardView', () => {
     it('renders army name and unit count', () => {
@@ -78,7 +78,7 @@ For components with complex local state, test through the rendered output. If bu
 // src/web/hooks/__tests__/armyEditorUtils.test.ts
 import { describe, it, expect } from 'vitest';
 import { calculatePointsTotal, validateArmyComposition } from '@shared/frontend/armies/validators.js';
-import { makeUnit } from '../__fixtures__/makeUnit.ts';
+import { makeUnit } from '../__fixtures__/makeUnit.js';
 
 describe('calculatePointsTotal', () => {
     it('sums all unit point costs', () => {
@@ -114,8 +114,8 @@ vi.mock('next/navigation', () => ({
 
 // Import AFTER mocks are established
 import { ArmyListPage } from '@web/src/app/armies/page.js';
-import { createTestQueryClient, renderWithQuery } from '../__utils__/renderWithQuery.ts';
-import { makeArmy } from '../__fixtures__/makeArmy.ts';
+import { createTestQueryClient, renderWithQuery } from '../__utils__/renderWithQuery.js';
+import { makeArmy } from '../__fixtures__/makeArmy.js';
 
 describe('ArmyListPage', () => {
     beforeEach(() => {
@@ -203,8 +203,8 @@ import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
 import {
     createTestQueryClient,
     renderWithQuery,
-} from '../__utils__/renderWithQuery.ts';
-import { makeArmy } from '../__fixtures__/makeArmy.ts';
+import { createTestQueryClient, renderWithQuery } from '../__utils__/renderWithQuery.js';
+import { makeArmy } from '../__fixtures__/makeArmy.js';
 
 describe('ArmyDetail', () => {
     it('renders army detail from cache', async () => {
@@ -245,7 +245,7 @@ import * as armyService from '@shared/frontend/armies/service.js';
 import {
     createTestQueryClient,
     renderWithQuery,
-} from '../__utils__/renderWithQuery.ts';
+import { createTestQueryClient, renderWithQuery } from '../__utils__/renderWithQuery.js';
 
 vi.mock('@shared/frontend/armies/service.js');
 
@@ -303,8 +303,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Subject } from 'rxjs';
 import { MatchStream } from '@streams/matches/MatchStream.js';
 import type { IMatchesRealtimeClient } from '@streams/matches/types.js';
-import type { MatchesServerMessage, Match } from '@shared/types/entities.js';
-import { makeMatch } from '../__fixtures__/makeMatch.ts';
+import type { MatchesServerMessage, Match } from '@armoury/models';
+import { makeMatch } from '../__fixtures__/makeMatch.js';
 
 describe('MatchStream', () => {
     let messages$: Subject<MatchesServerMessage>;
@@ -399,9 +399,9 @@ import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMatchSync } from '@web/hooks/useMatchSync.js';
 import { matchDetailOptions } from '@shared/frontend/matches/queries.js';
-import { makeMatch } from '../__fixtures__/makeMatch.ts';
+import { makeMatch } from '../__fixtures__/makeMatch.js';
 import type { IMatchStream } from '@armoury/streams';
-import type { Match } from '@shared/types/entities.js';
+import type { Match } from '@armoury/models';
 import type { ReactNode } from 'react';
 
 describe('useMatchSync', () => {
@@ -458,7 +458,7 @@ import {
     DataContextProvider,
     useDataContext,
 } from '@web/src/providers/DataContextProvider.js';
-import type { IDataContext } from '@shared/data/types.js';
+import type { IDataContext } from '@armoury/data';
 
 const mockDataContext = {
     getArmy: vi.fn(),

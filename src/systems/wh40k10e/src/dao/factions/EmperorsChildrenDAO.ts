@@ -1,8 +1,8 @@
-import type { DatabaseAdapter } from '@data/adapter.js';
-import type { IGitHubClient } from '@clients-github/types.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import { FactionDAO } from '@wh40k10e/dao/FactionDAO.js';
-import { FACTION_MAP } from '@wh40k10e/config/factionMap.js';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { FactionData } from '@/models/FactionData.js';
+import { FactionDAO } from '@/dao/FactionDAO.js';
+import { FACTION_MAP } from '@/config/factionMap.js';
 
 /** DAO for Emperor's Children faction data. */
 export class EmperorsChildrenDAO {

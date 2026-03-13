@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CoreRulesDAO } from '@wh40k10e/dao/CoreRulesDAO.js';
-import { GameData, type GameDataDeps } from '@wh40k10e/dao/GameData.js';
-import { wh40k10eSystem } from '@wh40k10e/system.js';
-import '@wh40k10e/index.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { MockGitHubClient } from '@wh40k10e/__mocks__/MockGitHubClient.js';
-import type { ChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import { clearCodecRegistry } from '@data/codec.js';
-import { clearHydrationRegistry } from '@data/hydration.js';
-import { clearSchemaExtensions } from '@data/schema.js';
-import { PluginRegistry } from '@data/pluginRegistry.js';
-import type { BattleScribeGameSystem } from '@providers-bsdata/types.js';
-import { makeCoreRules, makeCrusadeRules, makeFactionData } from './__fixtures__/index.ts';
-import { parseGameSystem } from '@providers-bsdata/xmlParser.js';
+import { CoreRulesDAO } from '../src/dao/CoreRulesDAO.js';
+import { GameData, type GameDataDeps } from '../src/dao/GameData.js';
+import { wh40k10eSystem } from '../src/system.js';
+import '../src/index.js';
+import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
+import { MockGitHubClient } from '../src/__mocks__/MockGitHubClient.js';
+import type { ChapterApproved } from '../src/models/ChapterApproved.js';
+import { clearCodecRegistry } from '@armoury/data-dao';
+import { clearHydrationRegistry } from '@armoury/data-dao';
+import { clearSchemaExtensions } from '@armoury/data-dao';
+import { PluginRegistry } from '@armoury/data-dao';
+import type { BattleScribeGameSystem } from '@armoury/providers-bsdata';
+import { makeCoreRules, makeCrusadeRules, makeFactionData } from './__fixtures__/index.js';
+import { parseGameSystem } from '@armoury/providers-bsdata';
 
-vi.mock('@providers-bsdata/xmlParser.js', () => ({
+vi.mock('@armoury/providers-bsdata', () => ({
     parseGameSystem: vi.fn(),
 }));
 

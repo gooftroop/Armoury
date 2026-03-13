@@ -27,11 +27,11 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth0 } from 'react-native-auth0';
 import { Button, H1, Paragraph, ScrollView, YStack } from 'tamagui';
-import type { GameSystem, GameSystemManifest } from '@armoury/data';
+import type { GameSystem, GameSystemManifest } from '@armoury/data-dao';
 
-import { useDataContext } from '@mobile/src/providers/DataContextProvider.js';
-import { systemManifests } from '@mobile/src/lib/discoverSystems.js';
-import type { SystemSyncStatus } from '@mobile/src/providers/DataContextProvider.js';
+import { useDataContext } from '@/providers/DataContextProvider.js';
+import { systemManifests } from '@/lib/discoverSystems.js';
+import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
 
 /**
  * Resolves a GameSystem implementation for the given manifest ID.
@@ -208,8 +208,7 @@ function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemT
         <Pressable onPress={onPress} disabled={isSyncing} style={styles.tile}>
             <View style={[styles.gradientBox, { backgroundColor: manifest.gradientStart }]}>
                 <Paragraph
-                    style={styles.splashText}
-                    color={manifest.splashTextColor}
+                    style={[styles.splashText, { color: manifest.splashTextColor }]}
                     fontSize={48}
                     fontWeight="800"
                     letterSpacing={4}

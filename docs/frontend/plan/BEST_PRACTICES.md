@@ -72,7 +72,7 @@ Use constants and enums instead of hardcoded string or number literals.
 
 ```typescript
 // Good
-import { Platform } from '@shared/types/enums.js';
+import { Platform } from '@armoury/models';
 if (adapter.platform === Platform.SQLite) { ... }
 
 // Bad
@@ -85,12 +85,12 @@ Every exported function, class, interface, type, and field must have JSDoc docum
 
 ### Imports
 
-Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports. Always use `.js` extensions in aliased imports.
+Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports. Always use `.js` extensions.
 
 ```typescript
 // Good
 import { describe, it, expect } from 'vitest';
-import type { Unit } from '@shared/types/entities.js';
+import type { Unit } from '@armoury/models';
 
 // Bad — relative imports
 import type { Unit } from '../../types/entities';

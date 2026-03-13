@@ -5,13 +5,13 @@
  * All platform-specific PGlite concerns are isolated here.
  */
 
-import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@data/adapter.js';
-import { Platform } from '@data/types.js';
-import { getEntityCodec } from '@data/codec.js';
-import type { FileSyncStatus } from '@data/types.js';
-import { DatabaseError } from '@data/types.js';
-import { getMergedDSQLSchema } from '@data/schema.js';
-import { generateAllTablesDDL } from '@adapters-pglite/ddl.js';
+import { BaseDatabaseAdapter, type EntityMap, type EntityType, type QueryOptions } from '@armoury/data-dao';
+import { Platform } from '@armoury/data-dao';
+import { getEntityCodec } from '@armoury/data-dao';
+import type { FileSyncStatus } from '@armoury/data-dao';
+import { DatabaseError } from '@armoury/data-dao';
+import { getMergedDSQLSchema } from '@armoury/data-dao';
+import { generateAllTablesDDL } from '@/ddl.js';
 
 type PGliteInstance = {
     close: () => Promise<void>;

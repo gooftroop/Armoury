@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Swords, BookOpen, Flag, Users, Library } from 'lucide-react';
-import { cn } from '@web/src/lib/utils.js';
+import { cn } from '@/lib/utils.js';
 
 export interface BottomNavProps {
     locale: string;

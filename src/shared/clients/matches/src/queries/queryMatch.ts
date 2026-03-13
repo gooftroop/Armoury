@@ -1,6 +1,6 @@
 import type { UseQueryOptions } from '@tanstack/react-query';
-import { getMatch } from '@clients-matches/api/getMatch.js';
-import type { Match, MatchParams } from '@clients-matches/types.js';
+import { getMatch } from '@/api/getMatch.js';
+import type { Match, MatchParams } from '@/types.js';
 
 /**
  * Builds the query key for fetching a single match.

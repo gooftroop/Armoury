@@ -23,7 +23,7 @@ Phase 0 exists to extract all upstream blockers from the individual phase docume
 
 **Relationship to Shared Components**: Phase 0 defines the _contracts_ — TypeScript interfaces, union types, context shapes. Shared Components (§3.x in [SHARED_COMPONENTS.md](SHARED_COMPONENTS.md)) implements the visual components that _consume_ those contracts. The two workstreams can proceed in parallel as long as Phase 0 contracts are stable before Shared Components ships consumable components.
 
-> 📚 **Data Models Reference:** All core domain models consumed by query factories and components are defined in `src/shared/models/src/`. Key types: `Account`, `User`, `Friend`, `Match` (with `MatchPlayer`, `MatchTurn`, `MatchScore`), `Campaign` (with `CampaignParticipant`, `CampaignPhase`, `CampaignRanking`), `UserPresence`. Game-specific models live in `src/systems/wh40k10e/src/models/` (`Army`, `ArmyUnit`, `MatchData`) and `src/systems/wh40k10e/src/types/entities.ts` (`Faction`, `Unit`, `Weapon`, `Ability`, `Stratagem`, `Detachment`, `Enhancement`). Import from `@shared/models/*.ts` and `@wh40k10e/models/*.ts` / `@wh40k10e/types/*.ts` respectively.
+> 📚 **Data Models Reference:** All core domain models consumed by query factories and components are defined in `src/shared/models/src/`. Key types: `Account`, `User`, `Friend`, `Match` (with `MatchPlayer`, `MatchTurn`, `MatchScore`), `Campaign` (with `CampaignParticipant`, `CampaignPhase`, `CampaignRanking`), `UserPresence`. Game-specific models live in `src/systems/wh40k10e/src/models/` (`Army`, `ArmyUnit`, `MatchData`) and `src/systems/wh40k10e/src/types/entities.ts` (`Faction`, `Unit`, `Weapon`, `Ability`, `Stratagem`, `Detachment`, `Enhancement`). Import from `@armoury/models` and `@wh40k10e/models/*.js` / `@wh40k10e/types/*.js` respectively.
 
 ---
 
@@ -571,10 +571,10 @@ Platform workspaces import from `@armoury/ui` using the package name. The bundle
 // src/shared/ui/src/components/button/index.ts
 // Exports are resolved by the bundler via platform extension.
 // Do NOT use explicit conditional imports here.
-export type { ButtonProps, ButtonVariant, ButtonSize } from './Button.types.ts';
-export { buttonVariants } from './button.variants.ts';
+export type { ButtonProps, ButtonVariant, ButtonSize } from './Button.types.js';
+export { buttonVariants } from './button.variants.js';
 // The bundler resolves Button.web.tsx on web, Button.native.tsx on mobile.
-export { Button } from './Button.ts';
+export { Button } from './Button.js';
 ```
 
 ```typescript
@@ -582,7 +582,7 @@ export { Button } from './Button.ts';
 // This file intentionally has no content. Metro/webpack replace it
 // with Button.web.tsx or Button.native.tsx at bundle time.
 // Do not write logic here; write it in the platform files.
-export { Button } from './Button.web.tsx'; // overridden by bundler
+export { Button } from './Button.web.jsx'; // overridden by bundler
 ```
 
 > **Note:** This re-export shim pattern is required because TypeScript declaration emit resolves the `.ts` path while the bundler overrides it at runtime. Confirm this pattern against the Metro and Next.js configs during the scaffold task.
@@ -628,7 +628,7 @@ Platform files then extend this interface with platform-specific props:
 
 ```typescript
 // src/shared/ui/src/components/button/Button.web.tsx
-import type { ButtonProps } from './Button.types.ts';
+import type { ButtonProps } from './Button.types.js';
 
 // Web-specific extension: adds all standard <button> HTML attributes
 export interface WebButtonProps
@@ -637,7 +637,7 @@ export interface WebButtonProps
 
 ```typescript
 // src/shared/ui/src/components/button/Button.native.tsx
-import type { ButtonProps } from './Button.types.ts';
+import type { ButtonProps } from './Button.types.js';
 import type { PressableProps } from 'react-native';
 
 // Mobile-specific extension: adds Pressable props
@@ -711,8 +711,8 @@ import { type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
 import { cn } from '@armoury/ui/styles';
-import type { ButtonProps } from './Button.types.ts';
-import { buttonVariants } from './button.variants.ts';
+import type { ButtonProps } from './Button.types.js';
+import { buttonVariants } from './button.variants.js';
 
 export interface WebButtonProps
   extends ButtonProps,
@@ -754,7 +754,7 @@ Multi-part components (Dialog, Drawer, Select) use the compound component patter
 import { Dialog } from 'radix-ui';
 import * as React from 'react';
 import { cn } from '@armoury/ui/styles';
-import type { DrawerSide } from './Drawer.types.ts';
+import type { DrawerSide } from './Drawer.types.js';
 
 // Root — re-export Radix primitive directly
 const DrawerRoot = Dialog.Root;
@@ -960,7 +960,7 @@ Both platforms consume the same token values from `@armoury/ui/tokens` — the s
 
 import { Button as TamaguiButton, type ButtonProps as TamaguiButtonProps } from 'tamagui';
 import * as React from 'react';
-import type { ButtonProps, ButtonVariant, ButtonSize } from './Button.types.ts';
+import type { ButtonProps, ButtonVariant, ButtonSize } from './Button.types.js';
 
 // Map shared variants to Tamagui themes
 const variantThemeMap: Record<ButtonVariant, string | undefined> = {
@@ -1013,7 +1013,7 @@ Button.displayName = 'Button';
 
 import { Sheet } from 'tamagui';
 import * as React from 'react';
-import type { DrawerProps } from './Drawer.types.ts';
+import type { DrawerProps } from './Drawer.types.js';
 
 export function Drawer({ open, onOpenChange, children, snapPoints = [85], ...props }: DrawerProps) {
   return (

@@ -5,9 +5,7 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@adapters-dsql/*": ["./src/*"],
-            "@data/*": ["../../../shared/data/dist/*"],
-            "@models/*": ["../../../shared/models/dist/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from '@clients-users/config.js';
-import type { UserParams } from '@clients-users/types.js';
+import { USERS_BASE_URL } from '@/config.js';
+import type { UserParams } from '@/types.js';
 
 /**
  * Deletes a user by their unique identifier.

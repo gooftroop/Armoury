@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { generatePolicy } from '@authorizer/src/utils/policy.js';
-import { handler } from '@authorizer/src/handler.js';
-import { getJwks } from '@authorizer/src/jwks.js';
-import { getServiceConfig } from '@authorizer/src/utils/secrets.js';
-import type { AuthorizerEvent } from '@authorizer/src/types.js';
+import { generatePolicy } from '@/utils/policy.js';
+import { handler } from '@/handler.js';
+import { getJwks } from '@/jwks.js';
+import { getServiceConfig } from '@/utils/secrets.js';
+import type { AuthorizerEvent } from '@/types.js';
 
 const joseMocks = vi.hoisted(() => {
     return {
@@ -19,13 +19,13 @@ vi.mock('jose', () => {
     };
 });
 
-vi.mock('@authorizer/src/jwks.js', () => {
+vi.mock('../jwks.js', () => {
     return {
         getJwks: vi.fn().mockReturnValue('mock-jwks'),
     };
 });
 
-vi.mock('@authorizer/src/utils/secrets.js', () => {
+vi.mock('../utils/secrets.js', () => {
     return {
         getServiceConfig: vi.fn().mockResolvedValue({
             auth0Domain: 'test.auth0.com',

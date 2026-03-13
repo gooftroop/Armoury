@@ -1,0 +1,32 @@
+{
+    "name": "@armoury/e2e",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./*.js": {
+            "types": "./src/*.ts",
+            "default": "./src/*.ts"
+        }
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "dependencies": {
+        "@aws-sdk/dsql-signer": "*"
+    },
+    "devDependencies": {
+        "@armoury/eslint": "*",
+        "@armoury/prettier": "*",
+        "@armoury/typescript": "*",
+        "eslint": "^10.0.3",
+        "prettier": "^3.0.0"
+    }
+}

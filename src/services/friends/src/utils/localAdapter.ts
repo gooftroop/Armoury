@@ -1,4 +1,4 @@
-import type { DatabaseAdapter, EntityMap, EntityType } from '@friends/src/types.js';
+import type { DatabaseAdapter, EntityMap, EntityType } from '@/types.js';
 
 type QueryResult = {
     rows: Record<string, unknown>[];

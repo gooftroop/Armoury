@@ -4,8 +4,7 @@
         "noEmit": true,
         "baseUrl": ".",
         "paths": {
-            "@validation/*": ["./src/*"],
-            "@providers-bsdata/*": ["../providers/bsdata/src/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

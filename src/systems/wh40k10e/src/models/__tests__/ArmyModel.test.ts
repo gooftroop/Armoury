@@ -6,7 +6,7 @@ import type {
     ArmyModelConfig,
     ArmyWargearSelection,
     ArmyEnhancement,
-} from '@wh40k10e/models/ArmyModel.js';
+} from '@/models/ArmyModel.js';
 
 /** Builds a minimal model config for testing. */
 const buildModelConfig = (modelName: string): ArmyModelConfig => ({

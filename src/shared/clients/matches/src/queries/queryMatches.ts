@@ -1,6 +1,6 @@
 import type { UseQueryOptions } from '@tanstack/react-query';
-import { getMatches } from '@clients-matches/api/getMatches.js';
-import type { Match } from '@clients-matches/types.js';
+import { getMatches } from '@/api/getMatches.js';
+import type { Match } from '@/types.js';
 
 /**
  * Builds the query key for listing all matches.

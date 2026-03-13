@@ -13,10 +13,10 @@
  */
 
 // === Types ===
-export type { ConnectionState, OnlineFriend, IStream, IPresenceStream, IMatchStream } from './types.ts';
+export type { ConnectionState, OnlineFriend, IStream, IPresenceStream, IMatchStream } from '@/types.js';
 
 // === Presence ===
-export { PresenceStream, createPresenceStream } from './presence/PresenceStream.ts';
+export { PresenceStream, createPresenceStream } from '@/presence/PresenceStream.js';
 
 // === Matches ===
-export { MatchStream, createMatchStream } from './matches/MatchStream.ts';
+export { MatchStream, createMatchStream } from '@/matches/MatchStream.js';

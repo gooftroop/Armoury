@@ -3,8 +3,8 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query';
-import { getUsers } from '@clients-users/api/getUsers.js';
-import type { User } from '@clients-users/types.js';
+import { getUsers } from '@/api/getUsers.js';
+import type { User } from '@/types.js';
 
 /**
  * Builds the query key for the users list query.

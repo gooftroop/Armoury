@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Account, CreateAccountPayload, CreateUserPayload, User, UserContext } from '@users/src/types.js';
-import { router } from '@users/src/router.js';
-import { createE2EAdapter, resetDatabase } from '@users/src/__testing__/e2eAdapter.js';
-import type { LocalDatabaseAdapter } from '@users/src/utils/localAdapter.js';
+import type { Account, CreateAccountPayload, CreateUserPayload, User, UserContext } from '@/types.js';
+import { router } from '@/router.js';
+import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
+import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 
 let adapter: LocalDatabaseAdapter;
 

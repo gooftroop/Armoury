@@ -401,7 +401,7 @@ import type { Army } from '@wh40k10e/models/ArmyModel.js';
 import type { Faction } from '@wh40k10e/types/entities.js';
 import { armyListOptions, factionListOptions } from '@shared/frontend/queries/armies.js';
 import { deleteArmyMutation, duplicateArmyMutation } from '@shared/frontend/mutations/armies.js';
-import { getQueryClient } from '@web/lib/queryClient.ts';
+import { getQueryClient } from '@web/lib/queryClient.js';
 
 // ---------------------------------------------------------------------------
 // Render component — pure props, zero data hooks
@@ -911,7 +911,7 @@ Query option factories are pure TypeScript with no React imports. They live in `
 | `factionListOptions` | `src/shared/frontend/queries/factions.ts`    | `ArmyCreationContainer` via `useFactions()`          |
 | `gameSystemsOptions` | `src/shared/frontend/queries/gameSystems.ts` | `GameSystemSelectorContainer` via `useGameSystems()` |
 
-All factories use `.js` extensions on aliased imports (`@shared/...`) and `.ts` extensions on relative imports, per the import rules in `AGENTS.md`.
+All imports use `.js` extensions, per the import rules in `AGENTS.md`.
 
 #### Aliased imports in Phase 1
 

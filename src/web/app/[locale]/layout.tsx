@@ -3,8 +3,8 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Libre_Franklin, JetBrains_Mono } from 'next/font/google';
-import { routing } from '@web/src/i18n/routing.js';
-import { Providers } from '@web/src/components/providers.js';
+import { routing } from '@/i18n/routing.js';
+import { Providers } from '@/components/providers.js';
 import '../globals.css';
 
 export const metadata: Metadata = {

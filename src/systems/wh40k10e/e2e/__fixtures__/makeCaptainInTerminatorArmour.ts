@@ -1,5 +1,5 @@
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { Weapon } from '@wh40k10e/types/entities.js';
+import type { Unit } from '../../src/models/UnitModel.js';
+import type { Weapon } from '../../src/types/entities.js';
 
 export function makeCaptainInTerminatorArmour(): Unit {
     const stormBolter: Weapon = {

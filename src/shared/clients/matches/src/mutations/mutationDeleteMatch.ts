@@ -1,6 +1,6 @@
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { deleteMatch } from '@clients-matches/api/deleteMatch.js';
-import type { MatchParams } from '@clients-matches/types.js';
+import { deleteMatch } from '@/api/deleteMatch.js';
+import type { MatchParams } from '@/types.js';
 
 /**
  * Creates a React Query mutation options object for deleting a match.

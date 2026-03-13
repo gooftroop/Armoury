@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeCatalogues } from '@wh40k10e/models/mergeCatalogues.js';
+import { mergeCatalogues } from '@/models/mergeCatalogues.js';
 import type {
     BattleScribeCatalogue,
     BattleScribeProfile,
@@ -7,7 +7,7 @@ import type {
     BattleScribeRule,
     BattleScribeSelectionEntryGroup,
     BattleScribeCategory,
-} from '@providers-bsdata/types.js';
+} from '@armoury/providers-bsdata';
 
 /** Builds a profile entry for catalogue merging tests. */
 const buildProfile = (id: string, name: string): BattleScribeProfile => ({

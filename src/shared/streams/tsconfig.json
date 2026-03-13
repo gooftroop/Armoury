@@ -4,7 +4,7 @@
         "noEmit": true,
         "baseUrl": ".",
         "paths": {
-            "@streams/*": ["./src/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

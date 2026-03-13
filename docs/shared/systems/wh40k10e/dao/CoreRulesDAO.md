@@ -167,8 +167,8 @@ interface Faction {
 
 ```typescript
 import { DataContext, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/systems';
+import type { Wh40kGameData } from '@armoury/systems';
 
 const dc = await DataContext.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
@@ -187,7 +187,7 @@ console.log(`Source file: ${coreRules.sourceFile}`);
 ```typescript
 import { createAdapter, Platform } from '@armoury/shared';
 import { createGitHubClient } from '@armoury/shared';
-import { CoreRulesDAO } from '@shared/systems/wh40k10e/dao/CoreRulesDAO.js';
+import { CoreRulesDAO } from '@armoury/systems';
 
 const adapter = await createAdapter({ platform: Platform.IndexedDB });
 const githubClient = createGitHubClient({ token: process.env.GITHUB_TOKEN });
@@ -207,7 +207,7 @@ const freshCoreRules = await coreRulesDAO.refresh();
 ```typescript
 import { createAdapter, Platform } from '@armoury/shared';
 import { createGitHubClient } from '@armoury/shared';
-import { CoreRulesDAO } from '@shared/systems/wh40k10e/dao/CoreRulesDAO.js';
+import { CoreRulesDAO } from '@armoury/systems';
 
 const adapter = await createAdapter({ platform: Platform.IndexedDB });
 const githubClient = createGitHubClient({ token: process.env.GITHUB_TOKEN });

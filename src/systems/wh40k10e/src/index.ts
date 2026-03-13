@@ -2,18 +2,18 @@
  * Warhammer 40K 10th Edition game system plugin exports.
  */
 
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { Army } from '@wh40k10e/models/ArmyModel.js';
-import type { Campaign, CampaignParticipant } from '@models/CampaignModel.js';
-import type { MatchData } from '@wh40k10e/models/MatchData.js';
-import type { CrusadeRules } from '@wh40k10e/models/CrusadeRulesModel.js';
-import type { ChapterApproved } from '@wh40k10e/models/ChapterApproved.js';
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-import type { Weapon, Ability, Stratagem, Detachment } from '@wh40k10e/types/entities.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { Faction } from '@wh40k10e/types/entities.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { Army } from '@/models/ArmyModel.js';
+import type { Campaign, CampaignParticipant } from '@armoury/models';
+import type { MatchData } from '@/models/MatchData.js';
+import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
+import type { ChapterApproved } from '@/models/ChapterApproved.js';
+import type { CoreRules } from '@/models/CoreRules.js';
+import type { Weapon, Ability, Stratagem, Detachment } from '@/types/entities.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { Faction } from '@/types/entities.js';
 
-declare module '@data/types.js' {
+declare module '@armoury/data-dao/types' {
     interface PluginEntityMap {
         faction: Faction;
         unit: Unit;
@@ -48,9 +48,9 @@ export type {
     WargearAbility,
     LeaderInfo,
     UnitAbility,
-} from '@wh40k10e/types/entities.js';
-export type { Unit } from '@wh40k10e/models/UnitModel.js';
-export { isRangedWeapon, isMeleeWeapon } from '@wh40k10e/types/typeGuards.js';
+} from '@/types/entities.js';
+export type { Unit } from '@/models/UnitModel.js';
+export { isRangedWeapon, isMeleeWeapon } from '@/types/typeGuards.js';
 export type {
     Army,
     ArmyEnhancement,
@@ -59,13 +59,13 @@ export type {
     ArmyVersion,
     ArmyWargearSelection,
     BattleSize,
-} from '@wh40k10e/models/ArmyModel.js';
-export type { FactionData } from '@wh40k10e/models/FactionData.js';
-export type { FactionRule } from '@wh40k10e/models/FactionData.js';
-export type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-export type { ProfileTypeInfo, CostTypeInfo, SharedRule } from '@wh40k10e/models/CoreRules.js';
-export type { Account, UserPreferences } from '@models/AccountModel.js';
-export type { Friend, FriendStatus } from '@models/FriendModel.js';
+} from '@/models/ArmyModel.js';
+export type { FactionData } from '@/models/FactionData.js';
+export type { FactionRule } from '@/models/FactionData.js';
+export type { CoreRules } from '@/models/CoreRules.js';
+export type { ProfileTypeInfo, CostTypeInfo, SharedRule } from '@/models/CoreRules.js';
+export type { Account, UserPreferences } from '@armoury/models';
+export type { Friend, FriendStatus } from '@armoury/models';
 export type {
     MatchData,
     GamePhase,
@@ -78,28 +78,22 @@ export type {
     ArmyProjection,
     UnitProjection,
     UnitFlags,
-} from '@wh40k10e/models/MatchData.js';
+} from '@/models/MatchData.js';
 export {
     PHASE_ORDER,
     createDefaultUnitFlags,
     createDefaultDeploymentState,
     createDefaultGameState,
-} from '@wh40k10e/models/MatchData.js';
-export { Match } from '@wh40k10e/models/Match.js';
-export { MatchDAO } from '@wh40k10e/dao/MatchDAO.js';
+} from '@/models/MatchData.js';
+export { Match } from '@/models/Match.js';
+export { MatchDAO } from '@/dao/MatchDAO.js';
 export type {
     CrusadeBattleHonour,
     CrusadeBattleScar,
     CrusadeParticipantData,
     CrusadeUnitProgression,
-} from '@wh40k10e/models/CampaignModel.js';
-export type {
-    Campaign,
-    CampaignParticipant,
-    CampaignPhase,
-    CampaignRanking,
-    CampaignStatus,
-} from '@models/CampaignModel.js';
+} from '@/models/CampaignModel.js';
+export type { Campaign, CampaignParticipant, CampaignPhase, CampaignRanking, CampaignStatus } from '@armoury/models';
 export type {
     CrusadeUnitRank,
     RankThreshold,
@@ -113,27 +107,27 @@ export type {
     BlackstoneUpgrade,
     CrusadeRuleSource,
     CrusadeRules,
-} from '@wh40k10e/models/CrusadeRulesModel.js';
-export { mergeCatalogues } from '@wh40k10e/models/mergeCatalogues.js';
-export { CampaignDAO } from '@data/dao/CampaignDAO.js';
+} from '@/models/CrusadeRulesModel.js';
+export { mergeCatalogues } from '@/models/mergeCatalogues.js';
+export { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
 
 // Config
-export { FACTION_MAP, getFactionConfig, getAllFactionIds } from '@wh40k10e/config/factionMap.js';
-export type { FactionConfig } from '@wh40k10e/config/factionMap.js';
+export { FACTION_MAP, getFactionConfig, getAllFactionIds } from '@/config/factionMap.js';
+export type { FactionConfig } from '@/config/factionMap.js';
 
 // Validation rules (plugin-owned, canonical location)
-export { validateArmy } from '@wh40k10e/validation/engine.js';
-export { validateComposition } from '@wh40k10e/validation/rules/composition.js';
-export { validateDetachment } from '@wh40k10e/validation/rules/detachment.js';
-export { validateFactionKeyword } from '@wh40k10e/validation/rules/factionKeyword.js';
-export { validateEnhancements } from '@wh40k10e/validation/rules/enhancements.js';
-export { validateCharacter } from '@wh40k10e/validation/rules/character.js';
-export { validateLeaders } from '@wh40k10e/validation/rules/leaders.js';
-export { validatePoints } from '@wh40k10e/validation/rules/points.js';
-export { validateStrategicReserves } from '@wh40k10e/validation/rules/strategicReserves.js';
-export { validateTransport } from '@wh40k10e/validation/rules/transport.js';
-export { validateWargear } from '@wh40k10e/validation/rules/wargear.js';
-export { validateWarlord } from '@wh40k10e/validation/rules/warlord.js';
+export { validateArmy } from '@/validation/engine.js';
+export { validateComposition } from '@/validation/rules/composition.js';
+export { validateDetachment } from '@/validation/rules/detachment.js';
+export { validateFactionKeyword } from '@/validation/rules/factionKeyword.js';
+export { validateEnhancements } from '@/validation/rules/enhancements.js';
+export { validateCharacter } from '@/validation/rules/character.js';
+export { validateLeaders } from '@/validation/rules/leaders.js';
+export { validatePoints } from '@/validation/rules/points.js';
+export { validateStrategicReserves } from '@/validation/rules/strategicReserves.js';
+export { validateTransport } from '@/validation/rules/transport.js';
+export { validateWargear } from '@/validation/rules/wargear.js';
+export { validateWarlord } from '@/validation/rules/warlord.js';
 
 // Validation effects
 export {
@@ -142,8 +136,8 @@ export {
     parseFactionRule,
     parseDetachmentRule,
     parseEnhancementEffect,
-} from '@wh40k10e/validation/abilityParser.js';
-export { parseWeaponKeyword, parseWeaponKeywords } from '@wh40k10e/validation/weaponKeywords.js';
+} from '@/validation/abilityParser.js';
+export { parseWeaponKeyword, parseWeaponKeywords } from '@/validation/weaponKeywords.js';
 export type {
     Threshold,
     GamePhase as EffectGamePhase,
@@ -153,7 +147,7 @@ export type {
     ConstantValue,
     DiceExpression,
     RawExpression,
-} from '@validation/effects/types.js';
+} from '@armoury/validation';
 
 export type {
     WeaponKeyword,
@@ -239,15 +233,15 @@ export type {
     RuleOriginFactionRule,
     RuleOriginEnhancement,
     StructuredRule,
-} from '@wh40k10e/types/effects.js';
+} from '@/types/effects.js';
 
-export { parseGameSystem, parseCatalogue } from '@providers-bsdata/xmlParser.js';
+export { parseGameSystem, parseCatalogue } from '@armoury/providers-bsdata';
 
-export { extractUnits, extractWeapons, extractAbilities } from '@wh40k10e/data/extractors.js';
+export { extractUnits, extractWeapons, extractAbilities } from '@/data/extractors.js';
 
 export type {
     BattleScribeGameSystem,
     BattleScribeCatalogue,
     BattleScribeSelectionEntry,
     BattleScribeProfile,
-} from '@providers-bsdata/types.js';
+} from '@armoury/providers-bsdata';

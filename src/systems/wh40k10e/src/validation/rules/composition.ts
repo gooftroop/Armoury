@@ -1,8 +1,8 @@
-import type { Army, ArmyUnit } from '@wh40k10e/models/ArmyModel.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { ParsedConstraint } from '@providers-bsdata/constraintTypes.js';
-import type { ValidationResult } from '@wh40k10e/validation/types.js';
+import type { Army, ArmyUnit } from '@/models/ArmyModel.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { ParsedConstraint } from '@armoury/providers-bsdata';
+import type { ValidationResult } from '@/validation/types.js';
 
 /**
  * Find a roster-scope max-selections constraint if present.

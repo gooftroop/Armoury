@@ -66,12 +66,12 @@ You are a meticulous code reviewer for a TypeScript monorepo. Your job is to fin
 
 ## Import Rules (High Severity)
 
-- Aliased imports use **`.js` extension**: `import { X } from '@shared/types/enums.js'`
-- Relative imports use **`.ts` extension**: `import { X } from './utils.ts'`
-- No relative imports where a path alias is available (except `e2e/`, `__fixtures__/`, `__testing__/`)
+- All imports use **`.js` extension** (or `.jsx`): `import { X } from '@shared/types/enums.js'`
+- Do not use `.ts`/`.tsx` extensions in import paths
+- No relative imports — always use a path alias (`@shared/`, `@/`, `@wh40k10e/`, etc.)
 - `import type` required for type-only imports
 - Named exports only — no default exports (except framework-required: `page.tsx`, `layout.tsx`, Expo entry)
-- Import order: external packages → aliased internals → relative imports
+- Import order: external packages → aliased internals
 
 ## Documentation Requirements (High Severity)
 

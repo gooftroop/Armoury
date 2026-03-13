@@ -29,12 +29,12 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { getFriends } from '@clients-friends/api/getFriends.js';
-import { getFriend } from '@clients-friends/api/getFriend.js';
-import { postFriendRequest } from '@clients-friends/api/postFriendRequest.js';
-import { putFriend } from '@clients-friends/api/putFriend.js';
-import { deleteFriend } from '@clients-friends/api/deleteFriend.js';
-import type { Friend } from '@clients-friends/types.js';
+import { getFriends } from '@/api/getFriends.js';
+import { getFriend } from '@/api/getFriend.js';
+import { postFriendRequest } from '@/api/postFriendRequest.js';
+import { putFriend } from '@/api/putFriend.js';
+import { deleteFriend } from '@/api/deleteFriend.js';
+import type { Friend } from '@/types.js';
 
 const mockFriend: Friend = {
     id: 'friend-1',

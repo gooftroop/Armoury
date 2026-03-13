@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { putCampaign } from '@clients-campaigns/api/putCampaign.js';
-import type { Campaign, CampaignParams, UpdateCampaignRequest } from '@clients-campaigns/types.js';
+import { putCampaign } from '@/api/putCampaign.js';
+import type { Campaign, CampaignParams, UpdateCampaignRequest } from '@/types.js';
 
 /**
  * Builds React Query mutation options for updating an existing campaign.

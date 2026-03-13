@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import { postUser } from '@clients-users/api/postUser.js';
-import type { User, CreateUserRequest } from '@clients-users/types.js';
+import { postUser } from '@/api/postUser.js';
+import type { User, CreateUserRequest } from '@/types.js';
 
 /**
  * Builds React Query mutation options for creating a new user.

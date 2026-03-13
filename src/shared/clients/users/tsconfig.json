@@ -4,7 +4,7 @@
         "noEmit": true,
         "baseUrl": ".",
         "paths": {
-            "@clients-users/*": ["./src/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

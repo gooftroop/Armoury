@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { Match as CoreMatch } from '@models/MatchModel.js';
-import type { MatchData } from '@wh40k10e/models/MatchData.js';
-import { createDefaultUnitFlags, createDefaultGameState } from '@wh40k10e/models/MatchData.js';
-import { Match } from '@wh40k10e/models/Match.js';
+import type { Match as CoreMatch } from '@armoury/models';
+import type { MatchData } from '@/models/MatchData.js';
+import { createDefaultUnitFlags, createDefaultGameState } from '@/models/MatchData.js';
+import { Match } from '@/models/Match.js';
 
 function buildMatchData(): MatchData {
     return {

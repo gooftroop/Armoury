@@ -2,7 +2,6 @@
     "extends": "@armoury/typescript/base.json",
     "compilerOptions": {
         "rootDir": ".",
-        "baseUrl": ".",
         "module": "ESNext",
         "moduleResolution": "Bundler",
         "rewriteRelativeImportExtensions": false,
@@ -14,11 +13,12 @@
                 "name": "next"
             }
         ],
-        "paths": {
-            "@web/*": ["./*"]
-        },
         "allowJs": true,
-        "incremental": true
+        "incremental": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        }
     },
     "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
     "exclude": ["node_modules", ".next", "public"]

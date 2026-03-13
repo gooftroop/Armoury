@@ -5,7 +5,7 @@ import {
     parseDetachmentRule,
     parseEnhancementEffect,
     parseFactionRule,
-} from '@wh40k10e/validation/abilityParser.js';
+} from '@/validation/abilityParser.js';
 
 describe('Ability Parser', () => {
     it('parses Stealth by name', () => {

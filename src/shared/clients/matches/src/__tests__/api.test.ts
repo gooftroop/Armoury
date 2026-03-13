@@ -6,7 +6,7 @@
  * and JSON body handling.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Match, CreateMatchRequest, MatchParams, UpdateMatchRequest } from '@clients-matches/types.js';
+import type { Match, CreateMatchRequest, MatchParams, UpdateMatchRequest } from '@/types.js';
 
 const { mockJson, mockGet, mockPost, mockPut, mockDelete } = vi.hoisted(() => {
     const mockJson = vi.fn();
@@ -29,11 +29,11 @@ vi.mock('ky', () => ({
     },
 }));
 
-import { getMatches } from '@clients-matches/api/getMatches.js';
-import { getMatch } from '@clients-matches/api/getMatch.js';
-import { postMatch } from '@clients-matches/api/postMatch.js';
-import { putMatch } from '@clients-matches/api/putMatch.js';
-import { deleteMatch } from '@clients-matches/api/deleteMatch.js';
+import { getMatches } from '@/api/getMatches.js';
+import { getMatch } from '@/api/getMatch.js';
+import { postMatch } from '@/api/postMatch.js';
+import { putMatch } from '@/api/putMatch.js';
+import { deleteMatch } from '@/api/deleteMatch.js';
 
 const TEST_AUTH = 'Bearer test-token-123';
 

@@ -29,8 +29,7 @@
         "strictPropertyInitialization": true,
         "resolvePackageJsonExports": true,
         "resolvePackageJsonImports": true,
-        "rewriteRelativeImportExtensions": true,
-        "allowImportingTsExtensions": true,
+        "rewriteRelativeImportExtensions": false,
         "useUnknownInCatchVariables": true
     }
 }

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import type { Army, ArmyUnit } from '@wh40k10e/models/ArmyModel.js';
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
-import type { FactionData } from '@wh40k10e/models/FactionData.js';
-import type { Unit } from '@wh40k10e/models/UnitModel.js';
-import type { Detachment, Enhancement } from '@wh40k10e/types/entities.js';
-import { validateArmy } from '@wh40k10e/validation/engine.js';
+import type { Army, ArmyUnit } from '@/models/ArmyModel.js';
+import type { CoreRules } from '@/models/CoreRules.js';
+import type { FactionData } from '@/models/FactionData.js';
+import type { Unit } from '@/models/UnitModel.js';
+import type { Detachment, Enhancement } from '@/types/entities.js';
+import { validateArmy } from '@/validation/engine.js';
 
 const DEFAULT_TIMESTAMP = '2024-01-01T00:00:00Z';
 

@@ -21,7 +21,7 @@ import { DropdownMenu } from 'radix-ui';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 import * as React from 'react';
 
-import { cn } from '@web/src/lib/utils.js';
+import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the DropdownMenuTrigger component.

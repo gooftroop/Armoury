@@ -4,13 +4,7 @@
         "noEmit": true,
         "baseUrl": ".",
         "paths": {
-            "@wh40k10e/*": ["./src/*"],
-            "@data/*": ["../../shared/data/src/*"],
-            "@models/*": ["../../shared/models/src/*"],
-            "@clients-github/*": ["../../shared/clients/github/src/*"],
-            "@clients-wahapedia/*": ["../../shared/clients/wahapedia/src/*"],
-            "@providers-bsdata/*": ["../../shared/providers/bsdata/src/*"],
-            "@validation/*": ["../../shared/validation/src/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/**/*.ts"],

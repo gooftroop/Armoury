@@ -4,9 +4,11 @@
     "private": true,
     "type": "module",
     "exports": {
+        "./*": "./*.json",
         "./base.json": "./base.json",
         "./test.json": "./test.json",
-        "./build.json": "./build.json"
+        "./build.json": "./build.json",
+        "./fix-declaration-paths": "./fix-declaration-paths.mjs"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"

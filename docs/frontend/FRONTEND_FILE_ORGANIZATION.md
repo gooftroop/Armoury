@@ -141,15 +141,15 @@ ComponentName/
 ```typescript
 // ✅ Correct
 import { Suspense } from 'react';
-import type { Army } from '@shared/models/Army.js';
+import type { Army } from '@armoury/models';
 import { getArmies } from '@web/src/dal/armies.js';
-import { ArmyCard } from './ArmyCard.ts';
+import { ArmyCard } from './ArmyCard.js';
 
 // ❌ Wrong — .ts extension on aliased import
-import type { Army } from '@shared/models/Army.ts';
+import type { Army } from '@armoury/models';
 
 // ❌ Wrong — relative when alias is available
-import type { Army } from '../../shared/models/Army.ts';
+import type { Army } from '../../shared/models/Army.js';
 ```
 
 ### Path Aliases

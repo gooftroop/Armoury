@@ -1,17 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import type {
-    Campaign,
-    CampaignParticipant,
-    CampaignPhase,
-    CampaignRanking,
-    CustomNarrative,
-} from '@models/CampaignModel.js';
+import type { Campaign, CampaignParticipant, CampaignPhase, CampaignRanking, CustomNarrative } from '@armoury/models';
 import type {
     CrusadeParticipantData,
     CrusadeUnitProgression,
     CrusadeBattleHonour,
     CrusadeBattleScar,
-} from '@wh40k10e/models/CampaignModel.js';
+} from '@/models/CampaignModel.js';
 
 const buildCampaignPhase = (id: string = 'phase-1', order: number = 1): CampaignPhase => ({
     id,

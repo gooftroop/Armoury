@@ -1,4 +1,4 @@
-import type { ValidationResult, ValidationSummary } from '@validation/types.js';
+import type { ValidationResult, ValidationSummary } from '@/types.js';
 
 /**
  * A validation rule function that can be provided by plugins.

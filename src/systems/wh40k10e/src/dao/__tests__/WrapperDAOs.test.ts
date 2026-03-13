@@ -1,14 +1,14 @@
 import { beforeEach, describe, it, expect } from 'vitest';
-import { BSDATA_OWNER, BSDATA_REPO } from '@wh40k10e/dao/BaseDAO.js';
-import { ArmyDAO } from '@wh40k10e/dao/ArmyDAO.js';
-import { CampaignDAO } from '@data/dao/CampaignDAO.js';
+import { BSDATA_OWNER, BSDATA_REPO } from '@/dao/BaseDAO.js';
+import { ArmyDAO } from '@/dao/ArmyDAO.js';
+import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
 
-import { AccountDAO } from '@data/dao/AccountDAO.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import type { Army } from '@wh40k10e/models/ArmyModel.js';
-import type { Campaign } from '@models/CampaignModel.js';
+import { AccountDAO } from '@armoury/data-dao';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
+import type { Army } from '@/models/ArmyModel.js';
+import type { Campaign } from '@armoury/models';
 
-import type { Account } from '@models/AccountModel.js';
+import type { Account } from '@armoury/models';
 
 /**
  * Creates a minimal Army fixture for testing.

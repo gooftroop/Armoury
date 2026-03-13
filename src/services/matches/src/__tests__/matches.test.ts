@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { CreateMatchRequest, Match, UpdateMatchRequest, UserContext } from '@matches/src/types.js';
-import { createMatch, deleteMatch, getMatch, listMatches, updateMatch } from '@matches/src/routes/matches.js';
-import { MockDatabaseAdapter } from '@matches/src/__mocks__/MockDatabaseAdapter.js';
+import type { CreateMatchRequest, Match, UpdateMatchRequest, UserContext } from '@/types.js';
+import { createMatch, deleteMatch, getMatch, listMatches, updateMatch } from '@/routes/matches.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
     sub: 'user-1',

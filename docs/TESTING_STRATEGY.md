@@ -551,15 +551,15 @@ Compose fixtures in `e2e/web/fixtures/index.ts` so test files import from one pl
 
 ```typescript
 // e2e/web/fixtures/index.ts
-export { test, expect } from './army.fixture.ts';
+export { test, expect } from './army.fixture.js';
 ```
 
 A test then reads like a user story:
 
 ```typescript
 // e2e/web/tests/army-builder.spec.ts
-import { test, expect } from '../fixtures/index.ts';
-import { ArmyBuilderPage } from '../pages/ArmyBuilderPage.ts';
+import { test, expect } from '../fixtures/index.js';
+import { ArmyBuilderPage } from '../pages/ArmyBuilderPage.js';
 
 test('adds a unit to an existing army', async ({ page, army }) => {
     const builder = new ArmyBuilderPage(page);

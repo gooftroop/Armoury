@@ -19,7 +19,7 @@ import { Dialog } from 'radix-ui';
 import { X } from 'lucide-react';
 import * as React from 'react';
 
-import { cn } from '@web/src/lib/utils.js';
+import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the DialogOverlay component.

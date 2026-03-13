@@ -56,8 +56,8 @@ Query keys are the identity of every cached query. A consistent, hierarchical ke
 // @requirements FE-060, FE-061, FE-062
 
 import { queryOptions } from '@tanstack/react-query';
-import { dc } from '@shared/data/DataContext.js';
-import type { ArmyFilters, ArmyListResult, Army } from '@shared/types/entities.js';
+import { dc } from '@armoury/data';
+import type { ArmyFilters, ArmyListResult, Army } from '@armoury/models';
 
 // ---------------------------------------------------------------------------
 // Key factory
@@ -196,7 +196,7 @@ export function ArmyCard({ id }: { id: string }): JSX.Element {
 import { useQuery } from '@tanstack/react-query';
 import { armyDetailOptions } from '@shared/frontend/armies/queries.js';
 import { rosterOptions } from '@shared/frontend/rosters/queries.js';
-import type { Army, Roster } from '@shared/types/entities.js';
+import type { Army, Roster } from '@armoury/models';
 
 interface ArmyWithRoster {
     army: Army;
@@ -247,7 +247,7 @@ All writes go through `useMutation`. The pattern for cache consistency is:
 // src/web/src/hooks/useDeleteArmy.ts
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { dc } from '@shared/data/DataContext.js';
+import { dc } from '@armoury/data';
 import { armyKeys } from '@shared/frontend/armies/queries.js';
 
 interface UseDeleteArmyResult {
@@ -279,9 +279,9 @@ export function useDeleteArmy(): UseDeleteArmyResult {
 // src/web/src/hooks/useRenameArmy.ts
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { dc } from '@shared/data/DataContext.js';
+import { dc } from '@armoury/data';
 import { armyDetailOptions, armyKeys } from '@shared/frontend/armies/queries.js';
-import type { Army } from '@shared/types/entities.js';
+import type { Army } from '@armoury/models';
 
 interface RenameArmyVariables {
     id: string;
@@ -454,8 +454,8 @@ The global `QueryClient` at `src/web/src/lib/queryClient.ts` sets `staleTime: 3_
 // src/shared/frontend/armies/queries.ts (pure TypeScript — no React)
 
 import { queryOptions } from '@tanstack/react-query';
-import { dc } from '@shared/data/DataContext.js';
-import type { ArmyFilters, ArmyListResult, Army } from '@shared/types/entities.js';
+import { dc } from '@armoury/data';
+import type { ArmyFilters, ArmyListResult, Army } from '@armoury/models';
 
 // Filtered list: short staleTime so filters feel responsive (FE-073)
 export const armyListOptions = (filters: ArmyFilters) =>
@@ -480,8 +480,8 @@ export const armyDetailOptions = (id: string) =>
 // src/shared/frontend/reference/queries.ts (pure TypeScript — no React)
 
 import { queryOptions } from '@tanstack/react-query';
-import { dc } from '@shared/data/DataContext.js';
-import type { FactionList } from '@shared/types/entities.js';
+import { dc } from '@armoury/data';
+import type { FactionList } from '@armoury/models';
 
 // Static reference data: never refetch during a session (FE-071)
 export const factionListOptions = () =>
@@ -497,8 +497,8 @@ export const factionListOptions = () =>
 // src/shared/frontend/auth/queries.ts (pure TypeScript — no React)
 
 import { queryOptions } from '@tanstack/react-query';
-import { dc } from '@shared/data/DataContext.js';
-import type { Session } from '@shared/types/auth.js';
+import { dc } from '@armoury/data';
+import type { Session } from '@armoury/models';
 
 // Auth: always check freshness (FE-072)
 export const sessionOptions = () =>

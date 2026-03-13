@@ -10,7 +10,7 @@ Primary facade for app-level and game-specific data access. Wraps a database ada
 
 ```typescript
 import { DataManager, PluginRegistry, Platform } from '@armoury/shared';
-import { wh40k10ePlugin, EntityKind } from '@shared/systems/wh40k10e/plugin.js';
+import { wh40k10ePlugin, EntityKind } from '@armoury/systems';
 
 PluginRegistry.register(wh40k10ePlugin);
 

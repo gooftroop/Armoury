@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { DataContext } from '@data/DataContext.js';
-import type { GameData } from '@wh40k10e/dao/GameData.js';
-import { wh40k10eSystem } from '@wh40k10e/system.js';
-import { GitHubClient } from '@clients-github/client.js';
-import { MockDatabaseAdapter } from '@wh40k10e/__mocks__/MockDatabaseAdapter.js';
-import { hasEntityCodec } from '@data/codec.js';
+import { DataContext } from '@armoury/data-context';
+import type { GameData } from '../src/dao/GameData.js';
+import { wh40k10eSystem } from '../src/system.js';
+import { GitHubClient } from '@armoury/clients-github';
+import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
+import { hasEntityCodec } from '@armoury/data-dao';
 import 'dotenv/config';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;

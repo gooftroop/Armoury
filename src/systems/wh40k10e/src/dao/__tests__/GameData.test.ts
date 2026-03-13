@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GameData } from '@wh40k10e/dao/GameData.js';
-import type { GameDataDeps } from '@wh40k10e/dao/GameData.js';
+import { GameData } from '@/dao/GameData.js';
+import type { GameDataDeps } from '@/dao/GameData.js';
 
 /**
  * Creates a mock DAO whose load() resolves with the given value.

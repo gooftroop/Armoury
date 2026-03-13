@@ -1,11 +1,11 @@
 import { jwtVerify } from 'jose';
 import * as Sentry from '@sentry/aws-serverless';
-import { getJwks } from '@authorizer/src/jwks.js';
-import { getServiceConfig } from '@authorizer/src/utils/secrets.js';
-import { extractBearerToken, buildIssuer } from '@authorizer/src/utils/token.js';
-import { generatePolicy } from '@authorizer/src/utils/policy.js';
-import { isJwtPayload } from '@authorizer/src/utils/jwt.js';
-import type { AuthorizerContext, AuthorizerEvent, AuthorizerResult } from '@authorizer/src/types.js';
+import { getJwks } from '@/jwks.js';
+import { getServiceConfig } from '@/utils/secrets.js';
+import { extractBearerToken, buildIssuer } from '@/utils/token.js';
+import { generatePolicy } from '@/utils/policy.js';
+import { isJwtPayload } from '@/utils/jwt.js';
+import type { AuthorizerContext, AuthorizerEvent, AuthorizerResult } from '@/types.js';
 
 /**
  * Default principal identifier used when denying access.

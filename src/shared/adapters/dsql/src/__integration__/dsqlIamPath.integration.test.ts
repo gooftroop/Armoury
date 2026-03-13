@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
-import { DSQLAdapter } from '@adapters-dsql/adapter.js';
-import type { DSQLIAMConfig } from '@adapters-dsql/adapter.js';
-import { Platform } from '@data/types.js';
+import { DSQLAdapter } from '@/adapter.js';
+import type { DSQLIAMConfig } from '@/adapter.js';
+import { Platform } from '@armoury/data-dao';
 
 /**
  * DSQLAdapter IAM path — integration tests

@@ -1,5 +1,5 @@
-import type { DatabaseAdapter } from '@data/types.js';
-import type { CampaignPhase, CampaignRanking, CampaignStatus, NarrativeBase } from '@models/CampaignModel.js';
+import type { DatabaseAdapter } from '@armoury/data-dao';
+import type { CampaignPhase, CampaignRanking, CampaignStatus, NarrativeBase } from '@armoury/models';
 
 /**
  * Authenticated user context extracted from API Gateway authorizer.

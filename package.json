@@ -16,7 +16,8 @@
     },
     "workspaces": [
         "src/shared/models",
-        "src/shared/data",
+        "src/shared/data/dao",
+        "src/shared/data/context",
         "src/shared/adapters/sqlite",
         "src/shared/adapters/pglite",
         "src/shared/adapters/dsql",
@@ -29,6 +30,8 @@
         "src/shared/providers/bsdata",
         "src/shared/validation",
         "src/shared/streams",
+        "src/shared/e2e",
+        "src/shared/ui",
         "src/systems/wh40k10e",
         "src/web",
         "src/mobile",
@@ -44,7 +47,7 @@
         "format:check": "turbo run format:check",
         "test:e2e": "turbo run test:e2e",
         "test:e2e:services": "turbo run test:e2e --filter='./src/services/*'",
-        "test:e2e:shared": "turbo run test:e2e --filter='@armoury/data'",
+        "test:e2e:shared": "turbo run test:e2e --filter='@armoury/data-dao'",
         "e2e:cleanup": "docker compose -f docker-compose.localstack.yml down -v 2>/dev/null || true; docker compose -f docker-compose.dsql-mock.yml down -v 2>/dev/null || true; for f in src/services/*/docker-compose.yml; do dir=$(dirname \"$f\"); docker compose -f \"$f\" --project-directory \"$dir\" down -v --remove-orphans 2>/dev/null || true; done",
         "localstack:up": "docker compose -f infra/localstack/docker-compose.yml up -d --wait",
         "localstack:down": "docker compose -f infra/localstack/docker-compose.yml down -v",
@@ -67,5 +70,11 @@
     },
     "dependencies": {
         "drizzle-kit": "^0.31.9"
+    },
+    "overrides": {
+        "eslint-plugin-import-x": {
+            "eslint": "^9.0.0 || ^10.0.0"
+        },
+        "typescript-eslint": "^8.56.0"
     }
 }

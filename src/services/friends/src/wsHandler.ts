@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/aws-serverless';
-import { extractWsUserContext } from '@friends/src/middleware/wsAuth.js';
-import { wsRouter } from '@friends/src/wsRouter.js';
-import type { DatabaseAdapter, WebSocketEvent, WebSocketResponse } from '@friends/src/types.js';
-import { getServiceConfig } from '@friends/src/utils/secrets.js';
+import { extractWsUserContext } from '@/middleware/wsAuth.js';
+import { wsRouter } from '@/wsRouter.js';
+import type { DatabaseAdapter, WebSocketEvent, WebSocketResponse } from '@/types.js';
+import { getServiceConfig } from '@/utils/secrets.js';
 
 interface DSQLAdapterConfig {
     clusterEndpoint: string;
@@ -26,8 +26,8 @@ interface LocalAdapterConstructor {
     new (config: LocalAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
 }
 
-const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('@friends/src/utils/localAdapter.js')) as unknown as {
+const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
     LocalDatabaseAdapter: LocalAdapterConstructor;
 };
 

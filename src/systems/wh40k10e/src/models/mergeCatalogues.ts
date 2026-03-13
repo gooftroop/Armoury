@@ -1,4 +1,4 @@
-import { type BattleScribeCatalogue, ensureArray } from '@providers-bsdata/types.js';
+import { type BattleScribeCatalogue, ensureArray } from '@armoury/providers-bsdata';
 
 type CatalogueData = BattleScribeCatalogue['catalogue'];
 

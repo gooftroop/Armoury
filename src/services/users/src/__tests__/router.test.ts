@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Account, User, UserContext } from '@users/src/types.js';
-import { router } from '@users/src/router.js';
-import { MockDatabaseAdapter } from '@users/src/__mocks__/MockDatabaseAdapter.js';
+import type { Account, User, UserContext } from '@/types.js';
+import { router } from '@/router.js';
+import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
     sub: 'user-1',

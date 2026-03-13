@@ -3,8 +3,8 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query';
-import type { Friend } from '@clients-friends/types.js';
-import { getFriends } from '@clients-friends/api/getFriends.js';
+import type { Friend } from '@/types.js';
+import { getFriends } from '@/api/getFriends.js';
 
 /**
  * Builds the query key for the friends list query.

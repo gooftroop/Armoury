@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { CAMPAIGNS_BASE_URL } from '@clients-campaigns/config.js';
-import type { ParticipantParams } from '@clients-campaigns/types.js';
+import { CAMPAIGNS_BASE_URL } from '@/config.js';
+import type { ParticipantParams } from '@/types.js';
 
 /**
  * Deletes a participant from a campaign.

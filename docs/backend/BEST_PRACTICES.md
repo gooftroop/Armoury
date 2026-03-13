@@ -56,7 +56,7 @@ Use constants and enums instead of hardcoded string or number literals.
 
 ```typescript
 // Good
-import { Platform } from '@shared/types/enums.js';
+import { Platform } from '@armoury/models';
 if (adapter.platform === Platform.SQLite) { ... }
 
 // Bad
@@ -83,18 +83,18 @@ async get<T extends EntityType>(store: T, id: string): Promise<EntityMap[T] | nu
 
 ### Imports
 
-Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports.
+Always use aliased imports — never relative imports. Order: external packages first, then aliased internal imports. Always use `.js` extensions.
 
 ```typescript
 // Good
 import { describe, it, expect } from 'vitest';
-import type { Unit } from '@shared/types/entities.js';
+import type { Unit } from '@armoury/models';
 
 // Bad — relative imports
 import type { Unit } from '../../types/entities';
 ```
 
-Always use `.js` extensions in aliased imports.
+Always use `.js` extensions in imports.
 
 ### Pure Functions
 
@@ -130,8 +130,8 @@ const adapter = await createAdapter({ platform: Platform.IndexedDB });
 
 ```typescript
 import { DataContext, Platform } from '@armoury/shared';
-import { wh40k10eSystem } from '@shared/systems/wh40k10e/system.js';
-import type { Wh40kGameData } from '@shared/systems/wh40k10e/dao/Wh40kGameData.js';
+import { wh40k10eSystem } from '@armoury/wh40k10e';
+import type { Wh40kGameData } from '@armoury/wh40k10e';
 
 const dc = await DataContext.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
@@ -171,7 +171,7 @@ Game-specific code lives under `src/shared/systems/<game-system>/`. Plugins impl
 1. Create plugin directory at `src/shared/systems/<id>/`
 2. Implement `GameSystem` interface with identity, data source config, entity kinds, validation rules, hydrators, and schema extensions
 3. Define an `EntityKind` enum mapping game-specific entity kinds to adapter store names
-4. Augment `PluginEntityMap` in `@shared/data/adapter.js` for type-safe entity access
+4. Augment `PluginEntityMap` in `@armoury/data` for type-safe entity access
 5. Register entity codecs via `registerEntityCodec()`
 6. Register plugin entities via `registerPluginEntity()`
 7. Implement `getSchemaExtension()` returning SQLite/IndexedDB/DSQL table definitions
@@ -318,7 +318,7 @@ const summary = validateArmyWithRules(army, factionData, rules);
 
 ## 10. Error Handling
 
-Use typed error classes from `@armoury/shared/types/errors`.
+Use typed error classes from `@armoury/shared`.
 
 ```typescript
 import { GitHubApiError, isGitHubApiError } from '@armoury/shared';
@@ -418,7 +418,7 @@ src/services/<service>/src/
 | Suppress type errors with `as any` | Fix the underlying type issue |
 | Use empty catch blocks `catch(e) {}` | Handle or rethrow with typed errors |
 | Skip JSDoc on exported symbols | Document every export |
-| Use relative imports | Use `@shared/` aliases with `.js` extensions |
+| Use relative imports | Use `@armoury/` package names with `.js` extensions |
 
 ---
 

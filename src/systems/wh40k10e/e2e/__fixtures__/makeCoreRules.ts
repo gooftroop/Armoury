@@ -1,4 +1,4 @@
-import type { CoreRules } from '@wh40k10e/models/CoreRules.js';
+import type { CoreRules } from '../../src/models/CoreRules.js';
 
 export function makeCoreRules(overrides: Partial<CoreRules> = {}): CoreRules {
     const defaults = {

@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from '@clients-users/config.js';
-import type { User, UserParams, UpdateUserRequest } from '@clients-users/types.js';
+import { USERS_BASE_URL } from '@/config.js';
+import type { User, UserParams, UpdateUserRequest } from '@/types.js';
 
 /**
  * Updates a user with the provided data.

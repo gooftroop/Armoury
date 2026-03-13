@@ -1,5 +1,5 @@
-import type { Threshold } from '@validation/effects/types.js';
-import type { WeaponKeyword } from '@wh40k10e/types/effects.js';
+import type { Threshold } from '@armoury/validation';
+import type { WeaponKeyword } from '@/types/effects.js';
 
 /**
  * Parse a single weapon keyword token into a structured keyword object.
@@ -44,7 +44,7 @@ export function parseWeaponKeyword(keyword: string): WeaponKeyword {
         };
     }
 
-    const antiMatch = trimmed.match(/^anti-(.+?)\s+(\d+)\+$/i);
+    const antiMatch = trimmed.match(/^anti-(\S+)\s+(\d+)\+$/i);
 
     if (antiMatch) {
         return {

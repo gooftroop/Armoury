@@ -3,8 +3,8 @@
  */
 
 import type { UseMutationOptions } from '@tanstack/react-query';
-import type { Friend, SendFriendRequestPayload } from '@clients-friends/types.js';
-import { postFriendRequest } from '@clients-friends/api/postFriendRequest.js';
+import type { Friend, SendFriendRequestPayload } from '@/types.js';
+import { postFriendRequest } from '@/api/postFriendRequest.js';
 
 /**
  * Builds React Query mutation options for sending a friend request.

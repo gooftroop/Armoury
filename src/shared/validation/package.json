@@ -13,8 +13,8 @@
         }
     },
     "scripts": {
-        "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
-        "generate:types": "tsc -p tsconfig.build.json",
+        "build": "ESBUILD_ENTRIES=src/index.ts,src/engine.ts,src/types.ts,src/constraints/index.ts,src/constraints/parser.ts,src/constraints/types.ts,src/effects/index.ts,src/effects/types.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
+        "generate:types": "tsc -p tsconfig.build.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\"",
         "test": "vitest run",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
@@ -30,7 +30,7 @@
         "@armoury/typescript": "*",
         "@armoury/vitest": "*",
         "@armoury/esbuild": "*",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.3",
         "prettier": "^3.0.0",
         "vitest": "^4.0.0"
     },

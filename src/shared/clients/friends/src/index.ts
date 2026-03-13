@@ -8,8 +8,8 @@
 
 // === Presence Client ===
 
-export { FriendsPresenceClient, createFriendsPresenceClient } from '@clients-friends/presence.js';
-export type { IFriendsPresenceClient } from '@clients-friends/presence.js';
+export { FriendsPresenceClient, createFriendsPresenceClient } from '@/presence.js';
+export type { IFriendsPresenceClient } from '@/presence.js';
 
 // === Types ===
 
@@ -26,29 +26,24 @@ export type {
     FriendsServerMessage,
     FriendsPresenceConfig,
     ConnectionState,
-} from '@clients-friends/types.js';
+} from '@/types.js';
 
 // === Error Classes ===
 
-export { FriendsApiError, FriendsNetworkError } from '@clients-friends/types.js';
-export { isFriendsApiError, isFriendsNetworkError } from '@clients-friends/types.js';
+export { FriendsApiError, FriendsNetworkError } from '@/types.js';
+export { isFriendsApiError, isFriendsNetworkError } from '@/types.js';
 
 // === Config ===
 
-export {
-    FRIENDS_BASE_URL,
-    DEFAULT_FRIENDS_WS_URL,
-    MAX_RECONNECT_ATTEMPTS,
-    BASE_RECONNECT_DELAY_MS,
-} from '@clients-friends/config.js';
+export { FRIENDS_BASE_URL, DEFAULT_FRIENDS_WS_URL, MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
 
 // === Queries ===
 
-export { buildQueryFriendsKey, queryFriends } from '@clients-friends/queries/queryFriends.js';
-export { buildQueryFriendKey, queryFriend } from '@clients-friends/queries/queryFriend.js';
+export { buildQueryFriendsKey, queryFriends } from '@/queries/queryFriends.js';
+export { buildQueryFriendKey, queryFriend } from '@/queries/queryFriend.js';
 
 // === Mutations ===
 
-export { mutationSendFriendRequest } from '@clients-friends/mutations/mutationSendFriendRequest.js';
-export { mutationUpdateFriend } from '@clients-friends/mutations/mutationUpdateFriend.js';
-export { mutationDeleteFriend } from '@clients-friends/mutations/mutationDeleteFriend.js';
+export { mutationSendFriendRequest } from '@/mutations/mutationSendFriendRequest.js';
+export { mutationUpdateFriend } from '@/mutations/mutationUpdateFriend.js';
+export { mutationDeleteFriend } from '@/mutations/mutationDeleteFriend.js';

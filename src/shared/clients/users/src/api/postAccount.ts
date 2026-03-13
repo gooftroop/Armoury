@@ -3,8 +3,8 @@
  */
 
 import ky from 'ky';
-import { USERS_BASE_URL } from '@clients-users/config.js';
-import type { Account, UserParams, CreateAccountRequest } from '@clients-users/types.js';
+import { USERS_BASE_URL } from '@/config.js';
+import type { Account, UserParams, CreateAccountRequest } from '@/types.js';
 
 /**
  * Creates a new account for the specified user.

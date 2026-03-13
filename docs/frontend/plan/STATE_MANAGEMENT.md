@@ -293,8 +293,8 @@ export function LiveMatchStatus({ matchId }: Props): JSX.Element {
 'use client';
 
 import { useState, useEffect } from 'react';
-import { dc } from '@shared/data/DataContext.js';
-import type { Army } from '@shared/types/entities.js';
+import { dc } from '@armoury/data';
+import type { Army } from '@armoury/models';
 
 function ArmyDetail({ id }: { id: string }): JSX.Element {
     const [army, setArmy] = useState<Army | null>(null);
@@ -314,7 +314,7 @@ function ArmyDetail({ id }: { id: string }): JSX.Element {
 // src/web/src/components/providers/GameSystemContext.tsx
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { GameSystemPlugin } from '@shared/types/plugins.js';
+import type { GameSystemPlugin } from '@armoury/models';
 
 // Context is justified here because:
 //   - GameSystemPlugin is a DI concern (swap implementations per environment)
@@ -412,7 +412,7 @@ When a component manages several related values, use multiple `useState` calls r
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { Army, Detachment, Unit } from '@shared/types/entities.js';
+import type { Army, Detachment, Unit } from '@armoury/models';
 
 interface Props {
     armyId: string;
@@ -677,7 +677,7 @@ Expo Router provides analogous hooks. `useLocalSearchParams` reads params for th
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { armyListOptions } from '@shared/frontend/armies/queries.js';
-import { parseArmyListFilters } from '@mobile/lib/urlParams.ts';
+import { parseArmyListFilters } from '@mobile/lib/urlParams.js';
 
 /** Mobile army list — same URL-driven pattern as web, using Expo Router hooks. */
 export function ArmyListScreen(): JSX.Element {
@@ -722,7 +722,7 @@ Centralise parsing and serialization in a shared helper. The same logic applies 
 ```typescript
 // src/web/src/lib/urlParams.ts
 
-import type { ArmyFilters } from '@shared/types/entities.js';
+import type { ArmyFilters } from '@armoury/models';
 
 /** Canonical defaults for army list filters. */
 const ARMY_FILTER_DEFAULTS = {
@@ -852,7 +852,7 @@ The existing `DataContextProvider` is the reference implementation for Context i
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { IDataContext } from '@shared/data/types.js';
+import type { IDataContext } from '@armoury/data';
 
 /**
  * DataContext provides the active IDataContext adapter to the component tree.
@@ -970,7 +970,7 @@ const ThemeContext = createContext<{ theme: Theme; setTheme: (t: Theme) => void 
 // AFTER: Context injects the stream; BehaviorSubject holds the mutable value
 // src/shared/streams/src/theme/ThemeStream.ts
 import { BehaviorSubject } from 'rxjs';
-import type { Theme } from '@shared/types/theme.js';
+import type { Theme } from '@armoury/models';
 
 export class ThemeStream {
     private readonly theme$ = new BehaviorSubject<Theme>('dark');
@@ -1161,7 +1161,7 @@ Zustand's vanilla `createStore` produces a store that behaves like a `BehaviorSu
 // Zustand equivalent of a BehaviorSubject-backed match store (for reference)
 // This pattern would live in src/web/src/stores/matchStore.ts IF adopted
 import { createStore } from 'zustand/vanilla';
-import type { Match } from '@shared/types/entities.js';
+import type { Match } from '@armoury/models';
 
 interface MatchStoreState {
     readonly matches: ReadonlyMap<string, Match>;
@@ -1204,7 +1204,7 @@ const matchStore = createStore<MatchStoreState>((set) => ({
 // React hook consuming the vanilla Zustand store via useSyncExternalStore
 // src/web/hooks/useMatchStore.ts (hypothetical, not yet adopted)
 import { useSyncExternalStore } from 'react';
-import type { Match } from '@shared/types/entities.js';
+import type { Match } from '@armoury/models';
 
 /** Returns the current match state for a given match ID from the vanilla store. */
 export function useMatch(matchId: string): Match | undefined {
@@ -1384,7 +1384,7 @@ export const queryClient = new QueryClient({
 // Optimistic update skeleton for army name edit (Phase 2)
 // src/shared/frontend/armies/mutations.ts
 import type { MutationOptions } from '@tanstack/react-query';
-import type { UpdateArmyInput, Army } from '@shared/types/entities.js';
+import type { UpdateArmyInput, Army } from '@armoury/models';
 import { armyDetailOptions, armyListOptions } from '@shared/frontend/armies/queries.js';
 import { updateArmy } from '@shared/frontend/armies/service.js';
 
@@ -1505,7 +1505,7 @@ export function campaignDetailOptions(campaignId: string) {
 // Reference data query options — never goes stale (Phase 5)
 // src/shared/frontend/reference/queries.ts
 import { queryOptions } from '@tanstack/react-query';
-import type { FactionReference } from '@shared/types/entities.js';
+import type { FactionReference } from '@armoury/models';
 import { listFactions } from '@shared/frontend/reference/service.js';
 
 /**

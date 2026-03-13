@@ -1,4 +1,4 @@
-import type { DatabaseAdapter, EntityMap, EntityType } from '@matches/src/types.js';
+import type { DatabaseAdapter, EntityMap, EntityType } from '@/types.js';
 
 export class MockDatabaseAdapter implements DatabaseAdapter {
     private stores: Map<EntityType, Map<string, EntityMap[EntityType]>>;

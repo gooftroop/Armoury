@@ -19,7 +19,7 @@ import type {
     TwistCard,
     TournamentMission,
     TerrainLayout,
-} from '@wh40k10e/models/ChapterApprovedTypes.js';
+} from '@/models/ChapterApprovedTypes.js';
 
 /**
  * Chapter Approved 2025-26 mission pack aggregate model.

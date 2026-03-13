@@ -1,1 +1,1 @@
-export { parseConstraint, parseConstraints } from '@providers-bsdata/constraintParser.js';
+export { parseConstraint, parseConstraints } from '@armoury/providers-bsdata';

@@ -10,11 +10,11 @@
  */
 
 import * as Sentry from '@sentry/aws-serverless';
-import { extractUserContext } from '@users/src/middleware/auth.js';
-import { formatErrorResponse } from '@users/src/middleware/errorHandler.js';
-import { router } from '@users/src/router.js';
-import type { ApiResponse, DatabaseAdapter } from '@users/src/types.js';
-import { getServiceConfig } from '@users/src/utils/secrets.js';
+import { extractUserContext } from '@/middleware/auth.js';
+import { formatErrorResponse } from '@/middleware/errorHandler.js';
+import { router } from '@/router.js';
+import type { ApiResponse, DatabaseAdapter } from '@/types.js';
+import { getServiceConfig } from '@/utils/secrets.js';
 
 /**
  * Minimal API Gateway proxy event payload.
@@ -95,11 +95,11 @@ interface LocalAdapterConstructor {
 }
 
 /**
- * Resolves the DSQLAdapter class from @armoury/data at runtime using dynamic import.
+ * Resolves the DSQLAdapter class from @armoury/adapters-dsql at runtime using dynamic import.
  * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
  */
-const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('@users/src/utils/localAdapter.js')) as unknown as {
+const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
     LocalDatabaseAdapter: LocalAdapterConstructor;
 };
 
