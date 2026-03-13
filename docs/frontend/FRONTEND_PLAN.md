@@ -254,7 +254,7 @@ The Unit Detail Drawer supports three modes (reference, builder, match) implemen
 Phase 0 — Shared Prerequisites  (context scaffolds, query factory shells)
         │
         ▼
-@armoury/shared/frontend  (contracts locked)
+@armoury/data-context        (contracts locked)
         │
         ▼
   Shared Components  ──────────────────────────────┐
@@ -294,7 +294,7 @@ Each phase is **done** when all of the following are true:
 
 **Phase 0 — Shared Prerequisites**
 
-- [ ] `GameSystemContext`, `DataContext` created in `@armoury/shared/frontend/context/`
+- [ ] `GameSystemContext`, `DataContext` created in `@armoury/data-context`
 - [ ] `MatchStream` class merged to `@armoury/streams/src/matches/`
 - [ ] `FriendPresenceStream` and `CampaignNotificationStream` class shells merged to `@armoury/streams/`
 - [ ] Cross-phase query factory shells (`armies.ts`, `factions.ts`, `gameSystems.ts`, `units.ts`, `matches.ts`) created with type signatures

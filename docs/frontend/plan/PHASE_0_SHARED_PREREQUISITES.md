@@ -265,8 +265,8 @@ Phase 0 is complete when ALL of the following are true:
 - [ ] `MatchStream` class merged to `@armoury/streams/src/matches/`
 - [ ] `FriendPresenceStream` class shell (interface + `BehaviorSubject` + `destroy()`) merged to `@armoury/streams/src/social/`
 - [ ] `CampaignNotificationStream` class shell merged to `@armoury/streams/src/campaigns/`
-- [ ] `GameSystemContext` type and `createContext` call merged to `@armoury/shared/frontend/context/`
-- [ ] `DataContext` type and `createContext` call merged to `@armoury/shared/frontend/context/`
+- [ ] `GameSystemContext` type and `createContext` call merged to `@armoury/data-context`
+- [ ] `DataContext` type and `createContext` call merged to `@armoury/data-context`
 - [ ] Query factory files created with type signatures for cross-phase factories: `armies.ts`, `factions.ts`, `gameSystems.ts`, `units.ts`, `matches.ts`
 - [ ] UD-13 and UD-15 mockup delivery tracked (not necessarily delivered, but delivery date committed by design)
 - [ ] All interfaces pass `tsc --noEmit` type check

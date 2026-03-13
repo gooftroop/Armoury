@@ -122,7 +122,6 @@ src/
 │   ├── clients/     → API clients (github/, wahapedia/)
 │   ├── types/       → Core types, enums, errors, interfaces
 │   ├── validation/  → Game-agnostic validation engine
-│   ├── frontend/    → Pure TypeScript shared frontend modules (NO React)
 │   ├── streams/     → @armoury/streams (RxJS reactive facades over WebSocket clients)
 │   └── e2e/         → Integration tests
 ├── systems/         → @armoury/systems (game system plugins)

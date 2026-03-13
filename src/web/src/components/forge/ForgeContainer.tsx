@@ -55,6 +55,7 @@ function applyFilters(armies: Army[], filters: ForgeFilters): Army[] {
             if (filters.factionId && army.factionId !== filters.factionId) {
                 return false;
             }
+
             if (filters.battleSize && army.battleSize !== filters.battleSize) {
                 return false;
             }
@@ -121,6 +122,7 @@ function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
     const duplicateMutation = useMutation({
         mutationFn: async (armyId: string) => {
             const original = (await dataContext!.armies.get(armyId)) as Army | null;
+
             if (!original) {
                 throw new Error('Army not found');
             }
