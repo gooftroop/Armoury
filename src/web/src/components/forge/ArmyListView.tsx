@@ -129,17 +129,11 @@ function ArmyListView({
             {/* Army list with filters */}
             {!isLoading && !isEmpty && (
                 <>
-                    <ArmyFilterPanel
-                        filters={filters}
-                        onChange={onFilterChange}
-                        factionIds={factionIds}
-                    />
+                    <ArmyFilterPanel filters={filters} onChange={onFilterChange} factionIds={factionIds} />
 
                     {armies.length === 0 ? (
                         /* Filters applied but no matches */
-                        <p className="py-8 text-center text-sm text-muted-foreground">
-                            {t('emptyState.title')}
-                        </p>
+                        <p className="py-8 text-center text-sm text-muted-foreground">{t('emptyState.title')}</p>
                     ) : (
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {armies.map((army) => (

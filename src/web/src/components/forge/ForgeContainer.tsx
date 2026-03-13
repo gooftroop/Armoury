@@ -52,8 +52,12 @@ export interface ForgeContainerProps {
 function applyFilters(armies: Army[], filters: ForgeFilters): Army[] {
     return armies
         .filter((army) => {
-            if (filters.factionId && army.factionId !== filters.factionId) return false;
-            if (filters.battleSize && army.battleSize !== filters.battleSize) return false;
+            if (filters.factionId && army.factionId !== filters.factionId) {
+                return false;
+            }
+            if (filters.battleSize && army.battleSize !== filters.battleSize) {
+                return false;
+            }
 
             return true;
         })
@@ -117,7 +121,9 @@ function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
     const duplicateMutation = useMutation({
         mutationFn: async (armyId: string) => {
             const original = (await dataContext!.armies.get(armyId)) as Army | null;
-            if (!original) throw new Error('Army not found');
+            if (!original) {
+                throw new Error('Army not found');
+            }
 
             const copy: Army = {
                 ...original,
@@ -193,7 +199,9 @@ function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
             <ConfirmDialog
                 open={deleteTarget !== null}
                 onOpenChange={(open) => {
-                    if (!open) setDeleteTarget(null);
+                    if (!open) {
+                        setDeleteTarget(null);
+                    }
                 }}
                 title={t('deleteConfirm.title')}
                 description={t('deleteConfirm.description', { armyName: deleteTarget?.name ?? '' })}

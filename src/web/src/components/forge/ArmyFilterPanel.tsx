@@ -22,14 +22,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import { SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 
-import {
-    Button,
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from '@/components/ui/index.js';
+import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/index.js';
 import type { BattleSize } from '@armoury/wh40k10e';
 
 /** Sort order options for the army list. */
@@ -107,11 +100,7 @@ function ArmyFilterPanel({ filters, onChange, factionIds }: ArmyFilterPanelProps
                 <Button variant="ghost" size="sm" onClick={() => setExpanded((prev) => !prev)}>
                     <SlidersHorizontal className="mr-2 h-4 w-4" />
                     {t('label')}
-                    {expanded ? (
-                        <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                        <ChevronDown className="ml-1 h-4 w-4" />
-                    )}
+                    {expanded ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
                 </Button>
                 {hasActiveFilters && (
                     <Button variant="ghost" size="sm" onClick={handleClear}>
@@ -125,9 +114,7 @@ function ArmyFilterPanel({ filters, onChange, factionIds }: ArmyFilterPanelProps
                     {/* Faction filter */}
                     <Select
                         value={filters.factionId ?? ALL_VALUE}
-                        onValueChange={(value) =>
-                            updateFilter('factionId', value === ALL_VALUE ? null : value)
-                        }
+                        onValueChange={(value) => updateFilter('factionId', value === ALL_VALUE ? null : value)}
                     >
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder={t('faction')} />

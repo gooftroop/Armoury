@@ -58,12 +58,7 @@ function ArmyCardActions({ onDeploy, onDuplicate, onDelete }: ArmyCardActionsPro
                 <Copy className="mr-2 h-4 w-4" />
                 {t('duplicate')}
             </Button>
-            <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                onClick={onDelete}
-            >
+            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={onDelete}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 {t('delete')}
             </Button>

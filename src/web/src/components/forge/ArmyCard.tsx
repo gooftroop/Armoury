@@ -21,14 +21,7 @@ import * as React from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    CardFooter,
-    Badge,
-} from '@/components/ui/index.js';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge } from '@/components/ui/index.js';
 import { ArmyCardActions } from '@/components/forge/ArmyCardActions.js';
 import type { Army } from '@armoury/wh40k10e';
 
@@ -85,11 +78,7 @@ function ArmyCard({ army, onDeploy, onDuplicate, onDelete }: ArmyCardProps): Rea
                 </div>
             </CardContent>
             <CardFooter>
-                <ArmyCardActions
-                    onDeploy={onDeploy}
-                    onDuplicate={onDuplicate}
-                    onDelete={onDelete}
-                />
+                <ArmyCardActions onDeploy={onDeploy} onDuplicate={onDuplicate} onDelete={onDelete} />
             </CardFooter>
         </Card>
     );
