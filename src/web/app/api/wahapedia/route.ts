@@ -24,13 +24,14 @@ const ALLOWED_HOST = 'wahapedia.ru';
 /**
  * Validates that a URL string points to wahapedia.ru over HTTPS.
  *
- * Parses the input, verifies the hostname and protocol, and returns
- * a sanitised URL object. Returns null if validation fails.
+ * Parses the input, verifies the hostname and protocol, and reconstructs
+ * a sanitised URL string from validated components. Returns null if
+ * validation fails.
  *
  * @param raw - The raw URL string to validate.
- * @returns A validated URL object, or null if the URL is not allowed.
+ * @returns A sanitised URL string built from validated components, or null if the URL is not allowed.
  */
-function parseAllowedUrl(raw: string): URL | null {
+function buildAllowedUrl(raw: string): string | null {
     let parsed: URL;
 
     try {
@@ -47,7 +48,8 @@ function parseAllowedUrl(raw: string): URL | null {
         return null;
     }
 
-    return parsed;
+    // Reconstruct from validated components to break the taint chain.
+    return `https://${parsed.hostname}${parsed.pathname}${parsed.search}`;
 }
 
 /**
@@ -74,14 +76,14 @@ export async function POST(request: Request): Promise<Response> {
         return Response.json({ error: 'Missing required field: url' }, { status: 400 });
     }
 
-    const validatedUrl = parseAllowedUrl(url);
+    const sanitisedUrl = buildAllowedUrl(url);
 
-    if (!validatedUrl) {
+    if (!sanitisedUrl) {
         return Response.json({ error: `URL must point to ${ALLOWED_HOST} over HTTPS` }, { status: 403 });
     }
 
     try {
-        const response = await fetch(validatedUrl.href, {
+        const response = await fetch(sanitisedUrl, {
             headers: { 'User-Agent': USER_AGENT },
         });
 
