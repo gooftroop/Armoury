@@ -12,6 +12,7 @@
  * 4. Must verify clicking a tile triggers the sync flow (not an auth redirect).
  * 5. Must verify the synced state shows a green badge with 'Ready' text.
  * 6. Must verify the error state shows an error badge with a failure message and retry.
+ * 7. Must verify the logged-in user tile displays avatar, welcome text, and settings link.
  */
 
 import { test, expect } from '../fixtures/index.js';
@@ -33,6 +34,19 @@ test.describe('Landing Page (authenticated)', () => {
     test('does NOT show auth links when authenticated', async () => {
         await expect(landingPage.signInLink).not.toBeVisible();
         await expect(landingPage.createAccountLink).not.toBeVisible();
+    });
+
+    test('displays logged-in user tile with avatar and settings link', async () => {
+        // User tile should be visible for authenticated users.
+        await expect(landingPage.userTile).toBeVisible();
+
+        // Welcome text should include the user's name.
+        await expect(landingPage.userWelcomeText).toBeVisible();
+        await expect(landingPage.userWelcomeText).toContainText(/welcome/i);
+
+        // Settings gear icon should link to the profile page.
+        await expect(landingPage.userSettingsLink).toBeVisible();
+        await expect(landingPage.userSettingsLink).toHaveAttribute('href', /profile/);
     });
 
     test('renders system tiles', async () => {

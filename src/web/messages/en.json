@@ -12,10 +12,12 @@
             "createAccount": "New here? Create an Account"
         },
         "legal": "This is an unofficial, fan-made tool. It is not affiliated with or endorsed by any game publisher. All game-specific trademarks are property of their respective owners. Game data is provided by community sources.",
+        "welcome": "Welcome, {name}",
+        "editProfile": "Click to edit your profile",
         "selectSystem": "Select",
         "comingSoon": "Coming Soon",
         "downloadOverlay": "Click to download",
-        "downloading": "Downloading…",
+        "downloading": "Downloading\u2026",
         "synced": "Ready",
         "syncError": "Download failed. Click to retry.",
         "systemFallbackName": "Game System"
