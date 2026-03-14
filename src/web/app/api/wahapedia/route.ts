@@ -21,17 +21,22 @@ const USER_AGENT = 'Armoury/1.0 (Community Tool)';
 /** Allowed hostname for proxied requests. */
 const ALLOWED_HOST = 'wahapedia.ru';
 
+/** Hardcoded origin used to construct fetch URLs, breaking the SSRF taint chain. */
+const ALLOWED_ORIGIN = `https://${ALLOWED_HOST}`;
+
 /**
- * Validates that a URL string points to wahapedia.ru over HTTPS.
+ * Validates that a URL string points to wahapedia.ru over HTTPS and extracts
+ * the path and search components.
  *
- * Parses the input, verifies the hostname and protocol, and reconstructs
- * a sanitised URL string from validated components. Returns null if
- * validation fails.
+ * Parses the input, verifies the hostname is exactly `wahapedia.ru` and the
+ * protocol is HTTPS. Returns only the path and search string so the caller
+ * can construct the final URL using a hardcoded origin — fully breaking the
+ * taint chain for static analysis tools (e.g. CodeQL SSRF detection).
  *
  * @param raw - The raw URL string to validate.
- * @returns A sanitised URL string built from validated components, or null if the URL is not allowed.
+ * @returns The validated path and search string (e.g. `/page?q=1`), or null if the URL is not allowed.
  */
-function buildAllowedUrl(raw: string): string | null {
+function extractAllowedPath(raw: string): string | null {
     let parsed: URL;
 
     try {
@@ -44,12 +49,11 @@ function buildAllowedUrl(raw: string): string | null {
         return null;
     }
 
-    if (parsed.hostname !== ALLOWED_HOST && !parsed.hostname.endsWith(`.${ALLOWED_HOST}`)) {
+    if (parsed.hostname !== ALLOWED_HOST) {
         return null;
     }
 
-    // Reconstruct from validated components to break the taint chain.
-    return `https://${parsed.hostname}${parsed.pathname}${parsed.search}`;
+    return `${parsed.pathname}${parsed.search}`;
 }
 
 /**
@@ -76,14 +80,18 @@ export async function POST(request: Request): Promise<Response> {
         return Response.json({ error: 'Missing required field: url' }, { status: 400 });
     }
 
-    const sanitisedUrl = buildAllowedUrl(url);
+    const allowedPath = extractAllowedPath(url);
 
-    if (!sanitisedUrl) {
+    if (!allowedPath) {
         return Response.json({ error: `URL must point to ${ALLOWED_HOST} over HTTPS` }, { status: 403 });
     }
 
+    // Construct the fetch URL from a hardcoded origin to break the SSRF taint chain.
+    // `allowedPath` contains only the path and query string; the host is never user-controlled.
+    const targetUrl = new URL(allowedPath, ALLOWED_ORIGIN);
+
     try {
-        const response = await fetch(sanitisedUrl, {
+        const response = await fetch(targetUrl, {
             headers: { 'User-Agent': USER_AGENT },
         });
 
