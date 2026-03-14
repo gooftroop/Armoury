@@ -54,9 +54,7 @@ test.describe('System Sync Flow', () => {
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
         const errorIndicator = firstTile.locator('.text-red-400');
 
-        await expect(
-            spinner.or(syncedBadge).or(errorIndicator),
-        ).toBeVisible({ timeout: 15_000 });
+        await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
     });
 
     test('tile transitions to synced or error state after sync attempt', async () => {
@@ -130,9 +128,7 @@ test.describe('System Sync Flow', () => {
             // Should re-enter the syncing state (spinner or progress).
             const spinner = firstTile.locator('.animate-spin');
 
-            await expect(
-                spinner.or(syncedBadge).or(errorIndicator),
-            ).toBeVisible({ timeout: 15_000 });
+            await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
         }
     });
 });

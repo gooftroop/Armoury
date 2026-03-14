@@ -157,21 +157,24 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      *
      * @param systemId - The ID of the system to disable.
      */
-    const disableSystem = React.useCallback(async (systemId: string): Promise<void> => {
-        if (dataContext) {
-            await dataContext.close();
-        }
+    const disableSystem = React.useCallback(
+        async (systemId: string): Promise<void> => {
+            if (dataContext) {
+                await dataContext.close();
+            }
 
-        setDataContext(null);
-        setStatus('idle');
-        setError(undefined);
-        setSystemSyncStates((prev) => {
-            const next = { ...prev };
-            delete next[systemId];
+            setDataContext(null);
+            setStatus('idle');
+            setError(undefined);
+            setSystemSyncStates((prev) => {
+                const next = { ...prev };
+                delete next[systemId];
 
-            return next;
-        });
-    }, [dataContext]);
+                return next;
+            });
+        },
+        [dataContext],
+    );
     /**
      * Cleanup on unmount: close the DataContext to release PGlite connections.
      */

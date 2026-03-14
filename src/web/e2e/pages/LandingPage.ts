@@ -62,7 +62,10 @@ export class LandingPage {
 
         // Logged-in user tile locators.
         this.userTile = page.locator('[data-testid="user-tile"]');
-        this.userAvatar = this.userTile.locator('span').filter({ has: page.locator('img') }).first();
+        this.userAvatar = this.userTile
+            .locator('span')
+            .filter({ has: page.locator('img') })
+            .first();
         this.userWelcomeText = this.userTile.locator('span.text-foreground');
         this.userSettingsLink = this.userTile.getByRole('link', { name: /edit.*profile/i });
     }

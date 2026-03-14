@@ -87,13 +87,8 @@ export default async function LandingPage({ params }: LandingPageProps) {
                     className="mb-8 flex items-center gap-3 rounded-lg border border-border/40 bg-surface/60 px-4 py-2"
                 >
                     <Avatar size="sm">
-                        <AvatarImage
-                            src={String(session.user.picture ?? '')}
-                            alt={String(session.user.name ?? '')}
-                        />
-                        <AvatarFallback>
-                            {getInitials(String(session.user.name ?? ''))}
-                        </AvatarFallback>
+                        <AvatarImage src={String(session.user.picture ?? '')} alt={String(session.user.name ?? '')} />
+                        <AvatarFallback>{getInitials(String(session.user.name ?? ''))}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium text-foreground">
                         {t('welcome', { name: String(session.user.name ?? '') })}
@@ -135,9 +130,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
             <SystemGrid manifests={manifests} isAuthenticated={isAuthenticated} />
 
             <div className="mt-8 px-6 text-center">
-                <p className="mx-auto max-w-[480px] text-[11px] leading-relaxed text-foreground">
-                    {t('legal')}
-                </p>
+                <p className="mx-auto max-w-[480px] text-[11px] leading-relaxed text-foreground">{t('legal')}</p>
             </div>
         </main>
     );

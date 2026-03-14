@@ -22,8 +22,24 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DataContextBuilder } from '@armoury/data-context';
-import type { GameSystem, GameContextResult, ArmyDAO, CampaignDAO, DatabaseAdapter, FileSyncStatus, QueryOptions, EntityMap, EntityType } from '@armoury/data-dao';
-import { Platform, clearSchemaExtensions, clearCodecRegistry, clearHydrationRegistry, PluginRegistry } from '@armoury/data-dao';
+import type {
+    GameSystem,
+    GameContextResult,
+    ArmyDAO,
+    CampaignDAO,
+    DatabaseAdapter,
+    FileSyncStatus,
+    QueryOptions,
+    EntityMap,
+    EntityType,
+} from '@armoury/data-dao';
+import {
+    Platform,
+    clearSchemaExtensions,
+    clearCodecRegistry,
+    clearHydrationRegistry,
+    PluginRegistry,
+} from '@armoury/data-dao';
 
 /**
  * Minimal in-memory mock adapter for integration tests.
@@ -51,7 +67,12 @@ class MockDatabaseAdapter implements DatabaseAdapter {
         return [];
     }
 
-    async getByField<T extends EntityType>(_store: T, _field: keyof EntityMap[T], _value: string, _options?: QueryOptions<EntityMap[T]>): Promise<EntityMap[T][]> {
+    async getByField<T extends EntityType>(
+        _store: T,
+        _field: keyof EntityMap[T],
+        _value: string,
+        _options?: QueryOptions<EntityMap[T]>,
+    ): Promise<EntityMap[T][]> {
         return [];
     }
 

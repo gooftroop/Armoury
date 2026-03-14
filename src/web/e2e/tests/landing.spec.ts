@@ -114,9 +114,7 @@ test.describe('Landing Page (authenticated)', () => {
 
             const spinner = firstTile.locator('.animate-spin');
 
-            await expect(
-                spinner.or(syncedBadge).or(errorIndicator),
-            ).toBeVisible({ timeout: 15_000 });
+            await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
         }
     });
 

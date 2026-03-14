@@ -35,10 +35,7 @@ test.describe('Landing Page (unauthenticated)', () => {
         await expect(landingPage.createAccountLink).toBeVisible();
 
         await expect(landingPage.signInLink).toHaveAttribute('href', '/auth/login');
-        await expect(landingPage.createAccountLink).toHaveAttribute(
-            'href',
-            /\/auth\/login\?screen_hint=signup/,
-        );
+        await expect(landingPage.createAccountLink).toHaveAttribute('href', /\/auth\/login\?screen_hint=signup/);
     });
 
     test('renders at least one system tile', async () => {
