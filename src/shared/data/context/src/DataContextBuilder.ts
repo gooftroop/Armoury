@@ -23,6 +23,11 @@ function createMissingGitHubClient(): IGitHubClient {
 
 /** Builder for creating DataContext instances with configured dependencies. */
 export class DataContextBuilder<TGameData = unknown> {
+    /** Creates a new DataContextBuilder instance. */
+    public static builder<TGameData = unknown>(): DataContextBuilder<TGameData> {
+        return new DataContextBuilder<TGameData>();
+    }
+
     private gameSystem: GameSystem | null = null;
     private adapterInstance: DatabaseAdapter | null = null;
     private githubClient: IGitHubClient | null = null;

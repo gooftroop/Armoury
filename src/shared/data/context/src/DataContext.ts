@@ -6,7 +6,6 @@ import { AccountDAO } from '@armoury/data-dao';
 import { FriendDAO } from '@armoury/data-dao';
 import { MatchDAO } from '@armoury/data-dao';
 import { UserDAO } from '@armoury/data-dao';
-import { DataContextBuilder } from '@/DataContextBuilder.js';
 
 /**
  * DataContext interface exposing core and game-specific DAOs.
@@ -78,13 +77,6 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
         await this.adapter.close();
     }
 
-    /**
-     * Creates a new DataContextBuilder.
-     * @returns A DataContextBuilder instance.
-     */
-    public static builder<TGameData = unknown>(): DataContextBuilder<TGameData> {
-        return new DataContextBuilder<TGameData>();
-    }
 
     /**
      * Creates a placeholder DAO that throws until game-specific DAOs are implemented.

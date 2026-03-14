@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { DataContext } from '@armoury/data-context';
+import { DataContext, DataContextBuilder } from '@armoury/data-context';
 import type { GameData } from '../src/dao/GameData.js';
 import { wh40k10eSystem } from '../src/system.js';
 import { GitHubClient } from '@armoury/clients-github';
@@ -35,7 +35,7 @@ describe.skipIf(!HAS_TOKEN)('DataContextBuilder integration', { timeout: 120_000
     beforeAll(async () => {
         const githubClient = createGitHubClient();
         sharedAdapter = await createInitializedAdapter();
-        sharedDc = await DataContext.builder<GameData>()
+        sharedDc = await DataContextBuilder.builder<GameData>()
             .system(wh40k10eSystem)
             .adapter(sharedAdapter)
             .github(githubClient)
@@ -63,7 +63,7 @@ describe.skipIf(!HAS_TOKEN)('DataContextBuilder integration', { timeout: 120_000
         expect(adapter.initialized).toBe(false);
 
         /** Build WITHOUT .github() — only tests adapter initialization. */
-        const dc = await DataContext.builder<GameData>().system(wh40k10eSystem).adapter(adapter).build();
+        const dc = await DataContextBuilder.builder<GameData>().system(wh40k10eSystem).adapter(adapter).build();
 
         expect(adapter.initialized).toBe(true);
 
@@ -85,7 +85,7 @@ describe.skipIf(!HAS_TOKEN)('DataContextBuilder integration', { timeout: 120_000
         const adapter = await createInitializedAdapter();
 
         /** Build WITHOUT .github() — only tests builder double-build. */
-        const builder = DataContext.builder<GameData>().system(wh40k10eSystem).adapter(adapter);
+        const builder = DataContextBuilder.builder<GameData>().system(wh40k10eSystem).adapter(adapter);
 
         const first = await builder.build();
         await first.close();
