@@ -24,6 +24,9 @@ setup('authenticate via Auth0', async ({ page }) => {
 
     setup.skip(!email || !password, 'E2E_USER_EMAIL and E2E_USER_PASSWORD are required for Auth0 login');
 
+    const authDomain = process.env['AUTH0_DOMAIN'];
+    setup.skip(!authDomain, 'AUTH0_DOMAIN is required for Auth0 redirect');
+
     // Navigate to the app's login route, which redirects to Auth0 Universal Login.
     await page.goto('/auth/login');
 
