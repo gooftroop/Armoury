@@ -61,3 +61,10 @@ infra/cdk/cdk.out
 
 # serverless framework cache
 .serverless/
+
+# playwright e2e auth state
+e2e/web/.auth/
+
+# playwright test artifacts
+playwright-report/
+test-results/
