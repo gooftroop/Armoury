@@ -39,7 +39,7 @@ jobs:
               run: npx turbo run build --filter=@armoury/web^...
 
             - name: Run e2e tests
-              run: npx playwright test --config e2e/web/playwright.config.ts
+              run: npx playwright test --config src/web/e2e/playwright.config.ts
               env:
                   CI: 'true'
                   AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}

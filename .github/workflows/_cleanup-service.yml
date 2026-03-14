@@ -74,7 +74,7 @@ jobs:
               working-directory: ${{ inputs.working-directory }}
               env:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
-              run: serverless remove --stage pr-${{ github.event.pull_request.number }}
+              run: serverless remove --stage pr-${{ github.event.pull_request.number }} --param="authorizerArn=arn:aws:lambda:us-east-1:000000000000:function:cleanup-placeholder"
 
             - name: Delete REST routing rule
               if: inputs.service-short-name != ''

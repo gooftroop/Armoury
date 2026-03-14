@@ -65,7 +65,7 @@ infra/cdk/cdk.out
 .serverless/
 
 # playwright e2e auth state
-e2e/web/.auth/
+src/web/e2e/.auth/
 
 # playwright test artifacts
 playwright-report/

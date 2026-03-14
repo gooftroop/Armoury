@@ -48,7 +48,7 @@ test.describe('Landing Page (unauthenticated)', () => {
         expect(await tiles.count()).toBeGreaterThanOrEqual(1);
     });
 
-    test('system tiles show download overlay on hover', async ({ page }) => {
+    test('system tiles show download overlay on hover', async ({ page: _page }) => {
         const tiles = landingPage.getSystemTiles();
         const firstTile = tiles.first();
 

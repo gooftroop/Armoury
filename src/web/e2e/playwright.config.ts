@@ -5,21 +5,21 @@
  * for local dev, timeouts, retries, and CI-specific optimisations.
  *
  * @requirements
- * 1. Must define a "setup" project that performs Auth0 login and saves storageState.
+ * 1. Must define a "setup" project that forges an Auth0 session via generateSessionCookie.
  * 2. Must define a "chromium-authenticated" project that depends on setup.
  * 3. Must define a "chromium-public" project for unauthenticated tests (no storageState).
  * 4. Must configure webServer to start the Next.js dev server.
  * 5. Must use Chromium only in CI for speed.
  * 6. Must set sensible timeouts and retry policies.
- * 7. Must conditionally include authenticated projects only when Auth0 is configured.
+ * 7. Must conditionally include authenticated projects only when AUTH0_SECRET is set.
  */
 
 import { defineConfig, devices } from '@playwright/test';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Absolute path to the monorepo root (two levels up from e2e/web/). */
-const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+/** Absolute path to the monorepo root (three levels up from src/web/e2e/). */
+const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 /** Directory where authenticated session state is persisted. */
 const AUTH_STATE_DIR = './.auth';
@@ -27,10 +27,11 @@ const AUTH_STATE_DIR = './.auth';
 /** Path to the authenticated user's storage state file. */
 const AUTH_STATE_PATH = `${AUTH_STATE_DIR}/user.json`;
 
-/** Whether Auth0 environment variables are present (controls authenticated test inclusion). */
-const hasAuth0 = Boolean(
-    process.env['AUTH0_DOMAIN'] && process.env['E2E_USER_EMAIL'] && process.env['E2E_USER_PASSWORD'],
-);
+/**
+ * Whether AUTH0_SECRET is available (controls authenticated test inclusion).
+ * The forged-cookie approach only needs the secret — no real Auth0 credentials required.
+ */
+const hasAuth0 = Boolean(process.env['AUTH0_SECRET']);
 
 export default defineConfig({
     testDir: './tests',
@@ -53,7 +54,7 @@ export default defineConfig({
     },
 
     projects: [
-        // Auth0 setup + authenticated tests — only when credentials are available.
+        // Auth0 setup + authenticated tests — only when AUTH0_SECRET is available.
         ...(hasAuth0
             ? [
                   {
