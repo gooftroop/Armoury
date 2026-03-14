@@ -11,6 +11,7 @@
  * 4. Must configure webServer to start the Next.js dev server.
  * 5. Must use Chromium only in CI for speed.
  * 6. Must set sensible timeouts and retry policies.
+ * 7. Must conditionally include authenticated projects only when Auth0 is configured.
  */
 
 import { defineConfig, devices } from '@playwright/test';
@@ -25,6 +26,11 @@ const AUTH_STATE_DIR = './.auth';
 
 /** Path to the authenticated user's storage state file. */
 const AUTH_STATE_PATH = `${AUTH_STATE_DIR}/user.json`;
+
+/** Whether Auth0 environment variables are present (controls authenticated test inclusion). */
+const hasAuth0 = Boolean(
+    process.env['AUTH0_DOMAIN'] && process.env['E2E_USER_EMAIL'] && process.env['E2E_USER_PASSWORD'],
+);
 
 export default defineConfig({
     testDir: './tests',
@@ -47,20 +53,25 @@ export default defineConfig({
     },
 
     projects: [
-        {
-            name: 'setup',
-            testMatch: /auth\/setup\.ts/,
-            testDir: '.',
-        },
-        {
-            name: 'chromium-authenticated',
-            use: {
-                ...devices['Desktop Chrome'],
-                storageState: AUTH_STATE_PATH,
-            },
-            dependencies: ['setup'],
-            testIgnore: /unauthenticated\//,
-        },
+        // Auth0 setup + authenticated tests — only when credentials are available.
+        ...(hasAuth0
+            ? [
+                  {
+                      name: 'setup' as const,
+                      testMatch: /auth\/setup\.ts/,
+                      testDir: '.',
+                  },
+                  {
+                      name: 'chromium-authenticated' as const,
+                      use: {
+                          ...devices['Desktop Chrome'],
+                          storageState: AUTH_STATE_PATH,
+                      },
+                      dependencies: ['setup' as const],
+                      testIgnore: /unauthenticated\//,
+                  },
+              ]
+            : []),
         {
             name: 'chromium-public',
             use: {
