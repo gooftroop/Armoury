@@ -34,7 +34,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
     setRequestLocale(locale);
 
     const t = await getTranslations('landing');
-    const [session, manifests] = await Promise.all([auth0.getSession(), discoverSystemManifests()]);
+    const [session, manifests] = await Promise.all([auth0?.getSession() ?? null, discoverSystemManifests()]);
 
     const isAuthenticated = session !== null && session !== undefined;
 

@@ -22,19 +22,32 @@ const USER_AGENT = 'Armoury/1.0 (Community Tool)';
 const ALLOWED_HOST = 'wahapedia.ru';
 
 /**
- * Validates that a URL string points to wahapedia.ru.
+ * Validates that a URL string points to wahapedia.ru over HTTPS.
  *
- * @param url - The URL to validate.
- * @returns True if the URL is a valid wahapedia.ru URL.
+ * Parses the input, verifies the hostname and protocol, and returns
+ * a sanitised URL object. Returns null if validation fails.
+ *
+ * @param raw - The raw URL string to validate.
+ * @returns A validated URL object, or null if the URL is not allowed.
  */
-function isAllowedUrl(url: string): boolean {
-    try {
-        const parsed = new URL(url);
+function parseAllowedUrl(raw: string): URL | null {
+    let parsed: URL;
 
-        return parsed.hostname === ALLOWED_HOST || parsed.hostname.endsWith(`.${ALLOWED_HOST}`);
+    try {
+        parsed = new URL(raw);
     } catch {
-        return false;
+        return null;
     }
+
+    if (parsed.protocol !== 'https:') {
+        return null;
+    }
+
+    if (parsed.hostname !== ALLOWED_HOST && !parsed.hostname.endsWith(`.${ALLOWED_HOST}`)) {
+        return null;
+    }
+
+    return parsed;
 }
 
 /**
@@ -61,12 +74,14 @@ export async function POST(request: Request): Promise<Response> {
         return Response.json({ error: 'Missing required field: url' }, { status: 400 });
     }
 
-    if (!isAllowedUrl(url)) {
-        return Response.json({ error: `URL must point to ${ALLOWED_HOST}` }, { status: 403 });
+    const validatedUrl = parseAllowedUrl(url);
+
+    if (!validatedUrl) {
+        return Response.json({ error: `URL must point to ${ALLOWED_HOST} over HTTPS` }, { status: 403 });
     }
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(validatedUrl.href, {
             headers: { 'User-Agent': USER_AGENT },
         });
 

@@ -18,6 +18,9 @@ on:
             - 'e2e/web/**'
             - '.browserslistrc'
 
+permissions:
+    contents: read
+
 concurrency:
     group: web-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true

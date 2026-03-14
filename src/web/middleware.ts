@@ -5,9 +5,10 @@
  * All other requests pass through i18n locale detection and routing.
  *
  * @requirements
- * 1. Must delegate Auth0 routes to the Auth0 middleware.
+ * 1. Must delegate Auth0 routes to the Auth0 middleware when Auth0 is configured.
  * 2. Must delegate all other routes to the next-intl middleware.
  * 3. Must exclude static assets, API routes, and internal Next.js paths from middleware.
+ * 4. Must pass through to intl middleware when Auth0 is not configured (no crash).
  *
  * @module middleware
  */
@@ -30,8 +31,8 @@ const intlMiddleware = createIntlMiddleware(routing);
 export async function middleware(request: NextRequest): Promise<NextResponse> {
     const { pathname } = request.nextUrl;
 
-    /** Auth0 SDK routes — handled entirely by Auth0 middleware. */
-    if (pathname.startsWith('/auth/')) {
+    /** Auth0 SDK routes — handled entirely by Auth0 middleware (when configured). */
+    if (auth0 && pathname.startsWith('/auth/')) {
         return (await auth0.middleware(request)) as NextResponse;
     }
 
