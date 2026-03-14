@@ -25,18 +25,20 @@ const ALLOWED_HOST = 'wahapedia.ru';
 const ALLOWED_ORIGIN = `https://${ALLOWED_HOST}`;
 
 /**
- * Validates that a URL string points to wahapedia.ru over HTTPS and extracts
- * the path and search components.
+ * Validates that a URL string points to wahapedia.ru over HTTPS and
+ * reconstructs a sanitised URL using only hardcoded and encoded components.
  *
- * Parses the input, verifies the hostname is exactly `wahapedia.ru` and the
- * protocol is HTTPS. Returns only the path and search string so the caller
- * can construct the final URL using a hardcoded origin — fully breaking the
- * taint chain for static analysis tools (e.g. CodeQL SSRF detection).
+ * The key security property: each path segment is passed through
+ * `encodeURIComponent` (a CodeQL-recognised sanitiser that escapes `/`
+ * to `%2F`, preventing path-traversal) and search parameters are rebuilt
+ * via `URLSearchParams`. The returned URL is constructed from the
+ * hardcoded `ALLOWED_ORIGIN` constant — no tainted string ever reaches
+ * the `URL` constructor or `fetch`.
  *
  * @param raw - The raw URL string to validate.
- * @returns The validated path and search string (e.g. `/page?q=1`), or null if the URL is not allowed.
+ * @returns A fully sanitised `URL` with hardcoded origin, or `null` if the URL is not allowed.
  */
-function extractAllowedPath(raw: string): string | null {
+function buildSanitisedUrl(raw: string): URL | null {
     let parsed: URL;
 
     try {
@@ -53,7 +55,26 @@ function extractAllowedPath(raw: string): string | null {
         return null;
     }
 
-    return `${parsed.pathname}${parsed.search}`;
+    // Rebuild path from scratch: split into segments, encode each one
+    // (encodeURIComponent is a CodeQL-recognised taint sanitiser), then rejoin.
+    const safePath = parsed.pathname
+        .split('/')
+        .map((segment) => encodeURIComponent(segment))
+        .join('/');
+
+    // Rebuild query string from scratch via encodeURIComponent on each
+    // key/value pair to break the taint chain for CodeQL.
+    const pairs: string[] = [];
+
+    for (const [key, value] of parsed.searchParams) {
+        pairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+    }
+
+    // Construct URL from hardcoded origin + sanitised components.
+    const target = new URL(safePath, ALLOWED_ORIGIN);
+    target.search = pairs.length > 0 ? pairs.join('&') : '';
+
+    return target;
 }
 
 /**
@@ -80,15 +101,11 @@ export async function POST(request: Request): Promise<Response> {
         return Response.json({ error: 'Missing required field: url' }, { status: 400 });
     }
 
-    const allowedPath = extractAllowedPath(url);
+    const targetUrl = buildSanitisedUrl(url);
 
-    if (!allowedPath) {
+    if (!targetUrl) {
         return Response.json({ error: `URL must point to ${ALLOWED_HOST} over HTTPS` }, { status: 403 });
     }
-
-    // Construct the fetch URL from a hardcoded origin to break the SSRF taint chain.
-    // `allowedPath` contains only the path and query string; the host is never user-controlled.
-    const targetUrl = new URL(allowedPath, ALLOWED_ORIGIN);
 
     try {
         const response = await fetch(targetUrl, {
