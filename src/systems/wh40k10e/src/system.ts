@@ -288,17 +288,17 @@ class Wh40k10eSystem implements GameSystem {
         }
 
         registerEntityCodec('factionData', {
-            serialize: (entity: Record<string, unknown>) => ({ ...entity }),
+            serialize: (entity: unknown) => ({ ...(entity as Record<string, unknown>) }),
             hydrate: (raw: unknown) => hydrateFactionData(raw),
         });
 
         registerEntityCodec('coreRules', {
-            serialize: (entity: Record<string, unknown>) => ({ ...entity }),
+            serialize: (entity: unknown) => ({ ...(entity as Record<string, unknown>) }),
             hydrate: (raw: unknown) => hydrateCoreRules(raw),
         });
 
         registerEntityCodec('chapterApproved', {
-            serialize: (entity: Record<string, unknown>) => ({ ...entity }),
+            serialize: (entity: unknown) => ({ ...(entity as Record<string, unknown>) }),
             hydrate: (raw: unknown) => hydrateChapterApproved(raw),
         });
 
