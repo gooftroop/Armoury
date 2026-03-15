@@ -22,6 +22,7 @@
         "build": "ESBUILD_ENTRIES=src/index.ts,src/system.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
         "test": "vitest run",
         "test:integration": "vitest run --config vitest.integration.config.ts",
+        "test:e2e": "vitest run --config vitest.e2e.config.ts",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
         "format": "prettier --write .",
