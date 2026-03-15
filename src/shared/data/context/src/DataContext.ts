@@ -77,7 +77,6 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
         await this.adapter.close();
     }
 
-
     /**
      * Creates a placeholder DAO that throws until game-specific DAOs are implemented.
      * @returns Placeholder army DAO implementation.
