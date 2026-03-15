@@ -1,6 +1,9 @@
 {
     "id": "wh40k10e",
     "splashText": "40K",
+    "title": "Warhammer 40,000",
+    "subtitle": "10th Edition",
+    "description": "Build and manage your armies for the 41st Millennium.",
     "gradientStart": "oklch(0.15 0.02 235)",
     "gradientMid": "oklch(0.25 0.06 235)",
     "gradientEnd": "oklch(0.18 0.04 260)",

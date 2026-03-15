@@ -73,7 +73,7 @@ Creates a Wh40kGameData context with all 40 faction and core rules DAOs.
 |-----------|------|-------------|
 | `deps` | `Wh40kGameDataDeps` | Object containing all 40 DAO instances (3 core + 37 factions) |
 
-**Note:** This constructor is typically called by `Wh40k10eSystem.createGameContext()`. Use `DataContext.builder()` instead of constructing directly.
+**Note:** This constructor is typically called by `Wh40k10eSystem.createGameContext()`. Use `DataContextBuilder.builder()` instead of constructing directly.
 
 ---
 
@@ -183,7 +183,7 @@ import { DataContext, Platform } from '@armoury/shared';
 import { wh40k10eSystem } from '@armoury/systems';
 import type { Wh40kGameData } from '@armoury/systems';
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -208,7 +208,7 @@ console.log(`Blood Angels has ${bloodAngels.units.length} units (includes SM bas
 
 ```typescript
 // Don't call sync() — data is fetched on-demand
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -223,7 +223,7 @@ const spaceMarines2 = await dc.game.spaceMarines; // instant
 ### Eager loading pattern
 
 ```typescript
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -239,7 +239,7 @@ const tyranids = await dc.game.tyranids; // instant
 ### Handle sync failures gracefully
 
 ```typescript
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -259,7 +259,7 @@ try {
 ### Access Chapter Approved missions
 
 ```typescript
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();

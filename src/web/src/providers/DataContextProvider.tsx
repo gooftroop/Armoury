@@ -115,11 +115,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const [systemSyncStates, setSystemSyncStates] = React.useState<Record<string, SystemSyncState>>({});
 
     /**
-     * Ref to track the active DataContext instance for cleanup.
-     * Prevents stale closure issues during concurrent enable/disable operations.
-     */
-    const dataContextRef = React.useRef<DataContext | null>(null);
-    /**
      * Enables a game system by building a DataContext and syncing its data.
      *
      * @param system - The GameSystem descriptor to enable.
@@ -137,11 +132,12 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
              * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
              */
-            const { DataContext: DC } = await import('@armoury/data-context');
+            const { DataContextBuilder } = await import('@armoury/data-context');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
+            const { createGitHubClient } = await import('@armoury/clients-github');
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
-            const dc = await DC.builder().system(system).adapter(adapter).build();
-            dataContextRef.current = dc;
+            const githubClient = createGitHubClient();
+            const dc = await DataContextBuilder.builder().system(system).adapter(adapter).github(githubClient).build();
             setDataContext(dc);
             setStatus('ready');
             setSystemSyncStates((prev) => ({
@@ -163,32 +159,34 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      *
      * @param systemId - The ID of the system to disable.
      */
-    const disableSystem = React.useCallback(async (systemId: string): Promise<void> => {
-        if (dataContextRef.current) {
-            await dataContextRef.current.close();
-            dataContextRef.current = null;
-        }
+    const disableSystem = React.useCallback(
+        async (systemId: string): Promise<void> => {
+            if (dataContext) {
+                await dataContext.close();
+            }
 
-        setDataContext(null);
-        setStatus('idle');
-        setError(undefined);
-        setSystemSyncStates((prev) => {
-            const next = { ...prev };
-            delete next[systemId];
+            setDataContext(null);
+            setStatus('idle');
+            setError(undefined);
+            setSystemSyncStates((prev) => {
+                const next = { ...prev };
+                delete next[systemId];
 
-            return next;
-        });
-    }, []);
+                return next;
+            });
+        },
+        [dataContext],
+    );
     /**
      * Cleanup on unmount: close the DataContext to release PGlite connections.
      */
     React.useEffect(() => {
         return () => {
-            if (dataContextRef.current) {
-                void dataContextRef.current.close();
+            if (dataContext) {
+                void dataContext.close();
             }
         };
-    }, []);
+    }, [dataContext]);
     const value = React.useMemo<DataContextValue>(
         () => ({
             dataContext,

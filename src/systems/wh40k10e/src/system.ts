@@ -87,6 +87,40 @@ import {
 } from '@/validation/rules/index.js';
 
 /**
+ * Creates a proxy fetch function for browser environments.
+ *
+ * In the browser, direct requests to wahapedia.ru are blocked by CORS.
+ * This returns a fetch wrapper that routes requests through the Next.js
+ * API proxy at `/api/wahapedia`. On the server (SSR, Node), returns
+ * undefined so the WahapediaClient uses the default global fetch.
+ *
+ * @returns A proxy fetch function in browser environments, or undefined on the server.
+ */
+function createProxyFetch(): typeof fetch | undefined {
+    if (typeof window === 'undefined') {
+        return undefined;
+    }
+
+    return async (input: RequestInfo | URL, _init?: RequestInit): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+
+        const response = await fetch('/api/wahapedia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({ error: 'Proxy request failed' }));
+
+            throw new Error((errorBody as { error?: string }).error ?? `Proxy HTTP ${response.status}`);
+        }
+
+        return response;
+    };
+}
+
+/**
  * Enum of entity kinds for wh40k10e data access.
  */
 export enum EntityKind {
@@ -280,7 +314,7 @@ class Wh40k10eSystem implements GameSystem {
      * @returns GameContextResult with armies, campaigns, matches DAOs and game data context
      */
     createGameContext(adapter: DatabaseAdapter, githubClient: IGitHubClient): GameContextResult {
-        const wahapediaClient = createWahapediaClient();
+        const wahapediaClient = createWahapediaClient(createProxyFetch());
         const chapterApprovedDAO = new ChapterApprovedDAO(adapter, wahapediaClient);
         const coreRulesDAO = new CoreRulesDAO(adapter, githubClient);
         const crusadeRulesDAO = new CrusadeRulesDAO(adapter, githubClient);

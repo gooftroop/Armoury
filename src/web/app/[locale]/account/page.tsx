@@ -45,7 +45,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
     setRequestLocale(locale);
 
     const t = await getTranslations('account');
-    const session = await auth0.getSession();
+    const session = (await auth0?.getSession()) ?? null;
 
     return (
         <main className="flex min-h-screen flex-col bg-base p-6 text-foreground">

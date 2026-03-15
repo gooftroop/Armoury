@@ -23,6 +23,11 @@ function createMissingGitHubClient(): IGitHubClient {
 
 /** Builder for creating DataContext instances with configured dependencies. */
 export class DataContextBuilder<TGameData = unknown> {
+    /** Creates a new DataContextBuilder instance. */
+    public static builder<TGameData = unknown>(): DataContextBuilder<TGameData> {
+        return new DataContextBuilder<TGameData>();
+    }
+
     private gameSystem: GameSystem | null = null;
     private adapterInstance: DatabaseAdapter | null = null;
     private githubClient: IGitHubClient | null = null;
@@ -71,7 +76,16 @@ export class DataContextBuilder<TGameData = unknown> {
         });
 
         if (gameContext.sync) {
-            await gameContext.sync();
+            const syncResult = await gameContext.sync();
+
+            if (syncResult.succeeded.length === 0 && syncResult.failures.length > 0) {
+                throw new Error(
+                    `Complete sync failure: all ${syncResult.total} DAOs failed. ` +
+                        `Failed: ${syncResult.failures.map((f) => f.dao).join(', ')}`,
+                );
+            }
+
+            dc.syncResult = syncResult;
         }
 
         return dc;

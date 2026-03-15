@@ -106,7 +106,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     setRequestLocale(locale);
 
     const t = await getTranslations('profile');
-    const session = await auth0.getSession();
+    const session = (await auth0?.getSession()) ?? null;
     const isAuthenticated = session !== null && session !== undefined;
 
     if (!isAuthenticated) {

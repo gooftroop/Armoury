@@ -28,7 +28,7 @@
 import * as React from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
 import type { GameSystemManifest, GameSystem } from '@armoury/data-dao';
@@ -93,7 +93,6 @@ function getSyncStatus(
  */
 export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): React.ReactElement {
     const t = useTranslations('landing');
-    const router = useRouter();
     const { systemSyncStates, enableSystem } = useDataContext();
     const [activatingId, setActivatingId] = React.useState<string | null>(null);
 
@@ -105,7 +104,7 @@ export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): Rea
     const handleTileClick = React.useCallback(
         async (manifest: GameSystemManifest) => {
             if (!isAuthenticated) {
-                router.push('/auth/login?returnTo=/');
+                window.location.href = '/auth/login?returnTo=/';
 
                 return;
             }
@@ -125,7 +124,7 @@ export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): Rea
 
             setActivatingId(null);
         },
-        [isAuthenticated, router, systemSyncStates, enableSystem],
+        [isAuthenticated, systemSyncStates, enableSystem],
     );
 
     return (
@@ -275,9 +274,15 @@ function SystemTile({
                 )}
             </div>
 
-            <div className="flex flex-col gap-2 p-5 pt-4">
-                <h2 className="text-lg font-semibold leading-tight text-primary">{manifest.splashText}</h2>
-                <p className="text-xs leading-relaxed text-secondary/70">{manifest.id}</p>
+            <div
+                className={cn(
+                    'flex flex-col gap-2 p-5 pt-4 transition-opacity duration-300',
+                    isSyncing && 'animate-pulse opacity-50',
+                )}
+            >
+                <h2 className="text-2xl font-semibold leading-tight text-foreground">{manifest.title}</h2>
+                <p className="-mt-1 text-sm text-tertiary">{manifest.subtitle}</p>
+                <p className="text-sm leading-relaxed text-tertiary">{manifest.description}</p>
             </div>
         </div>
     );

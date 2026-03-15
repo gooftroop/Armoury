@@ -198,7 +198,7 @@ import { DataContext, Platform } from '@armoury/shared';
 import { wh40k10eSystem } from '@armoury/systems';
 import type { Wh40kGameData } from '@armoury/systems';
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
