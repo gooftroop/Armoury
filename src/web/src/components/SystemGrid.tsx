@@ -281,9 +281,9 @@ function SystemTile({
                     isSyncing && 'animate-pulse opacity-50',
                 )}
             >
-                <h2 className="text-2xl font-semibold leading-tight text-primary">{manifest.title}</h2>
-                <p className="-mt-1 text-sm text-secondary">{manifest.subtitle}</p>
-                <p className="text-sm leading-relaxed text-secondary">{manifest.description}</p>
+                <h2 className="text-2xl font-semibold leading-tight text-foreground">{manifest.title}</h2>
+                <p className="-mt-1 text-sm text-tertiary">{manifest.subtitle}</p>
+                <p className="text-sm leading-relaxed text-tertiary">{manifest.description}</p>
             </div>
         </div>
     );
