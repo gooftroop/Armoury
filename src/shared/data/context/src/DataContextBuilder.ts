@@ -76,7 +76,16 @@ export class DataContextBuilder<TGameData = unknown> {
         });
 
         if (gameContext.sync) {
-            await gameContext.sync();
+            const syncResult = await gameContext.sync();
+
+            if (syncResult.succeeded.length === 0 && syncResult.failures.length > 0) {
+                throw new Error(
+                    `Complete sync failure: all ${syncResult.total} DAOs failed. ` +
+                        `Failed: ${syncResult.failures.map((f) => f.dao).join(', ')}`,
+                );
+            }
+
+            dc.syncResult = syncResult;
         }
 
         return dc;

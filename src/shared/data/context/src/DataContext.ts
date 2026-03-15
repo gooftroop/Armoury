@@ -1,7 +1,7 @@
 import type { DatabaseAdapter } from '@armoury/data-dao';
 import type { IGitHubClient } from '@armoury/clients-github';
 import type { GameSystem } from '@armoury/data-dao';
-import type { ArmyDAO, CampaignDAO, GameContextResult } from '@armoury/data-dao';
+import type { ArmyDAO, CampaignDAO, GameContextResult, SyncResult } from '@armoury/data-dao';
 import { AccountDAO } from '@armoury/data-dao';
 import { FriendDAO } from '@armoury/data-dao';
 import { MatchDAO } from '@armoury/data-dao';
@@ -25,6 +25,8 @@ export interface DataContextShape<TGameData = unknown> {
     readonly campaigns: CampaignDAO;
     /** Game-specific data context. */
     readonly game: TGameData;
+    /** Result from the most recent sync operation. Undefined if sync hasn't run. */
+    readonly syncResult?: SyncResult;
     /** Closes the underlying adapter connection. */
     close(): Promise<void>;
 }
@@ -40,6 +42,7 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
     public armies: ArmyDAO;
     public campaigns: CampaignDAO;
     public game: TGameData;
+    public syncResult?: SyncResult;
 
     private readonly adapter: DatabaseAdapter;
     private readonly gameSystem: GameSystem;

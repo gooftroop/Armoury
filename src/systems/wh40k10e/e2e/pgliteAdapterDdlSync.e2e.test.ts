@@ -106,7 +106,7 @@ describe('PGliteAdapter DDL table creation', () => {
 describe.skipIf(!HAS_TOKEN)('System sync pipeline (real BSData)', { timeout: 180_000 }, () => {
     let adapter: MockDatabaseAdapter;
     let game: GameData;
-    let syncError: Error | null = null;
+    let syncResult: Awaited<ReturnType<GameData['sync']>>;
 
     beforeAll(async () => {
         adapter = new MockDatabaseAdapter();
@@ -118,14 +118,7 @@ describe.skipIf(!HAS_TOKEN)('System sync pipeline (real BSData)', { timeout: 180
         const gameContext = wh40k10eSystem.createGameContext(adapter, githubClient);
         game = gameContext.game as GameData;
 
-        // sync() throws on partial DAO failures. 3/40 DAOs reference BSData repos
-        // that no longer exist. We capture the error and verify it only contains
-        // the known-missing DAOs — any other failure indicates a real bug.
-        try {
-            await game.sync();
-        } catch (error) {
-            syncError = error instanceof Error ? error : new Error(String(error));
-        }
+        syncResult = await game.sync();
     });
 
     afterAll(async () => {
@@ -135,21 +128,23 @@ describe.skipIf(!HAS_TOKEN)('System sync pipeline (real BSData)', { timeout: 180
     // -- REQ-SYSTEM-SYNC --
 
     it('sync fails only for known-missing DAOs, not for schema or adapter issues', () => {
-        // sync should have thrown because 3 DAOs reference missing BSData repos
-        expect(syncError).not.toBeNull();
-        expect(syncError!.message).toContain('Failed to sync');
+        expect(syncResult.success).toBe(false);
+        expect(syncResult.failures).toHaveLength(3);
 
-        // Every known-missing DAO should be in the error
+        const failedDaos = syncResult.failures.map((failure) => failure.dao);
+
         for (const dao of KNOWN_MISSING_DAOS) {
-            expect(syncError!.message).toContain(dao);
+            expect(failedDaos).toContain(dao);
         }
 
-        // The error should report exactly 3 failures, not 40
-        expect(syncError!.message).toContain('3/40');
+        expect(syncResult.total).toBe(40);
+        expect(syncResult.succeeded).toHaveLength(37);
 
-        // All failures should be "Not Found" errors, not schema/adapter errors
-        expect(syncError!.message).not.toContain('Unknown entity store');
-        expect(syncError!.message).not.toContain('plugin schema registered');
+        for (const failure of syncResult.failures) {
+            expect(failure.error).toContain('Not Found');
+            expect(failure.error).not.toContain('Unknown entity store');
+            expect(failure.error).not.toContain('plugin schema registered');
+        }
     });
 
     it('sync status records are written for successfully synced DAOs', async () => {

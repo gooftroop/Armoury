@@ -110,13 +110,20 @@ describe('GameData (integration)', () => {
         }
     });
 
-    it('sync() invokes all DAO load() calls and throws on failures', async () => {
+    it('sync() invokes all DAO load() calls and reports failures', async () => {
         const deps = createMockDeps();
         deps.coreRulesDAO = createFailingDAO('core rules failed');
         deps.spaceMarinesDAO = createFailingDAO('space marines failed');
 
         const gameData = new GameData(deps);
-        await expect(gameData.sync()).rejects.toThrow('Failed to sync 2/40 DAOs: CoreRules, SpaceMarines');
+        const result = await gameData.sync();
+
+        expect(result.success).toBe(false);
+        expect(result.total).toBe(40);
+        expect(result.failures).toHaveLength(2);
+        expect(result.failures.map((failure) => failure.dao)).toEqual(
+            expect.arrayContaining(['CoreRules', 'SpaceMarines']),
+        );
 
         const daoKeys: (keyof GameDataDeps)[] = [
             'chapterApprovedDAO',

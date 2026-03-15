@@ -15,9 +15,10 @@
  * it to the UI.
  *
  * @requirements
- * 1. When gameContext.sync() rejects, build() must reject with the same error.
- * 2. When gameContext.sync() resolves, build() must resolve with a valid DataContext.
- * 3. When gameContext.sync is undefined, build() must resolve normally (no-op sync).
+ * 1. When gameContext.sync() returns partial failures, build() must resolve and expose syncResult.
+ * 2. When gameContext.sync() reports total failure, build() must reject with complete failure details.
+ * 3. When gameContext.sync() resolves successfully, build() must resolve with a valid DataContext.
+ * 4. When gameContext.sync is undefined, build() must resolve normally (no-op sync).
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -25,6 +26,7 @@ import { DataContextBuilder } from '@armoury/data-context';
 import type {
     GameSystem,
     GameContextResult,
+    SyncResult,
     ArmyDAO,
     CampaignDAO,
     DatabaseAdapter,
@@ -164,11 +166,23 @@ function createStubCampaignDAO(): CampaignDAO {
     };
 }
 
+function makeSyncResult(overrides: Partial<SyncResult> = {}): SyncResult {
+    const success = overrides.success ?? true;
+
+    return {
+        success,
+        total: overrides.total ?? 40,
+        succeeded: overrides.succeeded ?? (success ? ['CoreRules'] : []),
+        failures: overrides.failures ?? [],
+        timestamp: overrides.timestamp ?? new Date().toISOString(),
+    };
+}
+
 /**
  * Creates a stub GameSystem whose sync() behaviour is controllable via the returned
  * `syncFn` mock. This allows each test to decide whether sync resolves or rejects.
  */
-function createStubGameSystem(syncFn?: () => Promise<void>): {
+function createStubGameSystem(syncFn?: () => Promise<SyncResult>): {
     system: GameSystem;
     gameContext: GameContextResult;
 } {
@@ -176,7 +190,7 @@ function createStubGameSystem(syncFn?: () => Promise<void>): {
         armies: createStubArmyDAO(),
         campaigns: createStubCampaignDAO(),
         game: {},
-        sync: syncFn ?? vi.fn().mockResolvedValue(undefined),
+        sync: syncFn ?? vi.fn().mockResolvedValue(makeSyncResult()),
     };
 
     const system: GameSystem = {
@@ -216,66 +230,66 @@ describe('System Download Chain Integration', () => {
     });
 
     describe('sync failure propagation', () => {
-        it('rejects build() when gameContext.sync() throws a DAO sync error', async () => {
-            const syncError = new Error('Failed to sync 3/38 DAOs: ChapterApproved, CoreRules, Aeldari');
-            const syncFn = vi.fn().mockRejectedValue(syncError);
+        it('resolves build() and stores syncResult when sync has partial failures', async () => {
+            const syncFn = vi.fn().mockResolvedValue(
+                makeSyncResult({
+                    success: false,
+                    total: 40,
+                    succeeded: ['CoreRules', 'SpaceMarines'],
+                    failures: [
+                        { dao: 'ChapterApproved', error: 'Mock DAO failure' },
+                        { dao: 'Aeldari', error: 'Mock DAO failure' },
+                    ],
+                }),
+            );
             const { system } = createStubGameSystem(syncFn);
 
-            await expect(DataContextBuilder.builder().system(system).adapter(mockAdapter).build()).rejects.toThrow(
-                'Failed to sync 3/38 DAOs: ChapterApproved, CoreRules, Aeldari',
+            const dc = (await new DataContextBuilder().system(system).adapter(mockAdapter).build()) as {
+                syncResult?: SyncResult;
+            };
+
+            expect(dc.syncResult?.success).toBe(false);
+            expect(dc.syncResult?.failures).toHaveLength(2);
+            expect(dc.syncResult?.failures.map((failure: { dao: string }) => failure.dao)).toEqual(
+                expect.arrayContaining(['ChapterApproved', 'Aeldari']),
             );
         });
 
-        it('rejects build() when gameContext.sync() throws a network error', async () => {
-            const networkError = new Error('fetch failed: ECONNREFUSED');
-            const syncFn = vi.fn().mockRejectedValue(networkError);
-            const { system } = createStubGameSystem(syncFn);
-
-            await expect(DataContextBuilder.builder().system(system).adapter(mockAdapter).build()).rejects.toThrow(
-                'fetch failed: ECONNREFUSED',
+        it('rejects build() when gameContext.sync() reports complete failure', async () => {
+            const syncFn = vi.fn().mockResolvedValue(
+                makeSyncResult({
+                    success: false,
+                    total: 3,
+                    succeeded: [],
+                    failures: [
+                        { dao: 'CoreRules', error: 'Not Found' },
+                        { dao: 'ChapterApproved', error: 'Not Found' },
+                        { dao: 'Aeldari', error: 'Not Found' },
+                    ],
+                }),
             );
-        });
-
-        it('preserves the original error type through the chain', async () => {
-            class WahapediaError extends Error {
-                constructor(
-                    message: string,
-                    public readonly statusCode: number,
-                ) {
-                    super(message);
-                    this.name = 'WahapediaError';
-                    Object.setPrototypeOf(this, WahapediaError.prototype);
-                }
-            }
-
-            const wahapediaError = new WahapediaError('Wahapedia returned 503', 503);
-            const syncFn = vi.fn().mockRejectedValue(wahapediaError);
             const { system } = createStubGameSystem(syncFn);
 
-            try {
-                await DataContextBuilder.builder().system(system).adapter(mockAdapter).build();
-                // If we reach here, the test should fail
-                expect.unreachable('build() should have thrown');
-            } catch (err) {
-                expect(err).toBeInstanceOf(WahapediaError);
-                expect((err as WahapediaError).statusCode).toBe(503);
-                expect((err as WahapediaError).message).toBe('Wahapedia returned 503');
-            }
+            await expect(new DataContextBuilder().system(system).adapter(mockAdapter).build()).rejects.toThrow(
+                'Complete sync failure: all 3 DAOs failed. Failed: CoreRules, ChapterApproved, Aeldari',
+            );
         });
     });
 
     describe('sync success path', () => {
         it('resolves build() with a valid DataContext when sync succeeds', async () => {
-            const syncFn = vi.fn().mockResolvedValue(undefined);
+            const syncFn = vi.fn().mockResolvedValue(makeSyncResult({ success: true, failures: [] }));
             const { system } = createStubGameSystem(syncFn);
 
-            const dc = await DataContextBuilder.builder().system(system).adapter(mockAdapter).build();
+            const dc = await new DataContextBuilder().system(system).adapter(mockAdapter).build();
 
             expect(dc).toBeDefined();
             expect(dc.armies).toBeDefined();
             expect(dc.campaigns).toBeDefined();
             expect(dc.game).toBeDefined();
             expect(syncFn).toHaveBeenCalledOnce();
+            expect((dc as { syncResult?: SyncResult }).syncResult?.success).toBe(true);
+            expect((dc as { syncResult?: SyncResult }).syncResult?.failures).toHaveLength(0);
 
             await dc.close();
         });
@@ -308,7 +322,7 @@ describe('System Download Chain Integration', () => {
                 createGameContext: vi.fn(() => gameContext),
             };
 
-            const dc = await DataContextBuilder.builder().system(system).adapter(mockAdapter).build();
+            const dc = await new DataContextBuilder().system(system).adapter(mockAdapter).build();
 
             expect(dc).toBeDefined();
 
@@ -323,19 +337,25 @@ describe('System Download Chain Integration', () => {
          * block must receive a meaningful error message to display.
          */
         it('catch block receives a meaningful error message from sync failure', async () => {
-            const syncError = new Error('Failed to sync 1/38 DAOs: ChapterApproved');
-            const syncFn = vi.fn().mockRejectedValue(syncError);
+            const syncFn = vi.fn().mockResolvedValue(
+                makeSyncResult({
+                    success: false,
+                    total: 1,
+                    succeeded: [],
+                    failures: [{ dao: 'ChapterApproved', error: 'Not Found' }],
+                }),
+            );
             const { system } = createStubGameSystem(syncFn);
 
             let caughtMessage: string | undefined;
 
             try {
-                await DataContextBuilder.builder().system(system).adapter(mockAdapter).build();
+                await new DataContextBuilder().system(system).adapter(mockAdapter).build();
             } catch (err) {
                 caughtMessage = err instanceof Error ? err.message : 'Failed to initialize DataContext';
             }
 
-            expect(caughtMessage).toBe('Failed to sync 1/38 DAOs: ChapterApproved');
+            expect(caughtMessage).toBe('Complete sync failure: all 1 DAOs failed. Failed: ChapterApproved');
         });
 
         it('catch block handles non-Error throws gracefully', async () => {
@@ -346,7 +366,7 @@ describe('System Download Chain Integration', () => {
             let caughtMessage: string | undefined;
 
             try {
-                await DataContextBuilder.builder().system(system).adapter(mockAdapter).build();
+                await new DataContextBuilder().system(system).adapter(mockAdapter).build();
             } catch (err) {
                 // Mirrors DataContextProvider: err instanceof Error ? err.message : fallback
                 caughtMessage = err instanceof Error ? err.message : 'Failed to initialize DataContext';

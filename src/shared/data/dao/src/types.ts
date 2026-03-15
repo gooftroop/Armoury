@@ -35,18 +35,21 @@ export interface FileSyncStatus {
 }
 
 /**
- * Result of a file synchronization operation.
- * Provides summary of which files were updated and any errors encountered.
+ * Result of a data synchronization operation.
+ * Provides a summary of which DAOs synced successfully and which failed.
+ * Used by the UI to display partial sync failures (toast) or total failures (error state).
  */
 export interface SyncResult {
-    /** Whether the sync operation completed successfully (true even if some files had errors) */
+    /** Whether the sync operation completed without any failures. True only when failures is empty. */
     success: boolean;
-    /** List of file keys that were successfully updated */
-    filesUpdated: string[];
-    /** Array of errors encountered during sync, with file key and error message */
-    errors: Array<{ file: string; error: string }>;
-    /** Timestamp when the sync operation completed */
-    timestamp: Date;
+    /** Total number of DAOs that were attempted. */
+    total: number;
+    /** Names of DAOs that synced successfully. */
+    succeeded: string[];
+    /** DAOs that failed to sync, with the DAO name and error message. */
+    failures: Array<{ dao: string; error: string }>;
+    /** ISO 8601 timestamp of when the sync operation completed. */
+    timestamp: string;
 }
 
 /** Sort direction for ordered queries. */
@@ -184,7 +187,7 @@ export interface GameContextResult<TGameData = unknown> {
     campaigns?: CampaignDAO;
     game?: TGameData;
     /** Eagerly syncs all reference data. Called by DataContextBuilder before returning. */
-    sync?: () => Promise<void>;
+    sync?: () => Promise<SyncResult>;
 }
 
 /** Defines a kind of entity that a game system plugin registers. */

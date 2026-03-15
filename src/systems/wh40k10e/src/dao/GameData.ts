@@ -20,6 +20,7 @@ import type { WhiteScarsDAO } from '@/dao/factions/WhiteScarsDAO.js';
 import type { NecronDAO } from '@/dao/factions/NecronDAO.js';
 import type { AeldariDAO } from '@/dao/factions/AeldariDAO.js';
 import type { DrukhariDAO } from '@/dao/factions/DrukhariDAO.js';
+import type { SyncResult } from '@armoury/data-dao';
 import type { ChaosSpaceMarinesDAO } from '@/dao/factions/ChaosSpaceMarinesDAO.js';
 import type { ChaosDaemonsDAO } from '@/dao/factions/ChaosDaemonsDAO.js';
 import type { ChaosKnightsDAO } from '@/dao/factions/ChaosKnightsDAO.js';
@@ -107,13 +108,12 @@ export class GameData {
      * Eagerly syncs all reference data DAOs in parallel.
      *
      * Uses Promise.allSettled so one DAO failure does not abort the others.
-     * After all settle, if any failed, throws an error listing the failed DAOs
-     * so the caller (DataContextBuilder / DataContextProvider) can surface
-     * the failure to the user.
+     * Returns a SyncResult describing which DAOs succeeded and which failed,
+     * allowing the caller to decide how to handle partial or total failures.
      *
-     * @throws Error if one or more DAOs fail to sync, with a message listing failures.
+     * @returns SyncResult with succeeded/failed DAO details.
      */
-    async sync(): Promise<void> {
+    async sync(): Promise<SyncResult> {
         const daoEntries: Array<[string, Promise<unknown>]> = [
             ['ChapterApproved', this.deps.chapterApprovedDAO.load()],
             ['CoreRules', this.deps.coreRulesDAO.load()],
@@ -159,24 +159,28 @@ export class GameData {
 
         const results = await Promise.allSettled(daoEntries.map(([, promise]) => promise));
 
-        const failures = results
-            .map((result, index) => ({ result, name: daoEntries[index]![0] }))
-            .filter(
-                (entry): entry is { result: PromiseRejectedResult; name: string } => entry.result.status === 'rejected',
-            );
+        const succeeded: string[] = [];
+        const failures: Array<{ dao: string; error: string }> = [];
 
-        if (failures.length > 0) {
-            const details = failures
-                .map((f) => {
-                    const reason = f.result.reason instanceof Error ? f.result.reason.message : String(f.result.reason);
-                    return `  ${f.name}: ${reason}`;
-                })
-                .join('\n');
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i]!;
+            const name = daoEntries[i]![0]!;
 
-            throw new Error(
-                `Failed to sync ${failures.length}/${results.length} DAOs:\n${details}`,
-            );
+            if (result.status === 'fulfilled') {
+                succeeded.push(name);
+            } else {
+                const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
+                failures.push({ dao: name, error: reason });
+            }
         }
+
+        return {
+            success: failures.length === 0,
+            total: results.length,
+            succeeded,
+            failures,
+            timestamp: new Date().toISOString(),
+        };
     }
 
     // ===== Core =====
