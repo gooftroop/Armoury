@@ -134,8 +134,10 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              */
             const { DataContextBuilder } = await import('@armoury/data-context');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
+            const { createGitHubClient } = await import('@armoury/clients-github');
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
-            const dc = await DataContextBuilder.builder().system(system).adapter(adapter).build();
+            const githubClient = createGitHubClient();
+            const dc = await DataContextBuilder.builder().system(system).adapter(adapter).github(githubClient).build();
             setDataContext(dc);
             setStatus('ready');
             setSystemSyncStates((prev) => ({

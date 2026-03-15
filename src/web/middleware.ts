@@ -8,7 +8,7 @@
  * @requirements
  * 1. Must call auth0.middleware() on every request when Auth0 is configured (rolling sessions).
  * 2. Must return the Auth0 response directly for /auth/* routes (SDK-managed).
- * 3. Must delegate non-auth routes to the next-intl middleware for locale detection.
+ * 3. Must merge Auth0 response headers into the intl response (preserves session cookies).
  * 4. Must exclude static assets, API routes, and internal Next.js paths from middleware.
  * 5. Must pass through to intl middleware when Auth0 is not configured (no crash).
  *
@@ -47,10 +47,17 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
         }
 
         /**
-         * Non-auth routes: run intl middleware for locale detection, but preserve
-         * any headers/cookies set by the Auth0 middleware (session updates).
+         * Non-auth routes: run intl middleware for locale detection, but merge
+         * Auth0 response headers (especially Set-Cookie for session) into the
+         * intl response so rolling session cookies reach the browser.
          */
-        return intlMiddleware(request);
+        const intlResponse = intlMiddleware(request);
+
+        authResponse.headers.forEach((value, name) => {
+            intlResponse.headers.append(name, value);
+        });
+
+        return intlResponse;
     }
 
     /** Auth0 not configured — locale detection + routing only. */
