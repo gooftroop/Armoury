@@ -258,6 +258,12 @@ export interface GameSystemManifest {
     id: string;
     /** Short splash text displayed on the tile hero area (e.g., '40K'). */
     splashText: string;
+    /** Human-readable system title displayed on the tile card (e.g., 'Warhammer 40,000'). */
+    title: string;
+    /** Edition or version subtitle displayed below the title (e.g., '10th Edition'). */
+    subtitle: string;
+    /** Brief description of the system displayed on the tile card. */
+    description: string;
     /** CSS gradient start color for the tile hero (oklch format). */
     gradientStart: string;
     /** CSS gradient midpoint color for the tile hero (oklch format). */

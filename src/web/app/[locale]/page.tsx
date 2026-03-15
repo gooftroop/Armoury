@@ -79,7 +79,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
             <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.12em] text-highlight md:text-5xl lg:text-6xl">
                 {t('logo')}
             </h1>
-            <p className="mb-8 tracking-wide text-secondary">{t('tagline')}</p>
+            <p className="mb-8 tracking-wide text-tertiary">{t('tagline')}</p>
 
             {isAuthenticated && session.user && (
                 <div
@@ -112,18 +112,24 @@ export default async function LandingPage({ params }: LandingPageProps) {
 
             {!isAuthenticated && (
                 <div className="mb-8 flex flex-col items-center gap-3">
-                    <a
-                        href="/auth/login"
-                        className="text-sm text-secondary transition-colors hover:text-secondary-hover"
-                    >
-                        {t('auth.signIn')}
-                    </a>
-                    <a
-                        href="/auth/login?screen_hint=signup"
-                        className="text-sm text-secondary transition-colors hover:text-secondary-hover"
-                    >
-                        {t('auth.createAccount')}
-                    </a>
+                    <p className="text-sm text-foreground">
+                        {t('auth.signInPrefix')}{' '}
+                        <a
+                            href="/auth/login"
+                            className="text-secondary transition-colors hover:text-secondary-hover"
+                        >
+                            {t('auth.signInLink')}
+                        </a>
+                    </p>
+                    <p className="text-sm text-foreground">
+                        {t('auth.createAccountPrefix')}{' '}
+                        <a
+                            href="/auth/login?screen_hint=signup"
+                            className="text-secondary transition-colors hover:text-secondary-hover"
+                        >
+                            {t('auth.createAccountLink')}
+                        </a>
+                    </p>
                 </div>
             )}
 

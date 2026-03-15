@@ -275,9 +275,15 @@ function SystemTile({
                 )}
             </div>
 
-            <div className="flex flex-col gap-2 p-5 pt-4">
-                <h2 className="text-lg font-semibold leading-tight text-primary">{manifest.splashText}</h2>
-                <p className="text-xs leading-relaxed text-secondary/70">{manifest.id}</p>
+            <div
+                className={cn(
+                    'flex flex-col gap-2 p-5 pt-4 transition-opacity duration-300',
+                    isSyncing && 'animate-pulse opacity-50',
+                )}
+            >
+                <h2 className="text-2xl font-semibold leading-tight text-primary">{manifest.title}</h2>
+                <p className="-mt-1 text-sm text-secondary">{manifest.subtitle}</p>
+                <p className="text-sm leading-relaxed text-secondary">{manifest.description}</p>
             </div>
         </div>
     );
