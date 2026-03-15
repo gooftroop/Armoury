@@ -4,17 +4,21 @@
     "private": true,
     "type": "module",
     "main": "./dist/node/index.js",
-    "types": "./dist/index.d.ts",
+    "types": "./dist/web/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
+            "react-native": {
+                "types": "./dist/mobile/index.mobile.d.ts",
+                "default": "./dist/mobile/index.mobile.js"
+            },
+            "types": "./dist/web/index.d.ts",
             "browser": "./dist/browser/index.js",
             "default": "./dist/node/index.js"
         }
     },
     "scripts": {
-        "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
-        "generate:types": "tsc -p tsconfig.build.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\"",
+        "build": "node --import=tsx ./build.js",
+        "generate:types": "tsc -p tsconfig.build.json && tsc -p tsconfig.mobile.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\" -- dist/web && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\" -- dist/mobile",
         "test": "vitest run",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
@@ -30,7 +34,14 @@
     },
     "peerDependencies": {
         "react": "^18 || ^19",
-        "react-dom": "^18 || ^19"
+        "react-dom": "^18 || ^19",
+        "react-native": ">=0.74",
+        "tamagui": "^2.0.0"
+    },
+    "peerDependenciesMeta": {
+        "react-dom": { "optional": true },
+        "react-native": { "optional": true },
+        "tamagui": { "optional": true }
     },
     "devDependencies": {
         "@armoury/eslint": "*",
@@ -42,6 +53,8 @@
         "@types/react-dom": "^19.0.0",
         "eslint": "^10.0.3",
         "prettier": "^3.0.0",
+        "react-native": "~0.79.0",
+        "tamagui": "2.0.0-rc.7",
         "vitest": "^4.0.0"
     },
     "lint-staged": {
