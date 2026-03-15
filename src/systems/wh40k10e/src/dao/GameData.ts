@@ -166,9 +166,16 @@ export class GameData {
             );
 
         if (failures.length > 0) {
-            const names = failures.map((f) => f.name).join(', ');
+            const details = failures
+                .map((f) => {
+                    const reason = f.result.reason instanceof Error ? f.result.reason.message : String(f.result.reason);
+                    return `  ${f.name}: ${reason}`;
+                })
+                .join('\n');
 
-            throw new Error(`Failed to sync ${failures.length}/${results.length} DAOs: ${names}`);
+            throw new Error(
+                `Failed to sync ${failures.length}/${results.length} DAOs:\n${details}`,
+            );
         }
     }
 
