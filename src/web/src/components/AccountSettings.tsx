@@ -181,9 +181,9 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
         }
     }, [saveState, t]);
 
-    /** Extract system keys from account data (future-proof for when Account gains a systems field). */
+    /** Extract system keys from account data. */
     const systemKeys: string[] = React.useMemo(() => {
-        const account = accountQuery.data as (Account & { systems?: Record<string, unknown> }) | undefined;
+        const account = accountQuery.data;
 
         if (!account?.systems) {
             return [];

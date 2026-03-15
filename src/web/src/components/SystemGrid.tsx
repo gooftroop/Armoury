@@ -21,7 +21,7 @@
  * 6. Must show an error message with retry when sync fails.
  * 7. Must remove the overlay and show the tile as active once synced.
  * 8. Must not hardcode any game system display names.
- *
+ * 9. Must persist enabled system to user account after successful sync (when userId is provided).
  * @module system-grid
  */
 
@@ -32,6 +32,9 @@ import { useTranslations } from 'next-intl';
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
 import type { GameSystemManifest, GameSystem } from '@armoury/data-dao';
+
+import { getAccessToken } from '@auth0/nextjs-auth0/client';
+import { mutationUpdateAccount } from '@armoury/clients-users';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
@@ -45,6 +48,8 @@ export interface SystemGridProps {
     manifests: GameSystemManifest[];
     /** Whether the current user has an active Auth0 session. */
     isAuthenticated: boolean;
+    /** Auth0 user ID (sub claim). Required for persisting enabled systems to the account. */
+    userId?: string;
 }
 
 /**
@@ -91,7 +96,7 @@ function getSyncStatus(
  * @param props - Component props.
  * @returns The rendered system grid.
  */
-export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): React.ReactElement {
+export function SystemGrid({ manifests, isAuthenticated, userId }: SystemGridProps): React.ReactElement {
     const t = useTranslations('landing');
     const { systemSyncStates, enableSystem } = useDataContext();
     const [activatingId, setActivatingId] = React.useState<string | null>(null);
@@ -120,11 +125,32 @@ export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): Rea
 
             if (system) {
                 await enableSystem(system);
+
+                // Persist the enabled system to the user's account after successful sync.
+                if (userId) {
+                    try {
+                        const token = await getAccessToken();
+                        const authorization = `Bearer ${token}`;
+                        const mutation = mutationUpdateAccount(authorization, { userId }, {
+                            systems: {
+                                [manifest.id]: {
+                                    enabled: true,
+                                    lastSyncedAt: new Date().toISOString(),
+                                },
+                            },
+                        });
+
+                        await mutation.mutationFn();
+                    } catch {
+                        // Account persistence is best-effort — sync already succeeded,
+                        // so we do not surface this error to the user.
+                    }
+                }
             }
 
             setActivatingId(null);
         },
-        [isAuthenticated, systemSyncStates, enableSystem],
+        [isAuthenticated, systemSyncStates, enableSystem, userId],
     );
 
     return (

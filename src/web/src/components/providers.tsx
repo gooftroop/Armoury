@@ -3,13 +3,13 @@
 /**
  * @requirements
  * 1. Must wrap children in a QueryClientProvider.
- * 2. Must use the module-level singleton QueryClient.
+ * 2. Must use the SSR-safe getQueryClient factory (not a module-level singleton).
  * 3. Must wrap children in a DataContextProvider for game system lifecycle management.
  * 4. Does NOT include NextIntlClientProvider.
  */
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient.js';
+import { getQueryClient } from '@/lib/getQueryClient.js';
 import { DataContextProvider } from '@/providers/DataContextProvider.js';
 
 /**
@@ -27,6 +27,8 @@ export interface ProvidersProps {
  * @returns The wrapped React tree.
  */
 export function Providers({ children }: ProvidersProps) {
+    const queryClient = getQueryClient();
+
     return (
         <QueryClientProvider client={queryClient}>
             <DataContextProvider>{children}</DataContextProvider>
