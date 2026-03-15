@@ -26,8 +26,7 @@ function makeQueryClient(): QueryClient {
                 staleTime: 3_600_000,
             },
             dehydrate: {
-                shouldDehydrateQuery: (query) =>
-                    defaultShouldDehydrateQuery(query) || query.state.status === 'pending',
+                shouldDehydrateQuery: (query) => defaultShouldDehydrateQuery(query) || query.state.status === 'pending',
             },
         },
     });

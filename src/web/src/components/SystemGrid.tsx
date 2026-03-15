@@ -131,14 +131,18 @@ export function SystemGrid({ manifests, isAuthenticated, userId }: SystemGridPro
                     try {
                         const token = await getAccessToken();
                         const authorization = `Bearer ${token}`;
-                        const mutation = mutationUpdateAccount(authorization, { userId }, {
-                            systems: {
-                                [manifest.id]: {
-                                    enabled: true,
-                                    lastSyncedAt: new Date().toISOString(),
+                        const mutation = mutationUpdateAccount(
+                            authorization,
+                            { userId },
+                            {
+                                systems: {
+                                    [manifest.id]: {
+                                        enabled: true,
+                                        lastSyncedAt: new Date().toISOString(),
+                                    },
                                 },
                             },
-                        });
+                        );
 
                         await mutation.mutationFn();
                     } catch {
