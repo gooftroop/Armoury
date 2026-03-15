@@ -28,7 +28,7 @@
 import * as React from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
 import type { GameSystemManifest, GameSystem } from '@armoury/data-dao';
@@ -93,7 +93,6 @@ function getSyncStatus(
  */
 export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): React.ReactElement {
     const t = useTranslations('landing');
-    const router = useRouter();
     const { systemSyncStates, enableSystem } = useDataContext();
     const [activatingId, setActivatingId] = React.useState<string | null>(null);
 
@@ -105,7 +104,7 @@ export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): Rea
     const handleTileClick = React.useCallback(
         async (manifest: GameSystemManifest) => {
             if (!isAuthenticated) {
-                router.push('/auth/login?returnTo=/');
+                window.location.href = '/auth/login?returnTo=/';
 
                 return;
             }
@@ -125,7 +124,7 @@ export function SystemGrid({ manifests, isAuthenticated }: SystemGridProps): Rea
 
             setActivatingId(null);
         },
-        [isAuthenticated, router, systemSyncStates, enableSystem],
+        [isAuthenticated, systemSyncStates, enableSystem],
     );
 
     return (
