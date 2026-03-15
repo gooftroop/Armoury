@@ -223,8 +223,8 @@ function SelectValue({
     const theme = useTheme();
 
     const textColor = value
-        ? resolveThemeColor(theme, 'color') ?? '#000000'
-        : resolveThemeColor(theme, 'placeholderColor') ?? '#9ca3af';
+        ? (resolveThemeColor(theme, 'color') ?? '#000000')
+        : (resolveThemeColor(theme, 'placeholderColor') ?? '#9ca3af');
 
     return (
         <Text color={textColor} fontSize={14} numberOfLines={1}>
@@ -336,9 +336,7 @@ function SelectContent({ children }: SelectContentProps): React.ReactElement {
                         paddingVertical={8}
                         maxHeight={400}
                     >
-                        <ScrollView bounces={false}>
-                            {children}
-                        </ScrollView>
+                        <ScrollView bounces={false}>{children}</ScrollView>
                     </YStack>
                 </Pressable>
             </Pressable>
@@ -407,9 +405,7 @@ function SelectItem({ children, value: itemValue, disabled = false }: SelectItem
             }}
         >
             <XStack width={24} alignItems="center" justifyContent="center" marginRight={4}>
-                {isSelected ? (
-                    <Text fontSize={14}>✓</Text>
-                ) : null}
+                {isSelected ? <Text fontSize={14}>✓</Text> : null}
             </XStack>
             <Text color={textColor} fontSize={14}>
                 {children}
@@ -430,9 +426,7 @@ function SelectSeparator(_props: SelectSeparatorProps): React.ReactElement {
     const theme = useTheme();
     const bgColor = resolveThemeColor(theme, 'muted') ?? '#e5e7eb';
 
-    return (
-        <YStack height={1} backgroundColor={bgColor} marginVertical={4} marginHorizontal={-4} />
-    );
+    return <YStack height={1} backgroundColor={bgColor} marginVertical={4} marginHorizontal={-4} />;
 }
 
 SelectSeparator.displayName = 'SelectSeparator';

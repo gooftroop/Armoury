@@ -14,15 +14,7 @@ import { Button as TamaguiButton, styled, Text, useTheme, type GetProps } from '
 /**
  * Supported button visual variants.
  */
-type ButtonVariant =
-    | 'primary'
-    | 'secondary'
-    | 'highlight'
-    | 'ghost'
-    | 'destructive'
-    | 'outline'
-    | 'link'
-    | 'unstyled';
+type ButtonVariant = 'primary' | 'secondary' | 'highlight' | 'ghost' | 'destructive' | 'outline' | 'link' | 'unstyled';
 
 /**
  * Supported button size variants.

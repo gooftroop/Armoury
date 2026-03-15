@@ -181,12 +181,7 @@ const AvatarFallback = React.forwardRef<React.ElementRef<typeof Text>, AvatarFal
                 justifyContent="center"
                 backgroundColor={resolveThemeColor(theme, 'muted')}
             >
-                <Text
-                    ref={ref}
-                    fontSize={size * 0.4}
-                    color={resolveThemeColor(theme, 'mutedForeground')}
-                    {...props}
-                >
+                <Text ref={ref} fontSize={size * 0.4} color={resolveThemeColor(theme, 'mutedForeground')} {...props}>
                     {children}
                 </Text>
             </YStack>

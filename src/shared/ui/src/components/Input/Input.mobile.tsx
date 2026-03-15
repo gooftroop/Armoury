@@ -78,9 +78,7 @@ const Input = React.forwardRef<TextInput, InputProps>(
         const theme = useTheme();
         const typeProps = mapInputType(type);
 
-        const borderColor = error
-            ? resolveThemeColor(theme, 'destructive')
-            : resolveThemeColor(theme, 'input');
+        const borderColor = error ? resolveThemeColor(theme, 'destructive') : resolveThemeColor(theme, 'input');
 
         return (
             <TextInput

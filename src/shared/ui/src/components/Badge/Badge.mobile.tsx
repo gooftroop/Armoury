@@ -103,11 +103,7 @@ const Badge = React.forwardRef<React.ElementRef<typeof XStack>, BadgeProps>(
                 paddingHorizontal="$2"
                 paddingVertical="$0.5"
             >
-                <Text
-                    color={textByVariant[variant]}
-                    fontSize="$1"
-                    fontWeight="600"
-                >
+                <Text color={textByVariant[variant]} fontSize="$1" fontWeight="600">
                     {children}
                 </Text>
             </XStack>

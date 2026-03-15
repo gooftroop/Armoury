@@ -25,7 +25,13 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 
-const distDir = resolve(process.cwd(), process.argv[2] || 'dist');
+// When invoked via `node -e "import(...)" -- dir`, argv is [node, dir] (no script name).
+// When invoked directly as `node fix-declaration-paths.mjs dir`, argv is [node, script, dir].
+// Use the last positional argument that isn't a flag or the script itself.
+const lastArg = process.argv.at(-1);
+const distArg =
+    lastArg && !lastArg.startsWith('-') && !lastArg.endsWith('.mjs') && lastArg !== process.argv[0] ? lastArg : 'dist';
+const distDir = resolve(process.cwd(), distArg);
 
 /**
  * Computes the relative prefix to replace `@/` for a given .d.ts file.
@@ -44,9 +50,7 @@ function computeRelativePrefix(filePath) {
 
 async function main() {
     const entries = await readdir(distDir, { recursive: true });
-    const dtsFiles = entries
-        .filter((entry) => entry.endsWith('.d.ts'))
-        .map((entry) => join(distDir, entry));
+    const dtsFiles = entries.filter((entry) => entry.endsWith('.d.ts')).map((entry) => join(distDir, entry));
 
     let modifiedCount = 0;
 

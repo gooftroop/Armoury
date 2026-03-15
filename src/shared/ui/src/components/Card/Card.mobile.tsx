@@ -154,12 +154,7 @@ const CardDescription = React.forwardRef<React.ElementRef<typeof Text>, CardDesc
         const theme = useTheme();
 
         return (
-            <Text
-                ref={ref}
-                fontSize="$2"
-                color={resolveThemeColor(theme, 'mutedForeground')}
-                {...props}
-            >
+            <Text ref={ref} fontSize="$2" color={resolveThemeColor(theme, 'mutedForeground')} {...props}>
                 {children}
             </Text>
         );

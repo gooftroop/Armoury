@@ -364,9 +364,7 @@ function DropdownMenuContent({ children }: DropdownMenuContentProps): React.Reac
                         shadowRadius={8}
                         elevation={8}
                     >
-                        <ScrollView bounces={false}>
-                            {children}
-                        </ScrollView>
+                        <ScrollView bounces={false}>{children}</ScrollView>
                     </YStack>
                 </Pressable>
             </Pressable>
@@ -465,14 +463,7 @@ function DropdownMenuCheckboxItem({
                 opacity: disabled ? 0.5 : 1,
             }}
         >
-            <XStack
-                position="absolute"
-                left={8}
-                width={14}
-                height={14}
-                alignItems="center"
-                justifyContent="center"
-            >
+            <XStack position="absolute" left={8} width={14} height={14} alignItems="center" justifyContent="center">
                 {checked ? <Text fontSize={12}>✓</Text> : null}
             </XStack>
             <Text color={textColor} fontSize={14}>
@@ -523,14 +514,7 @@ function DropdownMenuRadioItem({
                 opacity: disabled ? 0.5 : 1,
             }}
         >
-            <XStack
-                position="absolute"
-                left={8}
-                width={14}
-                height={14}
-                alignItems="center"
-                justifyContent="center"
-            >
+            <XStack position="absolute" left={8} width={14} height={14} alignItems="center" justifyContent="center">
                 {isSelected ? <Text fontSize={8}>●</Text> : null}
             </XStack>
             <Text color={textColor} fontSize={14}>
@@ -638,11 +622,7 @@ DropdownMenuSubTrigger.displayName = 'DropdownMenuSubTrigger';
  * @returns The rendered DropdownMenuSubContent component.
  */
 function DropdownMenuSubContent({ children }: DropdownMenuSubContentProps): React.ReactElement {
-    return (
-        <YStack paddingLeft={8}>
-            {children}
-        </YStack>
-    );
+    return <YStack paddingLeft={8}>{children}</YStack>;
 }
 
 DropdownMenuSubContent.displayName = 'DropdownMenuSubContent';

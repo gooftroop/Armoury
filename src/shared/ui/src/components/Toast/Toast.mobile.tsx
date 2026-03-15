@@ -171,11 +171,11 @@ function Toast({ children, variant = 'default', open = true, onOpenChange }: Toa
 
     const isDestructive = variant === 'destructive';
     const bgColor = isDestructive
-        ? resolveThemeColor(theme, 'destructive') ?? '#ef4444'
-        : resolveThemeColor(theme, 'background') ?? '#ffffff';
+        ? (resolveThemeColor(theme, 'destructive') ?? '#ef4444')
+        : (resolveThemeColor(theme, 'background') ?? '#ffffff');
     const borderCol = isDestructive
-        ? resolveThemeColor(theme, 'destructive') ?? '#ef4444'
-        : resolveThemeColor(theme, 'borderColor') ?? '#e5e7eb';
+        ? (resolveThemeColor(theme, 'destructive') ?? '#ef4444')
+        : (resolveThemeColor(theme, 'borderColor') ?? '#e5e7eb');
 
     return (
         <ToastContext.Provider value={contextValue}>
@@ -213,12 +213,14 @@ function ToastAction({ children, onPress }: ToastActionProps): React.ReactElemen
     const theme = useTheme();
     const { variant } = React.useContext(ToastContext);
 
-    const borderCol = variant === 'destructive'
-        ? resolveThemeColor(theme, 'destructive') ?? '#ef4444'
-        : resolveThemeColor(theme, 'borderColor') ?? '#e5e7eb';
-    const textColor = variant === 'destructive'
-        ? resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff'
-        : resolveThemeColor(theme, 'color') ?? '#000000';
+    const borderCol =
+        variant === 'destructive'
+            ? (resolveThemeColor(theme, 'destructive') ?? '#ef4444')
+            : (resolveThemeColor(theme, 'borderColor') ?? '#e5e7eb');
+    const textColor =
+        variant === 'destructive'
+            ? (resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff')
+            : (resolveThemeColor(theme, 'color') ?? '#000000');
 
     return (
         <Pressable
@@ -254,9 +256,10 @@ function ToastClose({ children }: ToastCloseProps): React.ReactElement {
     const { onClose, variant } = React.useContext(ToastContext);
     const theme = useTheme();
 
-    const textColor = variant === 'destructive'
-        ? resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff'
-        : resolveThemeColor(theme, 'mutedForeground') ?? '#6b7280';
+    const textColor =
+        variant === 'destructive'
+            ? (resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff')
+            : (resolveThemeColor(theme, 'mutedForeground') ?? '#6b7280');
 
     return (
         <Pressable
@@ -292,9 +295,10 @@ function ToastTitle({ children }: ToastTitleProps): React.ReactElement {
     const { variant } = React.useContext(ToastContext);
     const theme = useTheme();
 
-    const textColor = variant === 'destructive'
-        ? resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff'
-        : resolveThemeColor(theme, 'color') ?? '#000000';
+    const textColor =
+        variant === 'destructive'
+            ? (resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff')
+            : (resolveThemeColor(theme, 'color') ?? '#000000');
 
     return (
         <Text color={textColor} fontSize={14} fontWeight="600">
@@ -315,9 +319,10 @@ function ToastDescription({ children }: ToastDescriptionProps): React.ReactEleme
     const { variant } = React.useContext(ToastContext);
     const theme = useTheme();
 
-    const textColor = variant === 'destructive'
-        ? resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff'
-        : resolveThemeColor(theme, 'color') ?? '#000000';
+    const textColor =
+        variant === 'destructive'
+            ? (resolveThemeColor(theme, 'destructiveForeground') ?? '#ffffff')
+            : (resolveThemeColor(theme, 'color') ?? '#000000');
 
     return (
         <Text color={textColor} fontSize={14} opacity={0.9}>

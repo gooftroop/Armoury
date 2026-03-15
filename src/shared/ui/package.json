@@ -39,9 +39,15 @@
         "tamagui": "^2.0.0"
     },
     "peerDependenciesMeta": {
-        "react-dom": { "optional": true },
-        "react-native": { "optional": true },
-        "tamagui": { "optional": true }
+        "react-dom": {
+            "optional": true
+        },
+        "react-native": {
+            "optional": true
+        },
+        "tamagui": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@armoury/eslint": "*",

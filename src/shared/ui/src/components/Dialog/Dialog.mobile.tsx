@@ -304,11 +304,7 @@ DialogContent.displayName = 'DialogContent';
  * @returns The rendered DialogHeader component.
  */
 function DialogHeader({ children }: DialogHeaderProps): React.ReactElement {
-    return (
-        <YStack gap={6}>
-            {children}
-        </YStack>
-    );
+    return <YStack gap={6}>{children}</YStack>;
 }
 
 DialogHeader.displayName = 'DialogHeader';

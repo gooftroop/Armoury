@@ -287,19 +287,19 @@ class Wh40k10eSystem implements GameSystem {
             registerHydrator(kind, hydrator);
         }
 
-        registerEntityCodec('factionData', {
-            serialize: (entity: unknown) => ({ ...(entity as Record<string, unknown>) }),
-            hydrate: (raw: unknown) => hydrateFactionData(raw),
+        registerEntityCodec<FactionData>('factionData', {
+            serialize: (entity) => ({ ...entity }),
+            hydrate: (raw) => hydrateFactionData(raw),
         });
 
-        registerEntityCodec('coreRules', {
-            serialize: (entity: unknown) => ({ ...(entity as Record<string, unknown>) }),
-            hydrate: (raw: unknown) => hydrateCoreRules(raw),
+        registerEntityCodec<CoreRules>('coreRules', {
+            serialize: (entity) => ({ ...entity }),
+            hydrate: (raw) => hydrateCoreRules(raw),
         });
 
-        registerEntityCodec('chapterApproved', {
-            serialize: (entity: unknown) => ({ ...(entity as Record<string, unknown>) }),
-            hydrate: (raw: unknown) => hydrateChapterApproved(raw),
+        registerEntityCodec<ChapterApproved>('chapterApproved', {
+            serialize: (entity) => ({ ...entity }),
+            hydrate: (raw) => hydrateChapterApproved(raw),
         });
 
         registerSchemaExtension(this.getSchemaExtension());

@@ -281,11 +281,7 @@ AlertDialogContent.displayName = 'AlertDialogContent';
  * @returns The rendered AlertDialogHeader component.
  */
 function AlertDialogHeader({ children }: AlertDialogHeaderProps): React.ReactElement {
-    return (
-        <YStack gap={8}>
-            {children}
-        </YStack>
-    );
+    return <YStack gap={8}>{children}</YStack>;
 }
 
 AlertDialogHeader.displayName = 'AlertDialogHeader';

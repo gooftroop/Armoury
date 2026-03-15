@@ -103,9 +103,7 @@ const Tabs = React.forwardRef<React.ElementRef<typeof YStack>, TabsProps>(
 
         return (
             <TabsContext.Provider value={{ value: currentValue, onValueChange: handleValueChange }}>
-                <YStack ref={ref}>
-                    {children}
-                </YStack>
+                <YStack ref={ref}>{children}</YStack>
             </TabsContext.Provider>
         );
     },
@@ -164,9 +162,7 @@ const TabsTrigger = React.forwardRef<React.ElementRef<typeof Pressable>, TabsTri
                     borderRadius: 6,
                     paddingHorizontal: 12,
                     paddingVertical: 4,
-                    backgroundColor: isActive
-                        ? resolveThemeColor(theme, 'background')
-                        : 'transparent',
+                    backgroundColor: isActive ? resolveThemeColor(theme, 'background') : 'transparent',
                     shadowColor: isActive ? 'rgba(0,0,0,0.1)' : 'transparent',
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: isActive ? 1 : 0,
@@ -178,11 +174,7 @@ const TabsTrigger = React.forwardRef<React.ElementRef<typeof Pressable>, TabsTri
                 <Text
                     fontSize="$2"
                     fontWeight="500"
-                    color={
-                        isActive
-                            ? resolveThemeColor(theme, 'color')
-                            : resolveThemeColor(theme, 'mutedForeground')
-                    }
+                    color={isActive ? resolveThemeColor(theme, 'color') : resolveThemeColor(theme, 'mutedForeground')}
                 >
                     {children}
                 </Text>

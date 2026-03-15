@@ -50,17 +50,7 @@ export interface SwitchProps extends Omit<RNSwitchProps, 'value' | 'onValueChang
  * @returns The rendered Switch component.
  */
 const Switch = React.forwardRef<RNSwitch, SwitchProps>(
-    (
-        {
-            checked,
-            onCheckedChange,
-            value,
-            onValueChange,
-            className: _className,
-            ...props
-        },
-        ref,
-    ) => {
+    ({ checked, onCheckedChange, value, onValueChange, className: _className, ...props }, ref) => {
         const theme = useTheme();
 
         // Support both Radix (checked/onCheckedChange) and RN (value/onValueChange) APIs
