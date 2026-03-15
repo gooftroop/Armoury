@@ -30,7 +30,7 @@ export const contentType = 'image/png';
 /**
  * Generates the favicon as a PNG via ImageResponse.
  *
- * Draws a hexagonal badge shape with an "A" monogram centered inside.
+ * Draws a hexagonal badge shape with an "A" monogram path centered inside.
  * Uses inline SVG for the hex shape since ImageResponse supports limited CSS.
  */
 export default function Icon(): ImageResponse {
@@ -64,19 +64,12 @@ export default function Icon(): ImageResponse {
                     strokeLinejoin="round"
                     opacity="0.35"
                 />
-                {/* "A" monogram */}
-                <text
-                    x="16"
-                    y="22"
-                    textAnchor="middle"
-                    fontFamily="system-ui, sans-serif"
-                    fontSize="18"
-                    fontWeight="800"
+                {/* "A" monogram — path outline since Satori does not support <text> */}
+                <path
+                    d="M16 8 L10 24 L12.5 24 L13.5 21 L18.5 21 L19.5 24 L22 24 L16 8 Z M14.3 18.5 L16 12.5 L17.7 18.5 Z"
                     fill="#6ba3d6"
-                    letterSpacing="-0.5"
-                >
-                    A
-                </text>
+                    fillRule="evenodd"
+                />
             </svg>
         </div>,
         {
