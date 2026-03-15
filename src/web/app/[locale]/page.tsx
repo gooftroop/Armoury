@@ -85,7 +85,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
             {isAuthenticated && session.user && (
                 <div
                     data-testid="user-tile"
-                    className="mb-8 flex items-center gap-3 rounded-lg border border-border/40 bg-surface/60 px-4 py-2"
+                    className="mb-8 flex items-center gap-4 rounded-lg border border-border/40 bg-surface/60 px-4 py-2"
                 >
                     <Avatar size="sm">
                         <AvatarImage src={String(session.user.picture ?? '')} alt={String(session.user.name ?? '')} />
@@ -115,13 +115,13 @@ export default async function LandingPage({ params }: LandingPageProps) {
                 <div className="mb-8 flex flex-col items-center gap-3">
                     <p className="text-sm text-foreground">
                         {t('auth.signInPrefix')}{' '}
-                        <Button variant="unstyled" asChild>
+                        <Button variant="link" asChild>
                             <a href="/auth/login">{t('auth.signInLink')}</a>
                         </Button>
                     </p>
                     <p className="text-sm text-foreground">
                         {t('auth.createAccountPrefix')}{' '}
-                        <Button variant="unstyled" asChild>
+                        <Button variant="link" asChild>
                             <a href="/auth/login?screen_hint=signup">{t('auth.createAccountLink')}</a>
                         </Button>
                     </p>
