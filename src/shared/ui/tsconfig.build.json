@@ -1,0 +1,14 @@
+{
+    "extends": "@armoury/typescript/build.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "dist",
+        "jsx": "react-jsx",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/**/__mocks__/**", "src/**/__fixtures__/**"]
+}

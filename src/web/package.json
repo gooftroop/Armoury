@@ -22,6 +22,7 @@
         "@armoury/adapters-pglite": "*",
         "@armoury/models": "*",
         "@armoury/wh40k10e": "*",
+        "@armoury/ui": "*",
         "@armoury/clients-users": "*",
         "@auth0/nextjs-auth0": "^4.16.0",
         "@sentry/nextjs": "^10.43.0",

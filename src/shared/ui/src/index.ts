@@ -1,11 +1,11 @@
 /**
- * UI Component Library
+ * @armoury/ui — Shared UI Component Library
  *
- * Re-exports all components from @armoury/ui.
- * Web consumers should import from this barrel or directly from '@armoury/ui'.
+ * A production-ready component library built with Radix UI primitives and Tailwind CSS.
+ * All components are designed for a dark tactical theme with military/tabletop gaming aesthetics.
  *
  * @requirements
- * 1. Must re-export all UI components from @armoury/ui.
+ * 1. Must export all UI components with named exports.
  * 2. Must not use default exports.
  * 3. Must provide type exports for component props.
  */
@@ -31,7 +31,7 @@ export {
     type AlertDialogDescriptionProps,
     type AlertDialogActionProps,
     type AlertDialogCancelProps,
-} from '@armoury/ui';
+} from '@/components/AlertDialog/index.js';
 
 // Avatar components
 export {
@@ -42,13 +42,13 @@ export {
     type AvatarProps,
     type AvatarImageProps,
     type AvatarFallbackProps,
-} from '@armoury/ui';
+} from '@/components/Avatar/index.js';
 
 // Badge component
-export { Badge, badgeVariants, type BadgeProps } from '@armoury/ui';
+export { Badge, badgeVariants, type BadgeProps } from '@/components/Badge/index.js';
 
-// Button component and variants
-export { Button, buttonVariants, type ButtonProps } from '@armoury/ui';
+// Button component
+export { Button, buttonVariants, type ButtonProps } from '@/components/Button/index.js';
 
 // Card components
 export {
@@ -64,7 +64,7 @@ export {
     type CardDescriptionProps,
     type CardContentProps,
     type CardFooterProps,
-} from '@armoury/ui';
+} from '@/components/Card/index.js';
 
 // Dialog components
 export {
@@ -84,7 +84,7 @@ export {
     type DialogFooterProps,
     type DialogTitleProps,
     type DialogDescriptionProps,
-} from '@armoury/ui';
+} from '@/components/Dialog/index.js';
 
 // DropdownMenu components
 export {
@@ -113,13 +113,13 @@ export {
     type DropdownMenuShortcutProps,
     type DropdownMenuSubTriggerProps,
     type DropdownMenuSubContentProps,
-} from '@armoury/ui';
+} from '@/components/DropdownMenu/index.js';
 
 // Input component
-export { Input, type InputProps } from '@armoury/ui';
+export { Input, type InputProps } from '@/components/Input/index.js';
 
 // Label component
-export { Label, type LabelProps } from '@armoury/ui';
+export { Label, type LabelProps } from '@/components/Label/index.js';
 
 // Select components
 export {
@@ -140,16 +140,16 @@ export {
     type SelectSeparatorProps,
     type SelectScrollUpButtonProps,
     type SelectScrollDownButtonProps,
-} from '@armoury/ui';
+} from '@/components/Select/index.js';
 
 // Separator component
-export { Separator, type SeparatorProps } from '@armoury/ui';
+export { Separator, type SeparatorProps } from '@/components/Separator/index.js';
 
 // Skeleton component
-export { Skeleton, type SkeletonProps } from '@armoury/ui';
+export { Skeleton, type SkeletonProps } from '@/components/Skeleton/index.js';
 
 // Switch component
-export { Switch, type SwitchProps } from '@armoury/ui';
+export { Switch, type SwitchProps } from '@/components/Switch/index.js';
 
 // Tabs components
 export {
@@ -160,7 +160,7 @@ export {
     type TabsListProps,
     type TabsTriggerProps,
     type TabsContentProps,
-} from '@armoury/ui';
+} from '@/components/Tabs/index.js';
 
 // Toast components
 export {
@@ -177,7 +177,7 @@ export {
     type ToastCloseProps,
     type ToastTitleProps,
     type ToastDescriptionProps,
-} from '@armoury/ui';
+} from '@/components/Toast/index.js';
 
 // Tooltip components
 export {
@@ -187,4 +187,4 @@ export {
     TooltipProvider,
     type TooltipTriggerProps,
     type TooltipContentProps,
-} from '@armoury/ui';
+} from '@/components/Tooltip/index.js';
