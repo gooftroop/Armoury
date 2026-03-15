@@ -8,7 +8,7 @@
  *
  * @requirements
  * 1. Must export Button component with React.forwardRef for DOM ref forwarding.
- * 2. Must support 6 variants: primary, secondary, highlight, ghost, destructive, outline.
+ * 2. Must support 8 variants: primary, secondary, highlight, ghost, destructive, outline, link, unstyled.
  * 3. Must support 3 sizes: sm, md, lg.
  * 4. Must merge user className with variant styles using cn utility.
  * 5. Must forward all additional props to the underlying button element.
@@ -38,6 +38,9 @@ const buttonVariants = cva(
                 destructive:
                     'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:bg-destructive/80',
                 outline: 'border border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
+                link: 'text-secondary underline-offset-4 hover:underline hover:text-secondary-hover p-0 h-auto',
+                unstyled:
+                    'underline-offset-4 hover:underline p-0 h-auto font-normal text-[inherit] rounded-none shadow-none bg-transparent',
             },
             size: {
                 sm: 'h-8 px-3 text-xs',

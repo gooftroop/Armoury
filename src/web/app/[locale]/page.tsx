@@ -33,6 +33,7 @@ import {
     Avatar,
     AvatarFallback,
     AvatarImage,
+    Button,
     Tooltip,
     TooltipContent,
     TooltipProvider,
@@ -114,18 +115,15 @@ export default async function LandingPage({ params }: LandingPageProps) {
                 <div className="mb-8 flex flex-col items-center gap-3">
                     <p className="text-sm text-foreground">
                         {t('auth.signInPrefix')}{' '}
-                        <a href="/auth/login" className="text-secondary transition-colors hover:text-secondary-hover">
-                            {t('auth.signInLink')}
-                        </a>
+                        <Button variant="unstyled" asChild>
+                            <a href="/auth/login">{t('auth.signInLink')}</a>
+                        </Button>
                     </p>
                     <p className="text-sm text-foreground">
                         {t('auth.createAccountPrefix')}{' '}
-                        <a
-                            href="/auth/login?screen_hint=signup"
-                            className="text-secondary transition-colors hover:text-secondary-hover"
-                        >
-                            {t('auth.createAccountLink')}
-                        </a>
+                        <Button variant="unstyled" asChild>
+                            <a href="/auth/login?screen_hint=signup">{t('auth.createAccountLink')}</a>
+                        </Button>
                     </p>
                 </div>
             )}
