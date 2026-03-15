@@ -114,10 +114,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
                 <div className="mb-8 flex flex-col items-center gap-3">
                     <p className="text-sm text-foreground">
                         {t('auth.signInPrefix')}{' '}
-                        <a
-                            href="/auth/login"
-                            className="text-secondary transition-colors hover:text-secondary-hover"
-                        >
+                        <a href="/auth/login" className="text-secondary transition-colors hover:text-secondary-hover">
                             {t('auth.signInLink')}
                         </a>
                     </p>
