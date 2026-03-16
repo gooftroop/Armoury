@@ -10,7 +10,7 @@
  * 1. Must define setup project that runs auth/setup.ts once.
  * 2. Must define authenticated projects that depend on setup and load storageState.
  * 3. Must define unauthenticated project that runs without storageState.
- * 4. Must start Next.js dev server automatically via webServer config.
+ * 4. Must start Next.js production server automatically via webServer config (build + start, not dev).
  * 5. Must support CI and local modes (retries, workers, reporter, reuseExistingServer).
  */
 
@@ -73,7 +73,7 @@ export default defineConfig({
     ],
 
     webServer: {
-        command: 'npm run dev -w @armoury/web',
+        command: 'npm run build -w @armoury/web && npm run start -w @armoury/web',
         url: 'http://localhost:3000',
         reuseExistingServer: !process.env['CI'],
         timeout: 120_000,

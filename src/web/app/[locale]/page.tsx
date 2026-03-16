@@ -1,11 +1,9 @@
 /**
- * Landing page — thin static wrapper that delegates to LandingContent.
+ * Landing page — dynamic server-rendered page that delegates to LandingContent.
  *
- * This page is statically generated via generateStaticParams() in the layout.
- * All dynamic work (auth session, account prefetch, conditional rendering) is
- * handled by the LandingContent server component, which reads cookies at
- * request time. The outer shell (heading, tagline, legal text) remains here
- * so the static frame renders instantly while the dynamic content streams in.
+ * This page must render dynamically (not statically) because LandingContent reads
+ * the Auth0 session cookie to determine authentication state. Static generation
+ * would freeze the page as unauthenticated since no cookies exist at build time.
  *
  * @requirements
  * 1. Must be a Server Component (no 'use client').
@@ -22,6 +20,14 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { LandingContent } from '@/components/landing/LandingContent.js';
+
+/**
+ * Forces dynamic rendering so auth0.getSession() reads cookies at request time.
+ * Without this, generateStaticParams() in the layout causes Next.js to statically
+ * generate this page at build time (when no session cookie exists), freezing it
+ * as the unauthenticated view.
+ */
+export const dynamic = 'force-dynamic';
 
 /** Props for the locale-parameterized landing page. */
 export interface LandingPageProps {
