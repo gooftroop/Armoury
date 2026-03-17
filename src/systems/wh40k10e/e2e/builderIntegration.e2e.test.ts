@@ -38,7 +38,7 @@ describe.skipIf(!HAS_TOKEN)('DataContextBuilder integration', { timeout: 120_000
         sharedDc = await DataContextBuilder.builder<GameData>()
             .system(wh40k10eSystem)
             .adapter(sharedAdapter)
-            .github(githubClient)
+            .registerClient('github', githubClient)
             .build();
     });
 
