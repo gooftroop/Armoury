@@ -47,7 +47,7 @@ describe('DataContextBuilder.builder()', () => {
         const dc = await DataContextBuilder.builder()
             .system(wh40k10eSystem)
             .adapter(mockAdapter)
-            .registerClient('github', new GitHubClient({ token: GITHUB_TOKEN }))
+            .register('github', new GitHubClient({ token: GITHUB_TOKEN }))
             .build();
 
         expect(dc).toBeDefined();
@@ -339,7 +339,7 @@ describe.skipIf(!HAS_TOKEN)('dc.game (real BSData)', { timeout: 120_000 }, () =>
         dc = await DataContextBuilder.builder<GameData>()
             .system(wh40k10eSystem)
             .adapter(mockAdapter)
-            .registerClient('github', new GitHubClient({ token: GITHUB_TOKEN! }))
+            .register('github', new GitHubClient({ token: GITHUB_TOKEN! }))
             .build();
     });
 

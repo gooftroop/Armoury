@@ -135,9 +135,18 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const { DataContextBuilder } = await import('@armoury/data-context');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
             const { createGitHubClient } = await import('@armoury/clients-github');
-            const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
+            const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
+            const { QueryClient } = await import('@tanstack/react-query');
+            const queryClient = new QueryClient();
             const githubClient = createGitHubClient();
-            const dc = await DataContextBuilder.builder().system(system).adapter(adapter).github(githubClient).build();
+            const wahapediaAdapter = createWahapediaClient(queryClient);
+            const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
+            const dc = await DataContextBuilder.builder()
+                .system(system)
+                .adapter(adapter)
+                .register('github', githubClient)
+                .register('wahapedia', wahapediaAdapter)
+                .build();
             setDataContext(dc);
             setStatus('ready');
             setSystemSyncStates((prev) => ({

@@ -30,7 +30,7 @@ export class DataContextBuilder<TGameData = unknown> {
     }
 
     /** Registers a named client instance for use by game systems. */
-    public registerClient(key: string, client: unknown): DataContextBuilder<TGameData> {
+    public register(key: string, client: unknown): DataContextBuilder<TGameData> {
         this.clients.set(key, client);
 
         return this;
