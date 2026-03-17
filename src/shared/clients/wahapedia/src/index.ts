@@ -1,6 +1,21 @@
 /**
- * Wahapedia HTTP client exports for fetching and parsing Wahapedia content.
+ * Wahapedia client package.
+ *
+ * Provides standalone fetch functions for Wahapedia content and React Query
+ * option builders for cached data access.
  */
 
-export { WahapediaClient, createWahapediaClient } from '@/client.js';
+// === Types ===
 export type { IWahapediaClient, IWahapediaParser } from '@/types.js';
+
+// === API Functions ===
+export { fetchWahapediaPage } from '@/api/fetchWahapediaPage.js';
+export { fetchWahapediaPageRaw } from '@/api/fetchWahapediaPageRaw.js';
+
+// === Query Key Builders ===
+export { buildQueryWahapediaKey } from '@/queries/queryWahapedia.js';
+export { buildQueryWahapediaRawKey } from '@/queries/queryWahapediaRaw.js';
+
+// === Query Options Builders ===
+export { queryWahapedia } from '@/queries/queryWahapedia.js';
+export { queryWahapediaRaw } from '@/queries/queryWahapediaRaw.js';

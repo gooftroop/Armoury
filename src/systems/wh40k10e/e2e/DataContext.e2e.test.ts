@@ -24,7 +24,7 @@ import type { GameData } from '../src/dao/GameData.js';
 import type { Friend } from '@armoury/models';
 import { GitHubClient } from '@armoury/clients-github';
 import { MockDatabaseAdapter } from '../src/__mocks__/MockDatabaseAdapter.js';
-import { makeAccount, makeFriend } from '../../shared/data/e2e/__fixtures__/index.js';
+import { makeAccount, makeFriend } from '../../../shared/data/dao/e2e/__fixtures__/index.js';
 import { makeArmy, makeCampaign, makeMatch } from './__fixtures__/index.js';
 import 'dotenv/config';
 
@@ -47,7 +47,7 @@ describe('DataContext.builder()', () => {
         const dc = await DataContext.builder()
             .system(wh40k10eSystem)
             .adapter(mockAdapter)
-            .github(new GitHubClient({ token: GITHUB_TOKEN }))
+            .registerClient('github', new GitHubClient({ token: GITHUB_TOKEN }))
             .build();
 
         expect(dc).toBeDefined();
@@ -339,7 +339,7 @@ describe.skipIf(!HAS_TOKEN)('dc.game (real BSData)', { timeout: 120_000 }, () =>
         dc = await DataContext.builder<GameData>()
             .system(wh40k10eSystem)
             .adapter(mockAdapter)
-            .github(new GitHubClient({ token: GITHUB_TOKEN! }))
+            .registerClient('github', new GitHubClient({ token: GITHUB_TOKEN! }))
             .build();
     });
 

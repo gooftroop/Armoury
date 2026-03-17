@@ -1,5 +1,4 @@
 import type { DatabaseAdapter } from '@armoury/data-dao';
-import type { IGitHubClient } from '@armoury/clients-github';
 import type { GameSystem } from '@armoury/data-dao';
 import type { ArmyDAO, CampaignDAO, GameContextResult } from '@armoury/data-dao';
 import { AccountDAO } from '@armoury/data-dao';
@@ -44,24 +43,25 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
 
     private readonly adapter: DatabaseAdapter;
     private readonly gameSystem: GameSystem;
-    private readonly githubClient: IGitHubClient | null;
+    /** Registered client instances keyed by name. */
+    private readonly clients: Map<string, unknown>;
 
     /**
      * Creates a DataContext implementation bound to a database adapter.
      * @param adapter - Database adapter used by DAOs.
      * @param gameSystem - Game system descriptor.
-     * @param githubClient - Optional GitHub client for remote access.
+     * @param clients - Registered client instances keyed by name.
      * @param gameContext - Optional game-specific DAO wiring from the system's createGameContext().
      */
     public constructor(
         adapter: DatabaseAdapter,
         gameSystem: GameSystem,
-        githubClient: IGitHubClient | null,
+        clients: Map<string, unknown>,
         gameContext?: GameContextResult<TGameData>,
     ) {
         this.adapter = adapter;
         this.gameSystem = gameSystem;
-        this.githubClient = githubClient;
+        this.clients = clients;
         this.accounts = new AccountDAO(adapter);
         this.social = new FriendDAO(adapter);
         this.users = new UserDAO(adapter);
@@ -137,7 +137,7 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
      */
     private createNotImplementedGameData(): TGameData {
         const systemName = this.gameSystem.name;
-        const githubConfigured = this.githubClient !== null;
+        const githubConfigured = this.clients.has('github');
 
         return new Proxy(
             {},

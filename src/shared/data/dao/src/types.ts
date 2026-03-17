@@ -4,7 +4,6 @@ import type { Match } from '@armoury/models';
 import type { UserPresence } from '@armoury/models';
 import type { User } from '@armoury/models';
 import type { Campaign, CampaignParticipant } from '@armoury/models';
-import type { IGitHubClient } from '@armoury/clients-github';
 
 /**
  * Supported database platforms for the adapter pattern.
@@ -237,7 +236,11 @@ export interface GameSystem {
     getHydrators(): Map<string, EntityHydrator>;
     getSchemaExtension(): SchemaExtension;
     register(): void | Promise<void>;
-    createGameContext(adapter: DatabaseAdapter, githubClient: IGitHubClient): GameContextResult;
+    createGameContext(
+        adapter: DatabaseAdapter,
+        /** Registered client instances keyed by name (e.g. 'github', 'wahapedia'). */
+        clients: Map<string, unknown>,
+    ): GameContextResult;
 }
 
 /**

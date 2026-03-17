@@ -86,6 +86,10 @@ import {
     validateWarlord,
 } from '@/validation/rules/index.js';
 
+interface Wh40kGameSystem extends Omit<GameSystem, 'createGameContext'> {
+    createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult;
+}
+
 /**
  * Enum of entity kinds for wh40k10e data access.
  */
@@ -198,11 +202,29 @@ function createValidationRules(): PluginValidationRule[] {
     ];
 }
 
+/** Creates a stub GitHub client that throws on invocation. */
+function createMissingGitHubClient(): IGitHubClient {
+    const throwMissing = async (): Promise<never> => {
+        throw new Error('GitHub client not configured');
+    };
+
+    const noUpdates = async (): Promise<boolean> => {
+        return false;
+    };
+
+    return {
+        listFiles: throwMissing,
+        getFileSha: throwMissing,
+        downloadFile: throwMissing,
+        checkForUpdates: noUpdates,
+    };
+}
+
 /**
  * Warhammer 40K 10th Edition game system implementation.
  * Provides entity types, validation rules, data syncing, and hydration.
  */
-class Wh40k10eSystem implements GameSystem {
+class Wh40k10eSystem implements Wh40kGameSystem {
     /** @inheritdoc */
     readonly id = 'wh40k10e';
     /** @inheritdoc */
@@ -276,10 +298,11 @@ class Wh40k10eSystem implements GameSystem {
      * Instantiates 40 faction DAOs, core rules, crusade rules, and chapter approved DAOs,
      * then wraps them in a GameData instance for unified access.
      * @param adapter - Database adapter for entity storage
-     * @param githubClient - GitHub client for BSData synchronization
+     * @param clients - Registered client instances keyed by name
      * @returns GameContextResult with armies, campaigns, matches DAOs and game data context
      */
-    createGameContext(adapter: DatabaseAdapter, githubClient: IGitHubClient): GameContextResult {
+    createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult {
+        const githubClient = (clients.get('github') as IGitHubClient | undefined) ?? createMissingGitHubClient();
         const wahapediaClient = createWahapediaClient();
         const chapterApprovedDAO = new ChapterApprovedDAO(adapter, wahapediaClient);
         const coreRulesDAO = new CoreRulesDAO(adapter, githubClient);

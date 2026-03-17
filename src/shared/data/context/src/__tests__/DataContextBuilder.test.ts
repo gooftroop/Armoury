@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DataContextBuilder } from '@/DataContextBuilder.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { GameSystem } from '@armoury/data-dao';
-import type { IGitHubClient } from '@armoury/clients-github';
 import type { GameContextResult } from '@armoury/data-dao';
 import { clearSchemaExtensions } from '@armoury/data-dao';
 import { clearCodecRegistry } from '@armoury/data-dao';
@@ -76,16 +75,6 @@ function createStubGameSystem(): GameSystem {
     };
 }
 
-/** Creates a stub GitHub client for testing. */
-function createStubGitHubClient(): IGitHubClient {
-    return {
-        listFiles: vi.fn(),
-        getFileSha: vi.fn(),
-        downloadFile: vi.fn(),
-        checkForUpdates: vi.fn(),
-    };
-}
-
 describe('DataContextBuilder', () => {
     let mockAdapter: MockDatabaseAdapter;
     let stubSystem: GameSystem;
@@ -150,15 +139,24 @@ describe('DataContextBuilder', () => {
             await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).build();
 
             expect(stubSystem.createGameContext).toHaveBeenCalledOnce();
-            expect(stubSystem.createGameContext).toHaveBeenCalledWith(mockAdapter, expect.any(Object));
+            expect(stubSystem.createGameContext).toHaveBeenCalledWith(mockAdapter, expect.any(Map));
         });
 
-        it('passes GitHub client to createGameContext when provided', async () => {
-            const githubClient = createStubGitHubClient();
+        it('passes registered clients map to createGameContext', async () => {
+            const mockClient = { listFiles: vi.fn() };
 
-            await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).github(githubClient).build();
+            await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .registerClient('github', mockClient)
+                .build();
 
-            expect(stubSystem.createGameContext).toHaveBeenCalledWith(mockAdapter, githubClient);
+            const passedMap = vi.mocked(stubSystem.createGameContext).mock.calls[0]?.[1] as unknown as Map<
+                string,
+                unknown
+            >;
+            expect(passedMap).toBeInstanceOf(Map);
+            expect(passedMap.get('github')).toBe(mockClient);
         });
 
         it('calls gameContext.sync() if sync method exists', async () => {
