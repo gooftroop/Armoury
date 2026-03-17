@@ -148,7 +148,7 @@ describe('DataContextBuilder', () => {
             await new DataContextBuilder()
                 .system(stubSystem)
                 .adapter(mockAdapter)
-                .registerClient('github', mockClient)
+                .register('github', mockClient)
                 .build();
 
             const passedMap = vi.mocked(stubSystem.createGameContext).mock.calls[0]?.[1] as unknown as Map<

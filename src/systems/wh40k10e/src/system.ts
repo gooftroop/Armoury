@@ -27,7 +27,7 @@ import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
 import type { Weapon, Ability, Stratagem, Detachment } from '@/types/entities.js';
 import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
 import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
-import { createWahapediaClient } from '@armoury/clients-wahapedia';
+import type { IWahapediaClient } from '@armoury/clients-wahapedia';
 import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
 import { ArmyDAO } from '@/dao/ArmyDAO.js';
 import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
@@ -220,6 +220,18 @@ function createMissingGitHubClient(): IGitHubClient {
     };
 }
 
+/** Creates a stub Wahapedia client that throws on invocation. */
+function createMissingWahapediaClient(): IWahapediaClient {
+    const throwMissing = async (): Promise<never> => {
+        throw new Error('Wahapedia client not configured');
+    };
+
+    return {
+        fetch: throwMissing,
+        fetchRaw: throwMissing,
+    };
+}
+
 /**
  * Warhammer 40K 10th Edition game system implementation.
  * Provides entity types, validation rules, data syncing, and hydration.
@@ -303,7 +315,7 @@ class Wh40k10eSystem implements Wh40kGameSystem {
      */
     createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult {
         const githubClient = (clients.get('github') as IGitHubClient | undefined) ?? createMissingGitHubClient();
-        const wahapediaClient = createWahapediaClient();
+        const wahapediaClient = (clients.get('wahapedia') as IWahapediaClient | undefined) ?? createMissingWahapediaClient();
         const chapterApprovedDAO = new ChapterApprovedDAO(adapter, wahapediaClient);
         const coreRulesDAO = new CoreRulesDAO(adapter, githubClient);
         const crusadeRulesDAO = new CrusadeRulesDAO(adapter, githubClient);
