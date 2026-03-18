@@ -245,15 +245,15 @@ jobs:
                   # Sleep briefly to respect the rate limit window from any prior creation.
                   sleep 5
 
-                  # Create API mapping: ws-sandbox.armoury-app.com/pr-{N}-{service} -> WS API
+                  # Create API mapping: ws-sandbox.armoury-app.com/pr-{N}/{service} -> WS API
                   # Include PR number in mapping key to avoid collisions between concurrent PRs.
                   aws apigatewayv2 create-api-mapping \
                     --domain-name "${WS_DOMAIN}" \
                     --api-id "${WS_API_ID}" \
                     --stage "pr-${PR_NUMBER}" \
-                    --api-mapping-key "pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}" || echo "::warning::WS API mapping creation failed (may already exist)"
+                    --api-mapping-key "pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}" || echo "::warning::WS API mapping creation failed (may already exist)"
 
-                  echo "Created WS API mapping for ws-sandbox.armoury-app.com/pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} -> ${WS_API_ID}"
+                  echo "Created WS API mapping for ws-sandbox.armoury-app.com/pr-${PR_NUMBER}/${SERVICE_SHORT_NAME} -> ${WS_API_ID}"
 
     deploy-production:
         name: Deploy Production

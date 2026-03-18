@@ -4,8 +4,10 @@
  * Reads NEXT_PUBLIC_*_BASE_URL and NEXT_PUBLIC_*_WS_URL from process.env,
  * falling back to defaults for any missing values.
  *
- * These env vars are inlined at build time by Next.js's DefinePlugin when
- * prefixed with NEXT_PUBLIC_, making them available in both server and client.
+ * In production and preview builds, these are set via .env.production
+ * (with dotenv-expand variable expansion for preview sandbox URLs).
+ * In development, they come from .env.development or .env.local.
+ * The Vercel dashboard overrides .env.production values for production.
  */
 
 import type { AppConfig } from '../schema.js';
