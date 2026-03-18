@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@armoury/adapters-pglite": "*",
+        "@armoury/adapters-wahapedia": "*",
         "@armoury/models": "*",
         "@armoury/wh40k10e": "*",
         "@armoury/ui": "*",

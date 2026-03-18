@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "@armoury/adapters-sqlite": "*",
+        "@armoury/adapters-wahapedia": "*",
         "@armoury/models": "*",
         "@armoury/wh40k10e": "*",
         "@sentry/react-native": "^7.12.0",
