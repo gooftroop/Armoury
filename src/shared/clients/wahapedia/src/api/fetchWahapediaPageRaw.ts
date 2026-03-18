@@ -76,10 +76,7 @@ async function fetchWithRetry(url: string, customFetch?: typeof fetch): Promise<
  * @returns Promise resolving to the raw HTML response body.
  * @throws Error if the request fails after retries.
  */
-export async function fetchWahapediaPageRaw(
-    url: string,
-    customFetch?: typeof fetch,
-): Promise<string> {
+export async function fetchWahapediaPageRaw(url: string, customFetch?: typeof fetch): Promise<string> {
     const response = await fetchWithRetry(url, customFetch);
 
     return response.text();
