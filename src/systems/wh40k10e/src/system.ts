@@ -90,7 +90,6 @@ interface Wh40kGameSystem extends Omit<GameSystem, 'createGameContext'> {
     createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult;
 }
 
-
 /**
  * Enum of entity kinds for wh40k10e data access.
  */
@@ -316,7 +315,8 @@ class Wh40k10eSystem implements Wh40kGameSystem {
      */
     createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult {
         const githubClient = (clients.get('github') as IGitHubClient | undefined) ?? createMissingGitHubClient();
-        const wahapediaClient = (clients.get('wahapedia') as IWahapediaClient | undefined) ?? createMissingWahapediaClient();
+        const wahapediaClient =
+            (clients.get('wahapedia') as IWahapediaClient | undefined) ?? createMissingWahapediaClient();
         const chapterApprovedDAO = new ChapterApprovedDAO(adapter, wahapediaClient);
         const coreRulesDAO = new CoreRulesDAO(adapter, githubClient);
         const crusadeRulesDAO = new CrusadeRulesDAO(adapter, githubClient);
