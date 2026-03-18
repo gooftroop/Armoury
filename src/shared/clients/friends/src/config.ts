@@ -1,12 +1,13 @@
 /**
  * Configuration constants for the friends client package.
  */
+import { config } from '@armoury/config';
 
-/** Base URL for the friends REST API, sourced from the environment. */
-export const FRIENDS_BASE_URL = process.env['FRIENDS_BASE_URL'] ?? 'http://localhost:3004';
+/** Base URL for the friends REST API. */
+export const FRIENDS_BASE_URL = config.services.friends.apiBaseUrl;
 
-/** WebSocket URL for the friends presence service, sourced from the environment. */
-export const DEFAULT_FRIENDS_WS_URL = process.env['FRIENDS_WS_URL'] ?? 'ws://localhost:3005';
+/** WebSocket URL for the friends presence service. */
+export const DEFAULT_FRIENDS_WS_URL = config.services.friends.wsBaseUrl ?? 'ws://localhost:3005';
 
 /** Maximum number of reconnection attempts before giving up. */
 export const MAX_RECONNECT_ATTEMPTS = 10;

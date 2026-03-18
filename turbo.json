@@ -12,7 +12,18 @@
         "build": {
             "dependsOn": ["^build", "^generate:types", "copy:systems"],
             "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-            "env": ["SENTRY_DSN", "SENTRY_ORG", "SENTRY_PROJECT", "NEXT_PUBLIC_SENTRY_DSN"],
+            "env": [
+                "SENTRY_DSN",
+                "SENTRY_ORG",
+                "SENTRY_PROJECT",
+                "NEXT_PUBLIC_SENTRY_DSN",
+                "NEXT_PUBLIC_USERS_BASE_URL",
+                "NEXT_PUBLIC_FRIENDS_BASE_URL",
+                "NEXT_PUBLIC_FRIENDS_WS_URL",
+                "NEXT_PUBLIC_MATCHES_BASE_URL",
+                "NEXT_PUBLIC_MATCHES_WS_URL",
+                "NEXT_PUBLIC_CAMPAIGNS_BASE_URL"
+            ],
             "passThroughEnv": ["SENTRY_AUTH_TOKEN"]
         },
         "generate:types": {

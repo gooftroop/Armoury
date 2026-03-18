@@ -82,7 +82,7 @@ jobs:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
                   BASE_PRIORITY: ${{ inputs.routing-rule-priority }}
-                  WILDCARD_DOMAIN: '*.sandbox.armoury-app.com'
+                  WILDCARD_DOMAIN: '*.api.sandbox.armoury-app.com'
               run: |
                   # Compute priority using same formula as deploy: PR_NUMBER * 1000 + BASE_PRIORITY
                   PRIORITY=$((PR_NUMBER * 1000 + BASE_PRIORITY))

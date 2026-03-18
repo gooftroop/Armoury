@@ -42,6 +42,38 @@ async function fetchWithRetry(url: string, customFetch?: typeof fetch): Promise<
     let lastError: Error | undefined;
     const fetchFn = customFetch ?? fetch;
 
+    // When running in browser, route through the proxy endpoint instead of direct fetch
+    if (typeof window !== 'undefined') {
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+                const response = await fetchFn('/api/wahapedia', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'User-Agent': USER_AGENT,
+                    },
+                    body: JSON.stringify({ url }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} ${response.statusText} from proxy for URL: ${url}`);
+                }
+
+                return response;
+            } catch (error) {
+                lastError = error instanceof Error ? error : new Error(String(error));
+
+                if (attempt < MAX_RETRIES - 1) {
+                    const backoffMs = BASE_DELAY_MS * Math.pow(2, attempt);
+                    await delay(backoffMs);
+                }
+            }
+        }
+
+        throw new Error(`Proxy request failed after ${MAX_RETRIES} retries: ${lastError?.message ?? 'Unknown error'}`);
+    }
+
+    // Server-side: fetch directly from wahapedia.ru
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
             const response = await fetchFn(url, {

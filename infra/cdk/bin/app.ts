@@ -12,6 +12,7 @@
 import * as cdk from 'aws-cdk-lib';
 
 import { DsqlStack } from '../lib/dsql-stack.js';
+import { ProductionDomainStack } from '../lib/production-domain-stack.js';
 import { WildcardDomainStack } from '../lib/wildcard-domain-stack.js';
 
 /**
@@ -20,6 +21,7 @@ import { WildcardDomainStack } from '../lib/wildcard-domain-stack.js';
  * - REQ-APP-002: Each stack must target the region specified in context.
  * - REQ-APP-003: Stack names follow the pattern Armoury-Dsql-<Environment>.
  * - REQ-APP-004: Create a WildcardDomainStack for sandbox environment only.
+ * - REQ-APP-005: Create a ProductionDomainStack for production environment only.
  */
 
 /** Shape of a single environment entry in cdk.json context. */
@@ -55,6 +57,15 @@ for (const [envName, config] of Object.entries(environments)) {
     if (envName === 'sandbox') {
         new WildcardDomainStack(app, 'Armoury-WildcardDomain-Sandbox', {
             environment: 'sandbox',
+            env: {
+                region: config.region,
+            },
+        });
+    }
+
+    if (envName === 'production') {
+        new ProductionDomainStack(app, 'Armoury-ProductionDomain', {
+            environment: 'production',
             env: {
                 region: config.region,
             },

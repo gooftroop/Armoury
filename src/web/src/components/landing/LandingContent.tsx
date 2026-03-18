@@ -29,6 +29,7 @@ import { auth0 } from '@/lib/auth0.js';
 import { discoverSystemManifests } from '@/lib/discoverSystems.js';
 import { getQueryClient } from '@/lib/getQueryClient.js';
 import { AuthenticatedLanding } from '@/components/landing/AuthenticatedLanding.js';
+import { SilentAuthCheck } from '@/components/landing/SilentAuthCheck.js';
 import { UnauthenticatedLanding } from '@/components/landing/UnauthenticatedLanding.js';
 
 /** Props for the LandingContent server component. */
@@ -76,5 +77,10 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
         );
     }
 
-    return <UnauthenticatedLanding manifests={manifests} />;
+    return (
+        <>
+            <SilentAuthCheck />
+            <UnauthenticatedLanding manifests={manifests} />
+        </>
+    );
 }

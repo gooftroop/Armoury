@@ -23,6 +23,7 @@
  */
 
 import * as React from 'react';
+import * as Sentry from '@sentry/nextjs';
 import type { DataContext } from '@armoury/data-context';
 import type { GameSystem } from '@armoury/data-dao';
 /**
@@ -148,6 +149,35 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 .register('wahapedia', wahapediaAdapter)
                 .build();
             setDataContext(dc);
+            
+            // Report partial sync failures from the builder's sync result
+            const syncResult = dc.syncResult;
+
+            if (syncResult && syncResult.failures.length > 0) {
+                // Report each failure to Sentry
+                for (const failure of syncResult.failures) {
+                    Sentry.captureException(new Error(failure.error), {
+                        tags: { dao: failure.dao, system: system.id },
+                        extra: {
+                            total: syncResult.total,
+                            succeeded: syncResult.succeeded.length,
+                            timestamp: syncResult.timestamp,
+                        },
+                    });
+                }
+
+                // Log to console in non-production environments
+                if (process.env.NODE_ENV !== 'production') {
+                    for (const failure of syncResult.failures) {
+                        console.error('[Armoury Sync]', failure.dao, 'failed:', failure.error);
+                    }
+
+                    console.warn(
+                        `[Armoury Sync] Summary: ${syncResult.succeeded.length}/${syncResult.total} succeeded`,
+                    );
+                }
+            }
+            
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,

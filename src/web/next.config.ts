@@ -1,3 +1,23 @@
+// ---------------------------------------------------------------------------
+// Sandbox URL injection for Vercel preview deployments.
+//
+// VERCEL_ENV and VERCEL_GIT_PULL_REQUEST_ID are available at build time.
+// Mutating process.env before the config export ensures Next.js's DefinePlugin
+// picks up NEXT_PUBLIC_* vars and inlines them into client bundles.
+// ---------------------------------------------------------------------------
+if (process.env['VERCEL_ENV'] === 'preview' && process.env['VERCEL_GIT_PULL_REQUEST_ID']) {
+    const prId = process.env['VERCEL_GIT_PULL_REQUEST_ID'];
+    const restBase = `https://pr-${prId}.api.sandbox.armoury-app.com`;
+    const wsBase = `wss://ws-sandbox.armoury-app.com`;
+
+    process.env['NEXT_PUBLIC_USERS_BASE_URL'] ??= `${restBase}/users`;
+    process.env['NEXT_PUBLIC_FRIENDS_BASE_URL'] ??= `${restBase}/friends`;
+    process.env['NEXT_PUBLIC_FRIENDS_WS_URL'] ??= `${wsBase}/pr-${prId}-friends`;
+    process.env['NEXT_PUBLIC_MATCHES_BASE_URL'] ??= `${restBase}/matches`;
+    process.env['NEXT_PUBLIC_MATCHES_WS_URL'] ??= `${wsBase}/pr-${prId}-matches`;
+    process.env['NEXT_PUBLIC_CAMPAIGNS_BASE_URL'] ??= `${restBase}/campaigns`;
+}
+
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';

@@ -1,0 +1,19 @@
+{
+    "name": "@armoury/config",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "react-native": "./src/adapters/expo.ts",
+            "default": "./src/adapters/nextjs.ts"
+        }
+    },
+    "devDependencies": {
+        "@armoury/typescript": "*",
+        "typescript": "^5.0.0"
+    }
+}

@@ -30,6 +30,7 @@
         "src/shared/clients/users",
         "src/shared/providers/bsdata",
         "src/shared/validation",
+        "src/shared/config",
         "src/shared/streams",
         "src/shared/e2e",
         "src/shared/ui",

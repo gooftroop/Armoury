@@ -5,7 +5,7 @@
  * per-PR sandbox deployments can use routing rules (REST) or API mappings
  * (WS) instead of creating individual custom domains per PR per service.
  *
- * REST: `*.sandbox.armoury-app.com` — wildcard; routing rules route by Host header + base path.
+ * REST: `*.api.sandbox.armoury-app.com` — wildcard; routing rules route by Host header + base path.
  * WS:   `ws-sandbox.armoury-app.com` — single domain; API mappings route by path key (`pr-N-service`).
  */
 
@@ -19,7 +19,7 @@ import type { Construct } from 'constructs';
 /**
  * @requirements
  * - REQ-WILDCARD-001: Provision a single ACM certificate covering both the REST wildcard and WS sandbox subdomains.
- * - REQ-WILDCARD-002: Create an API Gateway v2 custom domain for `*.sandbox.armoury-app.com` (REST).
+ * - REQ-WILDCARD-002: Create an API Gateway v2 custom domain for `*.api.sandbox.armoury-app.com` (REST).
  * - REQ-WILDCARD-003: Create an API Gateway v2 custom domain for `ws-sandbox.armoury-app.com` (WS).
  * - REQ-WILDCARD-004: Create Route53 A ALIAS records for the REST wildcard domain and the WS sandbox domain.
  * - REQ-WILDCARD-005: Export domain name IDs and regional endpoints for CI workflow consumption.
@@ -33,7 +33,7 @@ const HOSTED_ZONE_ID = 'Z09361641Z6OI455J4GGH';
 const ROOT_DOMAIN = 'armoury-app.com';
 
 /** REST API wildcard subdomain pattern. */
-const REST_WILDCARD_DOMAIN = `*.sandbox.${ROOT_DOMAIN}`;
+const REST_WILDCARD_DOMAIN = `*.api.sandbox.${ROOT_DOMAIN}`;
 
 /** WebSocket API sandbox domain (single, non-wildcard). */
 const WS_DOMAIN = `ws-sandbox.${ROOT_DOMAIN}`;
@@ -48,7 +48,7 @@ export interface WildcardDomainStackProps extends cdk.StackProps {
  * Stack that provisions shared custom domains for PR sandbox deployments.
  *
  * Creates:
- * - One ACM certificate covering both `*.sandbox.armoury-app.com` and `ws-sandbox.armoury-app.com`.
+ * - One ACM certificate covering both `*.api.sandbox.armoury-app.com` and `ws-sandbox.armoury-app.com`.
  * - Two API Gateway v2 custom domain names (REST wildcard + WS single domain).
  * - Two Route53 A ALIAS records pointing to the API Gateway regional endpoints.
  *
@@ -102,7 +102,7 @@ export class WildcardDomainStack extends cdk.Stack {
         // API Gateway v2 Custom Domains — REST wildcard + WS single domain
         // -----------------------------------------------------------------
 
-        // REST wildcard: `*.sandbox.armoury-app.com`
+        // REST wildcard: `*.api.sandbox.armoury-app.com`
         // CI workflows create routing rules per PR that match Host header + base path.
         this.restDomain = new apigwv2.DomainName(this, 'RestWildcardDomain', {
             domainName: REST_WILDCARD_DOMAIN,
@@ -126,10 +126,10 @@ export class WildcardDomainStack extends cdk.Stack {
         // Route53 A ALIAS Records — DNS → API Gateway
         // -----------------------------------------------------------------
 
-        // REST wildcard A record: *.sandbox.armoury-app.com → API Gateway regional endpoint
+        // REST wildcard A record: *.api.sandbox.armoury-app.com → API Gateway regional endpoint
         new route53.ARecord(this, 'RestWildcardARecord', {
             zone: hostedZone,
-            recordName: `*.sandbox`,
+            recordName: `*.api.sandbox`,
             target: route53.RecordTarget.fromAlias(
                 new targets.ApiGatewayv2DomainProperties(
                     this.restDomain.regionalDomainName,
