@@ -1,8 +1,12 @@
 {
-    "extends": "@armoury/typescript/tsconfig.base.json",
+    "extends": "@armoury/typescript/base.json",
     "compilerOptions": {
-        "outDir": "dist",
-        "rootDir": "src"
+        "noEmit": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        }
     },
-    "include": ["src"]
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist"]
 }
