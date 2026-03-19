@@ -96,6 +96,7 @@ function createMockClient(): IFriendsPresenceClient & {
         connectionStateSubject,
         messages$: messagesSubject.asObservable(),
         connectionState$: connectionStateSubject.asObservable(),
+        send: vi.fn(),
         connect: vi.fn(),
         disconnect: vi.fn(),
         dispose: vi.fn(),
@@ -423,7 +424,11 @@ describe('PresenceStream', () => {
         it('completes the onlineFriends$ observable', async () => {
             let completed = false;
 
-            stream.onlineFriends$.subscribe({ complete: () => (completed = true) });
+            stream.onlineFriends$.subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             stream.dispose();
 
@@ -433,7 +438,11 @@ describe('PresenceStream', () => {
         it('completes the onlineCount$ observable', async () => {
             let completed = false;
 
-            stream.onlineCount$.subscribe({ complete: () => (completed = true) });
+            stream.onlineCount$.subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             stream.dispose();
 
@@ -443,7 +452,11 @@ describe('PresenceStream', () => {
         it('completes the isOnline$ observable', async () => {
             let completed = false;
 
-            stream.isOnline$('user-1').subscribe({ complete: () => (completed = true) });
+            stream.isOnline$('user-1').subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             stream.dispose();
 
@@ -476,7 +489,11 @@ describe('PresenceStream', () => {
 
             let completed = false;
 
-            stream.onlineFriends$.subscribe({ complete: () => (completed = true) });
+            stream.onlineFriends$.subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             expect(completed).toBe(true);
         });

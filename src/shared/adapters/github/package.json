@@ -1,5 +1,5 @@
 {
-    "name": "@armoury/adapters-wahapedia",
+    "name": "@armoury/adapters-github",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -21,7 +21,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "@armoury/clients-wahapedia": "*",
+        "@armoury/clients-github": "*",
         "@tanstack/react-query": "^5.0.0"
     },
     "devDependencies": {

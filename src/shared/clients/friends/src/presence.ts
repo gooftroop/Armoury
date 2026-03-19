@@ -1,16 +1,36 @@
 /**
- * Friends WebSocket presence client using ws + rxjs.
+ * Friends WebSocket presence client using a cross-runtime WebSocket abstraction.
  *
  * Provides a reactive stream of friend presence events (online/offline)
  * via WebSocket connection to the friends presence service. Includes
  * automatic reconnection with exponential backoff and jitter.
  */
 
-import WebSocket from 'ws';
 import { Subject, BehaviorSubject } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
 import type { FriendsPresenceConfig, FriendsServerMessage, ConnectionState } from '@/types.js';
+
+/** Numeric WebSocket readyState for OPEN in both browser and ws runtimes. */
+const SOCKET_OPEN_STATE = 1;
+
+/**
+ * WebSocket-like contract used by this client in both browser and Node.js.
+ */
+interface PresenceSocket {
+    /** Current connection ready state. */
+    readonly readyState: number;
+    /** Sends text payload to the server. */
+    send(data: string): void;
+    /** Closes the underlying socket. */
+    close(): void;
+    /** Adds an event listener (browser-style API). */
+    addEventListener?: (type: 'open' | 'message' | 'close' | 'error', listener: (event: unknown) => void) => void;
+    /** Removes an event listener (browser-style API). */
+    removeEventListener?: (type: 'open' | 'message' | 'close' | 'error', listener: (event: unknown) => void) => void;
+    /** Registers an event handler (Node ws EventEmitter API). */
+    on?: (type: 'open' | 'message' | 'close' | 'error', listener: (event: unknown) => void) => void;
+}
 
 /**
  * Interface for the friends WebSocket presence client.
@@ -24,6 +44,9 @@ export interface IFriendsPresenceClient {
 
     /** Observable stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState>;
+
+    /** Sends a JSON message to the server via the WebSocket connection. */
+    send(message: Record<string, unknown>): void;
 
     /**
      * Establishes a WebSocket connection to the presence service.
@@ -57,7 +80,7 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
     private readonly getToken: () => Promise<string> | string;
     private readonly messagesSubject = new Subject<FriendsServerMessage>();
     private readonly connectionStateSubject = new BehaviorSubject<ConnectionState>('disconnected');
-    private ws: WebSocket | null = null;
+    private ws: PresenceSocket | null = null;
     private reconnectAttempts = 0;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     private intentionalClose = false;
@@ -68,6 +91,17 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
 
     /** Observable stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState> = this.connectionStateSubject.asObservable();
+
+    /**
+     * Sends a JSON payload to the presence service when the socket is connected.
+     *
+     * @param message - JSON-serializable message payload to send.
+     */
+    send(message: Record<string, unknown>): void {
+        if (this.ws && this.ws.readyState === SOCKET_OPEN_STATE) {
+            this.ws.send(JSON.stringify(message));
+        }
+    }
 
     /**
      * Creates a new FriendsPresenceClient instance.
@@ -100,14 +134,14 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
         if (tokenResult instanceof Promise) {
             tokenResult.then(
                 (token) => {
-                    this.establishConnection(token);
+                    void this.establishConnection(token);
                 },
                 () => {
                     this.connectionStateSubject.next('disconnected');
                 },
             );
         } else {
-            this.establishConnection(tokenResult);
+            void this.establishConnection(tokenResult);
         }
     }
 
@@ -149,25 +183,41 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
      *
      * @param token - The authentication token to include as a query parameter.
      */
-    private establishConnection(token: string): void {
+    private async establishConnection(token: string): Promise<void> {
         if (this.disposed) {
             return;
         }
 
         const url = `${this.wsUrl}?token=${encodeURIComponent(token)}`;
 
-        this.ws = new WebSocket(url);
+        try {
+            const ws = await this.createSocket(url);
 
-        this.ws.on('open', () => {
+            if (this.disposed || this.intentionalClose) {
+                ws.close();
+
+                return;
+            }
+
+            this.ws = ws;
+        } catch {
+            this.connectionStateSubject.next('disconnected');
+
+            return;
+        }
+
+        this.addSocketListener(this.ws, 'open', () => {
             this.reconnectAttempts = 0;
             this.connectionStateSubject.next('connected');
         });
 
-        this.ws.on('message', (data: WebSocket.Data) => {
+        this.addSocketListener(this.ws, 'message', (payload) => {
+            const data = this.getMessagePayload(payload);
+
             this.handleMessage(data);
         });
 
-        this.ws.on('close', () => {
+        this.addSocketListener(this.ws, 'close', () => {
             this.ws = null;
 
             if (!this.intentionalClose && !this.disposed) {
@@ -177,10 +227,66 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             }
         });
 
-        this.ws.on('error', () => {
+        this.addSocketListener(this.ws, 'error', () => {
             // Error is followed by a close event, so reconnection is handled there.
             // We do not emit errors on the messages$ stream.
         });
+    }
+
+    /**
+     * Creates a WebSocket instance for the active runtime.
+     *
+     * Uses the native WebSocket in browser environments and lazily imports
+     * the `ws` package in Node.js environments.
+     *
+     * @param url - Fully qualified WebSocket URL.
+     * @returns A socket instance implementing the PresenceSocket contract.
+     */
+    private async createSocket(url: string): Promise<PresenceSocket> {
+        if (typeof globalThis.WebSocket !== 'undefined') {
+            return new globalThis.WebSocket(url) as unknown as PresenceSocket;
+        }
+
+        const wsModule = await import('ws');
+
+        return new wsModule.default(url) as unknown as PresenceSocket;
+    }
+
+    /**
+     * Registers an event listener on either browser-style or ws-style APIs.
+     *
+     * @param ws - Socket instance to register on.
+     * @param event - Event name.
+     * @param handler - Event handler callback.
+     */
+    private addSocketListener(
+        ws: PresenceSocket,
+        event: 'open' | 'message' | 'close' | 'error',
+        handler: (event: unknown) => void,
+    ): void {
+        if (typeof ws.addEventListener === 'function') {
+            ws.addEventListener(event, handler);
+
+            return;
+        }
+
+        if (typeof ws.on === 'function') {
+            ws.on(event, handler);
+        }
+    }
+
+    /**
+     * Extracts message payload from browser MessageEvent or ws raw callback value.
+     *
+     * @param payload - Message callback payload.
+     * @returns Raw message body to decode.
+     */
+    private getMessagePayload(payload: unknown): unknown {
+        if (typeof payload === 'object' && payload !== null && 'data' in payload) {
+            return (payload as { data: unknown }).data;
+        }
+
+        return payload;
     }
 
     /**
@@ -189,9 +295,14 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
      *
      * @param data - The raw WebSocket message data.
      */
-    private handleMessage(data: WebSocket.Data): void {
+    private handleMessage(data: unknown): void {
         try {
-            const text = typeof data === 'string' ? data : data.toString();
+            const text = this.toMessageText(data);
+
+            if (text === null) {
+                return;
+            }
+
             const parsed: unknown = JSON.parse(text);
 
             if (!this.isValidServerMessage(parsed)) {
@@ -202,6 +313,32 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
         } catch {
             // Silently ignore malformed messages
         }
+    }
+
+    /**
+     * Converts runtime-specific WebSocket message data to text.
+     *
+     * @param data - Raw message data from browser or ws callbacks.
+     * @returns UTF-8 text payload, or null when data cannot be decoded.
+     */
+    private toMessageText(data: unknown): string | null {
+        if (typeof data === 'string') {
+            return data;
+        }
+
+        if (data instanceof ArrayBuffer) {
+            return new TextDecoder().decode(new Uint8Array(data));
+        }
+
+        if (ArrayBuffer.isView(data)) {
+            return new TextDecoder().decode(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+        }
+
+        if (typeof data === 'object' && data !== null && 'toString' in data) {
+            return data.toString();
+        }
+
+        return null;
     }
 
     /**

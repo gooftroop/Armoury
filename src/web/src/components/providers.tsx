@@ -11,6 +11,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/getQueryClient.js';
 import { DataContextProvider } from '@/providers/DataContextProvider.js';
+import { PresenceProvider } from '@/providers/PresenceProvider.js';
 
 /**
  * Properties for the Providers component.
@@ -31,7 +32,9 @@ export function Providers({ children }: ProvidersProps) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <DataContextProvider>{children}</DataContextProvider>
+            <DataContextProvider>
+                <PresenceProvider>{children}</PresenceProvider>
+            </DataContextProvider>
         </QueryClientProvider>
     );
 }

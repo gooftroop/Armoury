@@ -22,6 +22,7 @@
         "src/shared/adapters/pglite",
         "src/shared/adapters/dsql",
         "src/shared/adapters/wahapedia",
+        "src/shared/adapters/github",
         "src/shared/clients/github",
         "src/shared/clients/wahapedia",
         "src/shared/clients/campaigns",

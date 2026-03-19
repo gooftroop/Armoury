@@ -185,7 +185,6 @@ describe('FactionDAO', () => {
     beforeEach(() => {
         adapter = new MockDatabaseAdapter();
         githubClient = new MockGitHubClient();
-        FactionDAO.clearDownloadCache();
         vi.clearAllMocks();
     });
 
@@ -788,7 +787,6 @@ describe('SpaceMarinesDAO', () => {
     beforeEach(() => {
         adapter = new MockDatabaseAdapter();
         githubClient = new MockGitHubClient();
-        FactionDAO.clearDownloadCache();
         vi.clearAllMocks();
     });
 
