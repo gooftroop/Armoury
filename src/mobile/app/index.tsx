@@ -123,7 +123,9 @@ export default function LandingScreen() {
     return (
         <ScrollView style={styles.scrollView}>
             <YStack style={styles.heroSection}>
-                <H1 color="$primary">Armoury</H1>
+                <H1 color="$primary" style={styles.heroTitle}>
+                    Armoury
+                </H1>
                 <Paragraph color="$mutedForeground" style={styles.subtitleText}>
                     Select a game system to begin managing your armies and campaigns.
                 </Paragraph>
@@ -153,6 +155,9 @@ export default function LandingScreen() {
                 <YStack style={styles.authSection}>
                     <Button size="$3" theme="accent" onPress={() => void authorize({ scope: 'openid profile email' })}>
                         Sign In
+                    </Button>
+                    <Button size="$2" chromeless onPress={() => void authorize({ scope: 'openid profile email' })}>
+                        Create account
                     </Button>
                     <Paragraph color="$mutedForeground" size="$2">
                         New here? Sign in to create an account.
@@ -196,6 +201,7 @@ interface SystemTileProps {
  * @returns The rendered tile.
  */
 function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemTileProps): React.ReactElement {
+    const accentColor = manifest.accent === 'gold' ? '#b87333' : 'rgba(255, 255, 255, 0.12)';
     const overlayLabel = isError
         ? 'Retry Download'
         : isSyncing
@@ -206,10 +212,11 @@ function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemT
 
     return (
         <Pressable onPress={onPress} disabled={isSyncing} style={styles.tile}>
+            <View style={[styles.tileAccentBar, { backgroundColor: accentColor }]} />
             <View style={[styles.gradientBox, { backgroundColor: manifest.gradientStart }]}>
                 <Paragraph
                     style={[styles.splashText, { color: manifest.splashTextColor }]}
-                    fontSize={48}
+                    fontSize={32}
                     fontWeight="800"
                     letterSpacing={4}
                 >
@@ -219,6 +226,11 @@ function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemT
                 {!isSynced && (
                     <View style={styles.overlay}>
                         {isSyncing ? <ActivityIndicator size="small" color="#ffffff" /> : null}
+                        {!isSyncing && (
+                            <Paragraph color={isError ? '$destructive' : '$color'} fontWeight="700" size="$4">
+                                {isError ? '⚠' : '⬇'}
+                            </Paragraph>
+                        )}
                         <Paragraph
                             color={isError ? '$destructive' : '$color'}
                             fontWeight="600"
@@ -242,10 +254,13 @@ function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemT
 
             <View style={styles.tileFooter}>
                 <Paragraph color="$primary" fontWeight="600" size="$5">
-                    {manifest.splashText}
+                    {manifest.title}
                 </Paragraph>
                 <Paragraph color="$mutedForeground" size="$2">
-                    {manifest.id}
+                    {manifest.subtitle}
+                </Paragraph>
+                <Paragraph color="$mutedForeground" size="$2" style={styles.descriptionText}>
+                    {manifest.description}
                 </Paragraph>
             </View>
         </Pressable>
@@ -266,6 +281,10 @@ const styles = StyleSheet.create({
         gap: 8,
         paddingTop: 48,
         paddingHorizontal: 24,
+    },
+    heroTitle: {
+        textTransform: 'uppercase',
+        letterSpacing: 2,
     },
     subtitleText: {
         textAlign: 'center',
@@ -295,6 +314,9 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.08)',
         backgroundColor: 'rgba(255, 255, 255, 0.04)',
     },
+    tileAccentBar: {
+        height: 1,
+    },
     gradientBox: {
         height: 120,
         alignItems: 'center',
@@ -322,6 +344,9 @@ const styles = StyleSheet.create({
     },
     tileFooter: {
         padding: 16,
-        gap: 4,
+        gap: 6,
+    },
+    descriptionText: {
+        lineHeight: 18,
     },
 });

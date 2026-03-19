@@ -21,6 +21,7 @@
  */
 
 import * as React from 'react';
+import * as Sentry from '@sentry/react-native';
 import type { DataContext } from '@armoury/data-context';
 import type { GameSystem } from '@armoury/data-dao';
 
@@ -146,11 +147,10 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const { DataContextBuilder } = await import('@armoury/data-context');
             const { openDatabaseAsync } = await import('expo-sqlite');
             const { SQLiteAdapter } = await import('@armoury/adapters-sqlite');
-            const { createGitHubClient } = await import('@armoury/clients-github');
+            const { createGitHubClient } = await import('@armoury/adapters-github');
             const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
-            const { QueryClient } = await import('@tanstack/react-query');
-            const queryClient = new QueryClient();
-            const githubClient = createGitHubClient();
+            const { queryClient } = await import('@/lib/queryClient.js');
+            const githubClient = createGitHubClient(queryClient);
             const wahapediaAdapter = createWahapediaClient(queryClient);
             const database = await openDatabaseAsync('armoury');
             const adapter = new SQLiteAdapter(database);
@@ -160,6 +160,32 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
                 .build();
+
+            const syncResult = dc.syncResult;
+
+            if (syncResult && syncResult.failures.length > 0) {
+                for (const failure of syncResult.failures) {
+                    Sentry.captureException(new Error(failure.error), {
+                        tags: { dao: failure.dao, system: system.id },
+                        extra: {
+                            total: syncResult.total,
+                            succeeded: syncResult.succeeded.length,
+                            timestamp: syncResult.timestamp,
+                        },
+                    });
+                }
+
+                if (process.env.NODE_ENV !== 'production') {
+                    for (const failure of syncResult.failures) {
+                        console.error('[Armoury Sync]', failure.dao, 'failed:', failure.error);
+                    }
+
+                    console.warn(
+                        `[Armoury Sync] Summary: ${syncResult.succeeded.length}/${syncResult.total} succeeded`,
+                    );
+                }
+            }
+
             dataContextRef.current = dc;
             setDataContext(dc);
             setStatus('ready');

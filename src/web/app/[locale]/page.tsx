@@ -5,6 +5,9 @@
  * the Auth0 session cookie to determine authentication state. Static generation
  * would freeze the page as unauthenticated since no cookies exist at build time.
  *
+ * LandingContent is an async server component wrapped in <Suspense> so the browser
+ * sees a skeleton shell while the Auth0 session check and manifest discovery resolve.
+ *
  * @requirements
  * 1. Must be a Server Component (no 'use client').
  * 2. Must delegate auth-dependent rendering to LandingContent.
@@ -13,13 +16,17 @@
  * 5. Must match the layout from mockups/01-landing.html.
  * 6. Must use text-highlight for the h1 heading color (bronze/copper).
  * 7. Must use text-foreground for the legal disclaimer (white, prominent).
+ * 8. Must wrap LandingContent in Suspense with LandingSkeleton fallback.
  *
  * @module landing-page
  */
 
+import { Suspense } from 'react';
+
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { LandingContent } from '@/components/landing/LandingContent.js';
+import { LandingSkeleton } from '@/components/landing/LandingSkeleton.js';
 
 /**
  * Forces dynamic rendering so auth0.getSession() reads cookies at request time.
@@ -48,7 +55,9 @@ export default async function LandingPage({ params }: LandingPageProps) {
             </h1>
             <p className="mb-8 tracking-wide text-tertiary">{t('tagline')}</p>
 
-            <LandingContent params={params} />
+            <Suspense fallback={<LandingSkeleton />}>
+                <LandingContent params={params} />
+            </Suspense>
 
             <div className="mt-8 px-6 text-center">
                 <p className="mx-auto max-w-[480px] text-[11px] leading-relaxed text-foreground">{t('legal')}</p>

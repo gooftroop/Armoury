@@ -18,8 +18,11 @@
         "copy:systems": "node ../tooling/scripts/copy-systems.js"
     },
     "dependencies": {
+        "@armoury/adapters-github": "*",
         "@armoury/adapters-sqlite": "*",
         "@armoury/adapters-wahapedia": "*",
+        "@armoury/clients-friends": "*",
+        "@armoury/streams": "*",
         "@armoury/models": "*",
         "@armoury/wh40k10e": "*",
         "@sentry/react-native": "^7.12.0",
