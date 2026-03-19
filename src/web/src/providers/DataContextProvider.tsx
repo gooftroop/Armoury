@@ -149,7 +149,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 .register('wahapedia', wahapediaAdapter)
                 .build();
             setDataContext(dc);
-            
+
             // Report partial sync failures from the builder's sync result
             const syncResult = dc.syncResult;
 
@@ -177,7 +177,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                     );
                 }
             }
-            
+
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
