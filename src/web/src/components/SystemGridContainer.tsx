@@ -1,0 +1,200 @@
+'use client';
+
+/**
+ * System grid container component.
+ *
+ * Orchestrates tile state derivation and activation behavior for game systems.
+ * Delegates rendering to SystemGridView.
+ *
+ * @requirements
+ * 1. Must use useDataContext() for system sync states and enableSystem().
+ * 2. Must gate tile activation behind authentication.
+ * 3. Must resolve game systems via resolveGameSystem utility.
+ * 4. Must persist enabled systems to account when userId is provided.
+ * 5. Must not render tile layout directly.
+ * 6. Must export SystemGrid alias for backwards compatibility.
+ *
+ * @module system-grid-container
+ */
+
+import * as React from 'react';
+
+import { useTranslations } from 'next-intl';
+
+import type { GameSystemManifest } from '@armoury/data-dao';
+
+import { getAccessToken } from '@auth0/nextjs-auth0/client';
+import { mutationUpdateAccount } from '@armoury/clients-users';
+
+import { SystemGridView } from '@/components/SystemGridView.js';
+import type { SystemTileData } from '@/components/SystemGridView.js';
+import { getSyncStatus } from '@/lib/getSyncStatus.js';
+import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
+import { useDataContext } from '@/providers/DataContextProvider.js';
+import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
+
+/** Per-system sync map used by SystemGrid activation helpers. */
+type SyncStateMap = Record<string, { status: SystemSyncStatus; error?: string }>;
+
+/**
+ * Props for the SystemGrid container component.
+ */
+export interface SystemGridProps {
+    /** Array of discovered game system manifests to render as tiles. */
+    manifests: GameSystemManifest[];
+    /** Whether the current user has an active Auth0 session. */
+    isAuthenticated: boolean;
+    /** Auth0 user ID used for persisting enabled systems to account. */
+    userId?: string;
+}
+
+/**
+ * Handles activation flow for a selected game system tile.
+ *
+ * @param manifest - The selected system manifest.
+ * @param isAuthenticated - Whether user is authenticated.
+ * @param syncStates - Current per-system sync states.
+ * @param enableSystem - DataContext system enable action.
+ * @param userId - Optional authenticated user ID for account persistence.
+ * @param setActivatingId - Local setter for optimistic syncing state.
+ */
+async function activateSystemTile(
+    manifest: GameSystemManifest,
+    isAuthenticated: boolean,
+    syncStates: SyncStateMap,
+    enableSystem: ReturnType<typeof useDataContext>['enableSystem'],
+    userId: string | undefined,
+    setActivatingId: React.Dispatch<React.SetStateAction<string | null>>,
+): Promise<void> {
+    if (!isAuthenticated) {
+        window.location.href = '/auth/login?returnTo=/';
+
+        return;
+    }
+
+    const status = getSyncStatus(manifest.id, syncStates);
+
+    if (status === 'syncing') {
+        return;
+    }
+
+    setActivatingId(manifest.id);
+
+    try {
+        const system = await resolveGameSystem(manifest.id);
+
+        if (!system) {
+            return;
+        }
+
+        await enableSystem(system);
+
+        if (userId) {
+            try {
+                const token = await getAccessToken();
+                const authorization = `Bearer ${token}`;
+                const mutation = mutationUpdateAccount(
+                    authorization,
+                    { userId },
+                    {
+                        systems: {
+                            [manifest.id]: {
+                                enabled: true,
+                                lastSyncedAt: new Date().toISOString(),
+                            },
+                        },
+                    },
+                );
+
+                await mutation.mutationFn();
+            } catch {
+                // Best-effort account persistence; sync completion remains successful.
+            }
+        }
+    } finally {
+        setActivatingId(null);
+    }
+}
+
+/**
+ * Derives view-model tile descriptors from manifests and sync state.
+ *
+ * @param manifests - Game system manifests.
+ * @param syncStates - Current per-system sync states.
+ * @param activatingId - Locally activating system ID.
+ * @param t - Landing translator function.
+ * @param handleTileClick - Tile click callback.
+ * @returns Tile descriptors for SystemGridView.
+ */
+function buildTiles(
+    manifests: GameSystemManifest[],
+    syncStates: SyncStateMap,
+    activatingId: string | null,
+    t: ReturnType<typeof useTranslations<'landing'>>,
+    handleTileClick: (manifest: GameSystemManifest) => void,
+): SystemTileData[] {
+    return manifests.map((manifest) => {
+        const status = getSyncStatus(manifest.id, syncStates);
+        const isSyncing = status === 'syncing' || activatingId === manifest.id;
+        const isSynced = status === 'synced';
+        const isError = status === 'error';
+        const showOverlay = !isSynced;
+
+        return {
+            id: manifest.id,
+            manifest,
+            isSyncing,
+            isSynced,
+            isError,
+            showOverlay,
+            overlayText: isError
+                ? t('syncError')
+                : isSyncing
+                  ? t('downloading')
+                  : isSynced
+                    ? t('synced')
+                    : t('downloadOverlay'),
+            onClick: () => {
+                handleTileClick(manifest);
+            },
+        };
+    });
+}
+
+/**
+ * Orchestrates landing system tiles and delegates rendering to SystemGridView.
+ *
+ * @param props - Component props.
+ * @returns The rendered system grid view.
+ */
+function SystemGridContainer({ manifests, isAuthenticated, userId }: SystemGridProps): React.ReactElement {
+    const t = useTranslations('landing');
+    const { systemSyncStates, enableSystem } = useDataContext();
+    const [activatingId, setActivatingId] = React.useState<string | null>(null);
+
+    const handleTileClick = React.useCallback(
+        async (manifest: GameSystemManifest) => {
+            await activateSystemTile(
+                manifest,
+                isAuthenticated,
+                systemSyncStates,
+                enableSystem,
+                userId,
+                setActivatingId,
+            );
+        },
+        [isAuthenticated, systemSyncStates, enableSystem, userId],
+    );
+
+    const tiles = React.useMemo(
+        () => buildTiles(manifests, systemSyncStates, activatingId, t, (manifest) => void handleTileClick(manifest)),
+        [manifests, systemSyncStates, activatingId, t, handleTileClick],
+    );
+
+    return <SystemGridView tiles={tiles} />;
+}
+
+SystemGridContainer.displayName = 'SystemGridContainer';
+
+export { SystemGridContainer };
+export { SystemGridContainer as SystemGrid };

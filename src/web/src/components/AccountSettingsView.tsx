@@ -1,33 +1,23 @@
 'use client';
 
 /**
- * Account Settings client component.
+ * Account settings view components.
  *
- * Renders the full account settings experience: profile summary, preferences form,
- * game systems overview, and danger zone (account deletion). Fetches and mutates
- * account data via the `@armoury/clients-users` React Query client library.
+ * Pure render components for account settings content and loading skeleton.
  *
  * @requirements
- * 1. Must fetch account data via useQuery with queryAccount from @armoury/clients-users.
- * 2. Must display user profile summary (avatar, name, email) from the Auth0 session.
- * 3. Must render a preferences form with theme, language, and notification controls.
- * 4. Must disable theme and language selectors in V1 with explanatory notes.
- * 5. Must allow toggling notifications and saving preferences via mutationUpdateAccount.
- * 6. Must show enabled game systems from the account, or an empty state when none exist.
- * 7. Must provide a danger zone with AlertDialog confirmation for account deletion.
- * 8. Must use next-intl useTranslations for all user-facing strings.
- * 9. Must show loading skeletons while account data is being fetched.
+ * 1. Must render profile, preferences, systems, and danger zone sections.
+ * 2. Must render AccountSettingsLoading skeleton matching page layout.
+ * 3. Must not perform data fetching.
+ * 4. Must accept all state via props.
  *
- * @module AccountSettings
+ * @module account-settings-view
  */
 
 import * as React from 'react';
 
-import { useTranslations } from 'next-intl';
-import { useQuery, useMutation } from '@tanstack/react-query';
-
-import { queryAccount, mutationUpdateAccount, mutationDeleteAccount } from '@armoury/clients-users';
-import type { UserPreferences, Account } from '@armoury/clients-users';
+import type { useTranslations } from 'next-intl';
+import type { UserPreferences } from '@armoury/clients-users';
 
 import {
     Card,
@@ -58,10 +48,16 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
 } from '@/components/ui/index.js';
+import { getInitials } from '@/lib/getInitials.js';
 
-/** Props for the AccountSettings client component. */
-export interface AccountSettingsProps {
-    /** Auth0 user profile containing sub, name, email, and picture. */
+/** Save button lifecycle state. */
+export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+
+/**
+ * Props for the AccountSettingsView component.
+ */
+export interface AccountSettingsViewProps {
+    /** User profile shown in the profile summary card. */
     user: {
         /** Auth0 subject identifier. */
         sub: string;
@@ -72,137 +68,48 @@ export interface AccountSettingsProps {
         /** URL to the user's profile picture. */
         picture: string;
     };
-    /** Bearer access token for API authorization. */
-    accessToken: string;
-}
-
-/** Possible states for the save button. */
-type SaveState = 'idle' | 'saving' | 'saved' | 'error';
-
-/**
- * Extracts user initials from a display name for avatar fallback.
- *
- * @param name - The user's display name.
- * @returns Up to two uppercase initials.
- */
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .map((part) => part[0])
-        .filter(Boolean)
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
+    /** Locally edited preferences model. */
+    localPreferences: UserPreferences;
+    /** Current save operation state. */
+    saveState: SaveState;
+    /** Computed save button label for current save state. */
+    saveButtonLabel: string;
+    /** Enabled game system IDs for display. */
+    systemKeys: string[];
+    /** Account translation function. */
+    t: ReturnType<typeof useTranslations>;
+    /** Profile translation function. */
+    tProfile: ReturnType<typeof useTranslations>;
+    /** Notifications switch callback. */
+    onNotificationsChange: (checked: boolean) => void;
+    /** Save preferences callback. */
+    onSavePreferences: () => void;
+    /** Confirmed account deletion callback. */
+    onDeleteAccount: () => void;
 }
 
 /**
- * Account Settings client component.
+ * Pure render account settings view with four section cards.
  *
- * Provides the full account management UI: profile summary, preferences form,
- * game systems list, and account deletion with confirmation dialog.
- *
- * @param props - Component props containing Auth0 user data and access token.
- * @returns The rendered account settings interface.
+ * @param props - Account settings view props.
+ * @returns The rendered account settings page body.
  */
-export function AccountSettings({ user, accessToken }: AccountSettingsProps): React.ReactElement {
-    const t = useTranslations('account');
-    const tProfile = useTranslations('profile');
-
-    const authorization = `Bearer ${accessToken}`;
-    const params = { userId: user.sub };
-
-    // --- Account data query ---
-    const accountQuery = useQuery<Account, Error>(queryAccount(authorization, params));
-
-    // --- Local preferences state ---
-    const [localPreferences, setLocalPreferences] = React.useState<UserPreferences>({
-        theme: 'dark',
-        language: 'en',
-        notificationsEnabled: false,
-    });
-    const [saveState, setSaveState] = React.useState<SaveState>('idle');
-
-    /** Sync local preferences when account data loads. */
-    React.useEffect(() => {
-        if (accountQuery.data?.preferences) {
-            setLocalPreferences(accountQuery.data.preferences);
-        }
-    }, [accountQuery.data?.preferences]);
-
-    // --- Update mutation ---
-    const updateMutation = useMutation({
-        mutationFn: (preferences: UserPreferences) => {
-            const opts = mutationUpdateAccount(authorization, params, { preferences });
-
-            return opts.mutationFn!();
-        },
-        onMutate: () => {
-            setSaveState('saving');
-        },
-        onSuccess: () => {
-            setSaveState('saved');
-            setTimeout(() => setSaveState('idle'), 2000);
-        },
-        onError: () => {
-            setSaveState('error');
-            setTimeout(() => setSaveState('idle'), 3000);
-        },
-    });
-
-    // --- Delete mutation ---
-    const deleteMutation = useMutation(mutationDeleteAccount(authorization, params));
-
-    /** Handles saving preferences. */
-    const handleSavePreferences = React.useCallback(() => {
-        updateMutation.mutate(localPreferences);
-    }, [updateMutation, localPreferences]);
-
-    /** Handles toggling the notifications switch. */
-    const handleNotificationsChange = React.useCallback((checked: boolean) => {
-        setLocalPreferences((prev: UserPreferences) => ({ ...prev, notificationsEnabled: checked }));
-    }, []);
-
-    /** Handles confirming account deletion. */
-    const handleDeleteAccount = React.useCallback(() => {
-        deleteMutation.mutate();
-    }, [deleteMutation]);
-
-    /** Derives the save button label from the current save state. */
-    const saveButtonLabel = React.useMemo((): string => {
-        switch (saveState) {
-            case 'saving':
-                return t('preferences.saving');
-            case 'saved':
-                return t('preferences.saved');
-            case 'error':
-                return t('preferences.error');
-            default:
-                return t('preferences.save');
-        }
-    }, [saveState, t]);
-
-    /** Extract system keys from account data. */
-    const systemKeys: string[] = React.useMemo(() => {
-        const account = accountQuery.data;
-
-        if (!account?.systems) {
-            return [];
-        }
-
-        return Object.keys(account.systems);
-    }, [accountQuery.data]);
-
-    // --- Loading state ---
-    if (accountQuery.isLoading) {
-        return <AccountSettingsLoading />;
-    }
-
+function AccountSettingsView({
+    user,
+    localPreferences,
+    saveState,
+    saveButtonLabel,
+    systemKeys,
+    t,
+    tProfile,
+    onNotificationsChange,
+    onSavePreferences,
+    onDeleteAccount,
+}: AccountSettingsViewProps): React.ReactElement {
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-            {/* Page heading */}
             <h1 className="text-3xl font-bold text-primary">{t('title')}</h1>
 
-            {/* Profile Summary */}
             <Card>
                 <CardHeader>
                     <CardTitle>{tProfile('title')}</CardTitle>
@@ -221,14 +128,12 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                 </CardContent>
             </Card>
 
-            {/* Preferences Form */}
             <Card>
                 <CardHeader>
                     <CardTitle>{t('preferences.heading')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col gap-6">
-                        {/* Theme — disabled in V1 */}
                         <div className="flex flex-col gap-2">
                             <Label>{t('preferences.theme')}</Label>
                             <Select value={localPreferences.theme} disabled>
@@ -244,7 +149,6 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                             <p className="text-xs text-secondary">{t('preferences.themeDisabledNote')}</p>
                         </div>
 
-                        {/* Language — disabled in V1 */}
                         <div className="flex flex-col gap-2">
                             <Label>{t('preferences.language')}</Label>
                             <Select value={localPreferences.language} disabled>
@@ -260,7 +164,6 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
 
                         <Separator />
 
-                        {/* Notifications — functional */}
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col gap-1">
                                 <Label>{t('preferences.notifications')}</Label>
@@ -268,16 +171,15 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                             </div>
                             <Switch
                                 checked={localPreferences.notificationsEnabled}
-                                onCheckedChange={handleNotificationsChange}
+                                onCheckedChange={onNotificationsChange}
                             />
                         </div>
 
                         <Separator />
 
-                        {/* Save button */}
                         <div className="flex justify-end">
                             <Button
-                                onClick={handleSavePreferences}
+                                onClick={onSavePreferences}
                                 disabled={saveState === 'saving'}
                                 variant={saveState === 'saved' ? 'secondary' : 'primary'}
                             >
@@ -288,7 +190,6 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                 </CardContent>
             </Card>
 
-            {/* Game Systems */}
             <Card>
                 <CardHeader>
                     <CardTitle>{t('systems.heading')}</CardTitle>
@@ -308,7 +209,6 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                 </CardContent>
             </Card>
 
-            {/* Danger Zone */}
             <Card className="border-red-900/50">
                 <CardHeader>
                     <CardTitle className="text-red-400">{t('danger.heading')}</CardTitle>
@@ -326,7 +226,7 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
                             <AlertDialogFooter>
                                 <AlertDialogCancel>{t('danger.deleteCancel')}</AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={handleDeleteAccount}
+                                    onClick={onDeleteAccount}
                                     className="bg-red-600 text-white hover:bg-red-700"
                                 >
                                     {t('danger.deleteConfirm')}
@@ -340,20 +240,18 @@ export function AccountSettings({ user, accessToken }: AccountSettingsProps): Re
     );
 }
 
-AccountSettings.displayName = 'AccountSettings';
+AccountSettingsView.displayName = 'AccountSettingsView';
 
 /**
- * Loading skeleton for the account settings page.
- * Shown while account data is being fetched.
+ * Loading skeleton matching account settings card layout.
  *
- * @returns Skeleton placeholder elements matching the account settings layout.
+ * @returns Skeleton page placeholders.
  */
 function AccountSettingsLoading(): React.ReactElement {
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
             <Skeleton className="h-9 w-64" />
 
-            {/* Profile skeleton */}
             <Card>
                 <CardHeader>
                     <Skeleton className="h-6 w-24" />
@@ -369,7 +267,6 @@ function AccountSettingsLoading(): React.ReactElement {
                 </CardContent>
             </Card>
 
-            {/* Preferences skeleton */}
             <Card>
                 <CardHeader>
                     <Skeleton className="h-6 w-32" />
@@ -383,7 +280,6 @@ function AccountSettingsLoading(): React.ReactElement {
                 </CardContent>
             </Card>
 
-            {/* Systems skeleton */}
             <Card>
                 <CardHeader>
                     <Skeleton className="h-6 w-36" />
@@ -393,7 +289,6 @@ function AccountSettingsLoading(): React.ReactElement {
                 </CardContent>
             </Card>
 
-            {/* Danger zone skeleton */}
             <Card>
                 <CardHeader>
                     <Skeleton className="h-6 w-32" />
@@ -407,3 +302,5 @@ function AccountSettingsLoading(): React.ReactElement {
 }
 
 AccountSettingsLoading.displayName = 'AccountSettingsLoading';
+
+export { AccountSettingsView, AccountSettingsLoading };

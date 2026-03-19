@@ -87,6 +87,15 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
     const [onlineCount$, setOnlineCount$] = React.useState<Observable<number> | null>(null);
     const [isOnline$, setIsOnline$] = React.useState<((userId: string) => Observable<boolean>) | null>(null);
 
+    /**
+     * Initialize the presence WebSocket on mount.
+     *
+     * The empty dependency array is intentional: Auth0's Next.js SDK uses a
+     * server-redirect silent-auth flow that causes a full page reload after
+     * login. Because the page reloads, this effect re-runs with the freshly
+     * authenticated session without needing `user` in the dependency array.
+     * Adding reactive auth state here would cause unnecessary reconnections.
+     */
     React.useEffect(() => {
         let isMounted = true;
         let connectionStateSubscription: Subscription | null = null;

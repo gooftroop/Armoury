@@ -14,10 +14,10 @@
  * 1. Must create DataContext on browser mount using PGlite platform.
  * 2. Must track initialization state: idle | initializing | ready | error.
  * 3. Must track per-system sync state: idle | syncing | synced | error
-            4. Must expose enableSystem / disableSystem actions for user-driven system activation.
-            5. Must call dataContext.close() on unmount to release database connections.
-            6. Must not block rendering — no full-screen loader
-            7. Must provide the DataContext instance and sync state via React context.
+ * 4. Must expose enableSystem / disableSystem actions for user-driven system activation.
+ * 5. Must call dataContext.close() on unmount to release database connections.
+ * 6. Must not block rendering — no full-screen loader
+ * 7. Must provide the DataContext instance and sync state via React context.
  *
  * @module DataContextProvider
  */
@@ -137,8 +137,8 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
             const { createGitHubClient } = await import('@armoury/adapters-github');
             const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
-            const { QueryClient } = await import('@tanstack/react-query');
-            const queryClient = new QueryClient();
+            const { getQueryClient } = await import('@/lib/getQueryClient.js');
+            const queryClient = getQueryClient();
             const githubClient = createGitHubClient(queryClient);
             const wahapediaAdapter = createWahapediaClient(queryClient);
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });

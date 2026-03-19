@@ -20,7 +20,7 @@ import { useTranslations } from 'next-intl';
 
 import type { GameSystemManifest } from '@armoury/data-dao';
 
-import { SystemGrid } from '@/components/SystemGrid.js';
+import { SystemGrid } from '@/components/SystemGridContainer.js';
 import { Button } from '@/components/ui/index.js';
 
 /** Props for the UnauthenticatedLanding component. */

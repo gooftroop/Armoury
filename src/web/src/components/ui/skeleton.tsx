@@ -31,7 +31,7 @@ export type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;
  * @returns The rendered Skeleton component.
  */
 const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(({ className, ...props }, ref) => (
-    <div className={cn('animate-pulse rounded-md bg-muted', className)} ref={ref} {...props} />
+    <div className={cn('motion-safe:animate-pulse rounded-md bg-muted', className)} ref={ref} {...props} />
 ));
 Skeleton.displayName = 'Skeleton';
 

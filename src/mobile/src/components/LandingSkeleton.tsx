@@ -7,16 +7,15 @@
  * 3. Must render 1-2 system tile placeholders.
  * 4. Must render an auth button placeholder.
  * 5. Must use Animated opacity pulse loop for skeleton bones.
+ * 6. Must respect reduced-motion accessibility preference.
+ * 7. Must use Tamagui theme tokens instead of hardcoded colors.
  *
  * @module landing-skeleton
  */
 
 import * as React from 'react';
-import { Animated, Easing, StyleSheet } from 'react-native';
-import { XStack, YStack } from 'tamagui';
-
-const BONE_COLOR = 'rgba(255, 255, 255, 0.08)';
-const BACKGROUND_COLOR = '#0a0c0e';
+import { AccessibilityInfo, Animated, Easing, StyleSheet } from 'react-native';
+import { useTheme, XStack, YStack } from 'tamagui';
 
 /**
  * Landing skeleton component.
@@ -24,9 +23,27 @@ const BACKGROUND_COLOR = '#0a0c0e';
  * @returns Full-screen loading skeleton for auth gate state.
  */
 export function LandingSkeleton(): React.ReactElement {
+    const theme = useTheme();
     const opacity = React.useRef(new Animated.Value(0.3)).current;
+    const [reduceMotion, setReduceMotion] = React.useState(false);
 
     React.useEffect(() => {
+        const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+
+        void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+
+        return () => {
+            subscription.remove();
+        };
+    }, []);
+
+    React.useEffect(() => {
+        if (reduceMotion) {
+            opacity.setValue(0.6);
+
+            return;
+        }
+
         const animation = Animated.loop(
             Animated.sequence([
                 Animated.timing(opacity, {
@@ -49,39 +66,43 @@ export function LandingSkeleton(): React.ReactElement {
         return () => {
             animation.stop();
         };
-    }, [opacity]);
+    }, [opacity, reduceMotion]);
+
+    const backgroundColor = theme.background?.val ?? '#121416';
+    const boneColor = theme.muted?.val ?? '#222427';
+    const borderColor = theme.borderColor?.val ?? 'rgba(255, 255, 255, 0.08)';
 
     return (
-        <YStack style={styles.container}>
+        <YStack style={[styles.container, { backgroundColor }]}>
             <Animated.View style={{ opacity }}>
                 <YStack style={styles.heroSkeleton}>
-                    <YStack style={[styles.bone, styles.heroTitle]} />
-                    <YStack style={[styles.bone, styles.heroTagline]} />
+                    <YStack style={[styles.bone, styles.heroTitle, { backgroundColor: boneColor }]} />
+                    <YStack style={[styles.bone, styles.heroTagline, { backgroundColor: boneColor }]} />
                 </YStack>
 
                 <YStack style={styles.tileStack}>
-                    <YStack style={[styles.bone, styles.tile]}>
-                        <YStack style={[styles.bone, styles.tileAccent]} />
-                        <YStack style={[styles.bone, styles.tileSplash]} />
+                    <YStack style={[styles.bone, styles.tile, { borderColor, backgroundColor: boneColor }]}>
+                        <YStack style={[styles.bone, styles.tileAccent, { backgroundColor: boneColor }]} />
+                        <YStack style={[styles.bone, styles.tileSplash, { backgroundColor: boneColor }]} />
                         <YStack style={styles.tileTextBlock}>
-                            <YStack style={[styles.bone, styles.tileTitle]} />
-                            <YStack style={[styles.bone, styles.tileSubtitle]} />
-                            <YStack style={[styles.bone, styles.tileDescription]} />
+                            <YStack style={[styles.bone, styles.tileTitle, { backgroundColor: boneColor }]} />
+                            <YStack style={[styles.bone, styles.tileSubtitle, { backgroundColor: boneColor }]} />
+                            <YStack style={[styles.bone, styles.tileDescription, { backgroundColor: boneColor }]} />
                         </YStack>
                     </YStack>
 
-                    <YStack style={[styles.bone, styles.tile]}>
-                        <YStack style={[styles.bone, styles.tileAccent]} />
-                        <YStack style={[styles.bone, styles.tileSplash]} />
+                    <YStack style={[styles.bone, styles.tile, { borderColor, backgroundColor: boneColor }]}>
+                        <YStack style={[styles.bone, styles.tileAccent, { backgroundColor: boneColor }]} />
+                        <YStack style={[styles.bone, styles.tileSplash, { backgroundColor: boneColor }]} />
                         <YStack style={styles.tileTextBlock}>
-                            <YStack style={[styles.bone, styles.tileTitle]} />
-                            <YStack style={[styles.bone, styles.tileSubtitle]} />
-                            <YStack style={[styles.bone, styles.tileDescription]} />
+                            <YStack style={[styles.bone, styles.tileTitle, { backgroundColor: boneColor }]} />
+                            <YStack style={[styles.bone, styles.tileSubtitle, { backgroundColor: boneColor }]} />
+                            <YStack style={[styles.bone, styles.tileDescription, { backgroundColor: boneColor }]} />
                         </YStack>
                     </YStack>
 
                     <XStack style={styles.authButtonRow}>
-                        <YStack style={[styles.bone, styles.authButton]} />
+                        <YStack style={[styles.bone, styles.authButton, { backgroundColor: boneColor }]} />
                     </XStack>
                 </YStack>
             </Animated.View>
@@ -92,12 +113,10 @@ export function LandingSkeleton(): React.ReactElement {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: BACKGROUND_COLOR,
         paddingHorizontal: 24,
         paddingTop: 48,
     },
     bone: {
-        backgroundColor: BONE_COLOR,
         borderRadius: 8,
     },
     heroSkeleton: {
@@ -129,7 +148,6 @@ const styles = StyleSheet.create({
     },
     tile: {
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.06)',
         overflow: 'hidden',
     },
     tileAccent: {

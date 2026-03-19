@@ -20,7 +20,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { auth0 } from '@/lib/auth0.js';
-import { AccountSettings } from '@/components/AccountSettings.js';
+import { AccountSettings } from '@/components/AccountSettingsContainer.js';
 
 /** Props for the locale-parameterized account page. */
 export interface AccountPageProps {

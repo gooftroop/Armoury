@@ -18,21 +18,10 @@
  */
 
 import { useTranslations } from 'next-intl';
-import { Settings } from 'lucide-react';
-
 import type { GameSystemManifest } from '@armoury/data-dao';
 
-import { SystemGrid } from '@/components/SystemGrid.js';
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-    Button,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/index.js';
+import { SystemGrid } from '@/components/SystemGridContainer.js';
+import { UserWelcomeTile } from '@/components/landing/UserWelcomeTile.js';
 
 /** Minimal Auth0 user shape needed for the landing tile. */
 export interface LandingUser {
@@ -55,26 +44,6 @@ export interface AuthenticatedLandingProps {
 }
 
 /**
- * Extracts up to two initials from a display name.
- *
- * @param name - The user's display name.
- * @returns One or two uppercase initial characters, or '?' as fallback.
- */
-function getInitials(name: string): string {
-    if (!name || name.trim().length === 0) {
-        return '?';
-    }
-
-    const parts = name.trim().split(/\s+/);
-
-    if (parts.length === 1) {
-        return parts[0]![0]!.toUpperCase();
-    }
-
-    return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
-}
-
-/**
  * Renders the authenticated landing page content: user tile + system grid.
  *
  * @param props - Component props.
@@ -85,32 +54,13 @@ export function AuthenticatedLanding({ user, manifests, locale }: AuthenticatedL
 
     return (
         <>
-            <div
-                data-testid="user-tile"
-                className="mb-8 flex items-center gap-4 rounded-lg border border-border/40 bg-surface/60 px-4 py-2"
-            >
-                <Avatar size="sm">
-                    <AvatarImage src={user.picture} alt={user.name} />
-                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium text-foreground">{t('welcome', { name: user.name })}</span>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="link" asChild>
-                                <a
-                                    href={`/${locale}/account`}
-                                    className="ml-auto rounded-md p-1 text-secondary transition-colors hover:text-secondary-hover"
-                                    aria-label={t('editProfile')}
-                                >
-                                    <Settings className="h-4 w-4" />
-                                </a>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t('editProfile')}</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </div>
+            <UserWelcomeTile
+                name={user.name}
+                picture={user.picture}
+                welcomeText={t('welcome', { name: user.name })}
+                settingsLabel={t('editProfile')}
+                settingsHref={`/${locale}/account`}
+            />
 
             <SystemGrid manifests={manifests} isAuthenticated={true} userId={user.sub} />
         </>

@@ -60,8 +60,8 @@ export class LandingPage {
         this.createAccountLink = page.getByRole('link', { name: /create an account/i });
         this.systemGrid = page.locator('[style*="grid-template-columns"]');
 
-        // Logged-in user tile locators.
-        this.userTile = page.locator('[data-testid="user-tile"]');
+        // Logged-in user tile locators — accessible selectors (no data-testid).
+        this.userTile = page.getByRole('status', { name: /signed in|welcome/i });
         this.userAvatar = this.userTile
             .locator('span')
             .filter({ has: page.locator('img') })

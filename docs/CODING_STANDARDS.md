@@ -449,6 +449,30 @@ This is enforced by ESLint via `@typescript-eslint/no-unused-vars` with `argsIgn
 - **Mocks**: `__mocks__/` directories colocated with source
 - **Fixtures**: `__fixtures__/` directories colocated with tests
 
+### No `data-testid` Attributes
+
+**Never** use `data-testid` attributes in source code or test selectors. They couple tests to implementation details, bypass the accessibility layer, and provide no value to end users.
+
+Instead, use **accessible selectors** that reflect how real users and assistive technologies interact with the UI:
+
+| Approach | Selector | When to Use |
+|---|---|---|
+| Role + name | `getByRole('button', { name: /submit/i })` | Interactive elements (buttons, links, inputs) |
+| Label | `getByLabelText('Email address')` | Form controls with visible labels |
+| Text | `getByText('Sign In')` | Static text content |
+| Semantic structure | `page.locator('nav').getByRole('link')` | Structural queries (e.g. links inside a nav) |
+
+```typescript
+// Good — accessible selectors
+const submitButton = page.getByRole('button', { name: /submit/i });
+const emailInput = page.getByLabel('Email');
+const userTile = page.getByRole('status', { name: /welcome/i });
+
+// Bad — data-testid (FORBIDDEN)
+const submitButton = page.locator('[data-testid="submit-button"]');
+```
+
+This rule applies to **all** testing layers: unit tests (Testing Library), E2E tests (Playwright), and component tests.
 ### Fixture Factories
 
 Create `make*` functions in `__fixtures__/` that accept `Partial<T>` overrides and return a complete object with sensible defaults. Export them from an `__fixtures__/index.ts` barrel file.

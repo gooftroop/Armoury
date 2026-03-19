@@ -7,16 +7,23 @@
  * 3. Must be collapsible.
  */
 
-import { useState } from 'react';
+import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Swords, BookOpen, Flag, Users, Library, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils.js';
+import { SideNavUserTile } from '@/components/navigation/SideNavUserTile.js';
 
 export interface SideNavProps {
     locale: string;
     gameSystem: string;
+    /** User display name — shown in the avatar area. */
+    userName?: string;
+    /** URL to the user's profile picture. */
+    userPicture?: string;
+    /** User plan label (e.g. "Free Plan", "Pro"). Defaults to empty string when absent. */
+    userPlan?: string;
 }
 
 const NAV_ITEMS = [
@@ -33,10 +40,10 @@ const NAV_ITEMS = [
  * @param props - Component props
  * @returns The SideNav component
  */
-export function SideNav({ locale, gameSystem }: SideNavProps) {
+export function SideNav({ locale, gameSystem, userName, userPicture: _userPicture, userPlan }: SideNavProps) {
     const t = useTranslations('nav');
     const pathname = usePathname();
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = React.useState(false);
 
     const basePath = `/${locale}/${gameSystem}`;
 
@@ -108,28 +115,14 @@ export function SideNav({ locale, gameSystem }: SideNavProps) {
 
             <div className="flex flex-col gap-2 p-2">
                 <button
+                    type="button"
                     onClick={() => setCollapsed(!collapsed)}
                     className="flex h-10 w-full items-center justify-center rounded-md text-secondary hover:bg-hover hover:text-primary"
                     title={collapsed ? t('expand') : t('collapse')}
                 >
                     {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
                 </button>
-                <div
-                    className={cn(
-                        'flex items-center rounded-md p-2 hover:bg-hover cursor-pointer',
-                        collapsed ? 'justify-center' : 'gap-3 px-3',
-                    )}
-                >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-border">
-                        <span className="text-xs font-medium">U</span>
-                    </div>
-                    {!collapsed && (
-                        <div className="flex flex-col overflow-hidden">
-                            <span className="truncate text-sm font-medium leading-tight text-primary">User</span>
-                            <span className="truncate text-xs text-tertiary">Free Plan</span>
-                        </div>
-                    )}
-                </div>
+                <SideNavUserTile userName={userName ?? ''} userPlan={userPlan ?? ''} collapsed={collapsed} />
             </div>
         </aside>
     );
