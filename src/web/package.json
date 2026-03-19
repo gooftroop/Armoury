@@ -39,7 +39,10 @@
         "react-dom": "^19.0.0",
         "tailwind-merge": "^3.4.0",
         "@armoury/data-dao": "*",
-        "@armoury/data-context": "*"
+        "@armoury/data-context": "*",
+        "@armoury/clients-friends": "*",
+        "@armoury/streams": "*",
+        "rxjs": "^7.0.0"
     },
     "devDependencies": {
         "@armoury/eslint": "*",
