@@ -16,12 +16,10 @@
  * @module unauthenticated-landing
  */
 
-import { useTranslations } from 'next-intl';
-
 import type { GameSystemManifest } from '@armoury/data-dao';
 
 import { SystemGrid } from '@/components/SystemGridContainer.js';
-import { Button } from '@/components/ui/index.js';
+import { AuthLinks } from '@/components/landing/AuthLinks.js';
 
 /** Props for the UnauthenticatedLanding component. */
 export interface UnauthenticatedLandingProps {
@@ -36,24 +34,9 @@ export interface UnauthenticatedLandingProps {
  * @returns The rendered unauthenticated landing experience.
  */
 export function UnauthenticatedLanding({ manifests }: UnauthenticatedLandingProps): React.ReactElement {
-    const t = useTranslations('landing');
-
     return (
         <>
-            <div className="mb-8 flex flex-col items-center gap-3">
-                <p className="text-sm text-foreground">
-                    {t('auth.signInPrefix')}{' '}
-                    <Button variant="link" asChild>
-                        <a href="/auth/login">{t('auth.signInLink')}</a>
-                    </Button>
-                </p>
-                <p className="text-sm text-foreground">
-                    {t('auth.createAccountPrefix')}{' '}
-                    <Button variant="link" asChild>
-                        <a href="/auth/login?screen_hint=signup">{t('auth.createAccountLink')}</a>
-                    </Button>
-                </p>
-            </div>
+            <AuthLinks />
 
             <SystemGrid manifests={manifests} isAuthenticated={false} />
         </>

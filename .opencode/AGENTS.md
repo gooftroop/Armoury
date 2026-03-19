@@ -41,11 +41,35 @@ For tooling configuration details (Vitest, TypeScript, ESLint, Prettier), worksp
 Available skills in `.opencode/skills/`. Load via the `skill` tool only when needed — do not read SKILL.md files upfront.
 
 **Git & CI**: `git-worktree-agent-workflow` (**before any code changes — Phase 3+**), `mastering-github-cli` (Phase 4), `gh-fix-ci`, `gh-address-comments`, `code-reviewer`
-**Frontend**: `accessibility`, `core-web-vitals`, `perf-web-optimization`, `seo`, `figma`, `figma-implement-design`
+**Frontend**: `frontend-ux-engineer` (**mandatory — see below**), `accessibility`, `core-web-vitals`, `perf-web-optimization`, `seo`, `figma`, `figma-implement-design`
 **Security**: `security-best-practices`, `security-threat-model`
-**Docs & Design**: `docs-writer`, `technical-design-doc-creator`
+**Docs & Design**: `docs-writer`, `docs-guardian`, `technical-design-doc-creator`
 **Infrastructure**: `aws-advisor`, `sentry`
 **Quality**: `best-practices`
+
+### Mandatory Skill: `frontend-ux-engineer`
+
+**Every task that touches frontend code (web or mobile) MUST load the `frontend-ux-engineer` skill.**
+This applies to the orchestrator AND to every subagent delegated for frontend work.
+
+Frontend code includes: React components, hooks, styles (Tailwind/Tamagui), layouts,
+pages/screens, providers, animations, accessibility, and any file under `src/web/` or `src/mobile/`.
+
+When delegating frontend tasks, ALWAYS pass the skill:
+
+```typescript
+task(
+    category="visual-engineering",
+    load_skills=["frontend-ux-engineer"],  // MANDATORY for all frontend delegations
+    ...
+)
+```
+
+Without this skill, subagents lack the architectural guidance for proper component
+decomposition (orchestrational/render split), accessibility requirements (WCAG 2.1 AA),
+and platform-specific patterns (Tailwind v4, Radix UI, Tamagui v2, Expo Router).
+
+**Failure to load this skill for frontend work is a process violation.**
 
 ## Coding & Testing Conventions
 

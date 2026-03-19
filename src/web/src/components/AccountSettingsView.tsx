@@ -19,36 +19,11 @@ import * as React from 'react';
 import type { useTranslations } from 'next-intl';
 import type { UserPreferences } from '@armoury/clients-users';
 
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    Avatar,
-    AvatarImage,
-    AvatarFallback,
-    Switch,
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-    Label,
-    Button,
-    Badge,
-    Separator,
-    Skeleton,
-    AlertDialog,
-    AlertDialogTrigger,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogAction,
-    AlertDialogCancel,
-} from '@/components/ui/index.js';
-import { getInitials } from '@/lib/getInitials.js';
+import { Card, CardHeader, CardContent, Skeleton } from '@/components/ui/index.js';
+import { ProfileSection } from '@/components/ProfileSection.js';
+import { PreferencesSection } from '@/components/PreferencesSection.js';
+import { SystemsSection } from '@/components/SystemsSection.js';
+import { DangerZoneSection } from '@/components/DangerZoneSection.js';
 
 /** Save button lifecycle state. */
 export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -110,132 +85,20 @@ function AccountSettingsView({
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
             <h1 className="text-3xl font-bold text-primary">{t('title')}</h1>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{tProfile('title')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16">
-                            <AvatarImage src={user.picture} alt={user.name} />
-                            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col gap-1">
-                            <p className="text-lg font-semibold text-primary">{user.name}</p>
-                            <p className="text-sm text-secondary">{user.email}</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            <ProfileSection user={user} title={tProfile('title')} />
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('preferences.heading')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col gap-6">
-                        <div className="flex flex-col gap-2">
-                            <Label>{t('preferences.theme')}</Label>
-                            <Select value={localPreferences.theme} disabled>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="dark">Dark</SelectItem>
-                                    <SelectItem value="light">Light</SelectItem>
-                                    <SelectItem value="auto">Auto</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-xs text-secondary">{t('preferences.themeDisabledNote')}</p>
-                        </div>
+            <PreferencesSection
+                localPreferences={localPreferences}
+                saveState={saveState}
+                saveButtonLabel={saveButtonLabel}
+                t={t}
+                onNotificationsChange={onNotificationsChange}
+                onSavePreferences={onSavePreferences}
+            />
 
-                        <div className="flex flex-col gap-2">
-                            <Label>{t('preferences.language')}</Label>
-                            <Select value={localPreferences.language} disabled>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="en">English</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-xs text-secondary">{t('preferences.languageDisabledNote')}</p>
-                        </div>
+            <SystemsSection systemKeys={systemKeys} t={t} />
 
-                        <Separator />
-
-                        <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1">
-                                <Label>{t('preferences.notifications')}</Label>
-                                <p className="text-xs text-secondary">{t('preferences.notificationsDescription')}</p>
-                            </div>
-                            <Switch
-                                checked={localPreferences.notificationsEnabled}
-                                onCheckedChange={onNotificationsChange}
-                            />
-                        </div>
-
-                        <Separator />
-
-                        <div className="flex justify-end">
-                            <Button
-                                onClick={onSavePreferences}
-                                disabled={saveState === 'saving'}
-                                variant={saveState === 'saved' ? 'secondary' : 'primary'}
-                            >
-                                {saveButtonLabel}
-                            </Button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('systems.heading')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {systemKeys.length === 0 ? (
-                        <p className="text-sm text-secondary">{t('systems.none')}</p>
-                    ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {systemKeys.map((systemId) => (
-                                <Badge key={systemId} variant="secondary">
-                                    {systemId}
-                                </Badge>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            <Card className="border-red-900/50">
-                <CardHeader>
-                    <CardTitle className="text-red-400">{t('danger.heading')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive">{t('danger.deleteAccount')}</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>{t('danger.deleteConfirmTitle')}</AlertDialogTitle>
-                                <AlertDialogDescription>{t('danger.deleteConfirmDescription')}</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>{t('danger.deleteCancel')}</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={onDeleteAccount}
-                                    className="bg-red-600 text-white hover:bg-red-700"
-                                >
-                                    {t('danger.deleteConfirm')}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </CardContent>
-            </Card>
+            <DangerZoneSection t={t} onDeleteAccount={onDeleteAccount} />
         </div>
     );
 }

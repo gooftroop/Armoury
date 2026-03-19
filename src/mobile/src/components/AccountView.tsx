@@ -3,18 +3,22 @@
  *
  * @requirements
  * 1. Must render authenticated and unauthenticated account states.
- * 2. Must keep all account UI markup and styles in render-only components.
- * 3. Must avoid auth/query/mutation orchestration hooks.
+ * 2. Must compose sub-components for preferences and sign-out sections.
+ * 3. Must keep all account UI markup and styles in render-only components.
+ * 4. Must avoid auth/query/mutation orchestration hooks.
+ * 5. Must use theme tokens for background — no hardcoded colors.
  *
  * @module account-view
  */
 
 import * as React from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
-import { Button, Card, H2, H3, Label, Paragraph, ScrollView, Separator, Switch, XStack, YStack } from 'tamagui';
+import { StyleSheet } from 'react-native';
+import { Button, Card, H2, H3, Paragraph, ScrollView, YStack, useTheme } from 'tamagui';
 import type { UserPreferences } from '@armoury/clients-users';
 
 import { ProfileCard } from '@/components/ProfileCard.js';
+import { PreferencesSection } from '@/components/PreferencesSection.js';
+import { SignOutCard } from '@/components/SignOutCard.js';
 
 /** Save-button feedback lifecycle states. */
 export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -80,8 +84,11 @@ function AccountView({
     onSignOut,
     getSaveLabel,
 }: AccountViewProps): React.ReactElement {
+    /* Resolve theme background for the native ScrollView — avoids hardcoded color strings. */
+    const theme = useTheme();
+
     return (
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={[styles.scrollView, { backgroundColor: theme.background?.val }]}>
             <Card padding="$4" borderWidth={1} borderColor="$borderColor" style={styles.cardMargin}>
                 <H3 color="$primary" style={styles.sectionHeadingMargin}>
                     Profile
@@ -89,89 +96,17 @@ function AccountView({
                 <ProfileCard name={user.name ?? user.email ?? '?'} email={user.email ?? ''} picture={user.picture} />
             </Card>
 
-            <Card padding="$4" borderWidth={1} borderColor="$borderColor" style={styles.cardMargin}>
-                <H3 color="$primary" style={styles.prefHeadingMargin}>
-                    Preferences
-                </H3>
+            <PreferencesSection
+                localPreferences={localPreferences}
+                saveState={saveState}
+                hasChanges={hasChanges}
+                isLoading={isLoading}
+                onNotificationsChange={onNotificationsChange}
+                onSavePreferences={onSavePreferences}
+                getSaveLabel={getSaveLabel}
+            />
 
-                {isLoading ? (
-                    <YStack style={styles.loadingContainer}>
-                        <ActivityIndicator size="small" color="#ffffff" />
-                        <Paragraph color="$mutedForeground" size="$2" style={styles.loadingText}>
-                            Loading preferences…
-                        </Paragraph>
-                    </YStack>
-                ) : (
-                    <YStack gap="$5">
-                        <YStack gap="$1">
-                            <Label color="$color">Theme</Label>
-                            <Paragraph color="$mutedForeground" size="$3">
-                                {localPreferences.theme === 'dark'
-                                    ? 'Dark'
-                                    : localPreferences.theme === 'light'
-                                      ? 'Light'
-                                      : 'Auto'}
-                            </Paragraph>
-                            <Paragraph color="$mutedForeground" size="$1" opacity={0.7}>
-                                Dark only in V1 — more themes coming soon.
-                            </Paragraph>
-                        </YStack>
-
-                        <Separator />
-
-                        <YStack gap="$1">
-                            <Label color="$color">Language</Label>
-                            <Paragraph color="$mutedForeground" size="$3">
-                                {localPreferences.language === 'en' ? 'English' : localPreferences.language}
-                            </Paragraph>
-                            <Paragraph color="$mutedForeground" size="$1" opacity={0.7}>
-                                English only in V1 — localization coming soon.
-                            </Paragraph>
-                        </YStack>
-
-                        <Separator />
-
-                        <XStack style={styles.notificationRow}>
-                            <YStack flex={1} gap="$1" style={styles.notificationLabel}>
-                                <Label color="$color">Notifications</Label>
-                                <Paragraph color="$mutedForeground" size="$1">
-                                    Receive push notifications for campaign updates and friend requests.
-                                </Paragraph>
-                            </YStack>
-                            <Switch
-                                size="$3"
-                                checked={localPreferences.notificationsEnabled}
-                                onCheckedChange={onNotificationsChange}
-                            >
-                                <Switch.Thumb />
-                            </Switch>
-                        </XStack>
-
-                        {hasChanges && (
-                            <>
-                                <Separator />
-                                <XStack style={styles.saveRow}>
-                                    <Button
-                                        size="$3"
-                                        theme="accent"
-                                        onPress={onSavePreferences}
-                                        disabled={saveState === 'saving'}
-                                        opacity={saveState === 'saving' ? 0.6 : 1}
-                                    >
-                                        {getSaveLabel(saveState)}
-                                    </Button>
-                                </XStack>
-                            </>
-                        )}
-                    </YStack>
-                )}
-            </Card>
-
-            <Card padding="$4" borderWidth={1} borderColor="$destructive" style={styles.signOutCard}>
-                <Button size="$4" background="$destructive" onPress={onSignOut} style={styles.signOutButton}>
-                    Sign Out
-                </Button>
-            </Card>
+            <SignOutCard onSignOut={onSignOut} />
         </ScrollView>
     );
 }
@@ -204,7 +139,6 @@ AccountUnauthenticatedView.displayName = 'AccountUnauthenticatedView';
 const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
-        backgroundColor: '#0a0c0e',
     },
     centeredColumn: {
         alignItems: 'center',
@@ -225,34 +159,6 @@ const styles = StyleSheet.create({
     },
     sectionHeadingMargin: {
         marginBottom: 12,
-    },
-    prefHeadingMargin: {
-        marginBottom: 16,
-    },
-    loadingContainer: {
-        alignItems: 'center',
-        padding: 24,
-    },
-    loadingText: {
-        marginTop: 8,
-    },
-    notificationRow: {
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    notificationLabel: {
-        marginRight: 16,
-    },
-    saveRow: {
-        justifyContent: 'flex-end',
-    },
-    signOutCard: {
-        marginBottom: 32,
-        marginHorizontal: 24,
-    },
-    signOutButton: {
-        color: '#ffffff',
-        fontWeight: '700',
     },
 });
 

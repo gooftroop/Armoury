@@ -6,7 +6,7 @@
  * and system grid are all visible.
  *
  * @requirements
- * 1. Must render the user tile with data-testid="user-tile".
+ * 1. Must render the user tile (located via accessible role/label selectors).
  * 2. Must show a welcome message with the user's display name.
  * 3. Must show the user's avatar image.
  * 4. Must render a settings link pointing to the account page.
