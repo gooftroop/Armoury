@@ -76,6 +76,12 @@ export class LandingPage {
      * @param path - The path to navigate to (defaults to '/').
      */
     async goto(path = '/'): Promise<void> {
+        // Suppress the SilentAuthCheck redirect that fires on unauthenticated
+        // landing visits. Without this, the component navigates away to
+        // /auth/login?prompt=none before hover/click tests can complete.
+        await this.page.addInitScript(() => {
+            sessionStorage.setItem('armoury:silent-auth-attempted', '1');
+        });
         await this.page.goto(path);
     }
 
