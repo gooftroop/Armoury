@@ -110,6 +110,12 @@ export class WildcardDomainStack extends cdk.Stack {
             securityPolicy: apigwv2.SecurityPolicy.TLS_1_2,
         });
 
+        // The L2 DomainName construct defaults to API_MAPPING_ONLY routing mode,
+        // but sandbox REST APIs use routing rules (Host header + base path matching).
+        // Use the escape hatch to set routingMode on the underlying CfnDomainName.
+        const cfnRestDomain = this.restDomain.node.defaultChild as apigwv2.CfnDomainName;
+        cfnRestDomain.routingMode = 'ROUTING_RULE_THEN_API_MAPPING';
+
         cdk.Tags.of(this.restDomain).add('Name', `armoury-${environment}-rest-wildcard`);
 
         // WS sandbox: `ws-sandbox.armoury-app.com`
