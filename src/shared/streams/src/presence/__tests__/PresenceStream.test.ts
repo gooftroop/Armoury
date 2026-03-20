@@ -100,6 +100,7 @@ function createMockClient(): IFriendsPresenceClient & {
         connect: vi.fn(),
         disconnect: vi.fn(),
         dispose: vi.fn(),
+        errors$: new Subject<{ error: unknown; context?: Record<string, unknown> }>().asObservable(),
     };
 }
 

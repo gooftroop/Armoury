@@ -123,6 +123,7 @@ function createMockClient() {
         matchState$: vi.fn(),
         matchUpdated$: vi.fn(),
         dispose: vi.fn(),
+        errors$: new Subject<{ error: unknown; context?: Record<string, unknown> }>().asObservable(),
     };
 
     return { client, messagesSubject, connectionStateSubject };
