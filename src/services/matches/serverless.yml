@@ -66,18 +66,21 @@ functions:
             - http:
                   path: /matches
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /matches/{id}
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /matches/{id}/link
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}

@@ -1,6 +1,15 @@
 import type { ApiResponse } from '@/types.js';
 
 /**
+ * Standard CORS headers included in all API responses.
+ */
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+} as const;
+
+/**
  * Formats an error into an API Gateway proxy response.
  */
 export function formatErrorResponse(error: Error): ApiResponse {
@@ -14,6 +23,7 @@ export function formatErrorResponse(error: Error): ApiResponse {
         statusCode,
         headers: {
             'Content-Type': 'application/json',
+            ...CORS_HEADERS,
         },
         body: JSON.stringify({
             error: responseError,

@@ -45,6 +45,9 @@ export interface IFriendsPresenceClient {
     /** Observable stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState>;
 
+    /** Observable stream of errors encountered by the client (socket errors, message parse failures, etc.). */
+    readonly errors$: Observable<{ error: unknown; context?: Record<string, unknown> }>;
+
     /** Sends a JSON message to the server via the WebSocket connection. */
     send(message: Record<string, unknown>): void;
 
@@ -78,6 +81,7 @@ export interface IFriendsPresenceClient {
 export class FriendsPresenceClient implements IFriendsPresenceClient {
     private readonly wsUrl: string;
     private readonly getToken: () => Promise<string> | string;
+    private readonly errorsSubject = new Subject<{ error: unknown; context?: Record<string, unknown> }>();
     private readonly messagesSubject = new Subject<FriendsServerMessage>();
     private readonly connectionStateSubject = new BehaviorSubject<ConnectionState>('disconnected');
     private ws: PresenceSocket | null = null;
@@ -91,6 +95,10 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
 
     /** Observable stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState> = this.connectionStateSubject.asObservable();
+
+    /** Observable stream of errors encountered by the client (socket errors, message parse failures, etc.). */
+    readonly errors$: Observable<{ error: unknown; context?: Record<string, unknown> }> =
+        this.errorsSubject.asObservable();
 
     /**
      * Sends a JSON payload to the presence service when the socket is connected.
@@ -176,6 +184,7 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
         this.disconnect();
         this.messagesSubject.complete();
         this.connectionStateSubject.complete();
+        this.errorsSubject.complete();
     }
 
     /**
@@ -200,7 +209,8 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             }
 
             this.ws = ws;
-        } catch {
+        } catch (error) {
+            this.errorsSubject.next({ error, context: { operation: 'establishConnection' } });
             this.connectionStateSubject.next('disconnected');
 
             return;
@@ -227,7 +237,8 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             }
         });
 
-        this.addSocketListener(this.ws, 'error', () => {
+        this.addSocketListener(this.ws, 'error', (error) => {
+            this.errorsSubject.next({ error, context: { operation: 'socketError' } });
             // Error is followed by a close event, so reconnection is handled there.
             // We do not emit errors on the messages$ stream.
         });
@@ -310,7 +321,8 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             }
 
             this.messagesSubject.next(parsed);
-        } catch {
+        } catch (error) {
+            this.errorsSubject.next({ error, context: { operation: 'handleMessage' } });
             // Silently ignore malformed messages
         }
     }
@@ -365,6 +377,10 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
      */
     private scheduleReconnect(): void {
         if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+            this.errorsSubject.next({
+                error: new Error('Max reconnection attempts reached'),
+                context: { operation: 'scheduleReconnect' },
+            });
             this.connectionStateSubject.next('disconnected');
 
             return;

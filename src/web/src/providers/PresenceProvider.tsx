@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { getAccessToken } from '@auth0/nextjs-auth0/client';
+import * as Sentry from '@sentry/nextjs';
 import type { ConnectionState } from '@armoury/clients-friends';
 import { createFriendsPresenceClient, DEFAULT_FRIENDS_WS_URL } from '@armoury/clients-friends';
 import { createPresenceStream } from '@armoury/streams';
@@ -99,6 +100,7 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
     React.useEffect(() => {
         let isMounted = true;
         let connectionStateSubscription: Subscription | null = null;
+        let errorsSubscription: Subscription | null = null;
         let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
         let stream: ReturnType<typeof createPresenceStream> | null = null;
         let client: ReturnType<typeof createFriendsPresenceClient> | null = null;
@@ -124,6 +126,9 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
             connectionStateSubscription = presenceStream.connectionState$.subscribe((state: ConnectionState) => {
                 setConnectionState(state);
             });
+            errorsSubscription = client.errors$.subscribe(({ error, context }) => {
+                Sentry.captureException(error, { extra: context });
+            });
             setOnlineFriends$(() => presenceStream.onlineFriends$);
             setOnlineCount$(() => presenceStream.onlineCount$);
             setIsOnline$(() => (userId: string) => presenceStream.isOnline$(userId));
@@ -146,6 +151,7 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
             }
 
             connectionStateSubscription?.unsubscribe();
+            errorsSubscription?.unsubscribe();
             stream?.dispose();
             client?.disconnect();
             client?.dispose();

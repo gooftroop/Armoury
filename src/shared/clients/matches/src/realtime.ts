@@ -27,6 +27,7 @@ import type {
 export class MatchesRealtimeClient implements IMatchesRealtimeClient {
     private readonly wsUrl: string;
     private readonly getToken: () => Promise<string> | string;
+    private readonly errorsSubject = new Subject<{ error: unknown; context?: Record<string, unknown> }>();
     private ws: WebSocket | null = null;
     private reconnectAttempts = 0;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -41,6 +42,10 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
 
     /** Stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState> = this.connectionStateSubject.asObservable();
+
+    /** Stream of errors encountered by the client (socket errors, message parse failures, etc.). */
+    readonly errors$: Observable<{ error: unknown; context?: Record<string, unknown> }> =
+        this.errorsSubject.asObservable();
 
     /**
      * Creates a new MatchesRealtimeClient instance.
@@ -152,6 +157,7 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
         this.disconnect();
         this.messagesSubject.complete();
         this.connectionStateSubject.complete();
+        this.errorsSubject.complete();
     }
 
     private async establishConnection(): Promise<void> {
@@ -176,10 +182,13 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
                 }
             });
 
-            this.ws.on('error', () => {
+            this.ws.on('error', (error) => {
+                this.errorsSubject.next({ error, context: { operation: 'socketError' } });
                 // Error events are followed by close events; reconnection is handled there.
             });
-        } catch {
+        } catch (error) {
+            this.errorsSubject.next({ error, context: { operation: 'establishConnection' } });
+
             if (!this.intentionalDisconnect && !this.disposed) {
                 this.scheduleReconnect();
             }
@@ -193,7 +202,8 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
             if (this.isValidServerMessage(parsed)) {
                 this.messagesSubject.next(parsed);
             }
-        } catch {
+        } catch (error) {
+            this.errorsSubject.next({ error, context: { operation: 'handleMessage' } });
             // Ignore malformed messages.
         }
     }
@@ -218,6 +228,10 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
 
     private scheduleReconnect(): void {
         if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+            this.errorsSubject.next({
+                error: new Error('Max reconnection attempts reached'),
+                context: { operation: 'scheduleReconnect' },
+            });
             this.connectionStateSubject.next('disconnected');
 
             return;

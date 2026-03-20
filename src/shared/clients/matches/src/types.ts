@@ -314,6 +314,11 @@ export interface IMatchesRealtimeClient {
     readonly connectionState$: import('rxjs').Observable<ConnectionState>;
 
     /**
+     * Stream of errors encountered by the client (socket errors, message parse failures, etc.).
+     */
+    readonly errors$: import('rxjs').Observable<{ error: unknown; context?: Record<string, unknown> }>;
+
+    /**
      * Establishes the WebSocket connection with authentication.
      */
     connect(): void;
