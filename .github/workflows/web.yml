@@ -7,7 +7,7 @@ on:
             - 'src/web/**'
             - 'src/shared/**'
             - 'src/systems/**'
-            - 'e2e/web/**'
+            - 'src/web/e2e/**'
             - '.browserslistrc'
     pull_request:
         branches: [main]
@@ -15,7 +15,7 @@ on:
             - 'src/web/**'
             - 'src/shared/**'
             - 'src/systems/**'
-            - 'e2e/web/**'
+            - 'src/web/e2e/**'
             - '.browserslistrc'
 
 permissions:

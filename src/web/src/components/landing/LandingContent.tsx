@@ -64,15 +64,7 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
 
         return (
             <HydrationBoundary state={dehydratedState}>
-                <AuthenticatedLanding
-                    user={{
-                        sub: userId,
-                        name: String(session.user.name ?? ''),
-                        picture: String(session.user.picture ?? ''),
-                    }}
-                    manifests={manifests}
-                    locale={locale}
-                />
+                <AuthenticatedLanding userId={userId} manifests={manifests} locale={locale} />
             </HydrationBoundary>
         );
     }

@@ -3,13 +3,13 @@
 /**
  * Authenticated landing experience — shown when the user has a valid Auth0 session.
  *
- * Renders ProfileTileContainer (authenticated view) and the SystemGrid for
- * browsing/downloading game systems. Account data is hydrated from
- * server-prefetched React Query state — no additional fetch on mount.
+ * Renders ProfileTileContainer (which owns its own auth state client-side) and
+ * the SystemGrid for browsing/downloading game systems. Account data is hydrated
+ * from server-prefetched React Query state — no additional fetch on mount.
  *
  * @requirements
  * 1. Must be a Client Component ('use client').
- * 2. Must render ProfileTileContainer with user data.
+ * 2. Must render ProfileTileContainer with locale (auth state owned internally).
  * 3. Must render SystemGrid with userId for account persistence.
  * 4. Must NOT use data-testid attributes.
  *
@@ -22,20 +22,10 @@ import type { GameSystemManifest } from '@armoury/data-dao';
 import { SystemGrid } from '@/components/SystemGridContainer.js';
 import { ProfileTileContainer } from '@/components/profile/index.js';
 
-/** Minimal Auth0 user shape needed for the landing tile. */
-export interface LandingUser {
-    /** Auth0 subject identifier. */
-    sub: string;
-    /** Display name. */
-    name: string;
-    /** Profile picture URL. */
-    picture: string;
-}
-
 /** Props for the AuthenticatedLanding component. */
 export interface AuthenticatedLandingProps {
-    /** Auth0 user profile subset. */
-    user: LandingUser;
+    /** Auth0 subject identifier needed by SystemGrid for account persistence. */
+    userId: string;
     /** Discovered game system manifests. */
     manifests: GameSystemManifest[];
     /** Current locale for profile link. */
@@ -48,15 +38,15 @@ export interface AuthenticatedLandingProps {
  * @param props - Component props.
  * @returns The rendered authenticated landing experience.
  */
-export function AuthenticatedLanding({ user, manifests, locale }: AuthenticatedLandingProps): React.ReactElement {
+export function AuthenticatedLanding({ userId, manifests, locale }: AuthenticatedLandingProps): React.ReactElement {
     return (
         <>
             {/* Positioned in upper-right on md+ screens, normal flow on small screens */}
             <div className="mb-8 md:absolute md:right-6 md:top-6 md:mb-0">
-                <ProfileTileContainer user={user} locale={locale} />
+                <ProfileTileContainer locale={locale} />
             </div>
 
-            <SystemGrid manifests={manifests} userId={user.sub} />
+            <SystemGrid manifests={manifests} userId={userId} />
         </>
     );
 }

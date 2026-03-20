@@ -14,3 +14,4 @@ export { ProfileTileContainer, type ProfileTileContainerProps } from '@/componen
 
 export { AuthenticatedProfile, type AuthenticatedProfileProps } from '@/components/profile/AuthenticatedProfile.js';
 export { UnauthenticatedPrompt, type UnauthenticatedPromptProps } from '@/components/profile/UnauthenticatedPrompt.js';
+export { ProfileTileSkeleton } from '@/components/profile/ProfileTileSkeleton.js';
