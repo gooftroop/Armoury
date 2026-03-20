@@ -22,7 +22,7 @@
 
 import { useEffect } from 'react';
 
-import { SILENT_AUTH_ATTEMPTED_KEY } from '@/lib/silentAuthConstants.js';
+const SILENT_AUTH_ATTEMPTED_KEY = 'armoury:silent-auth-attempted';
 
 /** Renders nothing while performing a one-time silent auth redirect check. */
 export function SilentAuthCheck(): null {
