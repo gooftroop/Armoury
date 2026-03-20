@@ -88,7 +88,7 @@ export async function handler(event: ApiGatewayEvent): Promise<ApiResponse> {
 
         return response;
     } catch (error) {
-        console.error('Matches handler error', error);
+        Sentry.logger.error('Matches handler error', { error: error instanceof Error ? error.message : String(error) });
         Sentry.captureException(error);
 
         const normalizedError = error instanceof Error ? error : new Error('Unknown error');
