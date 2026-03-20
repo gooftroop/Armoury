@@ -3,40 +3,45 @@
 /**
  * Unauthenticated landing experience — shown when no Auth0 session exists.
  *
- * Displays sign-in / sign-up links and the SystemGrid (which will redirect
- * to Auth0 login when a tile is clicked).
+ * Renders ProfileTileContainer (unauthenticated prompt) and the SystemGrid
+ * (which will redirect to Auth0 login when a tile is clicked).
  *
  * @requirements
  * 1. Must be a Client Component ('use client').
- * 2. Must render sign-in and sign-up auth links.
+ * 2. Must render ProfileTileContainer without user prop.
  * 3. Must render SystemGrid with isAuthenticated=false.
- * 4. Must use next-intl useTranslations for all user-facing strings.
- * 5. Must reuse the auth link design from the original page.tsx.
+ * 4. Must NOT use data-testid attributes.
  *
  * @module unauthenticated-landing
  */
 
+import * as React from 'react';
 import type { GameSystemManifest } from '@armoury/data-dao';
 
 import { SystemGrid } from '@/components/SystemGridContainer.js';
-import { AuthLinks } from '@/components/landing/AuthLinks.js';
+import { ProfileTileContainer } from '@/components/profile/index.js';
 
 /** Props for the UnauthenticatedLanding component. */
 export interface UnauthenticatedLandingProps {
     /** Discovered game system manifests. */
     manifests: GameSystemManifest[];
+    /** Current locale for profile link. */
+    locale: string;
 }
 
 /**
- * Renders the unauthenticated landing page content: auth links + system grid.
+ * Renders the unauthenticated landing page content: profile prompt + system grid.
  *
  * @param props - Component props.
  * @returns The rendered unauthenticated landing experience.
  */
-export function UnauthenticatedLanding({ manifests }: UnauthenticatedLandingProps): React.ReactElement {
+export function UnauthenticatedLanding({ manifests, locale }: UnauthenticatedLandingProps): React.ReactElement {
     return (
         <>
-            <AuthLinks />
+            {/* Positioned in upper-right on md+ screens, normal flow on small screens */}
+            <div className="mb-8 md:absolute md:right-6 md:top-6 md:mb-0">
+                <ProfileTileContainer locale={locale} />
+            </div>
 
             <SystemGrid manifests={manifests} isAuthenticated={false} />
         </>

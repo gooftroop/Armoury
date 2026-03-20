@@ -5,6 +5,7 @@
  * 1. Must own auth, routing, sync-state, and system-activation orchestration.
  * 2. Must delegate all visual rendering to LandingView.
  * 3. Must preserve Auth0 authorize scope and post-sync navigation behavior.
+ * 4. Auth sign-in/create-account callbacks now live in ProfileTileContainer.
  *
  * @module landing-container
  */
@@ -35,14 +36,6 @@ function LandingContainer(): React.ReactElement {
     const theme = useTheme();
     const isAuthenticated = user !== null && user !== undefined;
     const scrollViewBg = theme.background?.val ?? '#121416';
-
-    const handleSignIn = React.useCallback(() => {
-        void authorize({ scope: 'openid profile email' });
-    }, [authorize]);
-
-    const handleCreateAccount = React.useCallback(() => {
-        void authorize({ scope: 'openid profile email' });
-    }, [authorize]);
 
     const handleTilePress = React.useCallback(
         async (manifest: GameSystemManifest) => {
@@ -89,15 +82,7 @@ function LandingContainer(): React.ReactElement {
         };
     });
 
-    return (
-        <LandingView
-            tiles={tiles}
-            isAuthenticated={isAuthenticated}
-            scrollViewBg={scrollViewBg}
-            onSignIn={handleSignIn}
-            onCreateAccount={handleCreateAccount}
-        />
-    );
+    return <LandingView tiles={tiles} scrollViewBg={scrollViewBg} />;
 }
 
 LandingContainer.displayName = 'LandingContainer';

@@ -3,25 +3,24 @@
 /**
  * Authenticated landing experience — shown when the user has a valid Auth0 session.
  *
- * Displays a compact user tile (avatar, welcome text, settings link) and the
- * SystemGrid for browsing/downloading game systems. Account data is hydrated
- * from server-prefetched React Query state — no additional fetch on mount.
+ * Renders ProfileTileContainer (authenticated view) and the SystemGrid for
+ * browsing/downloading game systems. Account data is hydrated from
+ * server-prefetched React Query state — no additional fetch on mount.
  *
  * @requirements
  * 1. Must be a Client Component ('use client').
- * 2. Must render a user tile with avatar, welcome text, and settings link.
+ * 2. Must render ProfileTileContainer with user data.
  * 3. Must render SystemGrid with isAuthenticated=true.
- * 4. Must use next-intl useTranslations for all user-facing strings.
- * 5. Must reuse the user tile design from the original page.tsx.
+ * 4. Must NOT use data-testid attributes.
  *
  * @module authenticated-landing
  */
 
-import { useTranslations } from 'next-intl';
+import * as React from 'react';
 import type { GameSystemManifest } from '@armoury/data-dao';
 
 import { SystemGrid } from '@/components/SystemGridContainer.js';
-import { UserWelcomeTile } from '@/components/landing/UserWelcomeTile.js';
+import { ProfileTileContainer } from '@/components/profile/index.js';
 
 /** Minimal Auth0 user shape needed for the landing tile. */
 export interface LandingUser {
@@ -44,23 +43,18 @@ export interface AuthenticatedLandingProps {
 }
 
 /**
- * Renders the authenticated landing page content: user tile + system grid.
+ * Renders the authenticated landing page content: profile tile + system grid.
  *
  * @param props - Component props.
  * @returns The rendered authenticated landing experience.
  */
 export function AuthenticatedLanding({ user, manifests, locale }: AuthenticatedLandingProps): React.ReactElement {
-    const t = useTranslations('landing');
-
     return (
         <>
-            <UserWelcomeTile
-                name={user.name}
-                picture={user.picture}
-                welcomeText={t('welcome', { name: user.name })}
-                settingsLabel={t('editProfile')}
-                settingsHref={`/${locale}/account`}
-            />
+            {/* Positioned in upper-right on md+ screens, normal flow on small screens */}
+            <div className="mb-8 md:absolute md:right-6 md:top-6 md:mb-0">
+                <ProfileTileContainer user={user} locale={locale} />
+            </div>
 
             <SystemGrid manifests={manifests} isAuthenticated={true} userId={user.sub} />
         </>

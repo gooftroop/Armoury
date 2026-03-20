@@ -80,7 +80,7 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
     return (
         <>
             <SilentAuthCheck />
-            <UnauthenticatedLanding manifests={manifests} />
+            <UnauthenticatedLanding manifests={manifests} locale={locale} />
         </>
     );
 }

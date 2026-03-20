@@ -17,6 +17,7 @@
  * 6. Must use text-highlight for the h1 heading color (bronze/copper).
  * 7. Must use text-foreground for the legal disclaimer (white, prominent).
  * 8. Must wrap LandingContent in Suspense with LandingSkeleton fallback.
+ * 9. Must use relative positioning on main for ProfileTile absolute placement.
  *
  * @module landing-page
  */
@@ -49,7 +50,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
     const t = await getTranslations('landing');
 
     return (
-        <main className="flex min-h-[100dvh] flex-col items-center justify-center p-6 md:p-8">
+        <main className="relative flex min-h-[100dvh] flex-col items-center justify-center p-6 md:p-8">
             <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.12em] text-highlight md:text-5xl lg:text-6xl">
                 {t('logo')}
             </h1>
