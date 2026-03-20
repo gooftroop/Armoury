@@ -19,13 +19,18 @@
         "e2e:headed": "npx playwright test --config e2e/playwright.config.ts --headed"
     },
     "dependencies": {
+        "@armoury/adapters-github": "*",
         "@armoury/adapters-pglite": "*",
         "@armoury/adapters-wahapedia": "*",
-        "@armoury/adapters-github": "*",
-        "@armoury/models": "*",
-        "@armoury/wh40k10e": "*",
-        "@armoury/ui": "*",
+        "@armoury/clients-friends": "*",
         "@armoury/clients-users": "*",
+        "@armoury/data-context": "*",
+        "@armoury/data-dao": "*",
+        "@armoury/models": "*",
+        "@armoury/streams": "*",
+        "@armoury/ui": "*",
+        "@armoury/wh40k10e": "*",
+        "@auth0/auth0-spa-js": "^2.11.3",
         "@auth0/nextjs-auth0": "^4.16.0",
         "@sentry/nextjs": "^10.43.0",
         "@tanstack/react-query": "^5.90.20",
@@ -37,12 +42,8 @@
         "radix-ui": "^1.4.3",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
-        "tailwind-merge": "^3.4.0",
-        "@armoury/data-dao": "*",
-        "@armoury/data-context": "*",
-        "@armoury/clients-friends": "*",
-        "@armoury/streams": "*",
-        "rxjs": "^7.0.0"
+        "rxjs": "^7.0.0",
+        "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
         "@armoury/eslint": "*",
