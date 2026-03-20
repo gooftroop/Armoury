@@ -10,7 +10,7 @@
  * @requirements
  * 1. Must be a Client Component ('use client').
  * 2. Must render ProfileTileContainer with user data.
- * 3. Must render SystemGrid with isAuthenticated=true.
+ * 3. Must render SystemGrid with userId for account persistence.
  * 4. Must NOT use data-testid attributes.
  *
  * @module authenticated-landing
@@ -56,7 +56,7 @@ export function AuthenticatedLanding({ user, manifests, locale }: AuthenticatedL
                 <ProfileTileContainer user={user} locale={locale} />
             </div>
 
-            <SystemGrid manifests={manifests} isAuthenticated={true} userId={user.sub} />
+            <SystemGrid manifests={manifests} userId={user.sub} />
         </>
     );
 }

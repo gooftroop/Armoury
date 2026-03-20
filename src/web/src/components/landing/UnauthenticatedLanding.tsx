@@ -9,7 +9,7 @@
  * @requirements
  * 1. Must be a Client Component ('use client').
  * 2. Must render ProfileTileContainer without user prop.
- * 3. Must render SystemGrid with isAuthenticated=false.
+ * 3. Must render SystemGrid with onUnauthenticatedClick redirect callback.
  * 4. Must NOT use data-testid attributes.
  *
  * @module unauthenticated-landing
@@ -36,6 +36,10 @@ export interface UnauthenticatedLandingProps {
  * @returns The rendered unauthenticated landing experience.
  */
 export function UnauthenticatedLanding({ manifests, locale }: UnauthenticatedLandingProps): React.ReactElement {
+    const handleUnauthenticatedClick = React.useCallback(() => {
+        window.location.href = '/auth/login?returnTo=/';
+    }, []);
+
     return (
         <>
             {/* Positioned in upper-right on md+ screens, normal flow on small screens */}
@@ -43,7 +47,7 @@ export function UnauthenticatedLanding({ manifests, locale }: UnauthenticatedLan
                 <ProfileTileContainer locale={locale} />
             </div>
 
-            <SystemGrid manifests={manifests} isAuthenticated={false} />
+            <SystemGrid manifests={manifests} onUnauthenticatedClick={handleUnauthenticatedClick} />
         </>
     );
 }

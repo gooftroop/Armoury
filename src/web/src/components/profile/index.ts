@@ -12,6 +12,5 @@ export { ProfileTileContainer, type ProfileTileContainerProps } from '@/componen
 
 // === Render Components ===
 
-export { ProfileTileView, type ProfileTileViewProps } from '@/components/profile/ProfileTileView.js';
 export { AuthenticatedProfile, type AuthenticatedProfileProps } from '@/components/profile/AuthenticatedProfile.js';
 export { UnauthenticatedPrompt, type UnauthenticatedPromptProps } from '@/components/profile/UnauthenticatedPrompt.js';

@@ -321,6 +321,49 @@ export default function HomePage() { ... }
 export default function RootLayout({ children }: { children: React.ReactNode }) { ... }
 ```
 
+## React Components
+
+### No Boolean Flag Props
+
+**Never** use boolean props to switch between fundamentally different component behaviors or render trees. A boolean flag that causes a component to render entirely different content is a composition failure — the parent should render the appropriate child directly.
+
+```tsx
+// Bad — flag switches between entirely different components
+function ProfileTileView({ isAuthenticated, ...rest }: Props): React.ReactElement {
+    if (isAuthenticated) {
+        return <AuthenticatedProfile {...rest} />;
+    }
+
+    return <UnauthenticatedPrompt {...rest} />;
+}
+
+// Good — parent composes the correct child directly
+function ProfileTileContainer({ user }: Props): React.ReactElement {
+    if (user) {
+        return <AuthenticatedProfile name={user.name} picture={user.picture} />;
+    }
+
+    return <UnauthenticatedPrompt />;
+}
+
+// Bad — flag controls fundamentally different click behavior
+interface SystemGridProps {
+    isAuthenticated: boolean;
+}
+
+// Good — behavior injected via callback
+interface SystemGridProps {
+    onUnauthenticatedClick?: () => void;
+}
+```
+
+**Legitimate boolean props** (NOT violations):
+
+- `isLoading` — toggles a skeleton/spinner within the same component layout
+- `disabled` — standard HTML semantics
+- `isOpen` / `isExpanded` — toggle visibility of content within a single component
+
+The test: if removing the boolean would split the component into two, it should be two components composed by the parent.
 ### Barrel Files (`index.ts`)
 
 Use barrel files at module boundaries to define the public API. Use named re-exports. Separate type-only exports from value exports.

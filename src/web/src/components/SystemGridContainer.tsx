@@ -8,11 +8,12 @@
  *
  * @requirements
  * 1. Must use useDataContext() for system sync states and enableSystem().
- * 2. Must gate tile activation behind authentication.
+ * 2. Must delegate unauthenticated tile click behavior to parent via callback.
  * 3. Must resolve game systems via resolveGameSystem utility.
  * 4. Must persist enabled systems to account when userId is provided.
  * 5. Must not render tile layout directly.
  * 6. Must export SystemGrid alias for backwards compatibility.
+ * 7. Must NOT use boolean flag props to control auth-gated behavior.
  *
  * @module system-grid-container
  */
@@ -42,17 +43,17 @@ type SyncStateMap = Record<string, { status: SystemSyncStatus; error?: string }>
 export interface SystemGridProps {
     /** Array of discovered game system manifests to render as tiles. */
     manifests: GameSystemManifest[];
-    /** Whether the current user has an active Auth0 session. */
-    isAuthenticated: boolean;
     /** Auth0 user ID used for persisting enabled systems to account. */
     userId?: string;
+    /** Callback invoked when an unauthenticated user clicks a tile. Parent provides redirect behavior. */
+    onUnauthenticatedClick?: () => void;
 }
 
 /**
  * Handles activation flow for a selected game system tile.
  *
  * @param manifest - The selected system manifest.
- * @param isAuthenticated - Whether user is authenticated.
+ * @param onUnauthenticatedClick - Optional callback for unauthenticated tile clicks.
  * @param syncStates - Current per-system sync states.
  * @param enableSystem - DataContext system enable action.
  * @param userId - Optional authenticated user ID for account persistence.
@@ -60,14 +61,14 @@ export interface SystemGridProps {
  */
 async function activateSystemTile(
     manifest: GameSystemManifest,
-    isAuthenticated: boolean,
+    onUnauthenticatedClick: (() => void) | undefined,
     syncStates: SyncStateMap,
     enableSystem: ReturnType<typeof useDataContext>['enableSystem'],
     userId: string | undefined,
     setActivatingId: React.Dispatch<React.SetStateAction<string | null>>,
 ): Promise<void> {
-    if (!isAuthenticated) {
-        window.location.href = '/auth/login?returnTo=/';
+    if (onUnauthenticatedClick) {
+        onUnauthenticatedClick();
 
         return;
     }
@@ -167,7 +168,7 @@ function buildTiles(
  * @param props - Component props.
  * @returns The rendered system grid view.
  */
-function SystemGridContainer({ manifests, isAuthenticated, userId }: SystemGridProps): React.ReactElement {
+function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: SystemGridProps): React.ReactElement {
     const t = useTranslations('landing');
     const { systemSyncStates, enableSystem } = useDataContext();
     const [activatingId, setActivatingId] = React.useState<string | null>(null);
@@ -176,14 +177,14 @@ function SystemGridContainer({ manifests, isAuthenticated, userId }: SystemGridP
         async (manifest: GameSystemManifest) => {
             await activateSystemTile(
                 manifest,
-                isAuthenticated,
+                onUnauthenticatedClick,
                 systemSyncStates,
                 enableSystem,
                 userId,
                 setActivatingId,
             );
         },
-        [isAuthenticated, systemSyncStates, enableSystem, userId],
+        [onUnauthenticatedClick, systemSyncStates, enableSystem, userId],
     );
 
     const tiles = React.useMemo(
