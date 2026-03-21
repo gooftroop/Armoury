@@ -17,7 +17,7 @@ import path from 'path';
 export const baseConfig = {
     test: {
         globals: true,
-        include: ['**/__tests__/**/*.test.ts'],
+        include: ['**/__tests__/**/*.test.{ts,tsx}'],
         exclude: ['node_modules', 'dist'],
     },
     resolve: {

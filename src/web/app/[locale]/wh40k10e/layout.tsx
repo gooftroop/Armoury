@@ -3,10 +3,13 @@
  * 1. Must export a layout that wraps the game system application shell.
  * 2. Must render the SideNav (desktop) and BottomNav (mobile).
  * 3. Must hardcode the wh40k10e game system for navigation components.
+ * 4. Must redirect unauthenticated users to /auth/login.
  */
 
 import { SideNav } from '@/components/navigation/SideNav.js';
 import { BottomNav } from '@/components/navigation/BottomNav.js';
+import { redirect } from 'next/navigation';
+import { auth0 } from '@/lib/auth0.js';
 
 export interface AppLayoutProps {
     children: React.ReactNode;
@@ -24,6 +27,12 @@ export interface AppLayoutProps {
  */
 export default async function AppLayout({ children, params }: AppLayoutProps) {
     const { locale } = await params;
+
+    const session = await auth0.getSession();
+
+    if (!session) {
+        redirect('/auth/login');
+    }
 
     return (
         <div className="flex min-h-[100dvh] w-full flex-col bg-base md:flex-row">

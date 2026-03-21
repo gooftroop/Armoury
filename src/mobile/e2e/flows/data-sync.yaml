@@ -1,0 +1,47 @@
+# First-time data sync flow.
+#
+# Validates that after login the app can reach army creation and present
+# synced Warhammer 40,000 10th Edition data, including known faction options.
+#
+# @requirements
+# - REQ-MAESTRO-DATA-SYNC-01: Authenticate via common/login.yaml
+# - REQ-MAESTRO-DATA-SYNC-02: Confirm armies screen loads after login
+# - REQ-MAESTRO-DATA-SYNC-03: Navigate to create-army form
+# - REQ-MAESTRO-DATA-SYNC-04: Assert expected game system is available
+# - REQ-MAESTRO-DATA-SYNC-05: Assert known factions are visible from synced data
+appId: com.armoury.mobile
+env:
+  TEST_USER_EMAIL: ${TEST_USER_EMAIL}
+  TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
+---
+- runFlow: common/login.yaml
+- assertVisible:
+    id: "army-list-screen"
+    timeout: 10000
+- assertVisible:
+    text: "My Armies"
+    timeout: 10000
+- tapOn:
+    id: "army-list-new-button"
+- assertVisible:
+    id: "army-new-name-input"
+    timeout: 10000
+- tapOn:
+    id: "army-new-game-system-selector"
+- assertVisible:
+    text: "Warhammer 40,000 10th Edition"
+    timeout: 10000
+- tapOn: "Warhammer 40,000 10th Edition"
+- tapOn:
+    id: "army-new-faction-selector"
+- scrollUntilVisible:
+    element:
+      text: "Space Marines"
+    direction: DOWN
+    timeout: 10000
+- assertVisible:
+    text: "Space Marines"
+    timeout: 10000
+- assertVisible:
+    text: "Aeldari"
+    timeout: 10000

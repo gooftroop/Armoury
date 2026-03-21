@@ -45,7 +45,7 @@ export default defineConfig({
             name: 'chromium-authenticated',
             use: {
                 ...devices['Desktop Chrome'],
-                storageState: 'e2e/web/.auth/user.json',
+                storageState: '.auth/user.json',
             },
             dependencies: ['setup'],
             testIgnore: /unauthenticated\//,
@@ -54,7 +54,7 @@ export default defineConfig({
             name: 'firefox-authenticated',
             use: {
                 ...devices['Desktop Firefox'],
-                storageState: 'e2e/web/.auth/user.json',
+                storageState: '.auth/user.json',
             },
             dependencies: ['setup'],
             testIgnore: /unauthenticated\//,
@@ -63,7 +63,7 @@ export default defineConfig({
             name: 'mobile-chromium-authenticated',
             use: {
                 ...devices['Pixel 7'],
-                storageState: 'e2e/web/.auth/user.json',
+                storageState: '.auth/user.json',
             },
             dependencies: ['setup'],
             testIgnore: /unauthenticated\//,
@@ -86,8 +86,9 @@ export default defineConfig({
         env: {
             // Use a test-specific database so e2e runs don't touch real data
             DATABASE_URL: process.env['E2E_DATABASE_URL'] ?? process.env['DATABASE_URL'] ?? '',
-            NEXTAUTH_URL: 'http://localhost:3000',
-            NEXTAUTH_SECRET: process.env['E2E_NEXTAUTH_SECRET'] ?? 'e2e-test-secret',
+            // Auth0 SDK reads these from process.env automatically
+            AUTH0_SECRET: process.env['AUTH0_SECRET'] ?? 'e2e-test-secret',
+            APP_BASE_URL: 'http://localhost:3000',
         },
     },
 });
