@@ -21,6 +21,7 @@
         "build": "ESBUILD_ENTRIES=src/index.ts,src/adapter.ts,src/types.ts,src/codec.ts,src/hydration.ts,src/schema.ts,src/pluginRegistry.ts,src/dao/index.ts,src/dao/AccountDAO.ts,src/dao/BaseDAO.ts,src/dao/BSDataBaseDAO.ts,src/dao/CampaignDAO.ts,src/dao/CampaignParticipantDAO.ts,src/dao/FriendDAO.ts,src/dao/MatchDAO.ts,src/dao/RemoteDataDAO.ts,src/dao/SyncStatusTable.ts,src/dao/TTLSyncBaseDAO.ts,src/dao/UserDAO.ts,src/dao/UserPresenceDAO.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
         "generate:types": "tsc -p tsconfig.build.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\"",
         "test": "vitest run",
+        "test:e2e": "vitest run --config vitest.e2e.config.ts",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
         "format": "prettier --write .",
