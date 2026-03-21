@@ -35,7 +35,7 @@ vi.mock('../utils/secrets.js', () => {
 });
 
 const TEST_METHOD_ARN = 'arn:aws:execute-api:us-east-1:123456789012:abcdef1234/dev/GET/campaigns';
-const WILDCARD_RESOURCE = 'arn:aws:execute-api:us-east-1:123456789012:abcdef1234/dev/*/*';
+const WILDCARD_RESOURCE = 'arn:aws:execute-api:us-east-1:123456789012:abcdef1234/dev/*';
 
 /**
  * Builds a minimal authorizer event for tests.
@@ -52,7 +52,7 @@ const buildEvent = (authorizationToken: string): AuthorizerEvent => {
 };
 
 const TEST_WS_METHOD_ARN = 'arn:aws:execute-api:us-east-1:123456789012:ws-api-id/production/$connect';
-const WS_WILDCARD_RESOURCE = 'arn:aws:execute-api:us-east-1:123456789012:ws-api-id/production/*/*';
+const WS_WILDCARD_RESOURCE = 'arn:aws:execute-api:us-east-1:123456789012:ws-api-id/production/*';
 
 /**
  * Builds a minimal REQUEST authorizer event for WebSocket tests.
