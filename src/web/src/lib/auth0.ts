@@ -2,8 +2,8 @@
  * Auth0 client singleton for server-side authentication.
  *
  * Configures the Auth0 SDK for Next.js 15 App Router. Environment variables
- * (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_SECRET, APP_BASE_URL)
- * must be set in `.env.local`. See `.env.local.example` for reference.
+ * (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_SECRET, AUTH0_AUDIENCE,
+ * APP_BASE_URL) must be set in `.env.local`. See `.env.local.example` for reference.
  *
  * @requirements
  * 1. Must export a singleton Auth0Client instance (or null when unconfigured) for server-side auth operations.
@@ -35,4 +35,10 @@ export function isAuth0Configured(): boolean {
  * Import this wherever server-side auth is needed (middleware, server components, route handlers).
  * When null, callers must skip auth operations gracefully.
  */
-export const auth0: Auth0Client | null = isAuth0Configured() ? new Auth0Client() : null;
+export const auth0: Auth0Client | null = isAuth0Configured()
+    ? new Auth0Client({
+          authorizationParameters: {
+              audience: process.env['AUTH0_AUDIENCE'],
+          },
+      })
+    : null;

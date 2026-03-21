@@ -13,7 +13,7 @@
  *
  * @requirements
  * 1. Must export a lazy singleton Auth0Client (created on first call).
- * 2. Must use NEXT_PUBLIC_AUTH0_DOMAIN and NEXT_PUBLIC_AUTH0_CLIENT_ID env vars.
+ * 2. Must use NEXT_PUBLIC_AUTH0_DOMAIN, NEXT_PUBLIC_AUTH0_CLIENT_ID, and NEXT_PUBLIC_AUTH0_AUDIENCE env vars.
  * 3. Must use cacheLocation 'memory' (no localStorage per project constraint).
  * 4. Must enable useRefreshTokens for refresh token rotation.
  * 5. Must enable useRefreshTokensFallback for iframe-based silent auth.
@@ -48,6 +48,9 @@ export function getAuth0SpaClient(): Auth0Client | null {
     spaClient = new Auth0Client({
         domain,
         clientId,
+        authorizationParams: {
+            audience: process.env['NEXT_PUBLIC_AUTH0_AUDIENCE'],
+        },
         cacheLocation: 'memory',
         useRefreshTokens: true,
         useRefreshTokensFallback: true,

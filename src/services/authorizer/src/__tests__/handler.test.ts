@@ -148,8 +148,8 @@ describe('handler', () => {
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
-    it('returns Deny when secrets fetch fails', async () => {
-        getServiceConfigMock.mockRejectedValue(new Error('Secrets down'));
+    it('returns Deny when config fetch fails', async () => {
+        getServiceConfigMock.mockRejectedValue(new Error('Missing env vars'));
 
         const result = await handler(buildEvent('Bearer valid-token'));
 
