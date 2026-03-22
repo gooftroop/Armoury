@@ -52,10 +52,17 @@ export class ForgeListPage {
     /**
      * Navigate to the Forge page.
      *
-     * @param locale - The locale prefix (defaults to 'en').
+     * @param locale - Optional locale prefix. When omitted or set to the default
+     * locale ('en'), the route is visited without a locale segment to align with
+     * `localePrefix: 'as-needed'`.
      */
-    async goto(locale = 'en'): Promise<void> {
-        await this.page.goto(`/${locale}/wh40k10e/armies`);
+    async goto(locale?: string): Promise<void> {
+        const path =
+            locale === undefined || locale === 'en'
+                ? '/wh40k10e/armies'
+                : `/${locale}/wh40k10e/armies`;
+
+        await this.page.goto(path);
     }
 
     /**

@@ -155,7 +155,7 @@ function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
     // --- Handlers ---
     const handleDeploy = React.useCallback(
         (armyId: string) => {
-            router.push(`armies/${armyId}`);
+            router.push(`./armies/${armyId}`);
         },
         [router],
     );

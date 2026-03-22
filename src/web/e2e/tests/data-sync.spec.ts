@@ -40,13 +40,13 @@ async function clickSystemTileOverlay(page: import('@playwright/test').Page): Pr
 
 test.describe('WH40K system data sync lifecycle', () => {
     test('first-time download enables Forge and exposes game data in UI', async ({ page }) => {
-        await page.goto('/en');
+        await page.goto('/');
 
         await clickSystemTileOverlay(page);
 
         await expect(page.locator('text=/ready|synced/i').first()).toBeVisible({ timeout: 30_000 });
 
-        await page.goto('/en/wh40k10e/armies');
+        await page.goto('/wh40k10e/armies');
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
         await expect(page.getByRole('link', { name: /create|new army/i })).toBeVisible();
     });
@@ -59,7 +59,7 @@ test.describe('WH40K system data sync lifecycle', () => {
             await route.continue();
         });
 
-        await page.goto('/en');
+        await page.goto('/');
         await clickSystemTileOverlay(page);
         await expect(page.locator('text=/ready|synced/i').first()).toBeVisible({ timeout: 30_000 });
 
@@ -73,7 +73,7 @@ test.describe('WH40K system data sync lifecycle', () => {
     });
 
     test('user can create, duplicate, and delete an army from Forge UI', async ({ page }) => {
-        await page.goto('/en/wh40k10e/armies');
+        await page.goto('/wh40k10e/armies');
 
         // GIVEN: create a new army through the UI
         await page.getByRole('link', { name: /create|new army/i }).click();
@@ -119,7 +119,7 @@ test.describe('WH40K system data sync lifecycle', () => {
             await route.abort('failed');
         });
 
-        await page.goto('/en');
+        await page.goto('/');
         await clickSystemTileOverlay(page);
 
         await expect(page.locator('text=/failed|error|retry/i').first()).toBeVisible();

@@ -124,11 +124,13 @@ describe('ForgeContainer', () => {
             isLoading: false,
         });
 
-        let mutationHookCallCount = 0;
-        useMutationMock.mockImplementation(() => {
-            mutationHookCallCount += 1;
+        useMutationMock.mockImplementation((options: { mutationFn: Function }) => {
+            // Identify mutations by inspecting the function body rather than call order.
+            // The delete mutation calls dataContext.armies.delete; the duplicate calls armies.save.
+            const fnBody = options.mutationFn.toString();
+            const isDeleteMutation = fnBody.includes('.delete(');
 
-            return mutationHookCallCount % 2 === 1 ? { mutate: mockDuplicateMutate } : { mutate: mockDeleteMutate };
+            return { mutate: isDeleteMutation ? mockDeleteMutate : mockDuplicateMutate };
         });
     });
 
@@ -141,7 +143,7 @@ describe('ForgeContainer', () => {
 
         await user.click(screen.getByRole('button', { name: 'deploy-Alpha' }));
 
-        expect(mockPush).toHaveBeenCalledWith('armies/a-1');
+        expect(mockPush).toHaveBeenCalledWith('./armies/a-1');
     });
 
     it('triggers duplicate mutation from list action', async () => {
