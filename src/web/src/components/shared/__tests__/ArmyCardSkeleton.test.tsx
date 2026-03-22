@@ -19,7 +19,7 @@ describe('ArmyCardSkeleton', () => {
         render(<ArmyCardSkeleton data-testid="army-card-skeleton" />);
 
         const root = screen.getByTestId('army-card-skeleton');
-        const placeholders = root.querySelectorAll('.animate-pulse');
+        const placeholders = root.querySelectorAll('[class*="animate-pulse"]');
 
         expect(root).toBeInTheDocument();
         expect(placeholders.length).toBe(8);
