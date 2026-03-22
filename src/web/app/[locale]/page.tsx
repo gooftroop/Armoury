@@ -1,79 +1,67 @@
 /**
- * Landing page — server component that discovers game systems and renders the system selector.
+ * Landing page — dynamic server-rendered page that delegates to LandingContent.
  *
- * Fetches available game system manifests from the filesystem and the current Auth0 session,
- * then delegates rendering of interactive tiles to the client-side SystemGrid component.
- * Auth links are conditionally shown when no session exists.
+ * This page must render dynamically (not statically) because LandingContent reads
+ * the Auth0 session cookie to determine authentication state. Static generation
+ * would freeze the page as unauthenticated since no cookies exist at build time.
+ *
+ * LandingContent is an async server component wrapped in <Suspense> so the browser
+ * sees a skeleton shell while the Auth0 session check and manifest discovery resolve.
  *
  * @requirements
  * 1. Must be a Server Component (no 'use client').
- * 2. Must discover game system manifests via discoverSystemManifests().
- * 3. Must check Auth0 session via auth0.getSession().
- * 4. Must render SystemGrid with manifests and isAuthenticated props.
- * 5. Must show auth links only when the user is not authenticated.
- * 6. Must use next-intl for all user-facing text.
- * 7. Must match the layout from mockups/01-landing.html.
+ * 2. Must delegate auth-dependent rendering to LandingContent.
+ * 3. Must render the static shell (heading, tagline, legal disclaimer).
+ * 4. Must use next-intl for all user-facing text.
+ * 5. Must match the layout from mockups/01-landing.html.
+ * 6. Must use text-highlight for the h1 heading color (bronze/copper).
+ * 7. Must use text-foreground for the legal disclaimer (white, prominent).
+ * 8. Must wrap LandingContent in Suspense with LandingSkeleton fallback.
+ * 9. Must use relative positioning on main for ProfileTile absolute placement.
  *
  * @module landing-page
  */
 
+import { Suspense } from 'react';
+
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { auth0 } from '@/lib/auth0.js';
-import { discoverSystemManifests } from '@/lib/discoverSystems.js';
-import { SystemGrid } from '@/components/SystemGrid.js';
+import { LandingContent } from '@/components/landing/LandingContent.js';
+import { LandingSkeleton } from '@/components/landing/LandingSkeleton.js';
+
+/**
+ * Forces dynamic rendering so auth0.getSession() reads cookies at request time.
+ * Without this, generateStaticParams() in the layout causes Next.js to statically
+ * generate this page at build time (when no session cookie exists), freezing it
+ * as the unauthenticated view.
+ */
+export const dynamic = 'force-dynamic';
 
 /** Props for the locale-parameterized landing page. */
 export interface LandingPageProps {
     params: Promise<{ locale: string }>;
 }
 
-/** Renders the landing page with dynamic game system tiles and conditional auth links. */
+/** Renders the landing page with a static shell and dynamic auth-aware content. */
 export default async function LandingPage({ params }: LandingPageProps) {
     const { locale } = await params;
     setRequestLocale(locale);
 
     const t = await getTranslations('landing');
-    const [session, manifests] = await Promise.all([auth0.getSession(), discoverSystemManifests()]);
-
-    const isAuthenticated = session !== null && session !== undefined;
 
     return (
-        <main className="flex min-h-[100dvh] flex-col items-center justify-center p-6 md:p-8">
-            <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.12em] text-primary md:text-5xl lg:text-6xl">
+        <main className="relative flex min-h-[100dvh] flex-col items-center justify-center p-6 md:p-8">
+            <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.12em] text-highlight md:text-5xl lg:text-6xl">
                 {t('logo')}
             </h1>
-            <p className="mb-12 tracking-wide text-secondary">{t('tagline')}</p>
+            <p className="mb-8 tracking-wide text-tertiary">{t('tagline')}</p>
 
-            <SystemGrid manifests={manifests} isAuthenticated={isAuthenticated} />
-
-            {!isAuthenticated && (
-                <>
-                    <div className="flex items-center gap-2 text-sm text-secondary">
-                        <span>Already have an account?</span>
-                        <a
-                            href="/auth/login"
-                            className="font-medium text-accent-secondary hover:text-accent-secondary-hover"
-                        >
-                            Sign In
-                        </a>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2 text-sm text-secondary">
-                        <span>New here?</span>
-                        <a
-                            href="/auth/login?screen_hint=signup"
-                            className="font-medium text-accent-secondary hover:text-accent-secondary-hover"
-                        >
-                            Create an Account
-                        </a>
-                    </div>
-                </>
-            )}
+            <Suspense fallback={<LandingSkeleton />}>
+                <LandingContent params={params} />
+            </Suspense>
 
             <div className="mt-8 px-6 text-center">
-                <p className="mx-auto max-w-[480px] text-[11px] leading-relaxed text-tertiary opacity-60">
-                    {t('legal')}
-                </p>
+                <p className="mx-auto max-w-[480px] text-[11px] leading-relaxed text-foreground">{t('legal')}</p>
             </div>
         </main>
     );

@@ -10,12 +10,13 @@ export type AuthorizerContext = Record<string, string | number | boolean>;
 
 /**
  * Defines the shape of an API Gateway TOKEN authorizer event.
+ * Used by REST API Gateway (v1) integrations.
  */
-export interface AuthorizerEvent {
+export interface TokenAuthorizerEvent {
     /**
-     * The authorizer event type (TOKEN).
+     * The authorizer event type.
      */
-    type: string;
+    type: 'TOKEN';
 
     /**
      * The Authorization header value passed to the authorizer.
@@ -27,6 +28,37 @@ export interface AuthorizerEvent {
      */
     methodArn: string;
 }
+
+/**
+ * Defines the shape of an API Gateway REQUEST authorizer event.
+ * Used by WebSocket API Gateway ($connect) integrations.
+ */
+export interface RequestAuthorizerEvent {
+    /**
+     * The authorizer event type.
+     */
+    type: 'REQUEST';
+
+    /**
+     * Query string parameters from the WebSocket connection request.
+     */
+    queryStringParameters?: Record<string, string | undefined>;
+
+    /**
+     * HTTP headers from the WebSocket connection request.
+     */
+    headers?: Record<string, string | undefined>;
+
+    /**
+     * The API Gateway method ARN for the request.
+     */
+    methodArn: string;
+}
+
+/**
+ * Discriminated union of all supported API Gateway authorizer event types.
+ */
+export type AuthorizerEvent = TokenAuthorizerEvent | RequestAuthorizerEvent;
 
 /**
  * A single statement in the IAM policy document.

@@ -60,18 +60,21 @@ functions:
             - http:
                   path: /users
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /users/{id}
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /users/{id}/account
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}

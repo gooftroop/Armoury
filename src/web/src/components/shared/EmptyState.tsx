@@ -7,7 +7,7 @@
  * Renders an optional icon, title, description, and call-to-action button.
  *
  * @requirements
- * 1. Must export EmptyState component with forwardRef.
+ * 1. Must export EmptyState component with ref prop.
  * 2. Must accept optional icon, title, description, and action props.
  * 3. Must use design tokens: text-muted-foreground, bg-muted/50.
  * 4. Must merge user className with default styles using cn utility.
@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils.js';
 /**
  * Props for the EmptyState component.
  */
-export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface EmptyStateProps extends React.ComponentPropsWithRef<'div'> {
     /** Optional icon element rendered above the title. */
     icon?: React.ReactNode;
 
@@ -42,11 +42,18 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
  * Designed to guide users toward creating their first item.
  *
  * @param props - Component props including icon, title, description, action, className, and standard div attributes.
- * @param ref - Forwarded ref to the root div element.
  * @returns The rendered EmptyState component.
  */
-const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
-    ({ className, icon, title, description, action, ...props }, ref) => (
+function EmptyState({
+    className,
+    icon,
+    title,
+    description,
+    action,
+    ref,
+    ...props
+}: EmptyStateProps): React.ReactElement {
+    return (
         <div
             className={cn(
                 'flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/50 px-6 py-12 text-center',
@@ -63,8 +70,9 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 
             {action && <div className="mt-6">{action}</div>}
         </div>
-    ),
-);
+    );
+}
+
 EmptyState.displayName = 'EmptyState';
 
 export { EmptyState };

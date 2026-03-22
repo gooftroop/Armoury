@@ -1,10 +1,13 @@
 import type { AuthorizerContext, AuthorizerResult, PolicyEffect } from '@/types.js';
 
 /**
- * Builds a wildcard resource ARN for all API routes.
+ * Builds a wildcard resource ARN scoped to the API stage.
+ *
+ * Uses a single trailing wildcard to match both REST API routes
+ * (e.g. {stage}/GET/users) and WebSocket routes (e.g. {stage}/$connect).
  *
  * @param methodArn - API Gateway method ARN.
- * @returns Wildcard resource ARN.
+ * @returns Stage-scoped wildcard resource ARN.
  */
 const buildWildcardResource = (methodArn: string): string => {
     const arnParts = methodArn.split('/');
@@ -13,7 +16,7 @@ const buildWildcardResource = (methodArn: string): string => {
         return methodArn;
     }
 
-    return `${arnParts[0]}/${arnParts[1]}/*/*`;
+    return `${arnParts[0]}/${arnParts[1]}/*`;
 };
 
 /**

@@ -260,11 +260,15 @@ describe('Partial failure', () => {
             }),
         );
 
-        await expect(game.sync()).resolves.toBeUndefined();
+        const result = await game.sync();
+
+        expect(result.success).toBe(false);
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures[0]!.dao).toBe('Aeldari');
 
         expect(successDao.load).toHaveBeenCalled();
         expect(failureDao.load).toHaveBeenCalled();
-        expect(warnSpy).toHaveBeenCalled();
+        expect(warnSpy).not.toHaveBeenCalled();
 
         warnSpy.mockRestore();
     });
@@ -282,7 +286,11 @@ describe('Partial failure', () => {
             }),
         );
 
-        await game.sync();
+        const result = await game.sync();
+
+        expect(result.success).toBe(false);
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures[0]!.dao).toBe('Aeldari');
 
         toggle.setShouldFail(false);
         const [coreRulesResult, aeldariResult] = await Promise.all([game.coreRules, game.aeldari]);
@@ -303,9 +311,10 @@ describe('Data consistency', () => {
             }),
         );
 
-        await game.sync();
+        const syncResult = await game.sync();
         const result = await game.coreRules;
 
+        expect(syncResult.success).toBe(true);
         expect(result).toBe(coreRules);
     });
 });

@@ -77,26 +77,37 @@ describe('GameData', () => {
     });
 
     /** Test suite for sync() method behavior. */
-    describe('sync() - Promise.allSettled behavior', () => {
+    describe('sync() - error propagation behavior', () => {
         it('resolves without throwing when all 40 DAOs succeed', async () => {
             const deps = createMockDeps();
             const gameData = new GameData(deps);
 
-            await expect(gameData.sync()).resolves.toBeUndefined();
+            const result = await gameData.sync();
+
+            expect(result.success).toBe(true);
+            expect(result.total).toBe(40);
+            expect(result.failures).toHaveLength(0);
+            expect(result.succeeded).toHaveLength(result.total);
         });
 
-        it('resolves without throwing when SOME DAOs fail (partial failure)', async () => {
+        it('returns failures when SOME DAOs fail (partial failure)', async () => {
             const deps = createMockDeps();
             deps.coreRulesDAO = createFailingDAO('core rules failed');
             deps.spaceMarinesDAO = createFailingDAO('space marines failed');
             deps.necronDAO = createFailingDAO('necron failed');
 
             const gameData = new GameData(deps);
+            const result = await gameData.sync();
 
-            await expect(gameData.sync()).resolves.toBeUndefined();
+            expect(result.success).toBe(false);
+            expect(result.total).toBe(40);
+            expect(result.failures).toHaveLength(3);
+            expect(result.failures.map((failure) => failure.dao)).toEqual(
+                expect.arrayContaining(['CoreRules', 'SpaceMarines', 'Necrons']),
+            );
         });
 
-        it('resolves without throwing when ALL 40 DAOs fail (total failure)', async () => {
+        it('returns only failures when ALL 40 DAOs fail (total failure)', async () => {
             const deps = createMockDeps();
             // Replace all DAOs with failing ones
             Object.keys(deps).forEach((key) => {
@@ -104,8 +115,12 @@ describe('GameData', () => {
             });
 
             const gameData = new GameData(deps);
+            const result = await gameData.sync();
 
-            await expect(gameData.sync()).resolves.toBeUndefined();
+            expect(result.success).toBe(false);
+            expect(result.total).toBe(40);
+            expect(result.succeeded).toHaveLength(0);
+            expect(result.failures).toHaveLength(40);
         });
 
         it('calls load() on every single DAO exactly once', async () => {
@@ -157,18 +172,19 @@ describe('GameData', () => {
             expect(deps.unalignedForcesDAO.load).toHaveBeenCalledTimes(1);
         });
 
-        it('logs a warning with correct failure count when failures occur', async () => {
+        it('returns correct failure count and DAO names when failures occur', async () => {
             const deps = createMockDeps();
             deps.coreRulesDAO = createFailingDAO('core rules failed');
             deps.spaceMarinesDAO = createFailingDAO('space marines failed');
             deps.necronDAO = createFailingDAO('necron failed');
 
             const gameData = new GameData(deps);
+            const result = await gameData.sync();
 
-            await gameData.sync();
-
-            expect(consoleWarnSpy).toHaveBeenCalledWith('[GameData.sync] 3/40 DAOs failed to sync');
-            expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+            expect(result.failures).toHaveLength(3);
+            expect(result.failures.map((failure) => failure.dao)).toEqual(
+                expect.arrayContaining(['CoreRules', 'SpaceMarines', 'Necrons']),
+            );
         });
 
         it('does NOT log a warning when all DAOs succeed', async () => {
@@ -262,23 +278,19 @@ describe('GameData', () => {
 
     /** Test suite for partial failure scenarios. */
     describe('Partial failure scenarios', () => {
-        it('when chapterApprovedDAO fails but all faction DAOs succeed - sync() resolves, getters for factions still work', async () => {
+        it('when chapterApprovedDAO fails - sync() reports DAO failure', async () => {
             const deps = createMockDeps();
             deps.chapterApprovedDAO = createFailingDAO('chapter approved failed');
 
             const gameData = new GameData(deps);
+            const result = await gameData.sync();
 
-            await expect(gameData.sync()).resolves.toBeUndefined();
-
-            // Faction getters should still work
-            await expect(gameData.spaceMarines).resolves.toBe('mock-space-marines');
-            await expect(gameData.necrons).resolves.toBe('mock-necron');
-            await expect(gameData.aeldari).resolves.toBe('mock-aeldari');
-
-            expect(consoleWarnSpy).toHaveBeenCalledWith('[GameData.sync] 1/40 DAOs failed to sync');
+            expect(result.success).toBe(false);
+            expect(result.failures).toHaveLength(1);
+            expect(result.failures[0]!.dao).toBe('ChapterApproved');
         });
 
-        it('when 5 random faction DAOs fail - sync() resolves, warning includes "5/40"', async () => {
+        it('when 5 random faction DAOs fail - sync() reports all failed names', async () => {
             const deps = createMockDeps();
             deps.spaceMarinesDAO = createFailingDAO('space marines failed');
             deps.necronDAO = createFailingDAO('necron failed');
@@ -287,21 +299,23 @@ describe('GameData', () => {
             deps.tyranidsDAO = createFailingDAO('tyranids failed');
 
             const gameData = new GameData(deps);
+            const result = await gameData.sync();
 
-            await expect(gameData.sync()).resolves.toBeUndefined();
-
-            expect(consoleWarnSpy).toHaveBeenCalledWith('[GameData.sync] 5/40 DAOs failed to sync');
+            expect(result.success).toBe(false);
+            expect(result.failures).toHaveLength(5);
         });
 
-        it('when only coreRulesDAO fails - sync() resolves, warning includes "1/40"', async () => {
+        it('when only coreRulesDAO fails - sync() reports one failure', async () => {
             const deps = createMockDeps();
             deps.coreRulesDAO = createFailingDAO('core rules failed');
 
             const gameData = new GameData(deps);
+            const result = await gameData.sync();
 
-            await expect(gameData.sync()).resolves.toBeUndefined();
-
-            expect(consoleWarnSpy).toHaveBeenCalledWith('[GameData.sync] 1/40 DAOs failed to sync');
+            expect(result.success).toBe(false);
+            expect(result.total).toBe(40);
+            expect(result.failures).toHaveLength(1);
+            expect(result.failures[0]!.dao).toBe('CoreRules');
         });
     });
 });

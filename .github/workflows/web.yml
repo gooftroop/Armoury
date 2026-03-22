@@ -7,6 +7,7 @@ on:
             - 'src/web/**'
             - 'src/shared/**'
             - 'src/systems/**'
+            - 'src/web/e2e/**'
             - '.browserslistrc'
     pull_request:
         branches: [main]
@@ -14,7 +15,11 @@ on:
             - 'src/web/**'
             - 'src/shared/**'
             - 'src/systems/**'
+            - 'src/web/e2e/**'
             - '.browserslistrc'
+
+permissions:
+    contents: read
 
 concurrency:
     group: web-${{ github.workflow }}-${{ github.ref }}
@@ -23,3 +28,8 @@ concurrency:
 jobs:
     ci:
         uses: ./.github/workflows/_ci-web.yml
+
+    e2e:
+        needs: ci
+        uses: ./.github/workflows/_e2e-web.yml
+        secrets: inherit

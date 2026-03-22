@@ -7,6 +7,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
     eslint: { ignoreDuringBuilds: true },
+    productionBrowserSourceMaps: process.env['NODE_ENV'] !== 'production',
     webpack(config, { isServer, nextRuntime }) {
         // Align webpack's client target with the project's .browserslistrc config.
         // Next.js defaults to 'es6' which triggers false warnings for top-level await

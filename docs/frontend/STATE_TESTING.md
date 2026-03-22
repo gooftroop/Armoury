@@ -468,7 +468,7 @@ const mockDataContext = {
 function ConsumerComponent() {
     const ctx = useDataContext();
 
-    return <div data-testid="ctx-available">{ctx ? 'present' : 'absent'}</div>;
+    return <div role="status" aria-label="context status">{ctx ? 'present' : 'absent'}</div>;
 }
 
 describe('DataContextProvider', () => {
@@ -479,7 +479,7 @@ describe('DataContextProvider', () => {
             </DataContextProvider>,
         );
 
-        expect(screen.getByTestId('ctx-available')).toHaveTextContent('present');
+        expect(screen.getByRole('status', { name: 'context status' })).toHaveTextContent('present');
     });
 
     it('throws when useDataContext is called outside the provider', () => {

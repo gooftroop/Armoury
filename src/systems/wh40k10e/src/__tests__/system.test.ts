@@ -75,6 +75,10 @@ describe('wh40k10eSystem', () => {
      * createGameContext() method tests.
      */
     describe('createGameContext()', () => {
+        function createClientsMap(githubClient: MockGitHubClient): Map<string, unknown> {
+            return new Map<string, unknown>([['github', githubClient]]);
+        }
+
         /**
          * Test: createGameContext() returns an object with armies DAO.
          */
@@ -82,7 +86,7 @@ describe('wh40k10eSystem', () => {
             const adapter = new MockDatabaseAdapter();
             const githubClient = new MockGitHubClient();
 
-            const context = wh40k10eSystem.createGameContext(adapter, githubClient);
+            const context = wh40k10eSystem.createGameContext(adapter, createClientsMap(githubClient));
 
             expect(context.armies).toBeDefined();
             expect(context.armies).toHaveProperty('save');
@@ -98,7 +102,7 @@ describe('wh40k10eSystem', () => {
             const adapter = new MockDatabaseAdapter();
             const githubClient = new MockGitHubClient();
 
-            const context = wh40k10eSystem.createGameContext(adapter, githubClient);
+            const context = wh40k10eSystem.createGameContext(adapter, createClientsMap(githubClient));
 
             expect(context.campaigns).toBeDefined();
             expect(context.campaigns).toHaveProperty('save');
@@ -114,7 +118,7 @@ describe('wh40k10eSystem', () => {
             const adapter = new MockDatabaseAdapter();
             const githubClient = new MockGitHubClient();
 
-            const context = wh40k10eSystem.createGameContext(adapter, githubClient);
+            const context = wh40k10eSystem.createGameContext(adapter, createClientsMap(githubClient));
 
             expect(context.game).toBeDefined();
             // Verify sample faction getters exist as property descriptors
@@ -132,7 +136,7 @@ describe('wh40k10eSystem', () => {
             const adapter = new MockDatabaseAdapter();
             const githubClient = new MockGitHubClient();
 
-            const context = wh40k10eSystem.createGameContext(adapter, githubClient);
+            const context = wh40k10eSystem.createGameContext(adapter, createClientsMap(githubClient));
 
             expect(context.game).toBeDefined();
             const gameDescriptors = Object.getOwnPropertyDescriptors(Object.getPrototypeOf(context.game!));
@@ -147,7 +151,7 @@ describe('wh40k10eSystem', () => {
             const adapter = new MockDatabaseAdapter();
             const githubClient = new MockGitHubClient();
 
-            const context = wh40k10eSystem.createGameContext(adapter, githubClient);
+            const context = wh40k10eSystem.createGameContext(adapter, createClientsMap(githubClient));
 
             expect(context.game).toBeDefined();
             expect(context.game).toHaveProperty('sync');
@@ -161,7 +165,7 @@ describe('wh40k10eSystem', () => {
             const adapter = new MockDatabaseAdapter();
             const githubClient = new MockGitHubClient();
 
-            const context = wh40k10eSystem.createGameContext(adapter, githubClient);
+            const context = wh40k10eSystem.createGameContext(adapter, createClientsMap(githubClient));
 
             expect(context.sync).toBeDefined();
             expect(typeof context.sync).toBe('function');

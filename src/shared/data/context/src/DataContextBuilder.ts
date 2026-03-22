@@ -1,31 +1,19 @@
 import type { DatabaseAdapter } from '@armoury/data-dao';
-import type { IGitHubClient } from '@armoury/clients-github';
 import type { GameSystem } from '@armoury/data-dao';
+import type { GameContextResult } from '@armoury/data-dao';
 import { DataContext } from '@/DataContext.js';
-
-/** Creates a stub GitHub client that throws on invocation. */
-function createMissingGitHubClient(): IGitHubClient {
-    const throwMissing = async (): Promise<never> => {
-        throw new Error('GitHub client not configured');
-    };
-
-    const noUpdates = async (): Promise<boolean> => {
-        return false;
-    };
-
-    return {
-        listFiles: throwMissing,
-        getFileSha: throwMissing,
-        downloadFile: throwMissing,
-        checkForUpdates: noUpdates,
-    };
-}
 
 /** Builder for creating DataContext instances with configured dependencies. */
 export class DataContextBuilder<TGameData = unknown> {
+    /** Creates a new DataContextBuilder instance. */
+    public static builder<TGameData = unknown>(): DataContextBuilder<TGameData> {
+        return new DataContextBuilder<TGameData>();
+    }
+
     private gameSystem: GameSystem | null = null;
     private adapterInstance: DatabaseAdapter | null = null;
-    private githubClient: IGitHubClient | null = null;
+    /** Registered client instances keyed by name. */
+    private clients: Map<string, unknown> = new Map();
 
     /** Sets the game system for the data context. */
     public system(gameSystem: GameSystem): DataContextBuilder<TGameData> {
@@ -41,9 +29,9 @@ export class DataContextBuilder<TGameData = unknown> {
         return this;
     }
 
-    /** Sets the GitHub client used for remote data access. */
-    public github(client: IGitHubClient): DataContextBuilder<TGameData> {
-        this.githubClient = client;
+    /** Registers a named client instance for use by game systems. */
+    public register(key: string, client: unknown): DataContextBuilder<TGameData> {
+        this.clients.set(key, client);
 
         return this;
     }
@@ -58,20 +46,32 @@ export class DataContextBuilder<TGameData = unknown> {
             throw new Error('An adapter must be provided to build a DataContext.');
         }
 
-        await this.gameSystem.register();
+        const gameSystem = this.gameSystem as GameSystem & {
+            createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult<TGameData>;
+        };
+
+        await gameSystem.register();
         await this.adapterInstance.initialize();
 
-        const githubClient = this.githubClient ?? createMissingGitHubClient();
-        const gameContext = this.gameSystem.createGameContext(this.adapterInstance, githubClient);
+        const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
 
-        const dc = new DataContext(this.adapterInstance, this.gameSystem, githubClient, {
+        const dc = new DataContext(this.adapterInstance, gameSystem, this.clients, {
             armies: gameContext.armies,
             campaigns: gameContext.campaigns,
             game: gameContext.game as TGameData,
         });
 
         if (gameContext.sync) {
-            await gameContext.sync();
+            const syncResult = await gameContext.sync();
+
+            if (syncResult.succeeded.length === 0 && syncResult.failures.length > 0) {
+                throw new Error(
+                    `Complete sync failure: all ${syncResult.total} DAOs failed. ` +
+                        `Failed: ${syncResult.failures.map((f) => f.dao).join(', ')}`,
+                );
+            }
+
+            dc.syncResult = syncResult;
         }
 
         return dc;

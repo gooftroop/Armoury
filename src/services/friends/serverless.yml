@@ -66,12 +66,14 @@ functions:
             - http:
                   path: /friends
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /friends/{id}
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}

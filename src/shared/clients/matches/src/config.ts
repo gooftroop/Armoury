@@ -1,8 +1,13 @@
-/** Base URL for the matches REST API, sourced from the environment. */
-export const MATCHES_BASE_URL = process.env['MATCHES_BASE_URL'] ?? 'http://localhost:3001';
+/**
+ * Configuration constants for the matches client package.
+ */
+import { config } from '@armoury/config';
 
-/** WebSocket URL for the matches real-time service, sourced from the environment. */
-export const DEFAULT_MATCHES_WS_URL = process.env['MATCHES_WS_URL'] ?? 'ws://localhost:3002';
+/** Base URL for the matches REST API. */
+export const MATCHES_BASE_URL = config.services.matches.apiBaseUrl;
+
+/** WebSocket URL for the matches real-time service. */
+export const DEFAULT_MATCHES_WS_URL = config.services.matches.wsBaseUrl ?? 'ws://localhost:3002';
 
 /** Maximum number of reconnection attempts. */
 export const MAX_RECONNECT_ATTEMPTS = 10;

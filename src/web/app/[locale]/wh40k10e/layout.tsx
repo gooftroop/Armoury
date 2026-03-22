@@ -5,8 +5,11 @@
  * 3. Must hardcode the wh40k10e game system for navigation components.
  */
 
+import * as React from 'react';
+
 import { SideNav } from '@/components/navigation/SideNav.js';
 import { BottomNav } from '@/components/navigation/BottomNav.js';
+import { auth0 } from '@/lib/auth0.js';
 
 export interface AppLayoutProps {
     children: React.ReactNode;
@@ -24,12 +27,18 @@ export interface AppLayoutProps {
  */
 export default async function AppLayout({ children, params }: AppLayoutProps) {
     const { locale } = await params;
+    const session = (await auth0?.getSession()) ?? null;
 
     return (
         <div className="flex min-h-[100dvh] w-full flex-col bg-base md:flex-row">
             {/* Desktop Side Navigation */}
             <div className="hidden shrink-0 md:block">
-                <SideNav locale={locale} gameSystem="wh40k10e" />
+                <SideNav
+                    locale={locale}
+                    gameSystem="wh40k10e"
+                    userName={(session?.user?.name as string | undefined) ?? undefined}
+                    userPlan="Free Plan"
+                />
             </div>
 
             {/* Main Content Area */}
