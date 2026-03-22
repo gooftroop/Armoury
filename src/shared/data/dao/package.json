@@ -33,6 +33,7 @@
         "drizzle-orm": "^0.45.1"
     },
     "devDependencies": {
+        "@armoury/e2e": "*",
         "@armoury/eslint": "*",
         "@armoury/prettier": "*",
         "@armoury/typescript": "*",
