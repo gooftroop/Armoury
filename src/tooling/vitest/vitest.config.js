@@ -5,7 +5,7 @@ import path from 'path';
  *
  * Provides a shared test configuration that:
  * - globals: true -- Makes describe, it, expect, and other test globals available without imports.
- * - include pattern -- Discovers test files only in __tests__ directories with .test.ts suffix.
+ * - include pattern -- Discovers test files in __tests__ directories with .test.ts or .test.tsx suffix.
  * - exclude -- Skips scanning node_modules and dist directories.
  * - resolve.alias -- Maps the `@` path alias to `./src` relative to the consuming workspace root.
  *
@@ -17,7 +17,7 @@ import path from 'path';
 export const baseConfig = {
     test: {
         globals: true,
-        include: ['**/__tests__/**/*.test.ts'],
+        include: ['**/__tests__/**/*.test.{ts,tsx}'],
         exclude: ['node_modules', 'dist'],
     },
     resolve: {
