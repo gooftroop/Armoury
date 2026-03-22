@@ -60,24 +60,28 @@ functions:
             - http:
                   path: /campaigns
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /campaigns/{id}
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /campaigns/{id}/participants
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /campaigns/{id}/participants/{pid}
                   method: ANY
+                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}

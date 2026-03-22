@@ -156,7 +156,7 @@ jobs:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
                   BASE_PRIORITY: ${{ inputs.routing-rule-priority }}
-                  WILDCARD_DOMAIN: '*.sandbox.armoury-app.com'
+                  WILDCARD_DOMAIN: '*.api.sandbox.armoury-app.com'
               run: |
                   # Compute a unique priority per PR to avoid collisions between concurrent PRs.
                   # Each service has a unique base priority (1-999); adding PR_NUMBER * 1000
@@ -202,7 +202,7 @@ jobs:
                         "MatchHeaders": {
                           "AnyOf": [{
                             "Header": "Host",
-                            "ValueGlob": "'"pr-${PR_NUMBER}.sandbox.armoury-app.com"'"
+                            "ValueGlob": "'"pr-${PR_NUMBER}.api.sandbox.armoury-app.com"'"
                           }]
                         }
                       },
@@ -220,7 +220,7 @@ jobs:
                       }
                     }]'
 
-                  echo "Created routing rule for pr-${PR_NUMBER}.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${REST_API_ID}"
+                  echo "Created routing rule for pr-${PR_NUMBER}.api.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${REST_API_ID}"
 
             - name: Create WS domain mapping
               if: github.event_name == 'pull_request' && inputs.has-websocket
@@ -245,15 +245,15 @@ jobs:
                   # Sleep briefly to respect the rate limit window from any prior creation.
                   sleep 5
 
-                  # Create API mapping: ws-sandbox.armoury-app.com/pr-{N}-{service} -> WS API
+                  # Create API mapping: ws-sandbox.armoury-app.com/pr-{N}/{service} -> WS API
                   # Include PR number in mapping key to avoid collisions between concurrent PRs.
                   aws apigatewayv2 create-api-mapping \
                     --domain-name "${WS_DOMAIN}" \
                     --api-id "${WS_API_ID}" \
                     --stage "pr-${PR_NUMBER}" \
-                    --api-mapping-key "pr-${PR_NUMBER}-${SERVICE_SHORT_NAME}" || echo "::warning::WS API mapping creation failed (may already exist)"
+                    --api-mapping-key "pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}" || echo "::warning::WS API mapping creation failed (may already exist)"
 
-                  echo "Created WS API mapping for ws-sandbox.armoury-app.com/pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} -> ${WS_API_ID}"
+                  echo "Created WS API mapping for ws-sandbox.armoury-app.com/pr-${PR_NUMBER}/${SERVICE_SHORT_NAME} -> ${WS_API_ID}"
 
     deploy-production:
         name: Deploy Production
@@ -322,3 +322,90 @@ jobs:
                   fi
 
                   serverless deploy ${DEPLOY_ARGS}
+
+            - name: Create REST API mapping
+              if: inputs.service-short-name != ''
+              env:
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  PRODUCTION_DOMAIN: 'api.armoury-app.com'
+              run: |
+                  STACK_NAME="armoury-${SERVICE_SHORT_NAME}-production"
+                  REST_API_ID=$(aws cloudformation describe-stacks \
+                    --stack-name "${STACK_NAME}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`ServiceEndpoint`].OutputValue' \
+                    --output text | grep -oP '(?<=https://)[^.]+' || true)
+
+                  if [ -z "${REST_API_ID}" ]; then
+                    REST_API_ID=$(aws cloudformation describe-stack-resource \
+                      --stack-name "${STACK_NAME}" \
+                      --logical-resource-id ApiGatewayRestApi \
+                      --query 'StackResourceDetail.PhysicalResourceId' \
+                      --output text)
+                  fi
+
+                  echo "REST API ID: ${REST_API_ID}"
+
+                  # Delete existing API mapping for this service if it exists
+                  EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PRODUCTION_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
+
+                  if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
+                    echo "Updating existing API mapping ${EXISTING_MAPPING_ID}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${PRODUCTION_DOMAIN}" \
+                      --api-mapping-id "${EXISTING_MAPPING_ID}"
+                  fi
+
+                  # Get the REST API stage name
+                  STAGE_ID=$(aws apigateway get-stages \
+                    --rest-api-id "${REST_API_ID}" \
+                    --query "item[?stageName=='production'].stageName" \
+                    --output text)
+
+                  # Create API mapping: api.armoury-app.com/{service} -> REST API production stage
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${PRODUCTION_DOMAIN}" \
+                    --api-id "${REST_API_ID}" \
+                    --stage "${STAGE_ID}" \
+                    --api-mapping-key "${SERVICE_SHORT_NAME}"
+
+                  echo "Created API mapping for api.armoury-app.com/${SERVICE_SHORT_NAME} -> ${REST_API_ID}"
+
+            - name: Create WS API mapping
+              if: inputs.has-websocket
+              env:
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  WS_DOMAIN: 'ws.armoury-app.com'
+              run: |
+                  STACK_NAME="armoury-${SERVICE_SHORT_NAME}-production"
+
+                  WS_API_ID=$(aws cloudformation describe-stack-resource \
+                    --stack-name "${STACK_NAME}" \
+                    --logical-resource-id WebsocketsApi \
+                    --query 'StackResourceDetail.PhysicalResourceId' \
+                    --output text)
+
+                  echo "WebSocket API ID: ${WS_API_ID}"
+
+                  # Delete existing WS API mapping for this service if it exists
+                  EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${WS_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
+
+                  if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
+                    echo "Deleting existing WS API mapping ${EXISTING_MAPPING_ID}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${WS_DOMAIN}" \
+                      --api-mapping-id "${EXISTING_MAPPING_ID}"
+                  fi
+
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${WS_DOMAIN}" \
+                    --api-id "${WS_API_ID}" \
+                    --stage "production" \
+                    --api-mapping-key "${SERVICE_SHORT_NAME}"
+
+                  echo "Created WS API mapping for ws.armoury-app.com/${SERVICE_SHORT_NAME} -> ${WS_API_ID}"

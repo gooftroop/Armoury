@@ -130,7 +130,7 @@ const blockedUsers = await friends.listByStatus('blocked');
 import { DataContext, Platform } from '@armoury/shared';
 import { wh40k10eSystem } from '@armoury/systems';
 
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();

@@ -2,7 +2,7 @@ import { jwtVerify } from 'jose';
 import * as Sentry from '@sentry/aws-serverless';
 import { getJwks } from '@/jwks.js';
 import { getServiceConfig } from '@/utils/secrets.js';
-import { extractBearerToken, buildIssuer } from '@/utils/token.js';
+import { extractTokenFromEvent, buildIssuer } from '@/utils/token.js';
 import { generatePolicy } from '@/utils/policy.js';
 import { isJwtPayload } from '@/utils/jwt.js';
 import type { AuthorizerContext, AuthorizerEvent, AuthorizerResult } from '@/types.js';
@@ -15,16 +15,16 @@ const DEFAULT_PRINCIPAL_ID = 'unknown';
 /**
  * Lambda authorizer entry point for Auth0 JWT validation.
  *
- * Extracts the bearer token from the authorization header, fetches
- * service configuration from Secrets Manager, and verifies the JWT
- * against the Auth0 JWKS endpoint. Returns an Allow or Deny IAM
- * policy based on the verification result.
+ * Extracts the token from the authorizer event (supporting both TOKEN
+ * and REQUEST event types), fetches service configuration from environment
+ * variables, and verifies the JWT against the Auth0 JWKS endpoint. Returns
+ * an Allow or Deny IAM policy based on the verification result.
  *
- * @param event - API Gateway TOKEN authorizer event.
+ * @param event - API Gateway TOKEN or REQUEST authorizer event.
  * @returns IAM policy result with Allow or Deny effect.
  */
 export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
-    const token = extractBearerToken(event.authorizationToken);
+    const token = extractTokenFromEvent(event);
 
     if (!token) {
         return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);

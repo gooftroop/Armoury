@@ -114,66 +114,9 @@ jobs:
             - name: Run typecheck
               run: npm run typecheck
 
-    # TODO: Re-enable once LocalStack health-check timeout is resolved
-    # test-e2e:
-    #     name: E2E tests
-    #     runs-on: ubuntu-latest
-    #     needs: install
-    #     steps:
-    #         - uses: actions/checkout@v6
-    #
-    #         - uses: actions/setup-node@v6
-    #           with:
-    #               node-version-file: .nvmrc
-    #
-    #         - name: Restore full dependencies
-    #           uses: actions/cache/restore@v5
-    #           with:
-    #               path: |
-    #                   node_modules
-    #                   src/*/node_modules
-    #                   src/*/*/node_modules
-    #               key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
-    #
-    #         - name: Pre-pull Docker images
-    #           run: |
-    #               docker pull localstack/localstack:4.4.0 &
-    #               docker pull postgres:16-alpine &
-    #               wait
-    #
-    #         - name: Ensure clean Docker state
-    #           run: |
-    #               docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
-    #               shopt -s nullglob
-    #               for f in src/services/*/docker-compose.yml; do
-    #                   dir=$(dirname "$f")
-    #                   docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
-    #               done
-    #               shopt -u nullglob
-    #
-    #         - name: Run e2e tests
-    #           run: npm run test:e2e
-    #
-    #         - name: Cleanup Docker containers
-    #           if: always()
-    #           run: |
-    #               docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
-    #               shopt -s nullglob
-    #               for f in src/services/*/docker-compose.yml; do
-    #                   dir=$(dirname "$f")
-    #                   docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
-    #               done
-    #               shopt -u nullglob
-            - name: Cleanup Docker containers
-              if: always()
-              run: |
-                  docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
-                  shopt -s nullglob
-                  for f in src/services/*/docker-compose.yml; do
-                      dir=$(dirname "$f")
-                      docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
-                  done
-                  shopt -u nullglob
+    # E2E tests disabled — blocked on LocalStack health-check timeout.
+    # See: https://github.com/gooftroop/Armoury/issues/XX
+    # Re-enable by uncommenting the test-e2e job and adding it to build-web/build-mobile needs.
 
     build-web:
         name: Build web

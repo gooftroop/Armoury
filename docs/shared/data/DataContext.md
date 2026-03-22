@@ -10,7 +10,7 @@ Primary facade for app-level and game-specific data access. Provides a unified i
 
 ### `DataContext<TGameData>`
 
-Class implementing `DataContextShape<TGameData>` that wires together core DAOs, game-specific DAOs, and a game data context. Constructed via the builder pattern using `DataContext.builder()`.
+Class implementing `DataContextShape<TGameData>` that wires together core DAOs, game-specific DAOs, and a game data context. Constructed via the builder pattern using `DataContextBuilder.builder()`.
 
 ```typescript
 class DataContext<TGameData = unknown> implements DataContextShape<TGameData> {
@@ -89,7 +89,7 @@ Game-specific data context providing access to faction data, unit catalogs, and 
 
 ### `constructor(adapter, gameSystem, githubClient, gameContext?)`
 
-Creates a new `DataContext` instance. **Not intended for direct use** — use `DataContext.builder()` instead.
+Creates a new `DataContext` instance. **Not intended for direct use** — use `DataContextBuilder.builder()` instead.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -134,7 +134,7 @@ import { wh40k10eSystem } from '@armoury/systems';
 import type { Wh40kGameData } from '@armoury/systems';
 
 // Build DataContext with game system + platform
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -166,7 +166,7 @@ const githubClient = createGitHubClient({
     token: process.env.GITHUB_TOKEN,
 });
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .github(githubClient)
@@ -188,7 +188,7 @@ import type { Wh40kGameData } from '@armoury/systems';
 // Create and initialize adapter separately
 const adapter = await createAdapter({ platform: Platform.SQLite });
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .adapter(adapter)
     .build();

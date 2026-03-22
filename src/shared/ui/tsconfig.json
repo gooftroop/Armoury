@@ -1,0 +1,13 @@
+{
+    "extends": "@armoury/typescript/base.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["node_modules", "dist", "src/**/*.mobile.tsx", "src/index.mobile.ts"]
+}

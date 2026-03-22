@@ -40,7 +40,7 @@ export default async function ArmiesPage({ params }: ArmiesPageProps) {
     const { locale } = await params;
     setRequestLocale(locale);
 
-    const session = await auth0.getSession();
+    const session = (await auth0?.getSession()) ?? null;
 
     if (!session) {
         redirect('/auth/login');

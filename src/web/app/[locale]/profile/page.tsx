@@ -2,13 +2,13 @@
  * Profile page — server component displaying Auth0 user information.
  *
  * Fetches the current Auth0 session and renders user details (avatar, name, email,
- * member-since date) inside a centered Card layout. When no session exists,
- * redirects to the Auth0 login page.
+ * member-since date) inside a centered Card layout. When no session exists, shows
+ * a sign-in prompt with a link to the Auth0 login route.
  *
  * @requirements
  * 1. Must be a Server Component (no 'use client').
  * 2. Must fetch Auth0 session via auth0.getSession().
- * 3. Must redirect to /auth/login when no session exists.
+ * 3. Must show a sign-in message with link to /auth/login when not authenticated.
  * 4. Must display user avatar with initials fallback when authenticated.
  * 5. Must display user name, email, email-verified badge, and member-since date.
  * 6. Must provide a Sign Out link to /auth/logout.
@@ -18,7 +18,6 @@
  * @module profile-page
  */
 
-import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { auth0 } from '@/lib/auth0.js';
@@ -96,8 +95,8 @@ function formatDate(isoDate: string | undefined, locale: string): string {
  * Renders the Profile page.
  *
  * When authenticated, displays user details (avatar, name, email, membership date)
- * in a centered card layout with a sign-out action. When not authenticated, redirects
- * to Auth0 login.
+ * in a centered card layout with a sign-out action. When not authenticated, shows a
+ * prompt to sign in.
  *
  * @param props - Page props containing the locale parameter.
  * @returns The rendered profile page JSX.
@@ -107,10 +106,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     setRequestLocale(locale);
 
     const t = await getTranslations('profile');
-    const session = await auth0.getSession();
+    const session = (await auth0?.getSession()) ?? null;
+    const isAuthenticated = session !== null && session !== undefined;
 
-    if (!session) {
-        redirect('/auth/login');
+    if (!isAuthenticated) {
+        return (
+            <main className="flex min-h-screen flex-col items-center justify-center bg-base p-6 text-foreground">
+                <Card className="w-full max-w-md">
+                    <CardContent className="flex flex-col items-center gap-4 p-8">
+                        <p className="text-secondary">{t('notAuthenticated')}</p>
+                        <Button asChild>
+                            <a href="/auth/login">Sign In</a>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </main>
+        );
     }
 
     const user = session.user;

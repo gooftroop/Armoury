@@ -1,17 +1,54 @@
 /**
  * UI Component Library
  *
- * A production-ready component library built with Radix UI primitives and Tailwind CSS.
- * All components are designed for a dark tactical theme with military/tabletop gaming aesthetics.
+ * Re-exports all components from @armoury/ui.
+ * Web consumers should import from this barrel or directly from '@armoury/ui'.
  *
  * @requirements
- * 1. Must export all UI components with named exports.
+ * 1. Must re-export all UI components from @armoury/ui.
  * 2. Must not use default exports.
  * 3. Must provide type exports for component props.
  */
 
+// AlertDialog components
+export {
+    AlertDialog,
+    AlertDialogPortal,
+    AlertDialogOverlay,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogFooter,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogAction,
+    AlertDialogCancel,
+    type AlertDialogOverlayProps,
+    type AlertDialogContentProps,
+    type AlertDialogHeaderProps,
+    type AlertDialogFooterProps,
+    type AlertDialogTitleProps,
+    type AlertDialogDescriptionProps,
+    type AlertDialogActionProps,
+    type AlertDialogCancelProps,
+} from '@armoury/ui';
+
+// Avatar components
+export {
+    Avatar,
+    AvatarImage,
+    AvatarFallback,
+    avatarVariants,
+    type AvatarProps,
+    type AvatarImageProps,
+    type AvatarFallbackProps,
+} from '@armoury/ui';
+
+// Badge component
+export { Badge, badgeVariants, type BadgeProps } from '@armoury/ui';
+
 // Button component and variants
-export { Button, buttonVariants, type ButtonProps } from '@/components/ui/button.js';
+export { Button, buttonVariants, type ButtonProps } from '@armoury/ui';
 
 // Card components
 export {
@@ -27,7 +64,7 @@ export {
     type CardDescriptionProps,
     type CardContentProps,
     type CardFooterProps,
-} from '@/components/ui/card.js';
+} from '@armoury/ui';
 
 // Dialog components
 export {
@@ -47,7 +84,7 @@ export {
     type DialogFooterProps,
     type DialogTitleProps,
     type DialogDescriptionProps,
-} from '@/components/ui/dialog.js';
+} from '@armoury/ui';
 
 // DropdownMenu components
 export {
@@ -76,57 +113,13 @@ export {
     type DropdownMenuShortcutProps,
     type DropdownMenuSubTriggerProps,
     type DropdownMenuSubContentProps,
-} from '@/components/ui/DropdownMenu.js';
-
-// Avatar components
-export {
-    Avatar,
-    AvatarImage,
-    AvatarFallback,
-    avatarVariants,
-    type AvatarProps,
-    type AvatarImageProps,
-    type AvatarFallbackProps,
-} from '@/components/ui/avatar.js';
-
-// Tooltip components
-export {
-    Tooltip,
-    TooltipTrigger,
-    TooltipContent,
-    TooltipProvider,
-    type TooltipTriggerProps,
-    type TooltipContentProps,
-} from '@/components/ui/tooltip.js';
-
-// Tabs components
-export {
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent,
-    type TabsListProps,
-    type TabsTriggerProps,
-    type TabsContentProps,
-} from '@/components/ui/tabs.js';
-
-// Badge component
-export { Badge, badgeVariants, type BadgeProps } from '@/components/ui/badge.js';
-
-// Skeleton component
-export { Skeleton, type SkeletonProps } from '@/components/ui/skeleton.js';
-
-// Separator component
-export { Separator, type SeparatorProps } from '@/components/ui/separator.js';
-
-// Switch component
-export { Switch, type SwitchProps } from '@/components/ui/switch.js';
-
-// Label component
-export { Label, type LabelProps } from '@/components/ui/label.js';
+} from '@armoury/ui';
 
 // Input component
-export { Input, type InputProps } from '@/components/ui/input.js';
+export { Input, type InputProps } from '@armoury/ui';
+
+// Label component
+export { Label, type LabelProps } from '@armoury/ui';
 
 // Select components
 export {
@@ -147,30 +140,27 @@ export {
     type SelectSeparatorProps,
     type SelectScrollUpButtonProps,
     type SelectScrollDownButtonProps,
-} from '@/components/ui/select.js';
+} from '@armoury/ui';
 
-// AlertDialog components
+// Separator component
+export { Separator, type SeparatorProps } from '@armoury/ui';
+
+// Skeleton component
+export { Skeleton, type SkeletonProps } from '@armoury/ui';
+
+// Switch component
+export { Switch, type SwitchProps } from '@armoury/ui';
+
+// Tabs components
 export {
-    AlertDialog,
-    AlertDialogPortal,
-    AlertDialogOverlay,
-    AlertDialogTrigger,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogFooter,
-    AlertDialogTitle,
-    AlertDialogDescription,
-    AlertDialogAction,
-    AlertDialogCancel,
-    type AlertDialogOverlayProps,
-    type AlertDialogContentProps,
-    type AlertDialogHeaderProps,
-    type AlertDialogFooterProps,
-    type AlertDialogTitleProps,
-    type AlertDialogDescriptionProps,
-    type AlertDialogActionProps,
-    type AlertDialogCancelProps,
-} from '@/components/ui/AlertDialog.js';
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsContent,
+    type TabsListProps,
+    type TabsTriggerProps,
+    type TabsContentProps,
+} from '@armoury/ui';
 
 // Toast components
 export {
@@ -181,9 +171,20 @@ export {
     ToastDescription,
     ToastClose,
     ToastAction,
+    toastVariants,
     type ToastProps,
     type ToastActionProps,
     type ToastCloseProps,
     type ToastTitleProps,
     type ToastDescriptionProps,
-} from '@/components/ui/toast.js';
+} from '@armoury/ui';
+
+// Tooltip components
+export {
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent,
+    TooltipProvider,
+    type TooltipTriggerProps,
+    type TooltipContentProps,
+} from '@armoury/ui';

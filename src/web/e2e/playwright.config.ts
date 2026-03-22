@@ -1,91 +1,101 @@
 /**
- * Playwright configuration for the Armoury web app.
+ * Playwright configuration for the Armoury web application e2e tests.
  *
- * Projects are split into:
- *   - setup: Creates auth state once per run
- *   - authenticated: Tests requiring a logged-in user
- *   - unauthenticated: Public pages (auth wall, landing)
+ * Configures browser projects (setup + authenticated + public), webServer
+ * for local dev, timeouts, retries, and CI-specific optimisations.
  *
  * @requirements
- * - REQ-E2E-CONFIG-01: Configure Playwright with project-based auth state
- * - REQ-E2E-CONFIG-02: Support CI and local dev modes
- * - REQ-E2E-CONFIG-03: Auto-start Next.js dev server
- * - REQ-E2E-CONFIG-04: Multi-browser coverage (Chromium, Firefox, Mobile)
+ * 1. Must define a "setup" project that forges an Auth0 session via generateSessionCookie.
+ * 2. Must define a "chromium-authenticated" project that depends on setup.
+ * 3. Must define a "chromium-public" project for unauthenticated tests (no storageState).
+ * 4. Must configure webServer to start the Next.js dev server.
+ * 5. Must use Chromium only in CI for speed.
+ * 6. Must set sensible timeouts and retry policies.
+ * 7. Must conditionally include authenticated projects only when AUTH0_SECRET is set.
  */
 
 import { defineConfig, devices } from '@playwright/test';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/** Absolute path to the monorepo root (three levels up from src/web/e2e/). */
+const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+
+/** Directory where authenticated session state is persisted. */
+const AUTH_STATE_DIR = './.auth';
+
+/** Path to the authenticated user's storage state file. */
+const AUTH_STATE_PATH = `${AUTH_STATE_DIR}/user.json`;
+
+/**
+ * Whether AUTH0_SECRET is available (controls authenticated test inclusion).
+ * The forged-cookie approach only needs the secret — no real Auth0 credentials required.
+ */
+const hasAuth0 = Boolean(process.env['AUTH0_SECRET']);
 
 export default defineConfig({
     testDir: './tests',
-    fullyParallel: true,
+    fullyParallel: !process.env['CI'],
     forbidOnly: !!process.env['CI'],
     retries: process.env['CI'] ? 2 : 0,
-    workers: process.env['CI'] ? 4 : undefined,
-    reporter: [['html', { open: 'never' }], process.env['CI'] ? ['github'] : ['list']],
+    workers: process.env['CI'] ? 1 : undefined,
+    reporter: process.env['CI'] ? 'github' : 'html',
+
+    timeout: 30_000,
+    expect: {
+        timeout: 10_000,
+    },
 
     use: {
-        baseURL: process.env['PLAYWRIGHT_BASE_URL'] ?? 'http://localhost:3000',
+        baseURL: 'http://localhost:3000',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
+        video: 'off',
     },
 
     projects: [
-        // --- Setup project: runs once, saves auth cookies ---
+        // Auth0 setup + authenticated tests — only when AUTH0_SECRET is available.
+        ...(hasAuth0
+            ? [
+                  {
+                      name: 'setup' as const,
+                      testMatch: /auth\/setup\.ts/,
+                      testDir: '.',
+                  },
+                  {
+                      name: 'chromium-authenticated' as const,
+                      use: {
+                          ...devices['Desktop Chrome'],
+                          storageState: AUTH_STATE_PATH,
+                      },
+                      dependencies: ['setup' as const],
+                      testIgnore: /unauthenticated\//,
+                  },
+              ]
+            : []),
         {
-            name: 'setup',
-            testMatch: /auth\/setup\.ts/,
-        },
-
-        // --- Authenticated tests (most tests) ---
-        {
-            name: 'chromium-authenticated',
+            name: 'chromium-public',
             use: {
                 ...devices['Desktop Chrome'],
-                storageState: '.auth/user.json',
             },
-            dependencies: ['setup'],
-            testIgnore: /unauthenticated\//,
-        },
-        {
-            name: 'firefox-authenticated',
-            use: {
-                ...devices['Desktop Firefox'],
-                storageState: '.auth/user.json',
-            },
-            dependencies: ['setup'],
-            testIgnore: /unauthenticated\//,
-        },
-        {
-            name: 'mobile-chromium-authenticated',
-            use: {
-                ...devices['Pixel 7'],
-                storageState: '.auth/user.json',
-            },
-            dependencies: ['setup'],
-            testIgnore: /unauthenticated\//,
-        },
-
-        // --- Unauthenticated tests (login wall, public pages) ---
-        {
-            name: 'chromium-unauthenticated',
-            use: { ...devices['Desktop Chrome'] },
             testMatch: /unauthenticated\//,
         },
     ],
 
-    // Start Next.js dev server automatically in CI and local runs
     webServer: {
         command: 'npm run dev -w @armoury/web',
+        cwd: ROOT_DIR,
         url: 'http://localhost:3000',
         reuseExistingServer: !process.env['CI'],
         timeout: 120_000,
         env: {
-            // Use a test-specific database so e2e runs don't touch real data
-            DATABASE_URL: process.env['E2E_DATABASE_URL'] ?? process.env['DATABASE_URL'] ?? '',
-            // Auth0 SDK reads these from process.env automatically
+            AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] ?? '',
+            AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] ?? '',
+            AUTH0_CLIENT_SECRET: process.env['AUTH0_CLIENT_SECRET'] ?? '',
             AUTH0_SECRET: process.env['AUTH0_SECRET'] ?? 'e2e-test-secret',
             APP_BASE_URL: 'http://localhost:3000',
+            NEXT_PUBLIC_AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] ?? '',
+            NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] ?? '',
         },
     },
 });

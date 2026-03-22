@@ -9,17 +9,11 @@ provider:
     memorySize: 128
     timeout: 10
     environment:
-        SECRET_NAME: armoury/${self:provider.stage}/authorizer
+        AUTH0_DOMAIN: ${env:AUTH0_DOMAIN, ''}
+        AUTH0_AUDIENCE: ${env:AUTH0_AUDIENCE, ''}
         NODE_OPTIONS: '--import ./src/instrument.js'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
-    iam:
-        role:
-            statements:
-                - Effect: Allow
-                  Action:
-                      - secretsmanager:GetSecretValue
-                  Resource: '*'
 
 build:
     esbuild:
@@ -32,9 +26,6 @@ build:
         mainFields:
             - module
             - main
-        external:
-            - '@aws-sdk/client-secrets-manager'
-
 plugins:
     - serverless-offline
 

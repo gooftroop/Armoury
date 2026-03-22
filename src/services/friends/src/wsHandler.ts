@@ -70,7 +70,9 @@ export async function handler(event: WebSocketEvent): Promise<WebSocketResponse>
 
         return response;
     } catch (error) {
-        console.error('Friends websocket handler error', error);
+        Sentry.logger.error('Friends websocket handler error', {
+            error: error instanceof Error ? error.message : String(error),
+        });
         Sentry.captureException(error);
 
         const normalizedError = error instanceof Error ? error : new Error('Unknown error');

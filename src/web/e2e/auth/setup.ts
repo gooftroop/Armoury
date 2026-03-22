@@ -1,39 +1,66 @@
 /**
- * Auth setup — saves browser auth state for all authenticated E2E tests.
+ * Auth0 session setup for Playwright e2e tests.
  *
- * Runs once per Playwright suite. Logs in via Auth0 Universal Login and persists
- * the session to `.auth/user.json` so individual tests skip login.
+ * Forges an authenticated session cookie using `generateSessionCookie` from
+ * `@auth0/nextjs-auth0/testing` instead of driving the real Auth0 Universal
+ * Login UI. This makes authenticated tests deterministic, fast, and
+ * zero-network-dependency — no test tenant credentials required.
  *
- * Auth0 Next.js SDK routes:
- *   - /auth/login → redirects to Auth0 Universal Login page
- *   - Auth0 callback → redirects to APP_BASE_URL (landing page)
+ * The forged cookie is injected into the browser context and the resulting
+ * storageState is saved so downstream test projects can reuse the session.
  *
  * @requirements
- * - REQ-E2E-AUTH-01: Authenticate once per suite via Auth0 Universal Login flow
- * - REQ-E2E-AUTH-02: Persist storageState to .auth/user.json
- * - REQ-E2E-AUTH-03: Require E2E_USER_EMAIL and E2E_USER_PASSWORD env vars
+ * 1. Must forge a session cookie using generateSessionCookie.
+ * 2. Must use AUTH0_SECRET (or fallback 'e2e-test-secret') for cookie signing.
+ * 3. Must inject the cookie into the browser context with correct attributes.
+ * 4. Must save storageState to src/web/e2e/.auth/user.json.
+ * 5. Must provide a realistic session shape (user sub, email, tokenSet).
  */
 
 import { test as setup } from '@playwright/test';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { generateSessionCookie } from '@auth0/nextjs-auth0/testing';
+import { mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const authFile = path.resolve(__dirname, '..', '.auth', 'user.json');
+/** Path where authenticated session state is persisted between projects. */
+const AUTH_STATE_PATH = './src/web/e2e/.auth/user.json';
 
-setup('authenticate', async ({ page }) => {
-    // Navigate to the Auth0 login route — the SDK redirects to the Auth0 Universal Login page.
-    await page.goto('/auth/login');
+/** Auth0 session cookie name used by the v4 SDK. */
+const AUTH0_COOKIE_NAME = '__session';
 
-    // Fill credentials on the Auth0 Universal Login page.
-    await page.getByLabel('Email address').fill(process.env['E2E_USER_EMAIL']!);
-    await page.getByLabel('Password').fill(process.env['E2E_USER_PASSWORD']!);
-    await page.getByRole('button', { name: 'Continue' }).click();
+setup('forge authenticated session', async ({ context }) => {
+    const secret = process.env['AUTH0_SECRET'] ?? 'e2e-test-secret';
 
-    // Wait for the Auth0 callback to redirect back to the app landing page.
-    // The SDK redirects to APP_BASE_URL (/) which the i18n middleware rewrites to /en.
-    await page.waitForURL(/\/en\/?$/);
+    const cookieValue = await generateSessionCookie(
+        {
+            user: {
+                sub: 'auth0|e2e-test-user',
+                email: 'e2e@armoury.test',
+                name: 'E2E Test User',
+                email_verified: true,
+            },
+            tokenSet: {
+                accessToken: 'e2e-fake-access-token',
+                expiresAt: Math.floor(Date.now() / 1000) + 86_400, // 24 hours from now
+            },
+        },
+        { secret },
+    );
 
-    // Save auth state — all authenticated tests will load this file.
-    await page.context().storageState({ path: authFile });
+    await context.addCookies([
+        {
+            name: AUTH0_COOKIE_NAME,
+            value: cookieValue,
+            domain: 'localhost',
+            path: '/',
+            httpOnly: true,
+            secure: false,
+            sameSite: 'Lax',
+        },
+    ]);
+
+    // Ensure the auth state directory exists before saving.
+    await mkdir(dirname(AUTH_STATE_PATH), { recursive: true });
+
+    await context.storageState({ path: AUTH_STATE_PATH });
 });

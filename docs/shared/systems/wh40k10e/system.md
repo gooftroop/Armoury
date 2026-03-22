@@ -192,7 +192,7 @@ import type { Wh40kGameData } from '@armoury/systems';
 wh40k10eSystem.register();
 
 // Build DataContext with the wh40k10e system
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();

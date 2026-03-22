@@ -191,7 +191,7 @@ echo "" >> "$ENV_LOCAL_FILE"
 jq -r '
     .services[]
     | select(.restApiId != null)
-    | "\(.name | ascii_upcase)_BASE_URL=http://localhost:4566/_aws/execute-api/\(.restApiId)/local"
+    | "NEXT_PUBLIC_\(.name | ascii_upcase)_BASE_URL=http://localhost:4566/_aws/execute-api/\(.restApiId)/local"
 ' "$SERVICES_FILE" >> "$ENV_LOCAL_FILE"
 
 echo "[bootstrap] Generated ${ENV_LOCAL_FILE}"

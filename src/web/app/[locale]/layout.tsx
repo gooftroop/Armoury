@@ -3,6 +3,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Libre_Franklin, JetBrains_Mono } from 'next/font/google';
+import Script from 'next/script';
 import { routing } from '@/i18n/routing.js';
 import { Providers } from '@/components/providers.js';
 import '../globals.css';
@@ -51,7 +52,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             suppressHydrationWarning
         >
             <head>
-                <script src="/js/init.js" />
+                <Script src="/js/init.js" strategy="beforeInteractive" />
             </head>
             <body className="min-h-screen bg-background text-foreground antialiased">
                 <NextIntlClientProvider>
