@@ -49,7 +49,10 @@ describe('parseWeaponKeyword', () => {
         expect(parseWeaponKeyword('Assault')).toEqual({ type: 'assault', raw: 'Assault' });
         expect(parseWeaponKeyword('twin-linked')).toEqual({ type: 'twinLinked', raw: 'twin-linked' });
         expect(parseWeaponKeyword('LETHAL HITS')).toEqual({ type: 'lethalHits', raw: 'LETHAL HITS' });
-        expect(parseWeaponKeyword('Devastating Wounds')).toEqual({ type: 'devastatingWounds', raw: 'Devastating Wounds' });
+        expect(parseWeaponKeyword('Devastating Wounds')).toEqual({
+            type: 'devastatingWounds',
+            raw: 'Devastating Wounds',
+        });
         expect(parseWeaponKeyword('Indirect Fire')).toEqual({ type: 'indirectFire', raw: 'Indirect Fire' });
         expect(parseWeaponKeyword('Ignores Cover')).toEqual({ type: 'ignoresCover', raw: 'Ignores Cover' });
         expect(parseWeaponKeyword('Extra Attacks')).toEqual({ type: 'extraAttacks', raw: 'Extra Attacks' });

@@ -14,21 +14,22 @@ import { ArmyCard } from '../ArmyCard.js';
 import { makeArmy } from './fixtures.js';
 
 vi.mock('next-intl', () => ({
-    useTranslations: () => (key: string, values?: { count?: number; current?: number; limit?: number; date?: string }) => {
-        if (key === 'units') {
-            return `Units: ${values?.count ?? 0}`;
-        }
+    useTranslations:
+        () => (key: string, values?: { count?: number; current?: number; limit?: number; date?: string }) => {
+            if (key === 'units') {
+                return `Units: ${values?.count ?? 0}`;
+            }
 
-        if (key === 'points') {
-            return `Points: ${values?.current ?? 0}/${values?.limit ?? 0}`;
-        }
+            if (key === 'points') {
+                return `Points: ${values?.current ?? 0}/${values?.limit ?? 0}`;
+            }
 
-        if (key === 'lastModified') {
-            return `Last modified: ${values?.date ?? ''}`;
-        }
+            if (key === 'lastModified') {
+                return `Last modified: ${values?.date ?? ''}`;
+            }
 
-        return key;
-    },
+            return key;
+        },
 }));
 
 describe('ArmyCard', () => {
@@ -67,9 +68,7 @@ describe('ArmyCard', () => {
         const onDuplicate = vi.fn();
         const onDelete = vi.fn();
 
-        render(
-            <ArmyCard army={makeArmy()} onDeploy={onDeploy} onDuplicate={onDuplicate} onDelete={onDelete} />,
-        );
+        render(<ArmyCard army={makeArmy()} onDeploy={onDeploy} onDuplicate={onDuplicate} onDelete={onDelete} />);
 
         await user.click(screen.getByRole('button', { name: 'deploy' }));
         await user.click(screen.getByRole('button', { name: 'duplicate' }));

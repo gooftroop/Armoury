@@ -128,9 +128,7 @@ describe('ForgeContainer', () => {
         useMutationMock.mockImplementation(() => {
             mutationHookCallCount += 1;
 
-            return mutationHookCallCount % 2 === 1
-                ? { mutate: mockDuplicateMutate }
-                : { mutate: mockDeleteMutate };
+            return mutationHookCallCount % 2 === 1 ? { mutate: mockDuplicateMutate } : { mutate: mockDeleteMutate };
         });
     });
 

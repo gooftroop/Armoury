@@ -10,35 +10,35 @@
 # - REQ-MAESTRO-ARMY-CREATE-04: Submit form and verify created army is visible
 appId: com.armoury.mobile
 env:
-  TEST_USER_EMAIL: ${TEST_USER_EMAIL}
-  TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
+    TEST_USER_EMAIL: ${TEST_USER_EMAIL}
+    TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
 ---
 - runFlow: common/login.yaml
 - assertVisible:
-    text: "My Armies"
-    timeout: 10000
+      text: 'My Armies'
+      timeout: 10000
 - tapOn:
-    id: "army-list-new-button"
+      id: 'army-list-new-button'
 - assertVisible:
-    id: "army-new-name-input"
-    timeout: 10000
+      id: 'army-new-name-input'
+      timeout: 10000
 - tapOn:
-    id: "army-new-name-input"
-- inputText: "Maestro Test Army"
+      id: 'army-new-name-input'
+- inputText: 'Maestro Test Army'
 - tapOn:
-    id: "army-new-game-system-selector"
+      id: 'army-new-game-system-selector'
 - assertVisible:
-    text: "Warhammer 40,000 10th Edition"
-    timeout: 10000
-- tapOn: "Warhammer 40,000 10th Edition"
+      text: 'Warhammer 40,000 10th Edition'
+      timeout: 10000
+- tapOn: 'Warhammer 40,000 10th Edition'
 - tapOn:
-    id: "army-new-faction-selector"
+      id: 'army-new-faction-selector'
 - assertVisible:
-    text: "Space Marines"
-    timeout: 10000
-- tapOn: "Space Marines"
+      text: 'Space Marines'
+      timeout: 10000
+- tapOn: 'Space Marines'
 - tapOn:
-    id: "army-new-create-button"
+      id: 'army-new-create-button'
 - assertVisible:
-    text: "Maestro Test Army"
-    timeout: 10000
+      text: 'Maestro Test Army'
+      timeout: 10000

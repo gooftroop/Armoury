@@ -28,7 +28,10 @@ import { test, expect } from '../fixtures/index.js';
  * The overlay is a <button> inside the SystemTile with download/loading/error text.
  */
 async function clickSystemTileOverlay(page: import('@playwright/test').Page): Promise<void> {
-    const overlay = page.locator('button').filter({ hasText: /download|downloading|retry/i }).first();
+    const overlay = page
+        .locator('button')
+        .filter({ hasText: /download|downloading|retry/i })
+        .first();
     // Hover to reveal the overlay (opacity-0 → opacity-100 on group-hover).
     const tile = overlay.locator('..');
     await tile.hover();
@@ -81,7 +84,10 @@ test.describe('WH40K system data sync lifecycle', () => {
         await page.getByLabel(/detachment/i).click();
         await page.getByRole('option').nth(1).click();
         await page.getByLabel(/battle size/i).click();
-        await page.getByRole('option', { name: /strike force|incursion|onslaught/i }).first().click();
+        await page
+            .getByRole('option', { name: /strike force|incursion|onslaught/i })
+            .first()
+            .click();
         await page.getByRole('button', { name: /create army/i }).click();
 
         // THEN: card appears
@@ -93,20 +99,19 @@ test.describe('WH40K system data sync lifecycle', () => {
         });
         await createdCard.getByRole('button', { name: /duplicate/i }).click();
 
-        await expect(
-            page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 }),
-        ).toBeVisible();
+        await expect(page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 })).toBeVisible();
 
         // WHEN: delete the copy
         const copiedCard = page.locator('div.rounded-lg.border', {
             has: page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 }),
         });
         await copiedCard.getByRole('button', { name: /delete/i }).click();
-        await page.getByRole('alertdialog').getByRole('button', { name: /delete|confirm/i }).click();
+        await page
+            .getByRole('alertdialog')
+            .getByRole('button', { name: /delete|confirm/i })
+            .click();
 
-        await expect(
-            page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 }),
-        ).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 })).toHaveCount(0);
     });
 
     test('sync error state is shown and retry recovers', async ({ page }) => {

@@ -12,7 +12,7 @@ appId: com.armoury.mobile
 # The `optional: true` flag means this step won't fail if the element
 # isn't visible (e.g., returning users who already completed onboarding).
 - tapOn:
-    id: "onboarding-skip-button"
-    optional: true
+      id: 'onboarding-skip-button'
+      optional: true
 # Wait briefly for any transition to settle
 - waitForAnimationToEnd

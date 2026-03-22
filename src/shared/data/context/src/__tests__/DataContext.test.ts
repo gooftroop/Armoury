@@ -78,11 +78,15 @@ describe('DataContext', () => {
 
         expect(() => {
             void withoutGithub.game['anything'];
-        }).toThrow("Game-specific data context for 'Warhammer 40,000 10th Edition' is not yet implemented. GitHub client configured: false.");
+        }).toThrow(
+            "Game-specific data context for 'Warhammer 40,000 10th Edition' is not yet implemented. GitHub client configured: false.",
+        );
 
         expect(() => {
             void withGithub.game['anything'];
-        }).toThrow("Game-specific data context for 'Warhammer 40,000 10th Edition' is not yet implemented. GitHub client configured: true.");
+        }).toThrow(
+            "Game-specific data context for 'Warhammer 40,000 10th Edition' is not yet implemented. GitHub client configured: true.",
+        );
     });
 
     it('delegates close() to adapter.close()', async () => {

@@ -10,18 +10,18 @@
 appId: com.armoury.mobile
 ---
 - launchApp:
-    clearState: true
+      clearState: true
 - assertVisible:
-    id: "auth-sign-in-heading"
+      id: 'auth-sign-in-heading'
 - tapOn:
-    id: "auth-email-input"
+      id: 'auth-email-input'
 - inputText: ${TEST_USER_EMAIL}
 - tapOn:
-    id: "auth-password-input"
+      id: 'auth-password-input'
 - inputText: ${TEST_USER_PASSWORD}
 - tapOn:
-    id: "auth-sign-in-button"
+      id: 'auth-sign-in-button'
 # Confirm login succeeded before returning to the calling flow
 - assertVisible:
-    id: "army-list-screen"
-    timeout: 10000
+      id: 'army-list-screen'
+      timeout: 10000

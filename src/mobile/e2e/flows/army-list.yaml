@@ -10,28 +10,28 @@
 # - REQ-MAESTRO-ARMY-LIST-04: Navigate back and confirm list remains visible
 appId: com.armoury.mobile
 env:
-  TEST_USER_EMAIL: ${TEST_USER_EMAIL}
-  TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
+    TEST_USER_EMAIL: ${TEST_USER_EMAIL}
+    TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
 ---
 - runFlow: common/login.yaml
 - assertVisible:
-    id: "army-list-screen"
-    timeout: 10000
+      id: 'army-list-screen'
+      timeout: 10000
 - assertVisible:
-    text: "My Armies"
-    timeout: 10000
+      text: 'My Armies'
+      timeout: 10000
 - assertVisible:
-    id: "army-list-item-.*"
-    timeout: 10000
+      id: 'army-list-item-.*'
+      timeout: 10000
 - tapOn:
-    id: "army-list-item-.*"
+      id: 'army-list-item-.*'
 - assertVisible:
-    id: "army-detail-screen"
-    timeout: 10000
+      id: 'army-detail-screen'
+      timeout: 10000
 - back
 - assertVisible:
-    id: "army-list-screen"
-    timeout: 10000
+      id: 'army-list-screen'
+      timeout: 10000
 - assertVisible:
-    id: "army-list-item-.*"
-    timeout: 10000
+      id: 'army-list-item-.*'
+      timeout: 10000

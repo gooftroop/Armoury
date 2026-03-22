@@ -37,7 +37,16 @@ describe('EmptyState', () => {
         const user = userEvent.setup();
         const onClick = vi.fn();
 
-        render(<EmptyState title="No armies" action={<button onClick={onClick} type="button">Create</button>} />);
+        render(
+            <EmptyState
+                title="No armies"
+                action={
+                    <button onClick={onClick} type="button">
+                        Create
+                    </button>
+                }
+            />,
+        );
 
         await user.click(screen.getByRole('button', { name: 'Create' }));
 

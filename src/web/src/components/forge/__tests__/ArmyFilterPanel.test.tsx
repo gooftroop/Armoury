@@ -115,8 +115,7 @@ describe('ArmyFilterPanel', () => {
     it('supports interaction surface through rendered controls', async () => {
         const user = userEvent.setup();
 
-        render(<ArmyFilterPanel filters={DEFAULT_FORGE_FILTERS} onChange={vi.fn()} factionIds={['tau']}/>
-        );
+        render(<ArmyFilterPanel filters={DEFAULT_FORGE_FILTERS} onChange={vi.fn()} factionIds={['tau']} />);
 
         const labelButton = screen.getByRole('button', { name: 'label' });
         fireEvent.click(labelButton);
