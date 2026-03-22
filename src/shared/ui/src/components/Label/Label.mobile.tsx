@@ -33,6 +33,8 @@ export interface LabelProps extends RNTextProps {
     className?: string;
     /** Label content. */
     children?: React.ReactNode;
+    /** Forward ref to underlying Text component. */
+    ref?: React.Ref<React.ElementRef<typeof Text>>;
 }
 
 /**
@@ -41,24 +43,22 @@ export interface LabelProps extends RNTextProps {
  * @param props - Component props including standard text attributes.
  * @returns The rendered Label component.
  */
-const Label = React.forwardRef<React.ElementRef<typeof Text>, LabelProps>(
-    ({ htmlFor: _htmlFor, className: _className, children, ...props }, ref) => {
-        const theme = useTheme();
+function Label({ htmlFor: _htmlFor, className: _className, children, ref, ...props }: LabelProps): React.ReactElement {
+    const theme = useTheme();
 
-        return (
-            <Text
-                ref={ref}
-                fontSize={14}
-                fontWeight="500"
-                lineHeight={14}
-                color={resolveThemeColor(theme, 'color')}
-                {...props}
-            >
-                {children}
-            </Text>
-        );
-    },
-);
+    return (
+        <Text
+            ref={ref}
+            fontSize={14}
+            fontWeight="500"
+            lineHeight={14}
+            color={resolveThemeColor(theme, 'color')}
+            {...props}
+        >
+            {children}
+        </Text>
+    );
+}
 
 Label.displayName = 'Label';
 

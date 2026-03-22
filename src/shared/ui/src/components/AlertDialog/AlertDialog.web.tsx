@@ -25,42 +25,42 @@ import { buttonVariants } from '@/components/Button/index.js';
 /**
  * Props for the AlertDialogOverlay component.
  */
-export type AlertDialogOverlayProps = React.ComponentPropsWithoutRef<typeof AlertDialog.Overlay>;
+export type AlertDialogOverlayProps = React.ComponentPropsWithRef<typeof AlertDialog.Overlay>;
 
 /**
  * Props for the AlertDialogContent component.
  */
-export type AlertDialogContentProps = React.ComponentPropsWithoutRef<typeof AlertDialog.Content>;
+export type AlertDialogContentProps = React.ComponentPropsWithRef<typeof AlertDialog.Content>;
 
 /**
  * Props for the AlertDialogHeader component.
  */
-export type AlertDialogHeaderProps = React.HTMLAttributes<HTMLDivElement>;
+export type AlertDialogHeaderProps = React.ComponentPropsWithRef<'div'>;
 
 /**
  * Props for the AlertDialogFooter component.
  */
-export type AlertDialogFooterProps = React.HTMLAttributes<HTMLDivElement>;
+export type AlertDialogFooterProps = React.ComponentPropsWithRef<'div'>;
 
 /**
  * Props for the AlertDialogTitle component.
  */
-export type AlertDialogTitleProps = React.ComponentPropsWithoutRef<typeof AlertDialog.Title>;
+export type AlertDialogTitleProps = React.ComponentPropsWithRef<typeof AlertDialog.Title>;
 
 /**
  * Props for the AlertDialogDescription component.
  */
-export type AlertDialogDescriptionProps = React.ComponentPropsWithoutRef<typeof AlertDialog.Description>;
+export type AlertDialogDescriptionProps = React.ComponentPropsWithRef<typeof AlertDialog.Description>;
 
 /**
  * Props for the AlertDialogAction component.
  */
-export type AlertDialogActionProps = React.ComponentPropsWithoutRef<typeof AlertDialog.Action>;
+export type AlertDialogActionProps = React.ComponentPropsWithRef<typeof AlertDialog.Action>;
 
 /**
  * Props for the AlertDialogCancel component.
  */
-export type AlertDialogCancelProps = React.ComponentPropsWithoutRef<typeof AlertDialog.Cancel>;
+export type AlertDialogCancelProps = React.ComponentPropsWithRef<typeof AlertDialog.Cancel>;
 
 /**
  * AlertDialog component - the root alert dialog component.
@@ -84,8 +84,14 @@ const AlertDialogPortal = AlertDialog.Portal;
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered AlertDialogOverlay component.
  */
-const AlertDialogOverlay = React.forwardRef<React.ElementRef<typeof AlertDialog.Overlay>, AlertDialogOverlayProps>(
-    ({ className, ...props }, ref) => (
+/**
+ * AlertDialogOverlay component - the backdrop overlay.
+ *
+ * @param props - Component props including className and standard AlertDialog.Overlay attributes.
+ * @returns The rendered AlertDialogOverlay component.
+ */
+function AlertDialogOverlay({ className, ref, ...props }: AlertDialogOverlayProps): React.ReactElement {
+    return (
         <AlertDialog.Overlay
             className={cn(
                 'fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -94,8 +100,9 @@ const AlertDialogOverlay = React.forwardRef<React.ElementRef<typeof AlertDialog.
             ref={ref}
             {...props}
         />
-    ),
-);
+    );
+}
+
 AlertDialogOverlay.displayName = 'AlertDialogOverlay';
 
 /**
@@ -105,8 +112,14 @@ AlertDialogOverlay.displayName = 'AlertDialogOverlay';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered AlertDialogContent component.
  */
-const AlertDialogContent = React.forwardRef<React.ElementRef<typeof AlertDialog.Content>, AlertDialogContentProps>(
-    ({ className, ...props }, ref) => (
+/**
+ * AlertDialogContent component - the main alert dialog content container.
+ *
+ * @param props - Component props including className and standard AlertDialog.Content attributes.
+ * @returns The rendered AlertDialogContent component.
+ */
+function AlertDialogContent({ className, ref, ...props }: AlertDialogContentProps): React.ReactElement {
+    return (
         <AlertDialogPortal>
             <AlertDialogOverlay />
             <AlertDialog.Content
@@ -118,8 +131,9 @@ const AlertDialogContent = React.forwardRef<React.ElementRef<typeof AlertDialog.
                 {...props}
             />
         </AlertDialogPortal>
-    ),
-);
+    );
+}
+
 AlertDialogContent.displayName = 'AlertDialogContent';
 
 /**
@@ -129,9 +143,16 @@ AlertDialogContent.displayName = 'AlertDialogContent';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered AlertDialogHeader component.
  */
-const AlertDialogHeader = React.forwardRef<HTMLDivElement, AlertDialogHeaderProps>(({ className, ...props }, ref) => (
-    <div className={cn('flex flex-col space-y-2 text-center sm:text-left', className)} ref={ref} {...props} />
-));
+/**
+ * AlertDialogHeader component - contains title and description.
+ *
+ * @param props - Component props including className and standard div attributes.
+ * @returns The rendered AlertDialogHeader component.
+ */
+function AlertDialogHeader({ className, ref, ...props }: AlertDialogHeaderProps): React.ReactElement {
+    return <div className={cn('flex flex-col space-y-2 text-center sm:text-left', className)} ref={ref} {...props} />;
+}
+
 AlertDialogHeader.displayName = 'AlertDialogHeader';
 
 /**
@@ -141,13 +162,22 @@ AlertDialogHeader.displayName = 'AlertDialogHeader';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered AlertDialogFooter component.
  */
-const AlertDialogFooter = React.forwardRef<HTMLDivElement, AlertDialogFooterProps>(({ className, ...props }, ref) => (
-    <div
-        className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
-        ref={ref}
-        {...props}
-    />
-));
+/**
+ * AlertDialogFooter component - contains action buttons.
+ *
+ * @param props - Component props including className and standard div attributes.
+ * @returns The rendered AlertDialogFooter component.
+ */
+function AlertDialogFooter({ className, ref, ...props }: AlertDialogFooterProps): React.ReactElement {
+    return (
+        <div
+            className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
+            ref={ref}
+            {...props}
+        />
+    );
+}
+
 AlertDialogFooter.displayName = 'AlertDialogFooter';
 
 /**
@@ -157,11 +187,16 @@ AlertDialogFooter.displayName = 'AlertDialogFooter';
  * @param ref - Forwarded ref to the h2 element.
  * @returns The rendered AlertDialogTitle component.
  */
-const AlertDialogTitle = React.forwardRef<React.ElementRef<typeof AlertDialog.Title>, AlertDialogTitleProps>(
-    ({ className, ...props }, ref) => (
-        <AlertDialog.Title className={cn('text-lg font-semibold', className)} ref={ref} {...props} />
-    ),
-);
+/**
+ * AlertDialogTitle component - the title of the alert dialog.
+ *
+ * @param props - Component props including className and standard AlertDialog.Title attributes.
+ * @returns The rendered AlertDialogTitle component.
+ */
+function AlertDialogTitle({ className, ref, ...props }: AlertDialogTitleProps): React.ReactElement {
+    return <AlertDialog.Title className={cn('text-lg font-semibold', className)} ref={ref} {...props} />;
+}
+
 AlertDialogTitle.displayName = 'AlertDialogTitle';
 
 /**
@@ -171,12 +206,16 @@ AlertDialogTitle.displayName = 'AlertDialogTitle';
  * @param ref - Forwarded ref to the p element.
  * @returns The rendered AlertDialogDescription component.
  */
-const AlertDialogDescription = React.forwardRef<
-    React.ElementRef<typeof AlertDialog.Description>,
-    AlertDialogDescriptionProps
->(({ className, ...props }, ref) => (
-    <AlertDialog.Description className={cn('text-sm text-muted-foreground', className)} ref={ref} {...props} />
-));
+/**
+ * AlertDialogDescription component - a description for the alert dialog content.
+ *
+ * @param props - Component props including className and standard AlertDialog.Description attributes.
+ * @returns The rendered AlertDialogDescription component.
+ */
+function AlertDialogDescription({ className, ref, ...props }: AlertDialogDescriptionProps): React.ReactElement {
+    return <AlertDialog.Description className={cn('text-sm text-muted-foreground', className)} ref={ref} {...props} />;
+}
+
 AlertDialogDescription.displayName = 'AlertDialogDescription';
 
 /**
@@ -186,11 +225,16 @@ AlertDialogDescription.displayName = 'AlertDialogDescription';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered AlertDialogAction component.
  */
-const AlertDialogAction = React.forwardRef<React.ElementRef<typeof AlertDialog.Action>, AlertDialogActionProps>(
-    ({ className, ...props }, ref) => (
-        <AlertDialog.Action className={cn(buttonVariants(), className)} ref={ref} {...props} />
-    ),
-);
+/**
+ * AlertDialogAction component - the confirm action button.
+ *
+ * @param props - Component props including className and standard AlertDialog.Action attributes.
+ * @returns The rendered AlertDialogAction component.
+ */
+function AlertDialogAction({ className, ref, ...props }: AlertDialogActionProps): React.ReactElement {
+    return <AlertDialog.Action className={cn(buttonVariants(), className)} ref={ref} {...props} />;
+}
+
 AlertDialogAction.displayName = 'AlertDialogAction';
 
 /**
@@ -200,15 +244,22 @@ AlertDialogAction.displayName = 'AlertDialogAction';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered AlertDialogCancel component.
  */
-const AlertDialogCancel = React.forwardRef<React.ElementRef<typeof AlertDialog.Cancel>, AlertDialogCancelProps>(
-    ({ className, ...props }, ref) => (
+/**
+ * AlertDialogCancel component - the cancel action button.
+ *
+ * @param props - Component props including className and standard AlertDialog.Cancel attributes.
+ * @returns The rendered AlertDialogCancel component.
+ */
+function AlertDialogCancel({ className, ref, ...props }: AlertDialogCancelProps): React.ReactElement {
+    return (
         <AlertDialog.Cancel
             className={cn(buttonVariants({ variant: 'outline' }), 'mt-2 sm:mt-0', className)}
             ref={ref}
             {...props}
         />
-    ),
-);
+    );
+}
+
 AlertDialogCancel.displayName = 'AlertDialogCancel';
 
 export {

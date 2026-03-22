@@ -24,37 +24,37 @@ import { cn } from '@/lib/utils.js';
 /**
  * Props for the SelectTrigger component.
  */
-export type SelectTriggerProps = React.ComponentPropsWithoutRef<typeof Select.Trigger>;
+export type SelectTriggerProps = React.ComponentPropsWithRef<typeof Select.Trigger>;
 
 /**
  * Props for the SelectContent component.
  */
-export type SelectContentProps = React.ComponentPropsWithoutRef<typeof Select.Content>;
+export type SelectContentProps = React.ComponentPropsWithRef<typeof Select.Content>;
 
 /**
  * Props for the SelectLabel component.
  */
-export type SelectLabelProps = React.ComponentPropsWithoutRef<typeof Select.Label>;
+export type SelectLabelProps = React.ComponentPropsWithRef<typeof Select.Label>;
 
 /**
  * Props for the SelectItem component.
  */
-export type SelectItemProps = React.ComponentPropsWithoutRef<typeof Select.Item>;
+export type SelectItemProps = React.ComponentPropsWithRef<typeof Select.Item>;
 
 /**
  * Props for the SelectSeparator component.
  */
-export type SelectSeparatorProps = React.ComponentPropsWithoutRef<typeof Select.Separator>;
+export type SelectSeparatorProps = React.ComponentPropsWithRef<typeof Select.Separator>;
 
 /**
  * Props for the SelectScrollUpButton component.
  */
-export type SelectScrollUpButtonProps = React.ComponentPropsWithoutRef<typeof Select.ScrollUpButton>;
+export type SelectScrollUpButtonProps = React.ComponentPropsWithRef<typeof Select.ScrollUpButton>;
 
 /**
  * Props for the SelectScrollDownButton component.
  */
-export type SelectScrollDownButtonProps = React.ComponentPropsWithoutRef<typeof Select.ScrollDownButton>;
+export type SelectScrollDownButtonProps = React.ComponentPropsWithRef<typeof Select.ScrollDownButton>;
 
 /**
  * Select component - the root select component.
@@ -78,8 +78,14 @@ const SelectValue = Select.Value;
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered SelectTrigger component.
  */
-const SelectTrigger = React.forwardRef<React.ElementRef<typeof Select.Trigger>, SelectTriggerProps>(
-    ({ className, children, ...props }, ref) => (
+/**
+ * SelectTrigger component - the button that opens the select.
+ *
+ * @param props - Component props including className and standard Select.Trigger attributes.
+ * @returns The rendered SelectTrigger component.
+ */
+function SelectTrigger({ className, children, ref, ...props }: SelectTriggerProps): React.ReactElement {
+    return (
         <Select.Trigger
             className={cn(
                 'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
@@ -93,8 +99,9 @@ const SelectTrigger = React.forwardRef<React.ElementRef<typeof Select.Trigger>, 
                 <ChevronDown className="h-4 w-4 opacity-50" />
             </Select.Icon>
         </Select.Trigger>
-    ),
-);
+    );
+}
+
 SelectTrigger.displayName = 'SelectTrigger';
 
 /**
@@ -104,18 +111,24 @@ SelectTrigger.displayName = 'SelectTrigger';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered SelectScrollUpButton component.
  */
-const SelectScrollUpButton = React.forwardRef<
-    React.ElementRef<typeof Select.ScrollUpButton>,
-    SelectScrollUpButtonProps
->(({ className, ...props }, ref) => (
-    <Select.ScrollUpButton
-        className={cn('flex cursor-default items-center justify-center py-1', className)}
-        ref={ref}
-        {...props}
-    >
-        <ChevronUp className="h-4 w-4" />
-    </Select.ScrollUpButton>
-));
+/**
+ * SelectScrollUpButton component - scroll indicator for long lists.
+ *
+ * @param props - Component props including standard Select.ScrollUpButton attributes.
+ * @returns The rendered SelectScrollUpButton component.
+ */
+function SelectScrollUpButton({ className, ref, ...props }: SelectScrollUpButtonProps): React.ReactElement {
+    return (
+        <Select.ScrollUpButton
+            className={cn('flex cursor-default items-center justify-center py-1', className)}
+            ref={ref}
+            {...props}
+        >
+            <ChevronUp className="h-4 w-4" />
+        </Select.ScrollUpButton>
+    );
+}
+
 SelectScrollUpButton.displayName = 'SelectScrollUpButton';
 
 /**
@@ -125,18 +138,24 @@ SelectScrollUpButton.displayName = 'SelectScrollUpButton';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered SelectScrollDownButton component.
  */
-const SelectScrollDownButton = React.forwardRef<
-    React.ElementRef<typeof Select.ScrollDownButton>,
-    SelectScrollDownButtonProps
->(({ className, ...props }, ref) => (
-    <Select.ScrollDownButton
-        className={cn('flex cursor-default items-center justify-center py-1', className)}
-        ref={ref}
-        {...props}
-    >
-        <ChevronDown className="h-4 w-4" />
-    </Select.ScrollDownButton>
-));
+/**
+ * SelectScrollDownButton component - scroll indicator for long lists.
+ *
+ * @param props - Component props including standard Select.ScrollDownButton attributes.
+ * @returns The rendered SelectScrollDownButton component.
+ */
+function SelectScrollDownButton({ className, ref, ...props }: SelectScrollDownButtonProps): React.ReactElement {
+    return (
+        <Select.ScrollDownButton
+            className={cn('flex cursor-default items-center justify-center py-1', className)}
+            ref={ref}
+            {...props}
+        >
+            <ChevronDown className="h-4 w-4" />
+        </Select.ScrollDownButton>
+    );
+}
+
 SelectScrollDownButton.displayName = 'SelectScrollDownButton';
 
 /**
@@ -146,8 +165,20 @@ SelectScrollDownButton.displayName = 'SelectScrollDownButton';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered SelectContent component.
  */
-const SelectContent = React.forwardRef<React.ElementRef<typeof Select.Content>, SelectContentProps>(
-    ({ className, children, position = 'popper', ...props }, ref) => (
+/**
+ * SelectContent component - the dropdown content container.
+ *
+ * @param props - Component props including className, position, and standard Select.Content attributes.
+ * @returns The rendered SelectContent component.
+ */
+function SelectContent({
+    className,
+    children,
+    position = 'popper',
+    ref,
+    ...props
+}: SelectContentProps): React.ReactElement {
+    return (
         <Select.Portal>
             <Select.Content
                 className={cn(
@@ -173,8 +204,9 @@ const SelectContent = React.forwardRef<React.ElementRef<typeof Select.Content>, 
                 <SelectScrollDownButton />
             </Select.Content>
         </Select.Portal>
-    ),
-);
+    );
+}
+
 SelectContent.displayName = 'SelectContent';
 
 /**
@@ -184,11 +216,16 @@ SelectContent.displayName = 'SelectContent';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered SelectLabel component.
  */
-const SelectLabel = React.forwardRef<React.ElementRef<typeof Select.Label>, SelectLabelProps>(
-    ({ className, ...props }, ref) => (
-        <Select.Label className={cn('px-2 py-1.5 text-sm font-semibold', className)} ref={ref} {...props} />
-    ),
-);
+/**
+ * SelectLabel component - a label for a group of items.
+ *
+ * @param props - Component props including className and standard Select.Label attributes.
+ * @returns The rendered SelectLabel component.
+ */
+function SelectLabel({ className, ref, ...props }: SelectLabelProps): React.ReactElement {
+    return <Select.Label className={cn('px-2 py-1.5 text-sm font-semibold', className)} ref={ref} {...props} />;
+}
+
 SelectLabel.displayName = 'SelectLabel';
 
 /**
@@ -198,8 +235,14 @@ SelectLabel.displayName = 'SelectLabel';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered SelectItem component.
  */
-const SelectItem = React.forwardRef<React.ElementRef<typeof Select.Item>, SelectItemProps>(
-    ({ className, children, ...props }, ref) => (
+/**
+ * SelectItem component - an individual option in the select.
+ *
+ * @param props - Component props including className and standard Select.Item attributes.
+ * @returns The rendered SelectItem component.
+ */
+function SelectItem({ className, children, ref, ...props }: SelectItemProps): React.ReactElement {
+    return (
         <Select.Item
             className={cn(
                 'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
@@ -215,8 +258,9 @@ const SelectItem = React.forwardRef<React.ElementRef<typeof Select.Item>, Select
             </span>
             <Select.ItemText>{children}</Select.ItemText>
         </Select.Item>
-    ),
-);
+    );
+}
+
 SelectItem.displayName = 'SelectItem';
 
 /**
@@ -226,11 +270,16 @@ SelectItem.displayName = 'SelectItem';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered SelectSeparator component.
  */
-const SelectSeparator = React.forwardRef<React.ElementRef<typeof Select.Separator>, SelectSeparatorProps>(
-    ({ className, ...props }, ref) => (
-        <Select.Separator className={cn('-mx-1 my-1 h-px bg-muted', className)} ref={ref} {...props} />
-    ),
-);
+/**
+ * SelectSeparator component - a visual separator between items.
+ *
+ * @param props - Component props including className and standard Select.Separator attributes.
+ * @returns The rendered SelectSeparator component.
+ */
+function SelectSeparator({ className, ref, ...props }: SelectSeparatorProps): React.ReactElement {
+    return <Select.Separator className={cn('-mx-1 my-1 h-px bg-muted', className)} ref={ref} {...props} />;
+}
+
 SelectSeparator.displayName = 'SelectSeparator';
 
 export {

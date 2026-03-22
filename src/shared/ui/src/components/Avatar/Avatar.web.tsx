@@ -39,18 +39,18 @@ const avatarVariants = cva('relative flex shrink-0 overflow-hidden rounded-full'
 /**
  * Props for the Avatar component.
  */
-export type AvatarProps = React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> &
+export type AvatarProps = React.ComponentPropsWithRef<typeof AvatarPrimitive.Root> &
     VariantProps<typeof avatarVariants>;
 
 /**
  * Props for the AvatarImage component.
  */
-export type AvatarImageProps = React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>;
+export type AvatarImageProps = React.ComponentPropsWithRef<typeof AvatarPrimitive.Image>;
 
 /**
  * Props for the AvatarFallback component.
  */
-export type AvatarFallbackProps = React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>;
+export type AvatarFallbackProps = React.ComponentPropsWithRef<typeof AvatarPrimitive.Fallback>;
 
 /**
  * Avatar component - the main container for avatar.
@@ -59,11 +59,16 @@ export type AvatarFallbackProps = React.ComponentPropsWithoutRef<typeof AvatarPr
  * @param ref - Forwarded ref to the span element.
  * @returns The rendered Avatar component.
  */
-const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(
-    ({ className, size, ...props }, ref) => (
-        <AvatarPrimitive.Root className={cn(avatarVariants({ size, className }))} ref={ref} {...props} />
-    ),
-);
+/**
+ * Avatar component - the main container for avatar.
+ *
+ * @param props - Component props including size and standard Avatar.Root attributes.
+ * @returns The rendered Avatar component.
+ */
+function Avatar({ className, size, ref, ...props }: AvatarProps): React.ReactElement {
+    return <AvatarPrimitive.Root className={cn(avatarVariants({ size, className }))} ref={ref} {...props} />;
+}
+
 Avatar.displayName = 'Avatar';
 
 /**
@@ -73,11 +78,16 @@ Avatar.displayName = 'Avatar';
  * @param ref - Forwarded ref to the img element.
  * @returns The rendered AvatarImage component.
  */
-const AvatarImage = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Image>, AvatarImageProps>(
-    ({ className, ...props }, ref) => (
-        <AvatarPrimitive.Image className={cn('aspect-square h-full w-full', className)} ref={ref} {...props} />
-    ),
-);
+/**
+ * AvatarImage component - the image to display.
+ *
+ * @param props - Component props including standard Avatar.Image attributes.
+ * @returns The rendered AvatarImage component.
+ */
+function AvatarImage({ className, ref, ...props }: AvatarImageProps): React.ReactElement {
+    return <AvatarPrimitive.Image className={cn('aspect-square h-full w-full', className)} ref={ref} {...props} />;
+}
+
 AvatarImage.displayName = 'AvatarImage';
 
 /**
@@ -87,15 +97,22 @@ AvatarImage.displayName = 'AvatarImage';
  * @param ref - Forwarded ref to the span element.
  * @returns The rendered AvatarFallback component.
  */
-const AvatarFallback = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Fallback>, AvatarFallbackProps>(
-    ({ className, ...props }, ref) => (
+/**
+ * AvatarFallback component - the fallback content when image fails to load.
+ *
+ * @param props - Component props including standard Avatar.Fallback attributes.
+ * @returns The rendered AvatarFallback component.
+ */
+function AvatarFallback({ className, ref, ...props }: AvatarFallbackProps): React.ReactElement {
+    return (
         <AvatarPrimitive.Fallback
             className={cn('flex h-full w-full items-center justify-center rounded-full bg-muted', className)}
             ref={ref}
             {...props}
         />
-    ),
-);
+    );
+}
+
 AvatarFallback.displayName = 'AvatarFallback';
 
 export { Avatar, AvatarImage, AvatarFallback, avatarVariants };

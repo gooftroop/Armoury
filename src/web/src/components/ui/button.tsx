@@ -7,7 +7,7 @@
  * Supports multiple visual styles for different contexts in a tactical military theme.
  *
  * @requirements
- * 1. Must export Button component with React.forwardRef for DOM ref forwarding.
+ * 1. Must export Button component accepting ref as a regular prop (React 19 pattern).
  * 2. Must support 8 variants: primary, secondary, highlight, ghost, destructive, outline, link, unstyled.
  * 3. Must support 3 sizes: sm, md, lg.
  * 4. Must merge user className with variant styles using cn utility.

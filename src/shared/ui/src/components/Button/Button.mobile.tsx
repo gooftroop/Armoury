@@ -90,6 +90,8 @@ export interface ButtonProps extends Omit<GetProps<typeof TamaguiButton>, 'size'
     asChild?: boolean;
     /** Web compatibility prop ignored on mobile. */
     className?: string;
+    /** Forward ref to underlying TamaguiButton component. */
+    ref?: React.Ref<React.ElementRef<typeof TamaguiButton>>;
 }
 
 /**
@@ -114,71 +116,76 @@ function resolveThemeColor(theme: ReturnType<typeof useTheme>, token: string): s
  * Button component for mobile platforms using Tamagui primitives.
  *
  * @param props - Variant, size, compatibility props, and Tamagui button props.
- * @param ref - Forwarded button ref.
- * @returns A themed mobile button.
+ * @returns The rendered Button component.
  */
-const Button = React.forwardRef<React.ElementRef<typeof TamaguiButton>, ButtonProps>(
-    ({ variant = 'primary', size = 'md', asChild: _asChild, className: _className, children, ...props }, ref) => {
-        const theme = useTheme();
-        const normalized = buttonVariants({ variant, size });
+function Button({
+    variant = 'primary',
+    size = 'md',
+    asChild: _asChild,
+    className: _className,
+    children,
+    ref,
+    ...props
+}: ButtonProps): React.ReactElement {
+    const theme = useTheme();
+    const normalized = buttonVariants({ variant, size });
 
-        const backgroundByVariant: Record<ButtonVariant, string | undefined> = {
-            primary: resolveThemeColor(theme, 'primary'),
-            secondary: resolveThemeColor(theme, 'secondary'),
-            highlight: resolveThemeColor(theme, 'highlight'),
-            ghost: 'transparent',
-            destructive: resolveThemeColor(theme, 'destructive'),
-            outline: 'transparent',
-            link: 'transparent',
-            unstyled: 'transparent',
-        };
+    const backgroundByVariant: Record<ButtonVariant, string | undefined> = {
+        primary: resolveThemeColor(theme, 'primary'),
+        secondary: resolveThemeColor(theme, 'secondary'),
+        highlight: resolveThemeColor(theme, 'highlight'),
+        ghost: 'transparent',
+        destructive: resolveThemeColor(theme, 'destructive'),
+        outline: 'transparent',
+        link: 'transparent',
+        unstyled: 'transparent',
+    };
 
-        const borderByVariant: Record<ButtonVariant, string | undefined> = {
-            primary: 'transparent',
-            secondary: 'transparent',
-            highlight: 'transparent',
-            ghost: 'transparent',
-            destructive: 'transparent',
-            outline: resolveThemeColor(theme, 'borderColor'),
-            link: 'transparent',
-            unstyled: 'transparent',
-        };
+    const borderByVariant: Record<ButtonVariant, string | undefined> = {
+        primary: 'transparent',
+        secondary: 'transparent',
+        highlight: 'transparent',
+        ghost: 'transparent',
+        destructive: 'transparent',
+        outline: resolveThemeColor(theme, 'borderColor'),
+        link: 'transparent',
+        unstyled: 'transparent',
+    };
 
-        const textByVariant: Record<ButtonVariant, string | undefined> = {
-            primary: resolveThemeColor(theme, 'primaryForeground'),
-            secondary: resolveThemeColor(theme, 'secondaryForeground'),
-            highlight: resolveThemeColor(theme, 'highlightForeground'),
-            ghost: resolveThemeColor(theme, 'color'),
-            destructive: resolveThemeColor(theme, 'destructiveForeground'),
-            outline: resolveThemeColor(theme, 'color'),
-            link: resolveThemeColor(theme, 'secondary'),
-            unstyled: resolveThemeColor(theme, 'color'),
-        };
+    const textByVariant: Record<ButtonVariant, string | undefined> = {
+        primary: resolveThemeColor(theme, 'primaryForeground'),
+        secondary: resolveThemeColor(theme, 'secondaryForeground'),
+        highlight: resolveThemeColor(theme, 'highlightForeground'),
+        ghost: resolveThemeColor(theme, 'color'),
+        destructive: resolveThemeColor(theme, 'destructiveForeground'),
+        outline: resolveThemeColor(theme, 'color'),
+        link: resolveThemeColor(theme, 'secondary'),
+        unstyled: resolveThemeColor(theme, 'color'),
+    };
 
-        const underline = normalized.variant === 'link' || normalized.variant === 'unstyled' ? 'underline' : 'none';
-        const borderWidth = normalized.variant === 'outline' ? 1 : 0;
+    const underline = normalized.variant === 'link' || normalized.variant === 'unstyled' ? 'underline' : 'none';
+    const borderWidth = normalized.variant === 'outline' ? 1 : 0;
 
-        return (
-            <ButtonFrame
-                ref={ref}
-                size={normalized.size}
-                backgroundColor={backgroundByVariant[normalized.variant]}
-                borderColor={borderByVariant[normalized.variant]}
-                borderWidth={borderWidth}
-                {...props}
+    return (
+        <ButtonFrame
+            ref={ref}
+            size={normalized.size}
+            backgroundColor={backgroundByVariant[normalized.variant]}
+            borderColor={borderByVariant[normalized.variant]}
+            borderWidth={borderWidth}
+            {...props}
+        >
+            <Text
+                color={textByVariant[normalized.variant]}
+                textDecorationLine={underline}
+                fontSize={normalized.size === 'sm' ? '$2' : normalized.size === 'lg' ? '$5' : '$3'}
+                fontWeight={normalized.variant === 'unstyled' ? '400' : '600'}
             >
-                <Text
-                    color={textByVariant[normalized.variant]}
-                    textDecorationLine={underline}
-                    fontSize={normalized.size === 'sm' ? '$2' : normalized.size === 'lg' ? '$5' : '$3'}
-                    fontWeight={normalized.variant === 'unstyled' ? '400' : '600'}
-                >
-                    {children}
-                </Text>
-            </ButtonFrame>
-        );
-    },
-);
+                {children}
+            </Text>
+        </ButtonFrame>
+    );
+}
 
 Button.displayName = 'Button';
 

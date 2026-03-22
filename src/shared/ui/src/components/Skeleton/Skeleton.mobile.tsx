@@ -39,6 +39,8 @@ export interface SkeletonProps extends ViewProps {
     borderRadius?: number;
     /** Children (rarely used). */
     children?: React.ReactNode;
+    /** Forward ref to underlying YStack component. */
+    ref?: React.Ref<React.ElementRef<typeof YStack>>;
 }
 
 /**
@@ -50,52 +52,57 @@ export interface SkeletonProps extends ViewProps {
  * @param props - Component props including size and standard view attributes.
  * @returns The rendered Skeleton component.
  */
-const Skeleton = React.forwardRef<React.ElementRef<typeof YStack>, SkeletonProps>(
-    ({ className: _className, width, height, borderRadius = 6, children }, ref) => {
-        const theme = useTheme();
-        const opacity = useRef(new Animated.Value(1)).current;
-        const animatedWidth = typeof width === 'number' ? width : undefined;
-        const animatedHeight = typeof height === 'number' ? height : undefined;
+function Skeleton({
+    className: _className,
+    width,
+    height,
+    borderRadius = 6,
+    children,
+    ref,
+}: SkeletonProps): React.ReactElement {
+    const theme = useTheme();
+    const opacity = useRef(new Animated.Value(1)).current;
+    const animatedWidth = typeof width === 'number' ? width : undefined;
+    const animatedHeight = typeof height === 'number' ? height : undefined;
 
-        useEffect(() => {
-            const animation = Animated.loop(
-                Animated.sequence([
-                    Animated.timing(opacity, {
-                        toValue: 0.5,
-                        duration: 1000,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(opacity, {
-                        toValue: 1,
-                        duration: 1000,
-                        useNativeDriver: true,
-                    }),
-                ]),
-            );
-
-            animation.start();
-
-            return () => {
-                animation.stop();
-            };
-        }, [opacity]);
-
-        return (
-            <Animated.View style={{ opacity, width: animatedWidth, height: animatedHeight, borderRadius }}>
-                <YStack
-                    ref={ref}
-                    backgroundColor={resolveThemeColor(theme, 'muted')}
-                    borderRadius={borderRadius}
-                    width={width}
-                    height={height}
-                    flex={width === undefined && height === undefined ? 1 : undefined}
-                >
-                    {children}
-                </YStack>
-            </Animated.View>
+    useEffect(() => {
+        const animation = Animated.loop(
+            Animated.sequence([
+                Animated.timing(opacity, {
+                    toValue: 0.5,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+            ]),
         );
-    },
-);
+
+        animation.start();
+
+        return () => {
+            animation.stop();
+        };
+    }, [opacity]);
+
+    return (
+        <Animated.View style={{ opacity, width: animatedWidth, height: animatedHeight, borderRadius }}>
+            <YStack
+                ref={ref}
+                backgroundColor={resolveThemeColor(theme, 'muted')}
+                borderRadius={borderRadius}
+                width={width}
+                height={height}
+                flex={width === undefined && height === undefined ? 1 : undefined}
+            >
+                {children}
+            </YStack>
+        </Animated.View>
+    );
+}
 
 Skeleton.displayName = 'Skeleton';
 

@@ -35,10 +35,7 @@ export interface SideNavUserTileProps {
 export function SideNavUserTile({ userName, userPlan, collapsed }: SideNavUserTileProps): React.ReactElement {
     return (
         <div
-            className={cn(
-                'flex items-center rounded-md p-2 hover:bg-hover cursor-pointer',
-                collapsed ? 'justify-center' : 'gap-3 px-3',
-            )}
+            className={cn('flex items-center rounded-md p-2', collapsed ? 'justify-center' : 'gap-3 px-3')}
             role="status"
             aria-label={`Signed in as ${userName}`}
         >

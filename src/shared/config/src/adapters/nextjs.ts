@@ -36,3 +36,5 @@ export const config: AppConfig = {
         },
     },
 };
+
+export { defaults } from '../schema.js';

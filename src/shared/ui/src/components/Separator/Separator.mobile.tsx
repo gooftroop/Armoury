@@ -33,6 +33,8 @@ export interface SeparatorProps extends ViewProps {
     decorative?: boolean;
     /** Web compatibility prop ignored on mobile. */
     className?: string;
+    /** Forward ref to underlying YStack component. */
+    ref?: React.Ref<React.ElementRef<typeof YStack>>;
 }
 
 /**
@@ -41,23 +43,26 @@ export interface SeparatorProps extends ViewProps {
  * @param props - Component props including orientation and standard view attributes.
  * @returns The rendered Separator component.
  */
-const Separator = React.forwardRef<React.ElementRef<typeof YStack>, SeparatorProps>(
-    ({ orientation = 'horizontal', decorative: _decorative, className: _className }, ref) => {
-        const theme = useTheme();
-        const isHorizontal = orientation === 'horizontal';
+function Separator({
+    orientation = 'horizontal',
+    decorative: _decorative,
+    className: _className,
+    ref,
+}: SeparatorProps): React.ReactElement {
+    const theme = useTheme();
+    const isHorizontal = orientation === 'horizontal';
 
-        return (
-            <YStack
-                ref={ref}
-                backgroundColor={resolveThemeColor(theme, 'borderColor')}
-                width={isHorizontal ? '100%' : 1}
-                height={isHorizontal ? 1 : '100%'}
-                flexShrink={0}
-                accessibilityRole="none"
-            />
-        );
-    },
-);
+    return (
+        <YStack
+            ref={ref}
+            backgroundColor={resolveThemeColor(theme, 'borderColor')}
+            width={isHorizontal ? '100%' : 1}
+            height={isHorizontal ? 1 : '100%'}
+            flexShrink={0}
+            accessibilityRole="none"
+        />
+    );
+}
 
 Separator.displayName = 'Separator';
 

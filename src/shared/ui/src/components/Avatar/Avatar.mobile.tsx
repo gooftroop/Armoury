@@ -74,6 +74,8 @@ export interface AvatarProps extends ViewProps {
     className?: string;
     /** Avatar sub-components (AvatarImage, AvatarFallback). */
     children?: React.ReactNode;
+    /** Forward ref to underlying YStack component. */
+    ref?: React.Ref<React.ElementRef<typeof YStack>>;
 }
 
 /** Props for the AvatarImage component. */
@@ -84,6 +86,8 @@ export interface AvatarImageProps extends Omit<RNImageProps, 'source'> {
     alt?: string;
     /** Web compatibility prop ignored on mobile. */
     className?: string;
+    /** Forward ref to underlying Image component. */
+    ref?: React.Ref<React.ElementRef<typeof Image>>;
 }
 
 /** Props for the AvatarFallback component. */
@@ -92,6 +96,8 @@ export interface AvatarFallbackProps extends RNTextProps {
     className?: string;
     /** Fallback content (initials, icon, etc). */
     children?: React.ReactNode;
+    /** Forward ref to underlying Text component. */
+    ref?: React.Ref<React.ElementRef<typeof Text>>;
 }
 
 /**
@@ -100,28 +106,26 @@ export interface AvatarFallbackProps extends RNTextProps {
  * @param props - Component props including size and standard view attributes.
  * @returns The rendered Avatar component.
  */
-const Avatar = React.forwardRef<React.ElementRef<typeof YStack>, AvatarProps>(
-    ({ size = 'md', className: _className, children }, ref) => {
-        const [imageLoaded, setImageLoaded] = useState(false);
-        const sizeValue = SIZE_MAP[size];
+function Avatar({ size = 'md', className: _className, children, ref }: AvatarProps): React.ReactElement {
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const sizeValue = SIZE_MAP[size];
 
-        return (
-            <AvatarContext.Provider value={{ size: sizeValue, imageLoaded, setImageLoaded }}>
-                <YStack
-                    ref={ref}
-                    width={sizeValue}
-                    height={sizeValue}
-                    borderRadius={sizeValue / 2}
-                    overflow="hidden"
-                    alignItems="center"
-                    justifyContent="center"
-                >
-                    {children}
-                </YStack>
-            </AvatarContext.Provider>
-        );
-    },
-);
+    return (
+        <AvatarContext.Provider value={{ size: sizeValue, imageLoaded, setImageLoaded }}>
+            <YStack
+                ref={ref}
+                width={sizeValue}
+                height={sizeValue}
+                borderRadius={sizeValue / 2}
+                overflow="hidden"
+                alignItems="center"
+                justifyContent="center"
+            >
+                {children}
+            </YStack>
+        </AvatarContext.Provider>
+    );
+}
 Avatar.displayName = 'Avatar';
 
 /**
@@ -130,31 +134,29 @@ Avatar.displayName = 'Avatar';
  * @param props - Component props including src and standard image attributes.
  * @returns The rendered AvatarImage component or null if image fails.
  */
-const AvatarImage = React.forwardRef<React.ElementRef<typeof Image>, AvatarImageProps>(
-    ({ src, alt, className: _className, ...props }, ref) => {
-        const { size, setImageLoaded } = React.useContext(AvatarContext);
+function AvatarImage({ src, alt, className: _className, ref, ...props }: AvatarImageProps): React.ReactElement | null {
+    const { size, setImageLoaded } = React.useContext(AvatarContext);
 
-        if (!src) {
-            return null;
-        }
+    if (!src) {
+        return null;
+    }
 
-        return (
-            <Image
-                ref={ref as React.Ref<Image>}
-                source={{ uri: src }}
-                accessibilityLabel={alt}
-                style={{ width: size, height: size }}
-                onLoad={() => {
-                    setImageLoaded(true);
-                }}
-                onError={() => {
-                    setImageLoaded(false);
-                }}
-                {...props}
-            />
-        );
-    },
-);
+    return (
+        <Image
+            ref={ref}
+            source={{ uri: src }}
+            accessibilityLabel={alt}
+            style={{ width: size, height: size }}
+            onLoad={() => {
+                setImageLoaded(true);
+            }}
+            onError={() => {
+                setImageLoaded(false);
+            }}
+            {...props}
+        />
+    );
+}
 AvatarImage.displayName = 'AvatarImage';
 
 /**
@@ -163,31 +165,34 @@ AvatarImage.displayName = 'AvatarImage';
  * @param props - Component props including standard text attributes.
  * @returns The rendered AvatarFallback component or null if image loaded.
  */
-const AvatarFallback = React.forwardRef<React.ElementRef<typeof Text>, AvatarFallbackProps>(
-    ({ className: _className, children, ...props }, ref) => {
-        const theme = useTheme();
-        const { size, imageLoaded } = React.useContext(AvatarContext);
+function AvatarFallback({
+    className: _className,
+    children,
+    ref,
+    ...props
+}: AvatarFallbackProps): React.ReactElement | null {
+    const theme = useTheme();
+    const { size, imageLoaded } = React.useContext(AvatarContext);
 
-        if (imageLoaded) {
-            return null;
-        }
+    if (imageLoaded) {
+        return null;
+    }
 
-        return (
-            <YStack
-                width={size}
-                height={size}
-                borderRadius={size / 2}
-                alignItems="center"
-                justifyContent="center"
-                backgroundColor={resolveThemeColor(theme, 'muted')}
-            >
-                <Text ref={ref} fontSize={size * 0.4} color={resolveThemeColor(theme, 'mutedForeground')} {...props}>
-                    {children}
-                </Text>
-            </YStack>
-        );
-    },
-);
+    return (
+        <YStack
+            width={size}
+            height={size}
+            borderRadius={size / 2}
+            alignItems="center"
+            justifyContent="center"
+            backgroundColor={resolveThemeColor(theme, 'muted')}
+        >
+            <Text ref={ref} fontSize={size * 0.4} color={resolveThemeColor(theme, 'mutedForeground')} {...props}>
+                {children}
+            </Text>
+        </YStack>
+    );
+}
 AvatarFallback.displayName = 'AvatarFallback';
 
 export { Avatar, AvatarImage, AvatarFallback, avatarVariants };

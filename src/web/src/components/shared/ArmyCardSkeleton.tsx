@@ -7,7 +7,7 @@
  * Uses the Skeleton primitive with pulse animation to indicate loading state.
  *
  * @requirements
- * 1. Must export ArmyCardSkeleton component with forwardRef.
+ * 1. Must export ArmyCardSkeleton component with ref prop.
  * 2. Must visually match the ArmyCard layout (header, body, footer).
  * 3. Must use Skeleton primitive for consistent loading animation.
  * 4. Must use Card primitive for consistent card styling.
@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils.js';
 /**
  * Props for the ArmyCardSkeleton component.
  */
-export type ArmyCardSkeletonProps = React.HTMLAttributes<HTMLDivElement>;
+export type ArmyCardSkeletonProps = React.ComponentPropsWithRef<'div'>;
 
 /**
  * ArmyCardSkeleton component — a loading placeholder for army cards.
@@ -33,42 +33,44 @@ export type ArmyCardSkeletonProps = React.HTMLAttributes<HTMLDivElement>;
  * Includes placeholders for faction image, army name, unit count, points, and action buttons.
  *
  * @param props - Component props including className and standard div attributes.
- * @param ref - Forwarded ref to the root Card element.
  * @returns The rendered ArmyCardSkeleton component.
  */
-const ArmyCardSkeleton = React.forwardRef<HTMLDivElement, ArmyCardSkeletonProps>(({ className, ...props }, ref) => (
-    <Card className={cn('overflow-hidden', className)} ref={ref} {...props}>
-        {/* Faction splash image placeholder */}
-        <Skeleton className="h-32 w-full rounded-none" />
+function ArmyCardSkeleton({ className, ref, ...props }: ArmyCardSkeletonProps): React.ReactElement {
+    return (
+        <Card className={cn('overflow-hidden', className)} ref={ref} {...props}>
+            {/* Faction splash image placeholder */}
+            <Skeleton className="h-32 w-full rounded-none" />
 
-        <CardHeader className="space-y-2 pb-2">
-            {/* Army name */}
-            <Skeleton className="h-5 w-3/4" />
+            <CardHeader className="space-y-2 pb-2">
+                {/* Army name */}
+                <Skeleton className="h-5 w-3/4" />
 
-            {/* Faction name */}
-            <Skeleton className="h-4 w-1/2" />
-        </CardHeader>
+                {/* Faction name */}
+                <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
 
-        <CardContent className="space-y-2 pb-2">
-            {/* Unit count */}
-            <Skeleton className="h-4 w-1/3" />
+            <CardContent className="space-y-2 pb-2">
+                {/* Unit count */}
+                <Skeleton className="h-4 w-1/3" />
 
-            {/* Points */}
-            <Skeleton className="h-4 w-2/5" />
-        </CardContent>
+                {/* Points */}
+                <Skeleton className="h-4 w-2/5" />
+            </CardContent>
 
-        <CardFooter className="gap-2">
-            {/* Deploy button */}
-            <Skeleton className="h-9 flex-1" />
+            <CardFooter className="gap-2">
+                {/* Deploy button */}
+                <Skeleton className="h-9 flex-1" />
 
-            {/* Duplicate button */}
-            <Skeleton className="h-9 w-9" />
+                {/* Duplicate button */}
+                <Skeleton className="h-9 w-9" />
 
-            {/* Delete button */}
-            <Skeleton className="h-9 w-9" />
-        </CardFooter>
-    </Card>
-));
+                {/* Delete button */}
+                <Skeleton className="h-9 w-9" />
+            </CardFooter>
+        </Card>
+    );
+}
+
 ArmyCardSkeleton.displayName = 'ArmyCardSkeleton';
 
 export { ArmyCardSkeleton };
