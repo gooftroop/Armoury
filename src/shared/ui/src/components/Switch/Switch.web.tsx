@@ -7,7 +7,7 @@
  * Built on Radix UI Switch primitive with Tailwind styling.
  *
  * @requirements
- * 1. Must export Switch component with forwardRef.
+ * 1. Must export Switch component with ref prop support (React 19 pattern).
  * 2. Must use Radix UI Switch primitive from radix-ui package.
  * 3. Must display thumb indicator that moves on state change.
  * 4. Must use design tokens for styling (bg-primary, bg-input, etc.).
