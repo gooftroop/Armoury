@@ -35,7 +35,9 @@ build:
     esbuild:
         bundle: true
         minify: true
-        sourcemap: true
+        sourcemap:
+            enabled: true
+            setNodeOptions: false
         target: es2022
         platform: node
         format: esm
@@ -91,3 +93,26 @@ functions:
                   route: $disconnect
             - websocket:
                   route: $default
+
+resources:
+    Resources:
+        GatewayResponseDefault4XX:
+            Type: AWS::ApiGateway::GatewayResponse
+            Properties:
+                RestApiId:
+                    Ref: ApiGatewayRestApi
+                ResponseType: DEFAULT_4XX
+                ResponseParameters:
+                    gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        GatewayResponseDefault5XX:
+            Type: AWS::ApiGateway::GatewayResponse
+            Properties:
+                RestApiId:
+                    Ref: ApiGatewayRestApi
+                ResponseType: DEFAULT_5XX
+                ResponseParameters:
+                    gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"

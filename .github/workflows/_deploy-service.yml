@@ -252,7 +252,7 @@ jobs:
                       "InvokeApi": {
                         "ApiId": "'"${REST_API_ID}"'",
                         "Stage": "pr-'"${PR_NUMBER}"'",
-                        "StripBasePath": true
+                        "StripBasePath": false
                       }
                     }]'
 

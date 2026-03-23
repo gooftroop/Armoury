@@ -20,7 +20,9 @@ build:
     esbuild:
         bundle: true
         minify: true
-        sourcemap: true
+        sourcemap:
+            enabled: true
+            setNodeOptions: false
         target: es2022
         platform: node
         format: esm
