@@ -145,6 +145,7 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
                     void this.establishConnection(token);
                 },
                 () => {
+                    console.warn('[FriendsPresenceClient] Failed to resolve auth token');
                     this.connectionStateSubject.next('disconnected');
                 },
             );
@@ -210,6 +211,11 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
 
             this.ws = ws;
         } catch (error) {
+            console.error('[FriendsPresenceClient] Connection failed', {
+                wsUrl: this.wsUrl,
+                error: error instanceof Error ? error.message : String(error),
+            });
+
             this.errorsSubject.next({ error, context: { operation: 'establishConnection' } });
             this.connectionStateSubject.next('disconnected');
 
@@ -245,6 +251,12 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             const enrichedError = new Error(
                 `WebSocket error on ${this.wsUrl} (readyState: ${String(this.ws?.readyState ?? 'unknown')}, attempt: ${String(this.reconnectAttempts)})`,
             );
+
+            console.error('[FriendsPresenceClient] Socket error', {
+                wsUrl: this.wsUrl,
+                readyState: this.ws?.readyState ?? null,
+                reconnectAttempts: this.reconnectAttempts,
+            });
 
             this.errorsSubject.next({
                 error: enrichedError,
@@ -400,6 +412,11 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             this.errorsSubject.next({
                 error: new Error('Max reconnection attempts reached'),
                 context: { operation: 'scheduleReconnect' },
+            });
+
+            console.warn('[FriendsPresenceClient] Max reconnection attempts reached', {
+                wsUrl: this.wsUrl,
+                attempts: this.reconnectAttempts,
             });
             this.connectionStateSubject.next('disconnected');
 

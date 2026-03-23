@@ -183,10 +183,20 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
             });
 
             this.ws.on('error', (error) => {
+                console.error('[MatchesRealtimeClient] Socket error', {
+                    wsUrl: this.wsUrl,
+                    error: error instanceof Error ? error.message : String(error),
+                });
+
                 this.errorsSubject.next({ error, context: { operation: 'socketError' } });
                 // Error events are followed by close events; reconnection is handled there.
             });
         } catch (error) {
+            console.error('[MatchesRealtimeClient] Connection failed', {
+                wsUrl: this.wsUrl,
+                error: error instanceof Error ? error.message : String(error),
+            });
+
             this.errorsSubject.next({ error, context: { operation: 'establishConnection' } });
 
             if (!this.intentionalDisconnect && !this.disposed) {
@@ -231,6 +241,11 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
             this.errorsSubject.next({
                 error: new Error('Max reconnection attempts reached'),
                 context: { operation: 'scheduleReconnect' },
+            });
+
+            console.warn('[MatchesRealtimeClient] Max reconnection attempts reached', {
+                wsUrl: this.wsUrl,
+                attempts: this.reconnectAttempts,
             });
             this.connectionStateSubject.next('disconnected');
 

@@ -27,11 +27,22 @@ export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult>
     const token = extractTokenFromEvent(event);
 
     if (!token) {
+        console.warn('[authorizer] DENY: No token found in event', {
+            eventType: event.type,
+            hasQueryParams: 'queryStringParameters' in event,
+        });
+
         return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
     }
 
     try {
         const config = await getServiceConfig();
+
+        console.info('[authorizer] Config loaded', {
+            auth0Domain: config.auth0Domain,
+            auth0Audience: config.auth0Audience,
+        });
+
         const issuer = buildIssuer(config.auth0Domain);
 
         const { payload } = await jwtVerify(token, getJwks(config.auth0Domain), {
@@ -40,6 +51,12 @@ export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult>
         });
 
         if (!isJwtPayload(payload)) {
+            console.warn('[authorizer] DENY: JWT payload shape invalid', {
+                hasSub: 'sub' in payload,
+                hasAud: 'aud' in payload,
+                hasIss: 'iss' in payload,
+            });
+
             return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
         }
 
@@ -55,8 +72,18 @@ export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult>
             context.name = payload.name;
         }
 
+        console.info('[authorizer] ALLOW', { sub: payload.sub });
+
         return generatePolicy(payload.sub, 'Allow', event.methodArn, context);
     } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorName = error instanceof Error ? error.name : 'UnknownError';
+
+        console.error('[authorizer] DENY: Verification failed', {
+            errorName,
+            errorMessage,
+        });
+
         Sentry.captureException(error);
 
         return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
