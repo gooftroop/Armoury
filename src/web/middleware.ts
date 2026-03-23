@@ -65,5 +65,5 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-    matcher: '/((?!api|trpc|_next|_vercel|js|css|.*\\..*).*)',
+    matcher: '/((?!api|trpc|_next|_vercel|js|css|icon|apple-icon|.*\\..*).*)',
 };

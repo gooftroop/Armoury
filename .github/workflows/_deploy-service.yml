@@ -139,6 +139,8 @@ jobs:
               env:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+                  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+                  AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
@@ -315,6 +317,8 @@ jobs:
               working-directory: ${{ inputs.working-directory }}
               env:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+                  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+                  AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
               run: |
                   DEPLOY_ARGS="--stage production"
                   if [[ -n "${AUTHORIZER_ARN:-}" ]]; then
