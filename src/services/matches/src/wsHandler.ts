@@ -62,7 +62,7 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
     return adapter;
 }
 
-export async function handler(event: WebSocketEvent): Promise<WebSocketResponse> {
+export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise<WebSocketResponse> => {
     try {
         const adapter = await initializeAdapter();
         const userContext = event.requestContext.routeKey === '$connect' ? extractWsUserContext(event) : null;
@@ -85,4 +85,4 @@ export async function handler(event: WebSocketEvent): Promise<WebSocketResponse>
             }),
         };
     }
-}
+});

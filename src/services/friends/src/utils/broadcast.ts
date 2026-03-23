@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/aws-serverless';
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk/client-apigatewaymanagementapi';
 import type { WebSocketEvent } from '@/types.js';
 
@@ -35,6 +36,17 @@ export function createBroadcaster(event: WebSocketEvent): Broadcaster {
 
                         return;
                     }
+
+                    Sentry.addBreadcrumb({
+                        category: 'broadcast.send',
+                        message: `Failed to send message to connection ${connectionId}`,
+                        level: 'error',
+                        data: {
+                            connectionId,
+                            httpStatusCode: (error as { $metadata?: { httpStatusCode?: number } }).$metadata
+                                ?.httpStatusCode,
+                        },
+                    });
 
                     throw error;
                 }

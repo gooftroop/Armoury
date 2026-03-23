@@ -41,6 +41,11 @@ on:
                 required: false
                 type: number
                 default: 0
+            sentry-project:
+                description: 'Sentry project slug for release tracking and source map uploads (e.g. armoury-campaigns). Empty = skip Sentry release steps.'
+                required: false
+                type: string
+                default: ''
 
 jobs:
     ci:
@@ -99,6 +104,21 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch Sentry DSN from SSM
+              if: inputs.sentry-project != ''
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  SENTRY_DSN=$(aws ssm get-parameter \
+                    --name "/armoury/shared/${SERVICE_SHORT_NAME}/sentry-dsn" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_DSN}" ]; then
+                    echo "::add-mask::${SENTRY_DSN}"
+                    echo "SENTRY_DSN=${SENTRY_DSN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry DSN not found in SSM for ${SERVICE_SHORT_NAME} — Sentry will be disabled"
+                  fi
+                  echo "SENTRY_RELEASE=${{ inputs.sentry-project }}@${{ github.sha }}" >> "${GITHUB_ENV}"
             - name: Fetch DSQL config and generate token
               if: inputs.has-migrations
               run: |
@@ -141,6 +161,8 @@ jobs:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
                   AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
                   AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+                  SENTRY_DSN: ${{ env.SENTRY_DSN }}
+                  SENTRY_RELEASE: ${{ env.SENTRY_RELEASE }}
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
@@ -151,6 +173,18 @@ jobs:
                   fi
 
                   serverless deploy ${DEPLOY_ARGS}
+
+            - name: Create Sentry release and upload source maps
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              working-directory: ${{ inputs.working-directory }}
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: black-lab
+              run: |
+                  npx @sentry/cli releases new "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases set-commits "${{ env.SENTRY_RELEASE }}" --auto --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
 
             - name: Create REST routing rule
               if: github.event_name == 'pull_request' && inputs.service-short-name != ''
@@ -284,6 +318,22 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch Sentry DSN from SSM
+              if: inputs.sentry-project != ''
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  SENTRY_DSN=$(aws ssm get-parameter \
+                    --name "/armoury/shared/${SERVICE_SHORT_NAME}/sentry-dsn" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_DSN}" ]; then
+                    echo "::add-mask::${SENTRY_DSN}"
+                    echo "SENTRY_DSN=${SENTRY_DSN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry DSN not found in SSM for ${SERVICE_SHORT_NAME} — Sentry will be disabled"
+                  fi
+                  echo "SENTRY_RELEASE=${{ inputs.sentry-project }}@${{ github.sha }}" >> "${GITHUB_ENV}"
+
             - name: Fetch DSQL config and generate token
               if: inputs.has-migrations
               run: |
@@ -319,6 +369,8 @@ jobs:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
                   AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
                   AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+                  SENTRY_DSN: ${{ env.SENTRY_DSN }}
+                  SENTRY_RELEASE: ${{ env.SENTRY_RELEASE }}
               run: |
                   DEPLOY_ARGS="--stage production"
                   if [[ -n "${AUTHORIZER_ARN:-}" ]]; then
@@ -327,6 +379,17 @@ jobs:
 
                   serverless deploy ${DEPLOY_ARGS}
 
+            - name: Create Sentry release and upload source maps
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              working-directory: ${{ inputs.working-directory }}
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: black-lab
+              run: |
+                  npx @sentry/cli releases new "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases set-commits "${{ env.SENTRY_RELEASE }}" --auto --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
             - name: Create REST API mapping
               if: inputs.service-short-name != ''
               env:

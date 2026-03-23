@@ -10,4 +10,5 @@ Sentry.init({
     sendDefaultPii: true,
     enableLogs: true,
     environment: process.env['SENTRY_ENVIRONMENT'] ?? 'development',
+    release: process.env['SENTRY_RELEASE'],
 });

@@ -23,7 +23,7 @@ const DEFAULT_PRINCIPAL_ID = 'unknown';
  * @param event - API Gateway TOKEN or REQUEST authorizer event.
  * @returns IAM policy result with Allow or Deny effect.
  */
-export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
+export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
     const token = extractTokenFromEvent(event);
 
     if (!token) {
@@ -88,4 +88,5 @@ export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult>
 
         return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
     }
-};
+});
+

@@ -80,7 +80,7 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
  * @param event API Gateway Lambda proxy event.
  * @returns API Gateway Lambda proxy response.
  */
-export async function handler(event: ApiGatewayEvent): Promise<ApiResponse> {
+export const handler = Sentry.wrapHandler(async (event: ApiGatewayEvent): Promise<ApiResponse> => {
     try {
         const adapter = await initializeAdapter();
         const userContext = extractUserContext(event);
@@ -95,4 +95,4 @@ export async function handler(event: ApiGatewayEvent): Promise<ApiResponse> {
 
         return formatErrorResponse(normalizedError);
     }
-}
+});

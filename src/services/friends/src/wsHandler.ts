@@ -62,7 +62,7 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
     return adapter;
 }
 
-export async function handler(event: WebSocketEvent): Promise<WebSocketResponse> {
+export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise<WebSocketResponse> => {
     try {
         const adapter = await initializeAdapter();
         const userContext = extractWsUserContext(event);
@@ -70,8 +70,27 @@ export async function handler(event: WebSocketEvent): Promise<WebSocketResponse>
 
         return response;
     } catch (error) {
+        const { connectionId, routeKey, stage, eventType } = event.requestContext;
+
+        Sentry.setTag('ws.connectionId', connectionId);
+        Sentry.setTag('ws.routeKey', routeKey);
+        Sentry.setTag('ws.stage', stage);
+        Sentry.setTag('ws.eventType', eventType);
+
+        const userContext = extractWsUserContext(event);
+
+        if (userContext) {
+            Sentry.setUser({
+                id: userContext.sub,
+                email: userContext.email,
+                username: userContext.name,
+            });
+        }
+
         Sentry.logger.error('Friends websocket handler error', {
             error: error instanceof Error ? error.message : String(error),
+            connectionId,
+            routeKey,
         });
         Sentry.captureException(error);
 
@@ -85,4 +104,4 @@ export async function handler(event: WebSocketEvent): Promise<WebSocketResponse>
             }),
         };
     }
-}
+});
