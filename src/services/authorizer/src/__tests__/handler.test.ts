@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Context } from 'aws-lambda';
 import { generatePolicy } from '@/utils/policy.js';
 import { handler } from '@/handler.js';
 import { getJwks } from '@/jwks.js';
 import { getServiceConfig } from '@/utils/secrets.js';
-import type { AuthorizerEvent, RequestAuthorizerEvent } from '@/types.js';
+import type { AuthorizerEvent, AuthorizerResult, RequestAuthorizerEvent } from '@/types.js';
 
 const joseMocks = vi.hoisted(() => {
     return {
@@ -89,6 +90,37 @@ const resetMocks = (): void => {
     });
 };
 
+/**
+ * Mock Lambda context for Sentry.wrapHandler compatibility.
+ * Sentry sets `context.callbackWaitsForEmptyEventLoop = false` on invocation.
+ */
+const mockContext: Context = {
+    callbackWaitsForEmptyEventLoop: true,
+    functionName: 'authorizer',
+    functionVersion: '$LATEST',
+    invokedFunctionArn: 'arn:aws:lambda:us-east-1:123456789012:function:authorizer',
+    memoryLimitInMB: '128',
+    awsRequestId: 'test-request-id',
+    logGroupName: '/aws/lambda/authorizer',
+    logStreamName: 'test-stream',
+    getRemainingTimeInMillis: () => 30000,
+    done: () => {},
+    fail: () => {},
+    succeed: () => {},
+};
+
+/**
+ * Invokes the Sentry-wrapped handler with mock Lambda context and narrows
+ * the return type from `void | Promise<AuthorizerResult>` to `AuthorizerResult`.
+ */
+const invokeHandler = async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
+    const result = await handler(event, mockContext, () => {});
+
+    if (!result) {throw new Error('Handler returned void — expected AuthorizerResult');}
+
+    return result;
+};
+
 describe('handler', () => {
     beforeEach(() => {
         resetMocks();
@@ -107,7 +139,7 @@ describe('handler', () => {
     });
 
     it('returns Allow policy with full context when token is valid', async () => {
-        const result = await handler(buildEvent('Bearer valid-token'));
+        const result = await invokeHandler(buildEvent('Bearer valid-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
         expect(result.context).toEqual({
@@ -128,7 +160,7 @@ describe('handler', () => {
             key: {},
         });
 
-        const result = await handler(buildEvent('Bearer valid-token'));
+        const result = await invokeHandler(buildEvent('Bearer valid-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
         expect(result.context).toEqual({
@@ -137,13 +169,13 @@ describe('handler', () => {
     });
 
     it('returns Deny when authorization token is missing', async () => {
-        const result = await handler(buildEvent(''));
+        const result = await invokeHandler(buildEvent(''));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
     it('returns Deny when token scheme is not Bearer', async () => {
-        const result = await handler(buildEvent('Basic abc123'));
+        const result = await invokeHandler(buildEvent('Basic abc123'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
@@ -151,7 +183,7 @@ describe('handler', () => {
     it('returns Deny when config fetch fails', async () => {
         getServiceConfigMock.mockRejectedValue(new Error('Missing env vars'));
 
-        const result = await handler(buildEvent('Bearer valid-token'));
+        const result = await invokeHandler(buildEvent('Bearer valid-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
@@ -159,7 +191,7 @@ describe('handler', () => {
     it('returns Deny when JWT verification fails', async () => {
         joseMocks.jwtVerifyMock.mockRejectedValue(new Error('invalid token'));
 
-        const result = await handler(buildEvent('Bearer invalid-token'));
+        const result = await invokeHandler(buildEvent('Bearer invalid-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
@@ -174,19 +206,19 @@ describe('handler', () => {
             key: {},
         });
 
-        const result = await handler(buildEvent('Bearer valid-token'));
+        const result = await invokeHandler(buildEvent('Bearer valid-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
     it('returns Deny when Bearer token value is empty after scheme', async () => {
-        const result = await handler(buildEvent('Bearer   '));
+        const result = await invokeHandler(buildEvent('Bearer   '));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
     it('passes correct audience and issuer to jwtVerify', async () => {
-        await handler(buildEvent('Bearer valid-token'));
+        await invokeHandler(buildEvent('Bearer valid-token'));
 
         expect(joseMocks.jwtVerifyMock).toHaveBeenCalledWith('valid-token', expect.any(Function), {
             audience: 'https://api.armoury.com',
@@ -195,7 +227,7 @@ describe('handler', () => {
     });
 
     it('calls getJwks with the domain from config', async () => {
-        await handler(buildEvent('Bearer valid-token'));
+        await invokeHandler(buildEvent('Bearer valid-token'));
 
         expect(getJwksMock).toHaveBeenCalledWith('test.auth0.com');
     });
@@ -219,7 +251,7 @@ describe('handler - REQUEST events (WebSocket)', () => {
     });
 
     it('returns Allow policy when token is provided in query string', async () => {
-        const result = await handler(buildRequestEvent('valid-token'));
+        const result = await invokeHandler(buildRequestEvent('valid-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
         expect(result.context).toEqual({
@@ -230,7 +262,7 @@ describe('handler - REQUEST events (WebSocket)', () => {
     });
 
     it('passes raw query string token directly to jwtVerify', async () => {
-        await handler(buildRequestEvent('raw-jwt-value'));
+        await invokeHandler(buildRequestEvent('raw-jwt-value'));
 
         expect(joseMocks.jwtVerifyMock).toHaveBeenCalledWith('raw-jwt-value', expect.any(Function), {
             audience: 'https://api.armoury.com',
@@ -239,7 +271,7 @@ describe('handler - REQUEST events (WebSocket)', () => {
     });
 
     it('returns Deny when token is missing from query string', async () => {
-        const result = await handler(buildRequestEvent());
+        const result = await invokeHandler(buildRequestEvent());
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
@@ -250,13 +282,13 @@ describe('handler - REQUEST events (WebSocket)', () => {
             methodArn: TEST_WS_METHOD_ARN,
         };
 
-        const result = await handler(event);
+        const result = await invokeHandler(event);
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
     it('returns Deny when token is empty string in query string', async () => {
-        const result = await handler(buildRequestEvent(''));
+        const result = await invokeHandler(buildRequestEvent(''));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
@@ -264,13 +296,13 @@ describe('handler - REQUEST events (WebSocket)', () => {
     it('returns Deny when JWT verification fails for WebSocket token', async () => {
         joseMocks.jwtVerifyMock.mockRejectedValue(new Error('invalid token'));
 
-        const result = await handler(buildRequestEvent('invalid-token'));
+        const result = await invokeHandler(buildRequestEvent('invalid-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
     it('uses WebSocket method ARN for policy resource', async () => {
-        const result = await handler(buildRequestEvent('valid-token'));
+        const result = await invokeHandler(buildRequestEvent('valid-token'));
 
         expect(result.policyDocument.Statement[0].Resource).toBe(WS_WILDCARD_RESOURCE);
     });

@@ -89,4 +89,3 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
         return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
     }
 });
-
