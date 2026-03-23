@@ -31,6 +31,7 @@ jobs:
             service-short-name: campaigns
             routing-rule-priority: 200
             has-migrations: true
+            has-rest-api-logs: true
         secrets: inherit
 
     cleanup-matches:
@@ -41,6 +42,7 @@ jobs:
             routing-rule-priority: 300
             has-websocket: true
             has-migrations: true
+            has-rest-api-logs: true
         secrets: inherit
 
     cleanup-friends:
@@ -51,6 +53,7 @@ jobs:
             routing-rule-priority: 400
             has-websocket: true
             has-migrations: true
+            has-rest-api-logs: true
         secrets: inherit
 
     cleanup-users:
@@ -60,6 +63,7 @@ jobs:
             service-short-name: users
             routing-rule-priority: 100
             has-migrations: true
+            has-rest-api-logs: true
         secrets: inherit
 
     # ── Authorizer: clean up last (after all downstream) ────────────
@@ -69,4 +73,5 @@ jobs:
         uses: ./.github/workflows/_cleanup-service.yml
         with:
             working-directory: src/services/authorizer
+            has-secrets: true
         secrets: inherit

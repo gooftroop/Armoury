@@ -162,14 +162,29 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
  * @returns API Gateway proxy response with status code, headers, and JSON body.
  */
 export const handler = Sentry.wrapHandler(async (event: ApiGatewayEvent): Promise<ApiResponse> => {
+    Sentry.logger.info('[friends] Handler invoked', {
+        httpMethod: event.httpMethod,
+        path: event.path,
+    });
+
     try {
         const adapter = await initializeAdapter();
         const userContext = extractUserContext(event);
         const response = await router(event, adapter, userContext);
 
+        Sentry.logger.info('[friends] Handler completed', {
+            httpMethod: event.httpMethod,
+            path: event.path,
+            statusCode: response.statusCode,
+        });
+
         return response;
     } catch (error) {
-        Sentry.logger.error('Friends handler error', { error: error instanceof Error ? error.message : String(error) });
+        Sentry.logger.error('[friends] Handler error', {
+            httpMethod: event.httpMethod,
+            path: event.path,
+            error: error instanceof Error ? error.message : String(error),
+        });
         Sentry.captureException(error);
 
         const normalizedError = error instanceof Error ? error : new Error('Unknown error');

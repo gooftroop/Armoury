@@ -12,6 +12,7 @@
 import * as cdk from 'aws-cdk-lib';
 
 import { DsqlStack } from '../lib/dsql-stack.js';
+import { LogDrainStack } from '../lib/log-drain-stack.js';
 import { ProductionDomainStack } from '../lib/production-domain-stack.js';
 import { WildcardDomainStack } from '../lib/wildcard-domain-stack.js';
 
@@ -22,6 +23,7 @@ import { WildcardDomainStack } from '../lib/wildcard-domain-stack.js';
  * - REQ-APP-003: Stack names follow the pattern Armoury-Dsql-<Environment>.
  * - REQ-APP-004: Create a WildcardDomainStack for sandbox environment only.
  * - REQ-APP-005: Create a ProductionDomainStack for production environment only.
+ * - REQ-APP-006: Create a LogDrainStack for each environment.
  */
 
 /** Shape of a single environment entry in cdk.json context. */
@@ -49,6 +51,13 @@ for (const [envName, config] of Object.entries(environments)) {
         env: {
             region: config.region,
             // Account is resolved at deploy time from AWS credentials
+        },
+    });
+
+    new LogDrainStack(app, `Armoury-LogDrain-${envName.charAt(0).toUpperCase()}${envName.slice(1)}`, {
+        environment: envName,
+        env: {
+            region: config.region,
         },
     });
 

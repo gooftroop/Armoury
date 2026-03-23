@@ -1,5 +1,11 @@
 service: armoury-users
 
+params:
+    production:
+        environment: production
+    default:
+        environment: sandbox
+
 provider:
     name: aws
     runtime: nodejs22.x
@@ -26,6 +32,8 @@ provider:
                   Action:
                       - ssm:GetParameter
                   Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
+    logs:
+        restApi: true
 
 build:
     esbuild:
@@ -104,3 +112,15 @@ resources:
                     gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
                     gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
                     gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        UsersLogGroup:
+            Type: AWS::Logs::LogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}'
+                RetentionInDays: 14
+        UsersLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: UsersLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

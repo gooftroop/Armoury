@@ -24,10 +24,14 @@ const DEFAULT_PRINCIPAL_ID = 'unknown';
  * @returns IAM policy result with Allow or Deny effect.
  */
 export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
+    Sentry.logger.info('[authorizer] Handler invoked', {
+        eventType: event.type,
+    });
+
     const token = extractTokenFromEvent(event);
 
     if (!token) {
-        console.warn('[authorizer] DENY: No token found in event', {
+        Sentry.logger.warn('[authorizer] DENY: No token found in event', {
             eventType: event.type,
             hasQueryParams: 'queryStringParameters' in event,
         });
@@ -38,7 +42,7 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
     try {
         const config = await getServiceConfig();
 
-        console.info('[authorizer] Config loaded', {
+        Sentry.logger.debug('[authorizer] Config loaded', {
             auth0Domain: config.auth0Domain,
             auth0Audience: config.auth0Audience,
         });
@@ -51,7 +55,7 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
         });
 
         if (!isJwtPayload(payload)) {
-            console.warn('[authorizer] DENY: JWT payload shape invalid', {
+            Sentry.logger.warn('[authorizer] DENY: JWT payload shape invalid', {
                 hasSub: 'sub' in payload,
                 hasAud: 'aud' in payload,
                 hasIss: 'iss' in payload,
@@ -72,14 +76,14 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
             context.name = payload.name;
         }
 
-        console.info('[authorizer] ALLOW', { sub: payload.sub });
+        Sentry.logger.info('[authorizer] ALLOW', { sub: payload.sub });
 
         return generatePolicy(payload.sub, 'Allow', event.methodArn, context);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         const errorName = error instanceof Error ? error.name : 'UnknownError';
 
-        console.error('[authorizer] DENY: Verification failed', {
+        Sentry.logger.error('[authorizer] DENY: Verification failed', {
             errorName,
             errorMessage,
         });

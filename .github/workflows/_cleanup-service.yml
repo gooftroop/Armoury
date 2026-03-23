@@ -27,6 +27,16 @@ on:
                 required: false
                 type: number
                 default: 0
+            has-secrets:
+                description: 'Whether the service has Secrets Manager secrets to clean up (e.g. authorizer)'
+                required: false
+                type: boolean
+                default: false
+            has-rest-api-logs:
+                description: 'Whether the service has API Gateway access logs to clean up'
+                required: false
+                type: boolean
+                default: false
 
 jobs:
     teardown:
@@ -125,3 +135,60 @@ jobs:
                   else
                     echo "No WS API mapping found for pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} — skipping."
                   fi
+
+            - name: Delete CloudWatch Lambda log groups
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_NAME: armoury-${{ inputs.service-short-name || 'authorizer' }}
+              run: |
+                  # Lambda log groups are auto-created by the runtime (not part of CF stack),
+                  # so `serverless remove` does NOT delete them. Clean up explicitly.
+                  PREFIX="/aws/lambda/${SERVICE_NAME}-pr-${PR_NUMBER}"
+                  echo "Searching for log groups with prefix: ${PREFIX}"
+                  LOG_GROUPS=$(aws logs describe-log-groups \
+                    --log-group-name-prefix "${PREFIX}" \
+                    --query 'logGroups[].logGroupName' --output text || true)
+
+                  if [ -z "${LOG_GROUPS}" ] || [ "${LOG_GROUPS}" = "None" ]; then
+                    echo "No Lambda log groups found with prefix ${PREFIX} — skipping."
+                  else
+                    for LG in ${LOG_GROUPS}; do
+                      echo "Deleting log group: ${LG}"
+                      aws logs delete-log-group --log-group-name "${LG}" || true
+                    done
+                    echo "Lambda log group cleanup complete."
+                  fi
+
+            - name: Delete API Gateway access log group
+              if: inputs.has-rest-api-logs
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_NAME: armoury-${{ inputs.service-short-name }}
+              run: |
+                  # API Gateway access log groups follow this naming pattern
+                  LOG_GROUP="/aws/api-gateway/${SERVICE_NAME}-pr-${PR_NUMBER}"
+                  echo "Checking for API Gateway log group: ${LOG_GROUP}"
+                  EXISTS=$(aws logs describe-log-groups \
+                    --log-group-name-prefix "${LOG_GROUP}" \
+                    --query "logGroups[?logGroupName=='${LOG_GROUP}'].logGroupName" \
+                    --output text || true)
+
+                  if [ -n "${EXISTS}" ] && [ "${EXISTS}" != "None" ]; then
+                    echo "Deleting API Gateway log group: ${LOG_GROUP}"
+                    aws logs delete-log-group --log-group-name "${LOG_GROUP}" || true
+                    echo "API Gateway log group deleted."
+                  else
+                    echo "No API Gateway log group found at ${LOG_GROUP} — skipping."
+                  fi
+
+            - name: Delete Secrets Manager secret
+              if: inputs.has-secrets
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+              run: |
+                  SECRET_NAME="armoury/pr-${PR_NUMBER}/authorizer"
+                  echo "Deleting secret: ${SECRET_NAME}"
+                  aws secretsmanager delete-secret \
+                    --secret-id "${SECRET_NAME}" \
+                    --force-delete-without-recovery || true
+                  echo "Secret deletion requested (or already absent)."
