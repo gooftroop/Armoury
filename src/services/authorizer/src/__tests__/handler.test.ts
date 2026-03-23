@@ -116,7 +116,9 @@ const mockContext: Context = {
 const invokeHandler = async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
     const result = await handler(event, mockContext, () => {});
 
-    if (!result) {throw new Error('Handler returned void — expected AuthorizerResult');}
+    if (!result) {
+        throw new Error('Handler returned void — expected AuthorizerResult');
+    }
 
     return result;
 };
