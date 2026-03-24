@@ -7,6 +7,9 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
     eslint: { ignoreDuringBuilds: true },
+    typescript: {
+        tsconfigPath: 'tsconfig.build.json',
+    },
     productionBrowserSourceMaps: process.env['NODE_ENV'] !== 'production',
     webpack(config, { isServer, nextRuntime }) {
         // Align webpack's client target with the project's .browserslistrc config.
