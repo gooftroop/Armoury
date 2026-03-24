@@ -5,7 +5,7 @@ export {
     makeCoreMatch,
     makeFriend,
     makeUserPresence,
-} from '../../shared/data/e2e/__fixtures__/index.js';
+} from '../../../../shared/data/dao/e2e/__fixtures__/index.js';
 export { makeArmy } from './makeArmy.js';
 export { makeBoltRifle } from './makeBoltRifle.js';
 export { makeCampaign } from './makeCampaign.js';
