@@ -15,6 +15,7 @@ export default defineConfig({
         include: ['e2e/**/*.e2e.test.ts'],
         exclude: ['node_modules', 'dist'],
         testTimeout: 180_000,
+        hookTimeout: 180_000,
         fileParallelism: false,
     },
     resolve: {

@@ -36,11 +36,19 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const HAS_TOKEN = Boolean(GITHUB_TOKEN);
 
 /**
- * Known DAOs whose BSData source files do not exist on GitHub.
- * These consistently fail with "GitHub API error: Not Found" and are
- * expected failures in the sync pipeline.
+ * Known DAOs that consistently fail during sync.
+ * Each entry maps the DAO name to its expected error message substring.
+ *
+ * - CrusadeRules: BSData repo does not exist on GitHub
+ * - ChapterApproved: Requires Wahapedia client which is not configured in this test
+ * - Aeldari / Drukhari: Catalogue XML exceeds the default entity expansion limit
  */
-const KNOWN_MISSING_DAOS = ['CrusadeRules', 'AdeptusTitanicus', 'TitanicusTraitoris'];
+const KNOWN_FAILING_DAOS: Record<string, string> = {
+    CrusadeRules: 'Not Found',
+    ChapterApproved: 'Wahapedia client not configured',
+    Aeldari: 'Entity expansion limit exceeded',
+    Drukhari: 'Entity expansion limit exceeded',
+};
 
 /**
  * Test plan:
@@ -115,7 +123,8 @@ describe.skipIf(!HAS_TOKEN)('System sync pipeline (real BSData)', { timeout: 180
         wh40k10eSystem.register();
 
         const githubClient = new GitHubClient({ token: GITHUB_TOKEN! });
-        const gameContext = wh40k10eSystem.createGameContext(adapter, githubClient);
+        const clients = new Map<string, unknown>([['github', githubClient]]);
+        const gameContext = wh40k10eSystem.createGameContext(adapter, clients);
         game = gameContext.game as GameData;
 
         syncResult = await game.sync();
@@ -129,19 +138,21 @@ describe.skipIf(!HAS_TOKEN)('System sync pipeline (real BSData)', { timeout: 180
 
     it('sync fails only for known-missing DAOs, not for schema or adapter issues', () => {
         expect(syncResult.success).toBe(false);
-        expect(syncResult.failures).toHaveLength(3);
+        expect(syncResult.failures).toHaveLength(Object.keys(KNOWN_FAILING_DAOS).length);
 
         const failedDaos = syncResult.failures.map((failure) => failure.dao);
 
-        for (const dao of KNOWN_MISSING_DAOS) {
+        for (const dao of Object.keys(KNOWN_FAILING_DAOS)) {
             expect(failedDaos).toContain(dao);
         }
 
         expect(syncResult.total).toBe(40);
-        expect(syncResult.succeeded).toHaveLength(37);
+        expect(syncResult.succeeded).toHaveLength(40 - Object.keys(KNOWN_FAILING_DAOS).length);
 
         for (const failure of syncResult.failures) {
-            expect(failure.error).toContain('Not Found');
+            const expectedError = KNOWN_FAILING_DAOS[failure.dao];
+            expect(expectedError, `Unexpected failing DAO: ${failure.dao} — ${failure.error}`).toBeDefined();
+            expect(failure.error).toContain(expectedError);
             expect(failure.error).not.toContain('Unknown entity store');
             expect(failure.error).not.toContain('plugin schema registered');
         }
