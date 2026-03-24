@@ -198,6 +198,7 @@ describe('validateArmyWithRules', () => {
                 },
             ];
         };
+
         const secondRule = (_army: unknown, _data: unknown): ValidationResult[] => {
             calls.push('second');
 

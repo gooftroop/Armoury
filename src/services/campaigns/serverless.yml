@@ -21,6 +21,7 @@ provider:
         SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
+        ALLOWED_ORIGIN: ${self:custom.allowedOrigin}
     iam:
         role:
             statements:
@@ -59,6 +60,7 @@ plugins:
     - serverless-offline
 
 custom:
+    allowedOrigin: ${env:ALLOWED_ORIGIN, '*'}
     serverless-offline:
         httpPort: 3010
         lambdaPort: 3012
@@ -106,7 +108,7 @@ resources:
                     Ref: ApiGatewayRestApi
                 ResponseType: DEFAULT_4XX
                 ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
                     gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
                     gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
         GatewayResponseDefault5XX:
@@ -116,7 +118,7 @@ resources:
                     Ref: ApiGatewayRestApi
                 ResponseType: DEFAULT_5XX
                 ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
                     gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
                     gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
         CampaignsLogGroup:

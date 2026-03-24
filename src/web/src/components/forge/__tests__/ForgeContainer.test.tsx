@@ -124,7 +124,7 @@ describe('ForgeContainer', () => {
             isLoading: false,
         });
 
-        useMutationMock.mockImplementation((options: { mutationFn: Function }) => {
+        useMutationMock.mockImplementation((options: { mutationFn: (...args: unknown[]) => unknown }) => {
             // Identify mutations by inspecting the function body rather than call order.
             // The delete mutation calls dataContext.armies.delete; the duplicate calls armies.save.
             const fnBody = options.mutationFn.toString();

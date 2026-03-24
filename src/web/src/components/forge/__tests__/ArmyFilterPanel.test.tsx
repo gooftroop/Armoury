@@ -123,6 +123,7 @@ describe('ArmyFilterPanel', () => {
         const container = labelButton.closest('div');
 
         expect(container).not.toBeNull();
+
         if (container) {
             expect(within(container).getByRole('button', { name: 'label' })).toBeInTheDocument();
         }
