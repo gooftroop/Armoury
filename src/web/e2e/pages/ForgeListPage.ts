@@ -57,10 +57,7 @@ export class ForgeListPage {
      * `localePrefix: 'as-needed'`.
      */
     async goto(locale?: string): Promise<void> {
-        const path =
-            locale === undefined || locale === 'en'
-                ? '/wh40k10e/armies'
-                : `/${locale}/wh40k10e/armies`;
+        const path = locale === undefined || locale === 'en' ? '/wh40k10e/armies' : `/${locale}/wh40k10e/armies`;
 
         await this.page.goto(path);
     }
