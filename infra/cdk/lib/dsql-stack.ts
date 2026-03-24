@@ -143,10 +143,10 @@ export class DsqlStack extends cdk.Stack {
             managedPolicyName: `armoury-ci-deploy-${environment}`,
             description: 'CI user permissions for Serverless Framework deployments, custom domains, and infrastructure',
             statements: [
-                // SSM: read infrastructure parameters (DSQL endpoints, etc.)
+                // SSM: read infrastructure parameters (DSQL endpoints, log-drain ARN, etc.)
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
-                    actions: ['ssm:GetParameter'],
+                    actions: ['ssm:GetParameter', 'ssm:GetParameters'],
                     resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/armoury/*`],
                 }),
                 // SSM: read/write Serverless Framework deployment state
