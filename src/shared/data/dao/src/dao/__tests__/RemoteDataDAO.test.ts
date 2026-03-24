@@ -27,11 +27,11 @@ class TestModel {
 
 declare module '../../types.js' {
     interface PluginEntityMap {
-        testEntity: TestModel;
+        remoteTestEntity: TestModel;
     }
 }
 
-registerPluginEntity('testEntity', {});
+registerPluginEntity('remoteTestEntity', {});
 
 class TestRemoteDAO extends RemoteDataDAO<TestModel> {
     fetchRemoteDataFn = vi.fn<() => Promise<TestModel>>();
@@ -39,7 +39,7 @@ class TestRemoteDAO extends RemoteDataDAO<TestModel> {
     onPostFetchFn = vi.fn<(data: TestModel) => Promise<void>>();
 
     protected getStoreKey(): string {
-        return 'testEntity';
+        return 'remoteTestEntity';
     }
 
     protected getSyncFileKey(): string {
@@ -107,7 +107,7 @@ describe('RemoteDataDAO', () => {
         const cached = new TestModel({ id: 'test:remote-file', name: 'cached' });
         const refreshed = new TestModel({ id: '', name: 'refreshed' });
 
-        await adapter.put('testEntity', cached);
+        await adapter.put('remoteTestEntity', cached);
         dao.needsSyncFn.mockResolvedValueOnce(false);
 
         const loadResult = await dao.load();
@@ -126,7 +126,7 @@ describe('RemoteDataDAO', () => {
     it('returns cached adapter data when sync is not needed', async () => {
         const cached = new TestModel({ id: 'test:remote-file', name: 'cached' });
 
-        await adapter.put('testEntity', cached);
+        await adapter.put('remoteTestEntity', cached);
         dao.needsSyncFn.mockResolvedValueOnce(false);
 
         const result = await dao.load();
@@ -175,7 +175,7 @@ describe('RemoteDataDAO', () => {
         dao.fetchRemoteDataFn.mockResolvedValueOnce(data);
         await dao.load();
 
-        const stored = await adapter.get('testEntity', 'test:remote-file');
+        const stored = await adapter.get('remoteTestEntity', 'test:remote-file');
         expect(stored).not.toBeNull();
         expect(stored?.id).toBe('test:remote-file');
     });
@@ -189,8 +189,8 @@ describe('RemoteDataDAO', () => {
 
         expect(result).toBe(data);
         expect(putSpy).toHaveBeenCalledTimes(1);
-        expect(putSpy).toHaveBeenCalledWith('testEntity', data);
-        await expect(adapter.get('testEntity', 'test:remote-file')).resolves.toEqual(data);
+        expect(putSpy).toHaveBeenCalledWith('remoteTestEntity', data);
+        await expect(adapter.get('remoteTestEntity', 'test:remote-file')).resolves.toEqual(data);
     });
 
     it('clears memoized promise after error and allows retry', async () => {

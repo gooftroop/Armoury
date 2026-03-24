@@ -56,7 +56,7 @@ describe('DataContext', () => {
     it('rejects fallback armies and campaigns DAO methods when game context is missing', async () => {
         const adapter = new MockDatabaseAdapter();
         const gameSystem = makeGameSystem({ name: 'Warhammer 40,000 10th Edition' });
-        const context = new DataContext(adapter, gameSystem, null);
+        const context = new DataContext(adapter, gameSystem, new Map());
 
         await expect(context.armies.count()).rejects.toThrow("Game-specific DAO 'armies' is not yet implemented.");
         await expect(context.campaigns.count()).rejects.toThrow(
@@ -68,13 +68,15 @@ describe('DataContext', () => {
         const adapter = new MockDatabaseAdapter();
         const gameSystem = makeGameSystem({ name: 'Warhammer 40,000 10th Edition' });
 
-        const withoutGithub = new DataContext<Record<string, unknown>>(adapter, gameSystem, null);
-        const withGithub = new DataContext<Record<string, unknown>>(adapter, gameSystem, {
+        const withoutGithub = new DataContext<Record<string, unknown>>(adapter, gameSystem, new Map());
+        const githubClient = {
             listFiles: vi.fn(),
             getFileSha: vi.fn(),
             downloadFile: vi.fn(),
             checkForUpdates: vi.fn(async () => false),
-        });
+        };
+        const clientsWithGithub = new Map<string, unknown>([['github', githubClient]]);
+        const withGithub = new DataContext<Record<string, unknown>>(adapter, gameSystem, clientsWithGithub);
 
         expect(() => {
             void withoutGithub.game['anything'];
@@ -92,7 +94,7 @@ describe('DataContext', () => {
     it('delegates close() to adapter.close()', async () => {
         const adapter = new MockDatabaseAdapter();
         const closeSpy = vi.spyOn(adapter, 'close');
-        const context = new DataContext(adapter, makeGameSystem(), null, {
+        const context = new DataContext(adapter, makeGameSystem(), new Map(), {
             armies: {
                 save: vi.fn(),
                 saveMany: vi.fn(),
@@ -125,7 +127,7 @@ describe('DataContext', () => {
     });
 
     it('exposes builder() as a DataContextBuilder factory', () => {
-        const builder = DataContext.builder();
+        const builder = DataContextBuilder.builder();
 
         expect(builder).toBeInstanceOf(DataContextBuilder);
     });

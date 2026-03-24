@@ -79,7 +79,7 @@ const buildUnitEntry = (): BattleScribeSelectionEntry => ({
                 Description: 'This unit can be attached to an Intercessor Squad.',
             }),
             buildProfile('profile-wargear-ability', 'Bolt Discipline', 'Wargear Abilities', {
-                Description: 'Improve this unit\'s ranged attacks.',
+                Description: "Improve this unit's ranged attacks.",
             }),
             buildProfile('profile-ranged', 'Bolt Rifle', 'Ranged Weapons', {
                 Range: '24"',
@@ -359,8 +359,12 @@ describe('parseFactionData', () => {
         expect(factionRuleIds).toEqual(
             expect.arrayContaining(['shared-rule-1', 'shared-ability-stealth', 'shared-faction-rule-1']),
         );
-        expect(result.factionRules.find((rule) => rule.id === 'shared-rule-1')?.description).toContain('Objective Secured');
-        expect(result.factionRules.find((rule) => rule.id === 'shared-faction-rule-1')?.description).toContain('Re-roll');
+        expect(result.factionRules.find((rule) => rule.id === 'shared-rule-1')?.description).toContain(
+            'Objective Secured',
+        );
+        expect(result.factionRules.find((rule) => rule.id === 'shared-faction-rule-1')?.description).toContain(
+            'Re-roll',
+        );
     });
 
     it('REQ-6: extracts stratagems, detachments, and enhancements from selection entry trees', () => {

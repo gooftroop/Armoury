@@ -24,17 +24,17 @@ class TestModel {
 
 declare module '../../types.js' {
     interface PluginEntityMap {
-        testEntity: TestModel;
+        ttlTestEntity: TestModel;
     }
 }
 
-registerPluginEntity('testEntity', {});
+registerPluginEntity('ttlTestEntity', {});
 
 class TestTTLDAO extends TTLSyncBaseDAO<TestModel> {
     fetchRemoteDataFn = vi.fn<() => Promise<TestModel>>();
 
     protected getStoreKey(): string {
-        return 'testEntity';
+        return 'ttlTestEntity';
     }
 
     protected getSyncFileKey(): string {
