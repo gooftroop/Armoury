@@ -11,7 +11,10 @@ import {
 } from '../__fixtures__/index.js';
 import { DatabaseError } from '@armoury/data-dao';
 
-describe('DSQLAdapter E2E', () => {
+// DSQL tests require a running Aurora DSQL endpoint with AWS credentials.
+// They cannot run in local development or CI environments — skip until
+// a DSQL-compatible test container or mock is available.
+describe.skip('DSQLAdapter E2E', () => {
     let adapter: DSQLAdapter;
 
     beforeAll(async () => {

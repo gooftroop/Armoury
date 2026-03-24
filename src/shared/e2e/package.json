@@ -14,7 +14,7 @@
         }
     },
     "scripts": {
-        "build": "ESBUILD_ENTRIES=src/index.ts,src/dockerSetup.ts,src/e2eEnv.ts,src/helpers.ts,src/localstackConfig.ts,src/mockBroadcaster.ts,src/dbSchema.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/service'\"",
+        "build": "ESBUILD_ENTRIES=src/index.ts,src/dockerSetup.ts,src/dockerSetupDbOnly.ts,src/e2eEnv.ts,src/helpers.ts,src/localstackConfig.ts,src/mockBroadcaster.ts,src/dbSchema.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/service'\"",
         "generate:types": "tsc -p tsconfig.build.json",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
