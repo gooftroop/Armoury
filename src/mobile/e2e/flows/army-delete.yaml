@@ -1,0 +1,35 @@
+# Army delete flow.
+#
+# Validates removing an existing army from the list by invoking delete action,
+# confirming destructive intent, and asserting the removed army is no longer shown.
+#
+# @requirements
+# - REQ-MAESTRO-ARMY-DELETE-01: Authenticate via common/login.yaml
+# - REQ-MAESTRO-ARMY-DELETE-02: Capture visible army name before deletion
+# - REQ-MAESTRO-ARMY-DELETE-03: Trigger delete and confirm dialog action
+# - REQ-MAESTRO-ARMY-DELETE-04: Assert removed army name is not visible
+appId: com.armoury.mobile
+env:
+    TEST_USER_EMAIL: ${TEST_USER_EMAIL}
+    TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
+---
+- runFlow: common/login.yaml
+- assertVisible:
+      id: 'army-list-screen'
+      timeout: 10000
+- assertVisible:
+      id: 'army-list-item-.*'
+      timeout: 10000
+- copyTextFrom:
+      id: 'army-list-item-name-.*'
+- tapOn:
+      id: 'army-list-item-delete-.*'
+- assertVisible:
+      id: 'army-delete-confirm-dialog'
+      timeout: 10000
+- tapOn:
+      id: 'army-delete-confirm-button'
+- extendedWaitUntil:
+      notVisible:
+          text: ${maestro.copiedText}
+      timeout: 10000

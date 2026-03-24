@@ -1,0 +1,44 @@
+# Army creation flow.
+#
+# Validates the end-to-end creation path: login, open new army form, fill
+# required fields, submit, and verify the created army appears in list results.
+#
+# @requirements
+# - REQ-MAESTRO-ARMY-CREATE-01: Authenticate via common/login.yaml
+# - REQ-MAESTRO-ARMY-CREATE-02: Open create-army form from My Armies
+# - REQ-MAESTRO-ARMY-CREATE-03: Fill name, game system, and faction
+# - REQ-MAESTRO-ARMY-CREATE-04: Submit form and verify created army is visible
+appId: com.armoury.mobile
+env:
+    TEST_USER_EMAIL: ${TEST_USER_EMAIL}
+    TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
+---
+- runFlow: common/login.yaml
+- assertVisible:
+      text: 'My Armies'
+      timeout: 10000
+- tapOn:
+      id: 'army-list-new-button'
+- assertVisible:
+      id: 'army-new-name-input'
+      timeout: 10000
+- tapOn:
+      id: 'army-new-name-input'
+- inputText: 'Maestro Test Army'
+- tapOn:
+      id: 'army-new-game-system-selector'
+- assertVisible:
+      text: 'Warhammer 40,000 10th Edition'
+      timeout: 10000
+- tapOn: 'Warhammer 40,000 10th Edition'
+- tapOn:
+      id: 'army-new-faction-selector'
+- assertVisible:
+      text: 'Space Marines'
+      timeout: 10000
+- tapOn: 'Space Marines'
+- tapOn:
+      id: 'army-new-create-button'
+- assertVisible:
+      text: 'Maestro Test Army'
+      timeout: 10000

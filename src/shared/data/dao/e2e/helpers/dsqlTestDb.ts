@@ -19,7 +19,7 @@ const { Client } = (await import('pg')) as unknown as { Client: PgClientConstruc
 
 const DSQL_E2E_CONFIG = {
     host: 'localhost',
-    port: 5435,
+    port: 5436,
     user: 'armoury',
     password: 'armoury_local',
     database: 'armoury_dsql_test',

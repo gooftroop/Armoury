@@ -1,0 +1,27 @@
+# Login subflow — called via `runFlow:` from other flows.
+#
+# Launches the app with cleared state, fills in credentials from env vars,
+# and waits for the army list screen to confirm login succeeded.
+#
+# @requirements
+# - REQ-MAESTRO-LOGIN-01: Clear app state before login
+# - REQ-MAESTRO-LOGIN-02: Use testID selectors for auth inputs
+# - REQ-MAESTRO-LOGIN-03: Wait up to 10s for post-login screen
+appId: com.armoury.mobile
+---
+- launchApp:
+      clearState: true
+- assertVisible:
+      id: 'auth-sign-in-heading'
+- tapOn:
+      id: 'auth-email-input'
+- inputText: ${TEST_USER_EMAIL}
+- tapOn:
+      id: 'auth-password-input'
+- inputText: ${TEST_USER_PASSWORD}
+- tapOn:
+      id: 'auth-sign-in-button'
+# Confirm login succeeded before returning to the calling flow
+- assertVisible:
+      id: 'army-list-screen'
+      timeout: 10000
