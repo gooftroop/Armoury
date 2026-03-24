@@ -56,7 +56,7 @@
             "outputs": []
         },
         "test:e2e": {
-            "dependsOn": ["^generate:types"],
+            "dependsOn": ["^build", "^generate:types"],
             "outputs": [],
             "cache": false
         }

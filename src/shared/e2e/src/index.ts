@@ -14,10 +14,10 @@
  * - REQ-E2E-ISOLATION: Each service imports only what it needs via subpath exports
  */
 
-export { e2eEnv } from './e2eEnv.ts';
-export { localstackClientConfig } from './localstackConfig.ts';
-export { createTestUserContext, createApiGatewayEvent, createWebSocketEvent } from './helpers.ts';
-export type { TestUserContext } from './helpers.ts';
-export { createMockBroadcaster } from './mockBroadcaster.ts';
-export type { BroadcastRecord } from './mockBroadcaster.ts';
-export { setup, teardown } from './dockerSetup.ts';
+export { e2eEnv } from './e2eEnv.js';
+export { localstackClientConfig } from './localstackConfig.js';
+export { createTestUserContext, createApiGatewayEvent, createWebSocketEvent } from './helpers.js';
+export type { TestUserContext } from './helpers.js';
+export { createMockBroadcaster } from './mockBroadcaster.js';
+export type { BroadcastRecord } from './mockBroadcaster.js';
+export { setup, teardown } from './dockerSetup.js';
