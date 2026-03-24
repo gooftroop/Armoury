@@ -137,6 +137,25 @@ jobs:
                       src/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
+            - name: Get Playwright version
+              id: pw-version
+              run: echo "version=$(npx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Playwright browsers
+              id: pw-cache
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: ${{ runner.os }}-playwright-${{ steps.pw-version.outputs.version }}
+
+            - name: Install Playwright browsers
+              if: steps.pw-cache.outputs.cache-hit != 'true'
+              run: npx playwright install --with-deps chromium
+
+            - name: Install Playwright system deps
+              if: steps.pw-cache.outputs.cache-hit == 'true'
+              run: npx playwright install-deps chromium
+
             - name: Pre-pull Docker images
               run: |
                   docker pull localstack/localstack:4.4.0 &
