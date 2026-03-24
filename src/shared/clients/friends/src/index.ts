@@ -26,6 +26,8 @@ export type {
     FriendsServerMessage,
     FriendsPresenceConfig,
     ConnectionState,
+    WebSocketErrorEvent,
+    WebSocketErrorSource,
 } from '@clients-friends/types.js';
 
 // === Error Classes ===
