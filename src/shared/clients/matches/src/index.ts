@@ -33,6 +33,8 @@ export type {
     ConnectionState,
     IMatchesRealtimeClient,
     MatchParams,
+    WebSocketErrorEvent,
+    WebSocketErrorSource,
 } from '@clients-matches/types.js';
 
 // Error classes and type guards

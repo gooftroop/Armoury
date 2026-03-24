@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/aws-serverless';
+import { captureWsError } from '@friends/src/utils/wsErrors.js';
 import { extractWsUserContext } from '@friends/src/middleware/wsAuth.js';
 import { wsRouter } from '@friends/src/wsRouter.js';
 import type { DatabaseAdapter, WebSocketEvent, WebSocketResponse } from '@friends/src/types.js';
@@ -70,10 +70,12 @@ export async function handler(event: WebSocketEvent): Promise<WebSocketResponse>
 
         return response;
     } catch (error) {
-        console.error('Friends websocket handler error', error);
-        Sentry.captureException(error);
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
 
-        const normalizedError = error instanceof Error ? error : new Error('Unknown error');
+        captureWsError(normalizedError, 'adapter:init', {
+            connectionId: event.requestContext.connectionId,
+            routeKey: event.requestContext.routeKey,
+        });
 
         return {
             statusCode: 500,

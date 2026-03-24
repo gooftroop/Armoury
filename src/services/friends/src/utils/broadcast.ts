@@ -1,5 +1,6 @@
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk/client-apigatewaymanagementapi';
 import type { WebSocketEvent } from '@friends/src/types.js';
+import { captureWsError } from '@friends/src/utils/wsErrors.js';
 
 const encoder = new TextEncoder();
 
@@ -35,6 +36,10 @@ export function createBroadcaster(event: WebSocketEvent): Broadcaster {
 
                         return;
                     }
+
+                    const err = error instanceof Error ? error : new Error(String(error));
+
+                    captureWsError(err, 'broadcast:send', { connectionId });
 
                     throw error;
                 }

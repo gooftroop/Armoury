@@ -1,4 +1,5 @@
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk/client-apigatewaymanagementapi';
+import { captureWsError } from '@matches/src/utils/wsErrors.js';
 
 const encoder = new TextEncoder();
 
@@ -27,6 +28,10 @@ export function createBroadcaster(domainName: string, stage: string): Broadcaste
             if (isGoneError(error)) {
                 return true;
             }
+
+            const err = error instanceof Error ? error : new Error(String(error));
+
+            captureWsError(err, 'broadcast:send', { connectionId });
 
             throw error;
         }
