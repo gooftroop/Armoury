@@ -31,6 +31,8 @@ export interface CardProps extends ViewProps {
     className?: string;
     /** Card content. */
     children?: React.ReactNode;
+    /** Forward ref to underlying YStack component. */
+    ref?: React.Ref<React.ElementRef<typeof YStack>>;
 }
 
 /** Props for the CardHeader component. */
@@ -39,6 +41,8 @@ export interface CardHeaderProps extends ViewProps {
     className?: string;
     /** Header content. */
     children?: React.ReactNode;
+    /** Forward ref to underlying YStack component. */
+    ref?: React.Ref<React.ElementRef<typeof YStack>>;
 }
 
 /** Props for the CardTitle component. */
@@ -47,6 +51,8 @@ export interface CardTitleProps extends RNTextProps {
     className?: string;
     /** Title content. */
     children?: React.ReactNode;
+    /** Forward ref to underlying Text component. */
+    ref?: React.Ref<React.ElementRef<typeof Text>>;
 }
 
 /** Props for the CardDescription component. */
@@ -55,6 +61,8 @@ export interface CardDescriptionProps extends RNTextProps {
     className?: string;
     /** Description content. */
     children?: React.ReactNode;
+    /** Forward ref to underlying Text component. */
+    ref?: React.Ref<React.ElementRef<typeof Text>>;
 }
 
 /** Props for the CardContent component. */
@@ -63,6 +71,8 @@ export interface CardContentProps extends ViewProps {
     className?: string;
     /** Content children. */
     children?: React.ReactNode;
+    /** Forward ref to underlying YStack component. */
+    ref?: React.Ref<React.ElementRef<typeof YStack>>;
 }
 
 /** Props for the CardFooter component. */
@@ -71,6 +81,8 @@ export interface CardFooterProps extends ViewProps {
     className?: string;
     /** Footer content. */
     children?: React.ReactNode;
+    /** Forward ref to underlying XStack component. */
+    ref?: React.Ref<React.ElementRef<typeof XStack>>;
 }
 
 /**
@@ -79,28 +91,26 @@ export interface CardFooterProps extends ViewProps {
  * @param props - Component props including className and standard view attributes.
  * @returns The rendered Card component.
  */
-const Card = React.forwardRef<React.ElementRef<typeof YStack>, CardProps>(
-    ({ className: _className, children }, ref) => {
-        const theme = useTheme();
+function Card({ className: _className, children, ref }: CardProps): React.ReactElement {
+    const theme = useTheme();
 
-        return (
-            <YStack
-                ref={ref}
-                borderRadius="$3"
-                borderWidth={1}
-                borderColor={resolveThemeColor(theme, 'borderColor')}
-                backgroundColor={resolveThemeColor(theme, 'card')}
-                shadowColor="rgba(0,0,0,0.05)"
-                shadowOffset={{ width: 0, height: 1 }}
-                shadowOpacity={1}
-                shadowRadius={2}
-                elevation={1}
-            >
-                {children}
-            </YStack>
-        );
-    },
-);
+    return (
+        <YStack
+            ref={ref}
+            borderRadius="$3"
+            borderWidth={1}
+            borderColor={resolveThemeColor(theme, 'borderColor')}
+            backgroundColor={resolveThemeColor(theme, 'card')}
+            shadowColor="rgba(0,0,0,0.05)"
+            shadowOffset={{ width: 0, height: 1 }}
+            shadowOpacity={1}
+            shadowRadius={2}
+            elevation={1}
+        >
+            {children}
+        </YStack>
+    );
+}
 Card.displayName = 'Card';
 
 /**
@@ -109,13 +119,13 @@ Card.displayName = 'Card';
  * @param props - Component props including className and standard view attributes.
  * @returns The rendered CardHeader component.
  */
-const CardHeader = React.forwardRef<React.ElementRef<typeof YStack>, CardHeaderProps>(
-    ({ className: _className, children }, ref) => (
+function CardHeader({ className: _className, children, ref }: CardHeaderProps): React.ReactElement {
+    return (
         <YStack ref={ref} padding="$4" gap="$1.5">
             {children}
         </YStack>
-    ),
-);
+    );
+}
 CardHeader.displayName = 'CardHeader';
 
 /**
@@ -124,23 +134,15 @@ CardHeader.displayName = 'CardHeader';
  * @param props - Component props including className and standard text attributes.
  * @returns The rendered CardTitle component.
  */
-const CardTitle = React.forwardRef<React.ElementRef<typeof Text>, CardTitleProps>(
-    ({ className: _className, children, ...props }, ref) => {
-        const theme = useTheme();
+function CardTitle({ className: _className, children, ref, ...props }: CardTitleProps): React.ReactElement {
+    const theme = useTheme();
 
-        return (
-            <Text
-                ref={ref}
-                fontWeight="600"
-                fontSize="$5"
-                color={resolveThemeColor(theme, 'cardForeground')}
-                {...props}
-            >
-                {children}
-            </Text>
-        );
-    },
-);
+    return (
+        <Text ref={ref} fontWeight="600" fontSize="$5" color={resolveThemeColor(theme, 'cardForeground')} {...props}>
+            {children}
+        </Text>
+    );
+}
 CardTitle.displayName = 'CardTitle';
 
 /**
@@ -149,17 +151,15 @@ CardTitle.displayName = 'CardTitle';
  * @param props - Component props including className and standard text attributes.
  * @returns The rendered CardDescription component.
  */
-const CardDescription = React.forwardRef<React.ElementRef<typeof Text>, CardDescriptionProps>(
-    ({ className: _className, children, ...props }, ref) => {
-        const theme = useTheme();
+function CardDescription({ className: _className, children, ref, ...props }: CardDescriptionProps): React.ReactElement {
+    const theme = useTheme();
 
-        return (
-            <Text ref={ref} fontSize="$2" color={resolveThemeColor(theme, 'mutedForeground')} {...props}>
-                {children}
-            </Text>
-        );
-    },
-);
+    return (
+        <Text ref={ref} fontSize="$2" color={resolveThemeColor(theme, 'mutedForeground')} {...props}>
+            {children}
+        </Text>
+    );
+}
 CardDescription.displayName = 'CardDescription';
 
 /**
@@ -168,13 +168,13 @@ CardDescription.displayName = 'CardDescription';
  * @param props - Component props including className and standard view attributes.
  * @returns The rendered CardContent component.
  */
-const CardContent = React.forwardRef<React.ElementRef<typeof YStack>, CardContentProps>(
-    ({ className: _className, children }, ref) => (
+function CardContent({ className: _className, children, ref }: CardContentProps): React.ReactElement {
+    return (
         <YStack ref={ref} paddingHorizontal="$4" paddingBottom="$4">
             {children}
         </YStack>
-    ),
-);
+    );
+}
 CardContent.displayName = 'CardContent';
 
 /**
@@ -183,13 +183,13 @@ CardContent.displayName = 'CardContent';
  * @param props - Component props including className and standard view attributes.
  * @returns The rendered CardFooter component.
  */
-const CardFooter = React.forwardRef<React.ElementRef<typeof XStack>, CardFooterProps>(
-    ({ className: _className, children }, ref) => (
+function CardFooter({ className: _className, children, ref }: CardFooterProps): React.ReactElement {
+    return (
         <XStack ref={ref} alignItems="center" paddingHorizontal="$4" paddingBottom="$4">
             {children}
         </XStack>
-    ),
-);
+    );
+}
 CardFooter.displayName = 'CardFooter';
 
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };

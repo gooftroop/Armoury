@@ -40,6 +40,8 @@ export interface BadgeProps extends ViewProps {
     className?: string;
     /** Badge content. */
     children?: React.ReactNode;
+    /** Forward ref to underlying XStack component. */
+    ref?: React.Ref<React.ElementRef<typeof XStack>>;
 }
 
 /**
@@ -66,50 +68,48 @@ function resolveThemeColor(theme: ReturnType<typeof useTheme>, token: string): s
  * @param props - Component props including variant and standard view attributes.
  * @returns The rendered Badge component.
  */
-const Badge = React.forwardRef<React.ElementRef<typeof XStack>, BadgeProps>(
-    ({ variant = 'default', className: _className, children }, ref) => {
-        const theme = useTheme();
+function Badge({ variant = 'default', className: _className, children, ref }: BadgeProps): React.ReactElement {
+    const theme = useTheme();
 
-        const backgroundByVariant: Record<BadgeVariant, string | undefined> = {
-            default: resolveThemeColor(theme, 'primary'),
-            secondary: resolveThemeColor(theme, 'secondary'),
-            destructive: resolveThemeColor(theme, 'destructive'),
-            outline: 'transparent',
-        };
+    const backgroundByVariant: Record<BadgeVariant, string | undefined> = {
+        default: resolveThemeColor(theme, 'primary'),
+        secondary: resolveThemeColor(theme, 'secondary'),
+        destructive: resolveThemeColor(theme, 'destructive'),
+        outline: 'transparent',
+    };
 
-        const textByVariant: Record<BadgeVariant, string | undefined> = {
-            default: resolveThemeColor(theme, 'primaryForeground'),
-            secondary: resolveThemeColor(theme, 'secondaryForeground'),
-            destructive: resolveThemeColor(theme, 'destructiveForeground'),
-            outline: resolveThemeColor(theme, 'color'),
-        };
+    const textByVariant: Record<BadgeVariant, string | undefined> = {
+        default: resolveThemeColor(theme, 'primaryForeground'),
+        secondary: resolveThemeColor(theme, 'secondaryForeground'),
+        destructive: resolveThemeColor(theme, 'destructiveForeground'),
+        outline: resolveThemeColor(theme, 'color'),
+    };
 
-        const borderByVariant: Record<BadgeVariant, string | undefined> = {
-            default: 'transparent',
-            secondary: 'transparent',
-            destructive: 'transparent',
-            outline: resolveThemeColor(theme, 'borderColor'),
-        };
+    const borderByVariant: Record<BadgeVariant, string | undefined> = {
+        default: 'transparent',
+        secondary: 'transparent',
+        destructive: 'transparent',
+        outline: resolveThemeColor(theme, 'borderColor'),
+    };
 
-        return (
-            <XStack
-                ref={ref}
-                alignItems="center"
-                justifyContent="center"
-                backgroundColor={backgroundByVariant[variant]}
-                borderColor={borderByVariant[variant]}
-                borderWidth={1}
-                borderRadius={9999}
-                paddingHorizontal="$2"
-                paddingVertical="$0.5"
-            >
-                <Text color={textByVariant[variant]} fontSize="$1" fontWeight="600">
-                    {children}
-                </Text>
-            </XStack>
-        );
-    },
-);
+    return (
+        <XStack
+            ref={ref}
+            alignItems="center"
+            justifyContent="center"
+            backgroundColor={backgroundByVariant[variant]}
+            borderColor={borderByVariant[variant]}
+            borderWidth={1}
+            borderRadius={9999}
+            paddingHorizontal="$2"
+            paddingVertical="$0.5"
+        >
+            <Text color={textByVariant[variant]} fontSize="$1" fontWeight="600">
+                {children}
+            </Text>
+        </XStack>
+    );
+}
 
 Badge.displayName = 'Badge';
 

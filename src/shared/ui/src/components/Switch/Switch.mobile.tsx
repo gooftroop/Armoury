@@ -38,6 +38,8 @@ export interface SwitchProps extends Omit<RNSwitchProps, 'value' | 'onValueChang
     onValueChange?: (value: boolean) => void;
     /** Web compatibility prop ignored on mobile. */
     className?: string;
+    /** Forward ref to underlying RNSwitch component. */
+    ref?: React.Ref<React.ElementRef<typeof RNSwitch>>;
 }
 
 /**
@@ -49,32 +51,38 @@ export interface SwitchProps extends Omit<RNSwitchProps, 'value' | 'onValueChang
  * @param props - Component props including checked state and standard switch attributes.
  * @returns The rendered Switch component.
  */
-const Switch = React.forwardRef<RNSwitch, SwitchProps>(
-    ({ checked, onCheckedChange, value, onValueChange, className: _className, ...props }, ref) => {
-        const theme = useTheme();
+function Switch({
+    checked,
+    onCheckedChange,
+    value,
+    onValueChange,
+    className: _className,
+    ref,
+    ...props
+}: SwitchProps): React.ReactElement {
+    const theme = useTheme();
 
-        // Support both Radix (checked/onCheckedChange) and RN (value/onValueChange) APIs
-        const isChecked = checked ?? value ?? false;
-        const handleChange = (newValue: boolean): void => {
-            onCheckedChange?.(newValue);
-            onValueChange?.(newValue);
-        };
+    // Support both Radix (checked/onCheckedChange) and RN (value/onValueChange) APIs
+    const isChecked = checked ?? value ?? false;
+    const handleChange = (newValue: boolean): void => {
+        onCheckedChange?.(newValue);
+        onValueChange?.(newValue);
+    };
 
-        return (
-            <RNSwitch
-                ref={ref}
-                value={isChecked}
-                onValueChange={handleChange}
-                trackColor={{
-                    false: resolveThemeColor(theme, 'input') ?? '#e4e4e7',
-                    true: resolveThemeColor(theme, 'primary') ?? '#18181b',
-                }}
-                thumbColor={resolveThemeColor(theme, 'background') ?? '#ffffff'}
-                {...props}
-            />
-        );
-    },
-);
+    return (
+        <RNSwitch
+            ref={ref}
+            value={isChecked}
+            onValueChange={handleChange}
+            trackColor={{
+                false: resolveThemeColor(theme, 'input') ?? '#e4e4e7',
+                true: resolveThemeColor(theme, 'primary') ?? '#18181b',
+            }}
+            thumbColor={resolveThemeColor(theme, 'background') ?? '#ffffff'}
+            {...props}
+        />
+    );
+}
 
 Switch.displayName = 'Switch';
 

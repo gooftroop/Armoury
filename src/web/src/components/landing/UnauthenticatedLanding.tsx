@@ -37,7 +37,8 @@ export interface UnauthenticatedLandingProps {
  */
 export function UnauthenticatedLanding({ manifests, locale }: UnauthenticatedLandingProps): React.ReactElement {
     const handleUnauthenticatedClick = React.useCallback(() => {
-        window.location.href = '/auth/login?returnTo=/';
+        const returnTo = window.location.pathname + window.location.search + window.location.hash;
+        window.location.href = `/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
     }, []);
 
     return (

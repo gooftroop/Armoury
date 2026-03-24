@@ -1,5 +1,11 @@
 service: armoury-authorizer
 
+params:
+    production:
+        environment: production
+    default:
+        environment: sandbox
+
 provider:
     name: aws
     runtime: nodejs22.x
@@ -11,15 +17,18 @@ provider:
     environment:
         AUTH0_DOMAIN: ${env:AUTH0_DOMAIN, ''}
         AUTH0_AUDIENCE: ${env:AUTH0_AUDIENCE, ''}
-        NODE_OPTIONS: '--import ./src/instrument.js'
+        NODE_OPTIONS: '--enable-source-maps --import ./src/instrument.js'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
+        SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
 
 build:
     esbuild:
         bundle: true
         minify: true
-        sourcemap: true
+        sourcemap:
+            enabled: true
+            setNodeOptions: false
         target: es2022
         platform: node
         format: esm
@@ -42,6 +51,19 @@ resources:
         AuthorizerArn:
             Value: !GetAtt AuthorizerLambdaFunction.Arn
             Description: ARN of the authorizer Lambda function for cross-service reference
+    Resources:
+        AuthorizerLogGroup:
+            Type: AWS::Logs::LogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-authorizer-${self:provider.stage}'
+                RetentionInDays: 14
+        AuthorizerLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: AuthorizerLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-authorizer-${self:provider.stage}'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
 
 functions:
     authorizer:

@@ -7,7 +7,7 @@
  * Built on Radix UI Separator primitive with Tailwind styling.
  *
  * @requirements
- * 1. Must export Separator component with forwardRef.
+ * 1. Must export Separator component with ref prop support (React 19 pattern).
  * 2. Must use Radix UI Separator primitive from radix-ui package.
  * 3. Must support horizontal and vertical orientations.
  * 4. Must use design tokens for styling (bg-border).

@@ -145,6 +145,7 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
                     void this.establishConnection(token);
                 },
                 () => {
+                    console.warn('[FriendsPresenceClient] Failed to resolve auth token');
                     this.connectionStateSubject.next('disconnected');
                 },
             );
@@ -210,6 +211,11 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
 
             this.ws = ws;
         } catch (error) {
+            console.error('[FriendsPresenceClient] Connection failed', {
+                wsUrl: this.wsUrl,
+                error: error instanceof Error ? error.message : String(error),
+            });
+
             this.errorsSubject.next({ error, context: { operation: 'establishConnection' } });
             this.connectionStateSubject.next('disconnected');
 
@@ -237,8 +243,34 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             }
         });
 
-        this.addSocketListener(this.ws, 'error', (error) => {
-            this.errorsSubject.next({ error, context: { operation: 'socketError' } });
+        this.addSocketListener(this.ws, 'error', (event) => {
+            // Browser WebSocket error events are opaque Event objects with no
+            // diagnostic info (browser security restriction). Wrap in a proper
+            // Error with all context available to the client so consumers (e.g.
+            // Sentry) get actionable error titles and structured data.
+            const enrichedError = new Error(
+                `WebSocket error on ${this.wsUrl} (readyState: ${String(this.ws?.readyState ?? 'unknown')}, attempt: ${String(this.reconnectAttempts)})`,
+            );
+
+            console.error('[FriendsPresenceClient] Socket error', {
+                wsUrl: this.wsUrl,
+                readyState: this.ws?.readyState ?? null,
+                reconnectAttempts: this.reconnectAttempts,
+            });
+
+            this.errorsSubject.next({
+                error: enrichedError,
+                context: {
+                    operation: 'socketError',
+                    wsUrl: this.wsUrl,
+                    readyState: this.ws?.readyState ?? null,
+                    reconnectAttempts: this.reconnectAttempts,
+                    rawEventType:
+                        typeof event === 'object' && event !== null && 'type' in event
+                            ? (event as { type: unknown }).type
+                            : undefined,
+                },
+            });
             // Error is followed by a close event, so reconnection is handled there.
             // We do not emit errors on the messages$ stream.
         });
@@ -380,6 +412,11 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
             this.errorsSubject.next({
                 error: new Error('Max reconnection attempts reached'),
                 context: { operation: 'scheduleReconnect' },
+            });
+
+            console.warn('[FriendsPresenceClient] Max reconnection attempts reached', {
+                wsUrl: this.wsUrl,
+                attempts: this.reconnectAttempts,
             });
             this.connectionStateSubject.next('disconnected');
 

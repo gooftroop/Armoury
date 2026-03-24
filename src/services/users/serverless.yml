@@ -1,5 +1,11 @@
 service: armoury-users
 
+params:
+    production:
+        environment: production
+    default:
+        environment: sandbox
+
 provider:
     name: aws
     runtime: nodejs22.x
@@ -10,8 +16,9 @@ provider:
     timeout: 29
     environment:
         DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/users/dsql-cluster-endpoint'}
-        NODE_OPTIONS: '--import ./src/instrument.js'
+        NODE_OPTIONS: '--enable-source-maps --import ./src/instrument.js'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
+        SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
     iam:
@@ -25,12 +32,16 @@ provider:
                   Action:
                       - ssm:GetParameter
                   Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
+    logs:
+        restApi: true
 
 build:
     esbuild:
         bundle: true
         minify: true
-        sourcemap: true
+        sourcemap:
+            enabled: true
+            setNodeOptions: false
         target: es2022
         platform: node
         format: esm
@@ -78,3 +89,38 @@ functions:
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
+
+resources:
+    Resources:
+        GatewayResponseDefault4XX:
+            Type: AWS::ApiGateway::GatewayResponse
+            Properties:
+                RestApiId:
+                    Ref: ApiGatewayRestApi
+                ResponseType: DEFAULT_4XX
+                ResponseParameters:
+                    gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        GatewayResponseDefault5XX:
+            Type: AWS::ApiGateway::GatewayResponse
+            Properties:
+                RestApiId:
+                    Ref: ApiGatewayRestApi
+                ResponseType: DEFAULT_5XX
+                ResponseParameters:
+                    gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        UsersLogGroup:
+            Type: AWS::Logs::LogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}'
+                RetentionInDays: 14
+        UsersLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: UsersLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

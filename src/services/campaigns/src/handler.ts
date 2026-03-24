@@ -114,15 +114,28 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
  * @param event - API Gateway proxy integration event with HTTP method, path, body, and authorizer context.
  * @returns API Gateway proxy response with status code, headers, and JSON body.
  */
-export async function handler(event: ApiGatewayEvent): Promise<ApiResponse> {
+export const handler = Sentry.wrapHandler(async (event: ApiGatewayEvent): Promise<ApiResponse> => {
+    Sentry.logger.info('[campaigns] Handler invoked', {
+        httpMethod: event.httpMethod,
+        path: event.path,
+    });
+
     try {
         const adapter = await initializeAdapter();
         const userContext = extractUserContext(event);
         const response = await router(event, adapter, userContext);
 
+        Sentry.logger.info('[campaigns] Handler completed', {
+            httpMethod: event.httpMethod,
+            path: event.path,
+            statusCode: response.statusCode,
+        });
+
         return response;
     } catch (error) {
-        Sentry.logger.error('Campaigns handler error', {
+        Sentry.logger.error('[campaigns] Handler error', {
+            httpMethod: event.httpMethod,
+            path: event.path,
             error: error instanceof Error ? error.message : String(error),
         });
         Sentry.captureException(error);
@@ -131,4 +144,4 @@ export async function handler(event: ApiGatewayEvent): Promise<ApiResponse> {
 
         return formatErrorResponse(normalizedError);
     }
-}
+});

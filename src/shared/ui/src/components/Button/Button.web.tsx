@@ -7,7 +7,7 @@
  * Supports multiple visual styles for different contexts in a tactical military theme.
  *
  * @requirements
- * 1. Must export Button component with React.forwardRef for DOM ref forwarding.
+ * 1. Must export Button component with ref prop.
  * 2. Must support 8 variants: primary, secondary, highlight, ghost, destructive, outline, link, unstyled.
  * 3. Must support 3 sizes: sm, md, lg.
  * 4. Must merge user className with variant styles using cn utility.
@@ -70,6 +70,12 @@ export interface ButtonProps extends React.ComponentPropsWithRef<'button'>, Vari
  *
  * @param props - Component props including variant, size, asChild, and standard button attributes.
  * @param ref - Forwarded ref to the button element.
+ * @returns The rendered Button component.
+ */
+/**
+ * Button component with multiple variants and sizes.
+ *
+ * @param props - Component props including variant, size, asChild, and standard button attributes.
  * @returns The rendered Button component.
  */
 function Button({ className, variant, size, asChild = false, ref, ...props }: ButtonProps): React.ReactElement {

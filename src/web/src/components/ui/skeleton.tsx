@@ -7,7 +7,7 @@
  * Used to indicate that content is loading.
  *
  * @requirements
- * 1. Must export Skeleton component with forwardRef.
+ * 1. Must export Skeleton component with ref prop.
  * 2. Must display a pulse animation for loading state.
  * 3. Must use design tokens for styling (bg-muted, etc.).
  * 4. Must merge user className with default styles using cn utility.
@@ -21,18 +21,18 @@ import { cn } from '@/lib/utils.js';
 /**
  * Props for the Skeleton component.
  */
-export type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;
+export type SkeletonProps = React.ComponentPropsWithRef<'div'>;
 
 /**
  * Skeleton component - a loading placeholder with pulse animation.
  *
  * @param props - Component props including className and standard div attributes.
- * @param ref - Forwarded ref to the div element.
  * @returns The rendered Skeleton component.
  */
-const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(({ className, ...props }, ref) => (
-    <div className={cn('motion-safe:animate-pulse rounded-md bg-muted', className)} ref={ref} {...props} />
-));
+function Skeleton({ className, ref, ...props }: SkeletonProps): React.ReactElement {
+    return <div className={cn('motion-safe:animate-pulse rounded-md bg-muted', className)} ref={ref} {...props} />;
+}
+
 Skeleton.displayName = 'Skeleton';
 
 export { Skeleton };

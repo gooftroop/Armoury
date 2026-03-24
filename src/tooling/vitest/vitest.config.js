@@ -19,6 +19,11 @@ export const baseConfig = {
         globals: true,
         include: ['**/__tests__/**/*.test.{ts,tsx}'],
         exclude: ['node_modules', 'dist'],
+        pool: {
+            forks: {
+                execArgv: ['--enable-source-maps'],
+            },
+        },
     },
     resolve: {
         alias: {

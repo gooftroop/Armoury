@@ -7,7 +7,7 @@
  * Built on Radix UI Label primitive with Tailwind styling.
  *
  * @requirements
- * 1. Must export Label component with forwardRef.
+ * 1. Must export Label component with ref prop support (React 19 pattern).
  * 2. Must use Radix UI Label primitive from radix-ui package.
  * 3. Must use design tokens for styling.
  * 4. Must merge user className with default styles using cn utility.

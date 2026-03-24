@@ -127,7 +127,11 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
                 setConnectionState(state);
             });
             errorsSubscription = client.errors$.subscribe(({ error, context }) => {
-                Sentry.captureException(error, { extra: context });
+                // Ensure non-Error values (e.g. browser Event objects) are wrapped
+                // so Sentry always gets a proper Error with a meaningful title.
+                const exception = error instanceof Error ? error : new Error(`Presence client error: ${String(error)}`);
+
+                Sentry.captureException(exception, { extra: context });
             });
             setOnlineFriends$(() => presenceStream.onlineFriends$);
             setOnlineCount$(() => presenceStream.onlineCount$);

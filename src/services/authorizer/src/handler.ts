@@ -23,15 +23,30 @@ const DEFAULT_PRINCIPAL_ID = 'unknown';
  * @param event - API Gateway TOKEN or REQUEST authorizer event.
  * @returns IAM policy result with Allow or Deny effect.
  */
-export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
+export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promise<AuthorizerResult> => {
+    Sentry.logger.info('[authorizer] Handler invoked', {
+        eventType: event.type,
+    });
+
     const token = extractTokenFromEvent(event);
 
     if (!token) {
+        Sentry.logger.warn('[authorizer] DENY: No token found in event', {
+            eventType: event.type,
+            hasQueryParams: 'queryStringParameters' in event,
+        });
+
         return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
     }
 
     try {
         const config = await getServiceConfig();
+
+        Sentry.logger.debug('[authorizer] Config loaded', {
+            auth0Domain: config.auth0Domain,
+            auth0Audience: config.auth0Audience,
+        });
+
         const issuer = buildIssuer(config.auth0Domain);
 
         const { payload } = await jwtVerify(token, getJwks(config.auth0Domain), {
@@ -40,6 +55,12 @@ export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult>
         });
 
         if (!isJwtPayload(payload)) {
+            Sentry.logger.warn('[authorizer] DENY: JWT payload shape invalid', {
+                hasSub: 'sub' in payload,
+                hasAud: 'aud' in payload,
+                hasIss: 'iss' in payload,
+            });
+
             return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
         }
 
@@ -55,10 +76,20 @@ export const handler = async (event: AuthorizerEvent): Promise<AuthorizerResult>
             context.name = payload.name;
         }
 
+        Sentry.logger.info('[authorizer] ALLOW', { sub: payload.sub });
+
         return generatePolicy(payload.sub, 'Allow', event.methodArn, context);
     } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorName = error instanceof Error ? error.name : 'UnknownError';
+
+        Sentry.logger.error('[authorizer] DENY: Verification failed', {
+            errorName,
+            errorMessage,
+        });
+
         Sentry.captureException(error);
 
         return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
     }
-};
+});
