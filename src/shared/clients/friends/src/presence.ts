@@ -1,36 +1,30 @@
 /**
- * Friends WebSocket presence client using a cross-runtime WebSocket abstraction.
+ * Friends WebSocket presence client using ws + rxjs.
  *
  * Provides a reactive stream of friend presence events (online/offline)
  * via WebSocket connection to the friends presence service. Includes
- * automatic reconnection with exponential backoff and jitter.
+ * automatic reconnection with capped exponential backoff and jitter,
+ * heartbeat-based dead connection detection via ping/pong, and proper
+ * listener cleanup to prevent memory leaks.
  */
 
+import WebSocket from 'ws';
 import { Subject, BehaviorSubject } from 'rxjs';
 import type { Observable } from 'rxjs';
-import { MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
-import type { FriendsPresenceConfig, FriendsServerMessage, ConnectionState } from '@/types.js';
-
-/** Numeric WebSocket readyState for OPEN in both browser and ws runtimes. */
-const SOCKET_OPEN_STATE = 1;
-
-/**
- * WebSocket-like contract used by this client in both browser and Node.js.
- */
-interface PresenceSocket {
-    /** Current connection ready state. */
-    readonly readyState: number;
-    /** Sends text payload to the server. */
-    send(data: string): void;
-    /** Closes the underlying socket. */
-    close(): void;
-    /** Adds an event listener (browser-style API). */
-    addEventListener?: (type: 'open' | 'message' | 'close' | 'error', listener: (event: unknown) => void) => void;
-    /** Removes an event listener (browser-style API). */
-    removeEventListener?: (type: 'open' | 'message' | 'close' | 'error', listener: (event: unknown) => void) => void;
-    /** Registers an event handler (Node ws EventEmitter API). */
-    on?: (type: 'open' | 'message' | 'close' | 'error', listener: (event: unknown) => void) => void;
-}
+import {
+    MAX_RECONNECT_ATTEMPTS,
+    BASE_RECONNECT_DELAY_MS,
+    MAX_RECONNECT_DELAY_MS,
+    HEARTBEAT_TIMEOUT_MS,
+} from '@/config.js';
+import type {
+    FriendsPresenceConfig,
+    FriendsServerMessage,
+    ConnectionState,
+    WebSocketErrorEvent,
+    WebSocketErrorSource,
+} from '@/types.js';
+import type { ClientRequest, IncomingMessage } from 'http';
 
 /**
  * Interface for the friends WebSocket presence client.
@@ -45,11 +39,15 @@ export interface IFriendsPresenceClient {
     /** Observable stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState>;
 
-    /** Observable stream of errors encountered by the client (socket errors, message parse failures, etc.). */
-    readonly errors$: Observable<{ error: unknown; context?: Record<string, unknown> }>;
-
-    /** Sends a JSON message to the server via the WebSocket connection. */
-    send(message: Record<string, unknown>): void;
+    /**
+     * Observable stream of structured error events from the WebSocket lifecycle.
+     *
+     * Every error — connection failures, handshake rejections, message parse
+     * failures, and token resolution errors — is emitted here with a `source`
+     * field identifying the originating event. Consumers can subscribe once and
+     * route all errors to Sentry or a logging backend.
+     */
+    readonly errors$: Observable<WebSocketErrorEvent>;
 
     /**
      * Establishes a WebSocket connection to the presence service.
@@ -75,20 +73,30 @@ export interface IFriendsPresenceClient {
  *
  * Connects to the friends presence service via WebSocket and emits typed
  * presence events (friendOnline, friendOffline) as rxjs observables.
- * Automatically reconnects with exponential backoff and jitter on
- * unexpected disconnections.
+ * Automatically reconnects with capped exponential backoff and jitter on
+ * unexpected disconnections. Uses server ping/pong heartbeat to detect
+ * and terminate dead connections.
  */
 export class FriendsPresenceClient implements IFriendsPresenceClient {
     private readonly wsUrl: string;
     private readonly getToken: () => Promise<string> | string;
-    private readonly errorsSubject = new Subject<{ error: unknown; context?: Record<string, unknown> }>();
     private readonly messagesSubject = new Subject<FriendsServerMessage>();
     private readonly connectionStateSubject = new BehaviorSubject<ConnectionState>('disconnected');
-    private ws: PresenceSocket | null = null;
+    private readonly errorsSubject = new Subject<WebSocketErrorEvent>();
+    private ws: WebSocket | null = null;
     private reconnectAttempts = 0;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
     private intentionalClose = false;
     private disposed = false;
+
+    /**
+     * The last error received from the WebSocket connection.
+     *
+     * Captured in the error handler and available for logging in the close
+     * handler that immediately follows. Reset on each new connection attempt.
+     */
+    private lastError: Error | null = null;
 
     /** Observable stream of typed messages from the friends presence server. */
     readonly messages$: Observable<FriendsServerMessage> = this.messagesSubject.asObservable();
@@ -96,20 +104,14 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
     /** Observable stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState> = this.connectionStateSubject.asObservable();
 
-    /** Observable stream of errors encountered by the client (socket errors, message parse failures, etc.). */
-    readonly errors$: Observable<{ error: unknown; context?: Record<string, unknown> }> =
-        this.errorsSubject.asObservable();
-
     /**
-     * Sends a JSON payload to the presence service when the socket is connected.
+     * Observable stream of structured error events from the WebSocket lifecycle.
      *
-     * @param message - JSON-serializable message payload to send.
+     * Every error — connection failures, handshake rejections, message parse
+     * failures, and token resolution errors — is emitted here with a `source`
+     * field identifying the originating event.
      */
-    send(message: Record<string, unknown>): void {
-        if (this.ws && this.ws.readyState === SOCKET_OPEN_STATE) {
-            this.ws.send(JSON.stringify(message));
-        }
-    }
+    readonly errors$: Observable<WebSocketErrorEvent> = this.errorsSubject.asObservable();
 
     /**
      * Creates a new FriendsPresenceClient instance.
@@ -124,10 +126,11 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
     /**
      * Establishes a WebSocket connection to the presence service.
      *
-     * Resolves the authentication token and connects to the WebSocket URL with
-     * the token as a query string parameter. Incoming messages are parsed as JSON,
-     * validated, and emitted on the messages$ observable. On unexpected disconnection,
-     * the client will automatically attempt to reconnect with exponential backoff.
+     * Resolves the authentication token (sync or async) and connects to the
+     * WebSocket URL with the token as a query string parameter. Incoming messages
+     * are parsed as JSON, validated, and emitted on the messages$ observable.
+     * On unexpected disconnection, the client will automatically attempt to
+     * reconnect with capped exponential backoff.
      */
     connect(): void {
         if (this.disposed) {
@@ -136,22 +139,7 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
 
         this.intentionalClose = false;
         this.connectionStateSubject.next('connecting');
-
-        const tokenResult = this.getToken();
-
-        if (tokenResult instanceof Promise) {
-            tokenResult.then(
-                (token) => {
-                    void this.establishConnection(token);
-                },
-                () => {
-                    console.warn('[FriendsPresenceClient] Failed to resolve auth token');
-                    this.connectionStateSubject.next('disconnected');
-                },
-            );
-        } else {
-            void this.establishConnection(tokenResult);
-        }
+        void this.resolveTokenAndConnect();
     }
 
     /**
@@ -165,12 +153,7 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
         this.intentionalClose = true;
         this.clearReconnectTimer();
         this.reconnectAttempts = 0;
-
-        if (this.ws) {
-            this.ws.close();
-            this.ws = null;
-        }
-
+        this.cleanupWebSocket();
         this.connectionStateSubject.next('disconnected');
     }
 
@@ -189,147 +172,116 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
     }
 
     /**
+     * Resolves the authentication token and initiates the WebSocket connection.
+     *
+     * Handles both synchronous and asynchronous token providers uniformly via
+     * Promise.resolve(). Guards against race conditions where the client may
+     * be disposed or intentionally closed while awaiting the token.
+     */
+    private async resolveTokenAndConnect(): Promise<void> {
+        try {
+            const token = await Promise.resolve(this.getToken());
+
+            if (this.disposed || this.intentionalClose) {
+                return;
+            }
+
+            this.establishConnection(token);
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+            this.emitError(err, 'ws:token-resolve');
+            this.connectionStateSubject.next('disconnected');
+        }
+    }
+
+    /**
+     * Emits a structured error event on the errors$ observable.
+     *
+     * @param error - The underlying error instance.
+     * @param source - Which WebSocket lifecycle event produced this error.
+     * @param context - Optional contextual data (e.g. HTTP status code).
+     */
+    private emitError(error: Error, source: WebSocketErrorSource, context?: Record<string, unknown>): void {
+        this.errorsSubject.next({
+            error,
+            source,
+            timestamp: new Date().toISOString(),
+            context: context ? Object.freeze({ ...context }) : undefined,
+        });
+    }
+
+    /**
      * Creates the WebSocket connection and wires up event handlers.
+     *
+     * Cleans up any existing connection before creating a new one to prevent
+     * listener accumulation. Registers heartbeat monitoring via server ping
+     * events to detect and terminate dead connections.
      *
      * @param token - The authentication token to include as a query parameter.
      */
-    private async establishConnection(token: string): Promise<void> {
+    private establishConnection(token: string): void {
         if (this.disposed) {
             return;
         }
 
+        this.cleanupWebSocket();
+        this.lastError = null;
+
         const url = `${this.wsUrl}?token=${encodeURIComponent(token)}`;
 
-        try {
-            const ws = await this.createSocket(url);
+        this.ws = new WebSocket(url);
 
-            if (this.disposed || this.intentionalClose) {
-                ws.close();
+        this.ws.on('error', (error: Error) => {
+            this.lastError = error;
+            this.emitError(error, 'ws:error');
+            // Close event follows automatically; reconnection handled there.
+        });
 
-                return;
-            }
-
-            this.ws = ws;
-        } catch (error) {
-            console.error('[FriendsPresenceClient] Connection failed', {
-                wsUrl: this.wsUrl,
-                error: error instanceof Error ? error.message : String(error),
-            });
-
-            this.errorsSubject.next({ error, context: { operation: 'establishConnection' } });
-            this.connectionStateSubject.next('disconnected');
-
-            return;
-        }
-
-        this.addSocketListener(this.ws, 'open', () => {
+        this.ws.on('open', () => {
             this.reconnectAttempts = 0;
+            this.startHeartbeat();
             this.connectionStateSubject.next('connected');
         });
 
-        this.addSocketListener(this.ws, 'message', (payload) => {
-            const data = this.getMessagePayload(payload);
-
+        this.ws.on('message', (data: WebSocket.RawData, _isBinary: boolean) => {
             this.handleMessage(data);
         });
 
-        this.addSocketListener(this.ws, 'close', () => {
+        this.ws.on('ping', () => {
+            this.startHeartbeat();
+        });
+
+        this.ws.on('close', (_code: number, _reason: Buffer) => {
+            this.clearHeartbeat();
+            const errorBeforeClose = this.lastError;
+            this.lastError = null;
             this.ws = null;
 
             if (!this.intentionalClose && !this.disposed) {
-                this.scheduleReconnect();
+                this.scheduleReconnect(errorBeforeClose);
             } else {
                 this.connectionStateSubject.next('disconnected');
             }
         });
 
-        this.addSocketListener(this.ws, 'error', (event) => {
-            // Browser WebSocket error events are opaque Event objects with no
-            // diagnostic info (browser security restriction). Wrap in a proper
-            // Error with all context available to the client so consumers (e.g.
-            // Sentry) get actionable error titles and structured data.
-            const enrichedError = new Error(
-                `WebSocket error on ${this.wsUrl} (readyState: ${String(this.ws?.readyState ?? 'unknown')}, attempt: ${String(this.reconnectAttempts)})`,
-            );
+        this.ws.on('unexpected-response', (_req: ClientRequest, res: IncomingMessage) => {
+            const statusCode = res.statusCode ?? 0;
+            const statusMessage = res.statusMessage ?? '';
+            const error = new Error(`WebSocket handshake failed: HTTP ${String(statusCode)} ${statusMessage}`.trim());
 
-            console.error('[FriendsPresenceClient] Socket error', {
-                wsUrl: this.wsUrl,
-                readyState: this.ws?.readyState ?? null,
-                reconnectAttempts: this.reconnectAttempts,
-            });
+            this.lastError = error;
+            this.emitError(error, 'ws:unexpected-response', { statusCode, statusMessage });
 
-            this.errorsSubject.next({
-                error: enrichedError,
-                context: {
-                    operation: 'socketError',
-                    wsUrl: this.wsUrl,
-                    readyState: this.ws?.readyState ?? null,
-                    reconnectAttempts: this.reconnectAttempts,
-                    rawEventType:
-                        typeof event === 'object' && event !== null && 'type' in event
-                            ? (event as { type: unknown }).type
-                            : undefined,
-                },
-            });
-            // Error is followed by a close event, so reconnection is handled there.
-            // We do not emit errors on the messages$ stream.
+            if (statusCode === 401 || statusCode === 403) {
+                this.connectionStateSubject.next('disconnected');
+                this.ws?.terminate();
+            }
+            // Other status codes: close event follows and triggers reconnect.
         });
-    }
 
-    /**
-     * Creates a WebSocket instance for the active runtime.
-     *
-     * Uses the native WebSocket in browser environments and lazily imports
-     * the `ws` package in Node.js environments.
-     *
-     * @param url - Fully qualified WebSocket URL.
-     * @returns A socket instance implementing the PresenceSocket contract.
-     */
-    private async createSocket(url: string): Promise<PresenceSocket> {
-        if (typeof globalThis.WebSocket !== 'undefined') {
-            return new globalThis.WebSocket(url) as unknown as PresenceSocket;
-        }
-
-        const wsModule = await import('ws');
-
-        return new wsModule.default(url) as unknown as PresenceSocket;
-    }
-
-    /**
-     * Registers an event listener on either browser-style or ws-style APIs.
-     *
-     * @param ws - Socket instance to register on.
-     * @param event - Event name.
-     * @param handler - Event handler callback.
-     */
-    private addSocketListener(
-        ws: PresenceSocket,
-        event: 'open' | 'message' | 'close' | 'error',
-        handler: (event: unknown) => void,
-    ): void {
-        if (typeof ws.addEventListener === 'function') {
-            ws.addEventListener(event, handler);
-
-            return;
-        }
-
-        if (typeof ws.on === 'function') {
-            ws.on(event, handler);
-        }
-    }
-
-    /**
-     * Extracts message payload from browser MessageEvent or ws raw callback value.
-     *
-     * @param payload - Message callback payload.
-     * @returns Raw message body to decode.
-     */
-    private getMessagePayload(payload: unknown): unknown {
-        if (typeof payload === 'object' && payload !== null && 'data' in payload) {
-            return (payload as { data: unknown }).data;
-        }
-
-        return payload;
+        this.ws.on('upgrade', (_request: IncomingMessage) => {
+            // Reserved for future debug logging.
+        });
     }
 
     /**
@@ -338,14 +290,9 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
      *
      * @param data - The raw WebSocket message data.
      */
-    private handleMessage(data: unknown): void {
+    private handleMessage(data: WebSocket.RawData): void {
         try {
-            const text = this.toMessageText(data);
-
-            if (text === null) {
-                return;
-            }
-
+            const text = typeof data === 'string' ? data : data.toString();
             const parsed: unknown = JSON.parse(text);
 
             if (!this.isValidServerMessage(parsed)) {
@@ -354,35 +301,9 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
 
             this.messagesSubject.next(parsed);
         } catch (error) {
-            this.errorsSubject.next({ error, context: { operation: 'handleMessage' } });
-            // Silently ignore malformed messages
+            const err = error instanceof Error ? error : new Error(String(error));
+            this.emitError(err, 'ws:message-parse');
         }
-    }
-
-    /**
-     * Converts runtime-specific WebSocket message data to text.
-     *
-     * @param data - Raw message data from browser or ws callbacks.
-     * @returns UTF-8 text payload, or null when data cannot be decoded.
-     */
-    private toMessageText(data: unknown): string | null {
-        if (typeof data === 'string') {
-            return data;
-        }
-
-        if (data instanceof ArrayBuffer) {
-            return new TextDecoder().decode(new Uint8Array(data));
-        }
-
-        if (ArrayBuffer.isView(data)) {
-            return new TextDecoder().decode(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
-        }
-
-        if (typeof data === 'object' && data !== null && 'toString' in data) {
-            return data.toString();
-        }
-
-        return null;
     }
 
     /**
@@ -402,22 +323,20 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
     }
 
     /**
-     * Schedules a reconnection attempt with exponential backoff and jitter.
+     * Schedules a reconnection attempt with capped exponential backoff and jitter.
      *
+     * The delay is calculated as BASE_RECONNECT_DELAY_MS * 2^attempt, capped at
+     * MAX_RECONNECT_DELAY_MS. Jitter of up to 50% of the base delay is added to
+     * prevent thundering herd on server restart. The attempt counter is incremented
+     * before scheduling so backoff escalates correctly across retries.
+     *
+     * @param _causingError - The error that triggered the close, if any. Reserved for
+     *   future logging integration.
      * If the maximum number of reconnection attempts has been reached,
      * transitions to 'disconnected' state and stops retrying.
      */
-    private scheduleReconnect(): void {
+    private scheduleReconnect(_causingError?: Error | null): void {
         if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            this.errorsSubject.next({
-                error: new Error('Max reconnection attempts reached'),
-                context: { operation: 'scheduleReconnect' },
-            });
-
-            console.warn('[FriendsPresenceClient] Max reconnection attempts reached', {
-                wsUrl: this.wsUrl,
-                attempts: this.reconnectAttempts,
-            });
             this.connectionStateSubject.next('disconnected');
 
             return;
@@ -425,19 +344,18 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
 
         this.connectionStateSubject.next('reconnecting');
 
-        // Exponential backoff: BASE_RECONNECT_DELAY_MS * 2^attempt
-        const baseDelay = BASE_RECONNECT_DELAY_MS * Math.pow(2, this.reconnectAttempts);
-
-        // Add jitter: random value between 0 and half the base delay
+        const baseDelay = Math.min(
+            BASE_RECONNECT_DELAY_MS * Math.pow(2, this.reconnectAttempts),
+            MAX_RECONNECT_DELAY_MS,
+        );
         const jitter = Math.random() * baseDelay * 0.5;
-        const delay = baseDelay + jitter;
 
         this.reconnectAttempts++;
 
         this.reconnectTimer = setTimeout(() => {
             this.reconnectTimer = null;
             this.connect();
-        }, delay);
+        }, baseDelay + jitter);
     }
 
     /** Clears any pending reconnection timer. */
@@ -445,6 +363,51 @@ export class FriendsPresenceClient implements IFriendsPresenceClient {
         if (this.reconnectTimer !== null) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
+        }
+    }
+
+    /**
+     * Starts or resets the heartbeat timer.
+     *
+     * Called on connection open and on each server ping. If the server does not
+     * send a ping within HEARTBEAT_TIMEOUT_MS, the connection is considered dead
+     * and is terminated immediately. This follows the ws library's recommended
+     * pattern for detecting broken connections on the client side.
+     */
+    private startHeartbeat(): void {
+        this.clearHeartbeat();
+        this.heartbeatTimer = setTimeout(() => {
+            this.ws?.terminate();
+        }, HEARTBEAT_TIMEOUT_MS);
+    }
+
+    /** Clears the heartbeat timeout timer. */
+    private clearHeartbeat(): void {
+        if (this.heartbeatTimer !== null) {
+            clearTimeout(this.heartbeatTimer);
+            this.heartbeatTimer = null;
+        }
+    }
+
+    /**
+     * Tears down the current WebSocket connection and cleans up all associated
+     * resources.
+     *
+     * Clears the heartbeat timer, removes all event listeners to prevent memory
+     * leaks, and terminates the underlying socket. Must be called before creating
+     * a new WebSocket instance to avoid listener accumulation across reconnects.
+     */
+    private cleanupWebSocket(): void {
+        this.clearHeartbeat();
+
+        if (this.ws) {
+            this.ws.removeAllListeners();
+
+            if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+                this.ws.terminate();
+            }
+
+            this.ws = null;
         }
     }
 }

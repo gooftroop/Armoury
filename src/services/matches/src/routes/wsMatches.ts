@@ -7,6 +7,7 @@ import type {
     WsRouteHandler,
 } from '@/types.js';
 import { createBroadcaster } from '@/utils/broadcast.js';
+import { captureWsError } from '@/utils/wsErrors.js';
 import {
     parseSubscribeMatchMessage,
     parseUnsubscribeMatchMessage,
@@ -36,7 +37,27 @@ export const handleWsConnect: WsRouteHandler = async (
         connectedAt: now,
     };
 
-    await adapter.put('wsConnection', connection);
+    try {
+        await adapter.put('wsConnection', connection);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: userContext.sub,
+            operation: 'put',
+            store: 'wsConnection',
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
 
     return { statusCode: 200 };
 };
@@ -47,12 +68,34 @@ export const handleWsDisconnect: WsRouteHandler = async (
     _userContext,
 ): Promise<WebSocketResponse> => {
     const connectionId = event.requestContext.connectionId;
-    const subscriptions = await adapter.getByField('matchSubscription', 'connectionId', connectionId);
 
-    await adapter.delete('wsConnection', connectionId);
+    try {
+        const subscriptions = await adapter.getByField('matchSubscription', 'connectionId', connectionId);
 
-    if (subscriptions.length > 0) {
-        await Promise.all(subscriptions.map((subscription) => adapter.delete('matchSubscription', subscription.id)));
+        await adapter.delete('wsConnection', connectionId);
+
+        if (subscriptions.length > 0) {
+            await Promise.all(
+                subscriptions.map((subscription) => adapter.delete('matchSubscription', subscription.id)),
+            );
+        }
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            operation: 'delete',
+            store: 'wsConnection',
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
     }
 
     return { statusCode: 200 };
@@ -98,7 +141,29 @@ export const handleUpdateMatch: WsRouteHandler = async (
     }
 
     const connectionId = event.requestContext.connectionId;
-    const connection = await adapter.get('wsConnection', connectionId);
+
+    let connection: WsConnection | null;
+
+    try {
+        connection = (await adapter.get('wsConnection', connectionId)) as WsConnection | null;
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            operation: 'get',
+            store: 'wsConnection',
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
 
     if (!connection) {
         return {
@@ -110,7 +175,30 @@ export const handleUpdateMatch: WsRouteHandler = async (
         };
     }
 
-    const match = await adapter.get('match', request.matchId);
+    let match: Match | null;
+
+    try {
+        match = (await adapter.get('match', request.matchId)) as Match | null;
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: connection.userId,
+            operation: 'get',
+            store: 'match',
+            matchId: request.matchId,
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
 
     if (!match) {
         return {
@@ -122,7 +210,7 @@ export const handleUpdateMatch: WsRouteHandler = async (
         };
     }
 
-    const existingMatch = match as Match;
+    const existingMatch = match;
     const isPlayer = existingMatch.players.some((p) => p.playerId === connection.userId);
 
     if (!isPlayer) {
@@ -145,23 +233,74 @@ export const handleUpdateMatch: WsRouteHandler = async (
         updatedAt: new Date().toISOString(),
     };
 
-    await adapter.put('match', updated);
+    try {
+        await adapter.put('match', updated);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
 
-    const subscriptions = await adapter.getByField('matchSubscription', 'matchId', request.matchId);
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: connection.userId,
+            operation: 'put',
+            store: 'match',
+            matchId: request.matchId,
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
+
+    let subscriptions: MatchSubscription[];
+
+    try {
+        subscriptions = await adapter.getByField('matchSubscription', 'matchId', request.matchId);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: connection.userId,
+            operation: 'getByField',
+            store: 'matchSubscription',
+            matchId: request.matchId,
+        });
+
+        return { statusCode: 200 };
+    }
+
     const connectionIds = subscriptions
         .map((subscription) => subscription.connectionId)
         .filter((id) => id !== connectionId);
 
     if (connectionIds.length > 0) {
-        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
-        const goneConnections = await broadcaster.sendToMany(connectionIds, {
-            action: 'matchUpdated',
-            matchId: request.matchId,
-            data: updated,
-        });
+        try {
+            const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+            const goneConnections = await broadcaster.sendToMany(connectionIds, {
+                action: 'matchUpdated',
+                matchId: request.matchId,
+                data: updated,
+            });
 
-        if (goneConnections.length > 0) {
-            await cleanupGoneConnections(adapter, goneConnections);
+            if (goneConnections.length > 0) {
+                await cleanupGoneConnections(adapter, goneConnections);
+            }
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+
+            captureWsError(err, 'broadcast:send', {
+                connectionId,
+                routeKey: event.requestContext.routeKey,
+                userId: connection.userId,
+                matchId: request.matchId,
+                targetCount: connectionIds.length,
+            });
         }
     }
 
@@ -198,7 +337,29 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     }
 
     const connectionId = event.requestContext.connectionId;
-    const connection = await adapter.get('wsConnection', connectionId);
+
+    let connection: WsConnection | null;
+
+    try {
+        connection = (await adapter.get('wsConnection', connectionId)) as WsConnection | null;
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            operation: 'get',
+            store: 'wsConnection',
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
 
     if (!connection) {
         return {
@@ -210,7 +371,30 @@ export const handleSubscribeMatch: WsRouteHandler = async (
         };
     }
 
-    const match = await adapter.get('match', request.matchId);
+    let match: Match | null;
+
+    try {
+        match = (await adapter.get('match', request.matchId)) as Match | null;
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: connection.userId,
+            operation: 'get',
+            store: 'match',
+            matchId: request.matchId,
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
 
     if (!match) {
         return {
@@ -222,7 +406,7 @@ export const handleSubscribeMatch: WsRouteHandler = async (
         };
     }
 
-    const existingMatch = match as Match;
+    const existingMatch = match;
     const isPlayer = existingMatch.players.some((p) => p.playerId === connection.userId);
 
     if (!isPlayer) {
@@ -243,17 +427,49 @@ export const handleSubscribeMatch: WsRouteHandler = async (
         userId: connection.userId,
     };
 
-    await adapter.put('matchSubscription', subscription);
+    try {
+        await adapter.put('matchSubscription', subscription);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
 
-    const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
-    const shouldCleanup = await broadcaster.send(connectionId, {
-        action: 'matchState',
-        matchId: request.matchId,
-        data: existingMatch,
-    });
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: connection.userId,
+            operation: 'put',
+            store: 'matchSubscription',
+            matchId: request.matchId,
+        });
 
-    if (shouldCleanup) {
-        await cleanupGoneConnections(adapter, [connectionId]);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
+
+    try {
+        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+        const shouldCleanup = await broadcaster.send(connectionId, {
+            action: 'matchState',
+            matchId: request.matchId,
+            data: existingMatch,
+        });
+
+        if (shouldCleanup) {
+            await cleanupGoneConnections(adapter, [connectionId]);
+        }
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'broadcast:send', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: connection.userId,
+            matchId: request.matchId,
+        });
     }
 
     return { statusCode: 200 };
@@ -291,7 +507,27 @@ export const handleUnsubscribeMatch: WsRouteHandler = async (
     const connectionId = event.requestContext.connectionId;
     const subscriptionId = `${connectionId}:${request.matchId}`;
 
-    await adapter.delete('matchSubscription', subscriptionId);
+    try {
+        await adapter.delete('matchSubscription', subscriptionId);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            operation: 'delete',
+            store: 'matchSubscription',
+            matchId: request.matchId,
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'DatabaseError',
+                message: err.message,
+            }),
+        };
+    }
 
     return { statusCode: 200 };
 };

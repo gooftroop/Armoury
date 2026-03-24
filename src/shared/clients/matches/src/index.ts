@@ -26,13 +26,13 @@ export type {
     UnsubscribeMatchMessage,
     UpdateMatchMessage,
     MatchesClientMessage,
-    MatchStateMessage,
-    MatchUpdatedMessage,
     MatchesServerMessage,
     MatchesWsConfig,
     ConnectionState,
     IMatchesRealtimeClient,
     MatchParams,
+    WebSocketErrorEvent,
+    WebSocketErrorSource,
 } from '@/types.js';
 
 // Error classes and type guards

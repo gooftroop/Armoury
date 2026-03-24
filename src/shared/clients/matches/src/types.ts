@@ -221,6 +221,45 @@ export interface MatchesWsConfig {
 /** Possible states of the WebSocket connection. */
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
 
+// === WebSocket Error Types ===
+
+/**
+ * Identifies which WebSocket lifecycle event produced the error.
+ *
+ * - `ws:error`                – The `error` event fired on the WebSocket instance.
+ * - `ws:unexpected-response`  – The server responded with a non-101 HTTP status during handshake.
+ * - `ws:message-parse`        – An incoming message could not be parsed as valid JSON.
+ * - `ws:token-resolve`        – The `getToken` callback threw or rejected.
+ * - `ws:send`                 – Sending a message failed (connection not open).
+ */
+export type WebSocketErrorSource =
+    | 'ws:error'
+    | 'ws:unexpected-response'
+    | 'ws:message-parse'
+    | 'ws:token-resolve'
+    | 'ws:send';
+
+/**
+ * A structured error event emitted on the client's `errors$` observable.
+ *
+ * Every WebSocket error — regardless of which event produced it — is surfaced
+ * through this uniform shape so consumers can log, report to Sentry, or display
+ * UI without coupling to WebSocket internals.
+ */
+export interface WebSocketErrorEvent {
+    /** The underlying error instance. */
+    readonly error: Error;
+
+    /** Which WebSocket lifecycle event produced this error. */
+    readonly source: WebSocketErrorSource;
+
+    /** ISO 8601 timestamp of when the error was captured. */
+    readonly timestamp: string;
+
+    /** Optional contextual data (e.g. HTTP status code from unexpected-response). */
+    readonly context?: Readonly<Record<string, unknown>>;
+}
+
 // === Param Interfaces ===
 
 /** Parameters for operations on a single match. */
@@ -314,9 +353,14 @@ export interface IMatchesRealtimeClient {
     readonly connectionState$: import('rxjs').Observable<ConnectionState>;
 
     /**
-     * Stream of errors encountered by the client (socket errors, message parse failures, etc.).
+     * Observable stream of structured error events from the WebSocket lifecycle.
+     *
+     * Every error — connection failures, handshake rejections, message parse
+     * failures, token resolution errors, and send failures — is emitted here
+     * with a `source` field identifying the originating event. Consumers can
+     * subscribe once and route all errors to Sentry or a logging backend.
      */
-    readonly errors$: import('rxjs').Observable<{ error: unknown; context?: Record<string, unknown> }>;
+    readonly errors$: import('rxjs').Observable<WebSocketErrorEvent>;
 
     /**
      * Establishes the WebSocket connection with authentication.

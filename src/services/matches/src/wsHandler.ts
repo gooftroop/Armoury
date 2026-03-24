@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/aws-serverless';
+import { captureWsError } from '@/utils/wsErrors.js';
 import { extractWsUserContext } from '@/middleware/wsAuth.js';
 import { wsRouter } from '@/wsRouter.js';
 import type { DatabaseAdapter, WebSocketEvent, WebSocketResponse } from '@/types.js';
@@ -26,8 +26,8 @@ interface LocalAdapterConstructor {
     new (config: LocalAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
 }
 
-const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
+const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { LocalDatabaseAdapter } = (await import('@/utils/localAdapter.js')) as unknown as {
     LocalDatabaseAdapter: LocalAdapterConstructor;
 };
 
@@ -62,7 +62,7 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
     return adapter;
 }
 
-export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise<WebSocketResponse> => {
+export async function handler(event: WebSocketEvent): Promise<WebSocketResponse> {
     try {
         const adapter = await initializeAdapter();
         const userContext = event.requestContext.routeKey === '$connect' ? extractWsUserContext(event) : null;
@@ -70,12 +70,12 @@ export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise
 
         return response;
     } catch (error) {
-        Sentry.logger.error('Matches WebSocket handler error', {
-            error: error instanceof Error ? error.message : String(error),
-        });
-        Sentry.captureException(error);
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
 
-        const normalizedError = error instanceof Error ? error : new Error('Unknown error');
+        captureWsError(normalizedError, 'adapter:init', {
+            connectionId: event.requestContext.connectionId,
+            routeKey: event.requestContext.routeKey,
+        });
 
         return {
             statusCode: 500,
@@ -85,4 +85,4 @@ export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise
             }),
         };
     }
-});
+}
