@@ -19,6 +19,7 @@ import type { CloudWatchLogsDecodedData, CloudWatchLogsEvent, Context } from 'aw
  * - REQ-DRAIN-002: Convert CloudWatch log events into OTLP LogRecord JSON payloads.
  * - REQ-DRAIN-003: Forward payloads to Sentry OTLP over HTTP using x-sentry-auth.
  * - REQ-DRAIN-004: Return HTTP-like success response and throw on forward failures.
+ * - REQ-DRAIN-005: Skip CloudWatch CONTROL_MESSAGE events (non-data reachability checks).
  */
 
 const gunzipAsync = promisify(gunzip);
@@ -118,6 +119,18 @@ export async function handler(event: CloudWatchLogsEvent, _context: Context): Pr
         const compressedPayload = Buffer.from(event.awslogs.data, 'base64');
         const unzippedPayload = await gunzipAsync(compressedPayload);
         const decoded = JSON.parse(unzippedPayload.toString('utf-8')) as CloudWatchLogsDecodedData;
+
+        // CloudWatch Logs sends periodic CONTROL_MESSAGE events to verify
+        // subscription filter reachability. These contain no log data.
+        if (decoded.messageType !== 'DATA_MESSAGE') {
+            console.info('[log-drain] Skipping non-data message', {
+                messageType: decoded.messageType,
+                logGroup: decoded.logGroup,
+            });
+
+            return { statusCode: 200, body: 'OK' };
+        }
+
         const payload = buildOtlpPayload(decoded, region);
 
         const response = await fetch(otlpLogsUrl, {
