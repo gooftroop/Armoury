@@ -61,7 +61,7 @@ export class DataContextBuilder<TGameData = unknown> {
             game: gameContext.game as TGameData,
         });
 
-        if (gameContext.sync) {
+        if (gameContext.sync && this.clients.has('github')) {
             const syncResult = await gameContext.sync();
 
             if (syncResult.succeeded.length === 0 && syncResult.failures.length > 0) {

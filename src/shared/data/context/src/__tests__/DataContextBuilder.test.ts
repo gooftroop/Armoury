@@ -176,10 +176,21 @@ describe('DataContextBuilder', () => {
         });
 
         it('calls gameContext.sync() if sync method exists', async () => {
-            await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).build();
+            await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .register('github', { listFiles: vi.fn() })
+                .build();
 
             const gameContext = vi.mocked(stubSystem.createGameContext).mock.results[0]?.value as GameContextResult;
             expect(gameContext.sync).toHaveBeenCalledOnce();
+        });
+
+        it('skips sync when github client is not registered', async () => {
+            await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).build();
+
+            const gameContext = vi.mocked(stubSystem.createGameContext).mock.results[0]?.value as GameContextResult;
+            expect(gameContext.sync).not.toHaveBeenCalled();
         });
 
         it('stores syncResult when sync has partial failures', async () => {
@@ -220,7 +231,11 @@ describe('DataContextBuilder', () => {
 
             vi.mocked(stubSystem.createGameContext).mockReturnValue(gameContext);
 
-            const dc = await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).build();
+            const dc = await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .register('github', { listFiles: vi.fn() })
+                .build();
 
             expect(dc.syncResult).toEqual(partialFailureResult);
         });
@@ -267,9 +282,13 @@ describe('DataContextBuilder', () => {
                 sync: syncFn,
             });
 
-            await expect(new DataContextBuilder().system(stubSystem).adapter(mockAdapter).build()).rejects.toThrow(
-                'Complete sync failure: all 2 DAOs failed. Failed: CoreRules, Aeldari',
-            );
+            await expect(
+                new DataContextBuilder()
+                    .system(stubSystem)
+                    .adapter(mockAdapter)
+                    .register('github', { listFiles: vi.fn() })
+                    .build(),
+            ).rejects.toThrow('Complete sync failure: all 2 DAOs failed. Failed: CoreRules, Aeldari');
         });
 
         it('does not throw if sync method does not exist', async () => {

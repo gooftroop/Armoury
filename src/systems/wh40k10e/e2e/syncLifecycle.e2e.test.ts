@@ -14,9 +14,14 @@ import type { BattleScribeGameSystem } from '@armoury/providers-bsdata';
 import { makeCoreRules, makeCrusadeRules, makeFactionData } from './__fixtures__/index.js';
 import { parseGameSystem } from '@armoury/providers-bsdata';
 
-vi.mock('@armoury/providers-bsdata', () => ({
-    parseGameSystem: vi.fn(),
-}));
+vi.mock('@armoury/providers-bsdata', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@armoury/providers-bsdata')>();
+
+    return {
+        ...actual,
+        parseGameSystem: vi.fn(),
+    };
+});
 
 const CORE_RULES_FILE = 'Warhammer%2040%2C000.gst';
 const CORE_RULES_SYNC_KEY = 'core:wh40k-10e.gst';
