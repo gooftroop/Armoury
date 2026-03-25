@@ -29,7 +29,7 @@ import { UnauthenticatedPrompt } from '@/components/profile/UnauthenticatedPromp
  * 2. Must own auth state via useUser() from @auth0/nextjs-auth0.
  * 3. Must show ProfileTileSkeleton while auth state is loading.
  * 4. Must render AuthenticatedProfile when user is present.
- * 5. Must render UnauthenticatedPrompt when user is null and auth is resolved.
+ * 5. Must render UnauthenticatedPrompt when user is null/error and auth is resolved.
  * 6. Must use next-intl useTranslations('landing') for all strings.
  * 7. Must contain ZERO visual markup — renders leaf components directly.
  * 8. Must follow the orchestrational/render split pattern.
@@ -52,10 +52,10 @@ export interface ProfileTileContainerProps {
  * @returns The rendered profile tile (skeleton, authenticated, or unauthenticated).
  */
 export function ProfileTileContainer({ locale }: ProfileTileContainerProps): React.ReactElement {
-    const { user, isLoading } = useUser();
+    const { user, error, isLoading } = useUser();
     const t = useTranslations('landing');
 
-    if (isLoading) {
+    if (isLoading && !error) {
         return <ProfileTileSkeleton />;
     }
 
