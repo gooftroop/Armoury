@@ -33,6 +33,7 @@
         "src/shared/validation",
         "src/shared/config",
         "src/shared/streams",
+        "src/shared/libs/network",
         "src/shared/e2e",
         "src/shared/ui",
         "src/systems/wh40k10e",
