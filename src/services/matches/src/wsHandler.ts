@@ -1,3 +1,6 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+import './instrument.js';
+import * as Sentry from '@sentry/aws-serverless';
 import { captureWsError } from '@/utils/wsErrors.js';
 import { extractWsUserContext } from '@/middleware/wsAuth.js';
 import { wsRouter } from '@/wsRouter.js';
@@ -62,8 +65,13 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
     return adapter;
 }
 
-export async function handler(event: WebSocketEvent): Promise<WebSocketResponse> {
+export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise<WebSocketResponse> => {
     try {
+        Sentry.logger.info('[matches:ws] Handler invoked', {
+            routeKey: event.requestContext.routeKey,
+            connectionId: event.requestContext.connectionId,
+        });
+
         const adapter = await initializeAdapter();
         const userContext = event.requestContext.routeKey === '$connect' ? extractWsUserContext(event) : null;
         const response = await wsRouter(event, adapter, userContext);
@@ -85,4 +93,4 @@ export async function handler(event: WebSocketEvent): Promise<WebSocketResponse>
             }),
         };
     }
-}
+});

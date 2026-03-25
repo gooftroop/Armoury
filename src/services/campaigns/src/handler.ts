@@ -1,3 +1,5 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+import './instrument.js';
 /**
  * Lambda entry point for the campaigns service.
  *

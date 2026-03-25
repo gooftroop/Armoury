@@ -1,3 +1,5 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+import './instrument.js';
 import { jwtVerify } from 'jose';
 import * as Sentry from '@sentry/aws-serverless';
 import { getJwks } from '@/jwks.js';

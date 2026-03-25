@@ -1,3 +1,6 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+// Must be the first import so Sentry.init() executes before Sentry.wrapHandler().
+import './instrument.js';
 /**
  * Lambda entry point for the users service.
  *

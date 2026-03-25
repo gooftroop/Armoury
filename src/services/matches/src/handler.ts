@@ -1,3 +1,5 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+import './instrument.js';
 import * as Sentry from '@sentry/aws-serverless';
 import { extractUserContext } from '@/middleware/auth.js';
 import { formatErrorResponse } from '@/middleware/errorHandler.js';
