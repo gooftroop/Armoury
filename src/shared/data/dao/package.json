@@ -45,8 +45,7 @@
         "eslint": "^10.0.3",
         "pg": "^8.18.0",
         "prettier": "^3.0.0",
-        "vitest": "^4.0.0",
-        "@armoury/adapters-pglite": "*"
+        "vitest": "^4.0.0"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
