@@ -73,7 +73,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Subject, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { take, toArray, skip } from 'rxjs/operators';
-import type { FriendsServerMessage, ConnectionState } from '@armoury/clients-friends';
+import type { FriendsServerMessage, ConnectionState, WebSocketErrorEvent } from '@armoury/clients-friends';
 import type { IFriendsPresenceClient } from '@armoury/clients-friends';
 import { PresenceStream, createPresenceStream } from '@/presence/PresenceStream.js';
 
@@ -96,11 +96,10 @@ function createMockClient(): IFriendsPresenceClient & {
         connectionStateSubject,
         messages$: messagesSubject.asObservable(),
         connectionState$: connectionStateSubject.asObservable(),
-        send: vi.fn(),
         connect: vi.fn(),
         disconnect: vi.fn(),
         dispose: vi.fn(),
-        errors$: new Subject<{ error: unknown; context?: Record<string, unknown> }>().asObservable(),
+        errors$: new Subject<WebSocketErrorEvent>().asObservable(),
     };
 }
 

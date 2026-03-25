@@ -26,7 +26,7 @@ interface LocalAdapterConstructor {
     new (config: LocalAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
 }
 
-const { DSQLAdapter } = (await import('@armoury/data')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
+const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
 const { LocalDatabaseAdapter } = (await import('@/utils/localAdapter.js')) as unknown as {
     LocalDatabaseAdapter: LocalAdapterConstructor;
 };

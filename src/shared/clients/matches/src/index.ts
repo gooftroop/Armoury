@@ -27,6 +27,8 @@ export type {
     UpdateMatchMessage,
     MatchesClientMessage,
     MatchesServerMessage,
+    MatchStateMessage,
+    MatchUpdatedMessage,
     MatchesWsConfig,
     ConnectionState,
     IMatchesRealtimeClient,
