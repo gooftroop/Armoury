@@ -2,6 +2,8 @@
  * Matches client types, error classes, and type guards.
  */
 
+import type { ConnectionState, WebSocketErrorEvent } from '@armoury/network';
+
 // Match model types
 
 /** Base interface for system-specific match data. */
@@ -216,49 +218,7 @@ export interface MatchesWsConfig {
     getToken: () => Promise<string> | string;
 }
 
-// Connection state
-
-/** Possible states of the WebSocket connection. */
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
-
-// === WebSocket Error Types ===
-
-/**
- * Identifies which WebSocket lifecycle event produced the error.
- *
- * - `ws:error`                – The `error` event fired on the WebSocket instance.
- * - `ws:unexpected-response`  – The server responded with a non-101 HTTP status during handshake.
- * - `ws:message-parse`        – An incoming message could not be parsed as valid JSON.
- * - `ws:token-resolve`        – The `getToken` callback threw or rejected.
- * - `ws:send`                 – Sending a message failed (connection not open).
- */
-export type WebSocketErrorSource =
-    | 'ws:error'
-    | 'ws:unexpected-response'
-    | 'ws:message-parse'
-    | 'ws:token-resolve'
-    | 'ws:send';
-
-/**
- * A structured error event emitted on the client's `errors$` observable.
- *
- * Every WebSocket error — regardless of which event produced it — is surfaced
- * through this uniform shape so consumers can log, report to Sentry, or display
- * UI without coupling to WebSocket internals.
- */
-export interface WebSocketErrorEvent {
-    /** The underlying error instance. */
-    readonly error: Error;
-
-    /** Which WebSocket lifecycle event produced this error. */
-    readonly source: WebSocketErrorSource;
-
-    /** ISO 8601 timestamp of when the error was captured. */
-    readonly timestamp: string;
-
-    /** Optional contextual data (e.g. HTTP status code from unexpected-response). */
-    readonly context?: Readonly<Record<string, unknown>>;
-}
+export type { ConnectionState, WebSocketErrorEvent, WebSocketErrorSource } from '@armoury/network';
 
 // === Param Interfaces ===
 
