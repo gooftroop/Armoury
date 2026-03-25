@@ -2,12 +2,14 @@
  * Custom Playwright test fixtures for the Armoury web e2e tests.
  *
  * Extends the base Playwright test with project-specific helpers such as
- * locale-aware navigation utilities.
+ * locale-aware navigation utilities and Auth0 profile endpoint mocking.
  *
  * @requirements
  * 1. Must re-export a `test` fixture and `expect` for use in all spec files.
  * 2. Must provide an `appLocale` fixture defaulting to 'en'.
  * 3. Must provide a `gotoWithLocale` helper that navigates with locale prefix when needed.
+ * 4. Must intercept GET /auth/profile to return 204 when Auth0 is not configured,
+ *    preventing useUser() from hanging on unresolvable requests in CI.
  */
 
 import { test as base, expect } from '@playwright/test';
@@ -41,6 +43,14 @@ interface ArmouryFixtures {
  */
 export const test = base.extend<ArmouryFixtures>({
     appLocale: ['en', { option: true }],
+
+    // Intercept Auth0 profile endpoint so useUser() resolves to
+    // { user: undefined, isLoading: false } instead of hanging when
+    // Auth0 is not configured (CI environments without real credentials).
+    page: async ({ page }, use) => {
+        await page.route('**/auth/profile', (route) => route.fulfill({ status: 204, body: '' }));
+        await use(page);
+    },
 
     gotoWithLocale: async ({ appLocale }, use) => {
         const navigate = async (page: Page, path: string): Promise<void> => {

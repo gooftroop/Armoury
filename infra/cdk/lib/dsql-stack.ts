@@ -281,7 +281,7 @@ export class DsqlStack extends cdk.Stack {
                     actions: ['apigateway:PUT', 'apigateway:POST'],
                     resources: [`arn:aws:apigateway:${this.region}::/tags/*`],
                 }),
-                // CloudWatch Logs: manage log groups for Lambda
+                // CloudWatch Logs: manage log groups for Lambda, WebSocket APIs, and REST APIs
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
                     actions: [
@@ -292,7 +292,11 @@ export class DsqlStack extends cdk.Stack {
                         'logs:TagResource',
                         'logs:UntagResource',
                     ],
-                    resources: [`arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/armoury-*`],
+                    resources: [
+                        `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/armoury-*`,
+                        `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/websocket/armoury-*`,
+                        `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/api/armoury-*`,
+                    ],
                 }),
                 // CloudWatch Logs: DescribeLogGroups is a non-resource-level action
                 // that requires Resource: "*" — it cannot be scoped to a log group ARN.

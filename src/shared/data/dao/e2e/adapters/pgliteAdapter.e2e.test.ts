@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PGliteAdapter } from '@armoury/adapters-pglite';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import type { PGliteAdapter as PGliteAdapterType } from '@armoury/adapters-pglite';
 import {
     makeAccount,
     makeCampaignParticipant,
@@ -9,8 +9,18 @@ import {
 } from '../__fixtures__/index.js';
 import { DatabaseError } from '@armoury/data-dao';
 
+// Dynamic import to avoid cyclic package.json dependency:
+// @armoury/adapters-pglite depends on @armoury/data-dao (production),
+// so data-dao cannot list adapters-pglite as a devDependency.
+// The workspace-hoisted package is resolved at runtime instead.
+let PGliteAdapter: typeof PGliteAdapterType;
+
 describe('PGliteAdapter E2E', () => {
-    let adapter: PGliteAdapter;
+    let adapter: PGliteAdapterType;
+
+    beforeAll(async () => {
+        ({ PGliteAdapter } = await import('@armoury/adapters-pglite'));
+    });
 
     beforeEach(async () => {
         adapter = new PGliteAdapter();

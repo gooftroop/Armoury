@@ -82,10 +82,24 @@ export class LogDrainStack extends cdk.Stack {
         // this permission is required for cross-account-style invocations from
         // the Logs service principal. Scoped to armoury-* log groups only
         // and pinned to this account to prevent confused-deputy attacks.
-        this.logDrainFunction.addPermission('CloudWatchLogsInvoke', {
+        this.logDrainFunction.addPermission('CloudWatchLogsInvokeLambda', {
             principal: new iam.ServicePrincipal('logs.amazonaws.com'),
             action: 'lambda:InvokeFunction',
             sourceArn: `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/armoury-*`,
+            sourceAccount: this.account,
+        });
+
+        this.logDrainFunction.addPermission('CloudWatchLogsInvokeWebSocket', {
+            principal: new iam.ServicePrincipal('logs.amazonaws.com'),
+            action: 'lambda:InvokeFunction',
+            sourceArn: `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/websocket/armoury-*`,
+            sourceAccount: this.account,
+        });
+
+        this.logDrainFunction.addPermission('CloudWatchLogsInvokeApi', {
+            principal: new iam.ServicePrincipal('logs.amazonaws.com'),
+            action: 'lambda:InvokeFunction',
+            sourceArn: `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/api/armoury-*`,
             sourceAccount: this.account,
         });
 
