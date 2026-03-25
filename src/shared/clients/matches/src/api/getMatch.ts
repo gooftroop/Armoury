@@ -11,7 +11,7 @@ import type { Match, MatchParams } from '@/types.js';
  */
 export async function getMatch(authorization: string, params: MatchParams): Promise<Match> {
     return ky
-        .get(`matches/${params.matchId}`, {
+        .get(`${params.matchId}`, {
             prefixUrl: MATCHES_BASE_URL,
             headers: { Authorization: authorization },
         })

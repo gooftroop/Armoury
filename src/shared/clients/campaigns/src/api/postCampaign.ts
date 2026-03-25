@@ -15,7 +15,7 @@ import type { Campaign, CreateCampaignRequest } from '@/types.js';
  */
 export async function postCampaign(authorization: string, params: CreateCampaignRequest): Promise<Campaign> {
     return ky
-        .post('campaigns', {
+        .post('', {
             prefixUrl: CAMPAIGNS_BASE_URL,
             headers: { Authorization: authorization },
             json: params,

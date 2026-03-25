@@ -20,6 +20,25 @@ const buildWildcardResource = (methodArn: string): string => {
 };
 
 /**
+ * Extracts the HTTP method from an API Gateway method ARN.
+ *
+ * The expected ARN format is:
+ * `arn:aws:execute-api:{region}:{account}:{api-id}/{stage}/{method}/{resource}`
+ *
+ * @param methodArn - API Gateway method ARN.
+ * @returns The HTTP method (e.g. GET, POST, OPTIONS) or null if unparseable.
+ */
+export const extractHttpMethod = (methodArn: string): string | null => {
+    const arnParts = methodArn.split('/');
+
+    if (arnParts.length < 3) {
+        return null;
+    }
+
+    return arnParts[2] ?? null;
+};
+
+/**
  * Creates an IAM policy result for the authorizer response.
  *
  * @param principalId - Principal identifier for the subject.

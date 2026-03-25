@@ -3,17 +3,36 @@
     "version": "0.0.0",
     "private": true,
     "type": "module",
-    "main": "./src/index.ts",
-    "types": "./src/index.ts",
+    "main": "./dist/node/index.js",
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./src/index.ts",
-            "react-native": "./src/adapters/expo.ts",
-            "default": "./src/adapters/nextjs.ts"
+            "types": "./dist/index.d.ts",
+            "react-native": "./dist/node/adapters/expo.js",
+            "default": "./dist/node/adapters/nextjs.js"
         }
     },
+    "scripts": {
+        "build": "ESBUILD_ENTRIES=src/index.ts,src/adapters/nextjs.ts,src/adapters/expo.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
+        "generate:types": "tsc -p tsconfig.build.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\"",
+        "test": "vitest run",
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
     "devDependencies": {
+        "@armoury/eslint": "*",
+        "@armoury/prettier": "*",
         "@armoury/typescript": "*",
-        "typescript": "^5.0.0"
+        "@armoury/vitest": "*",
+        "@armoury/esbuild": "*",
+        "eslint": "^10.0.3",
+        "prettier": "^3.0.0",
+        "vitest": "^4.0.0"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
+        "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"
     }
 }

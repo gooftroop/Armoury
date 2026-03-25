@@ -15,7 +15,7 @@ import type { User, CreateUserRequest } from '@/types.js';
  */
 export async function postUser(authorization: string, params: CreateUserRequest): Promise<User> {
     return ky
-        .post('users', {
+        .post('', {
             prefixUrl: USERS_BASE_URL,
             headers: { Authorization: authorization },
             json: params,

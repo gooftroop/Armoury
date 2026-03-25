@@ -13,7 +13,7 @@ export async function putMatch(authorization: string, params: MatchParams & Upda
     const { matchId, ...request } = params;
 
     return ky
-        .put(`matches/${matchId}`, {
+        .put(`${matchId}`, {
             prefixUrl: MATCHES_BASE_URL,
             headers: { Authorization: authorization },
             json: request,

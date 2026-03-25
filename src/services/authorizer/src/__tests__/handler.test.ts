@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Context } from 'aws-lambda';
-import { generatePolicy } from '@/utils/policy.js';
+import { generatePolicy, extractHttpMethod } from '@/utils/policy.js';
 import { handler } from '@/handler.js';
 import { getJwks } from '@/jwks.js';
 import { getServiceConfig } from '@/utils/secrets.js';
@@ -37,6 +37,8 @@ vi.mock('../utils/secrets.js', () => {
 
 const TEST_METHOD_ARN = 'arn:aws:execute-api:us-east-1:123456789012:abcdef1234/dev/GET/campaigns';
 const WILDCARD_RESOURCE = 'arn:aws:execute-api:us-east-1:123456789012:abcdef1234/dev/*';
+
+const TEST_OPTIONS_METHOD_ARN = 'arn:aws:execute-api:us-east-1:123456789012:abcdef1234/dev/OPTIONS/campaigns';
 
 /**
  * Builds a minimal authorizer event for tests.
@@ -310,6 +312,38 @@ describe('handler - REQUEST events (WebSocket)', () => {
     });
 });
 
+describe('handler - OPTIONS preflight bypass', () => {
+    beforeEach(() => {
+        resetMocks();
+    });
+
+    it('returns Allow policy for OPTIONS request without requiring a token', async () => {
+        const event: AuthorizerEvent = {
+            type: 'TOKEN',
+            authorizationToken: '',
+            methodArn: TEST_OPTIONS_METHOD_ARN,
+        };
+
+        const result = await invokeHandler(event);
+
+        expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
+        expect(result.principalId).toBe('preflight');
+        expect(joseMocks.jwtVerifyMock).not.toHaveBeenCalled();
+    });
+
+    it('does not fetch service config for OPTIONS requests', async () => {
+        const event: AuthorizerEvent = {
+            type: 'TOKEN',
+            authorizationToken: '',
+            methodArn: TEST_OPTIONS_METHOD_ARN,
+        };
+
+        await invokeHandler(event);
+
+        expect(getServiceConfigMock).not.toHaveBeenCalled();
+    });
+});
+
 describe('generatePolicy', () => {
     it('creates Allow policy with correct structure and wildcard resource', () => {
         const result = generatePolicy('user-1', 'Allow', TEST_METHOD_ARN, {
@@ -357,5 +391,23 @@ describe('generatePolicy', () => {
         const result = generatePolicy('user-1', 'Allow', TEST_METHOD_ARN);
 
         expect(result.policyDocument.Statement[0].Resource).toBe(WILDCARD_RESOURCE);
+    });
+});
+
+describe('extractHttpMethod', () => {
+    it('extracts GET from a REST API method ARN', () => {
+        expect(extractHttpMethod(TEST_METHOD_ARN)).toBe('GET');
+    });
+
+    it('extracts OPTIONS from a preflight method ARN', () => {
+        expect(extractHttpMethod(TEST_OPTIONS_METHOD_ARN)).toBe('OPTIONS');
+    });
+
+    it('extracts $connect from a WebSocket method ARN', () => {
+        expect(extractHttpMethod(TEST_WS_METHOD_ARN)).toBe('$connect');
+    });
+
+    it('returns null for a malformed ARN with fewer than 3 slash segments', () => {
+        expect(extractHttpMethod('arn:aws:execute-api:us-east-1/dev')).toBeNull();
     });
 });

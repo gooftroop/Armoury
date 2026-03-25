@@ -92,7 +92,7 @@ describe('getCampaigns', () => {
         await getCampaigns(AUTH);
 
         expect(mockGet).toHaveBeenCalledWith(
-            'campaigns',
+            '',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -121,7 +121,7 @@ describe('getCampaign', () => {
         await getCampaign(AUTH, { campaignId: 'camp-1' });
 
         expect(mockGet).toHaveBeenCalledWith(
-            'campaigns/camp-1',
+            'camp-1',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -151,7 +151,7 @@ describe('postCampaign', () => {
         await postCampaign(AUTH, createParams);
 
         expect(mockPost).toHaveBeenCalledWith(
-            'campaigns',
+            '',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -183,7 +183,7 @@ describe('putCampaign', () => {
         await putCampaign(AUTH, updateParams);
 
         expect(mockPut).toHaveBeenCalledWith(
-            'campaigns/camp-1',
+            'camp-1',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -212,7 +212,7 @@ describe('deleteCampaign', () => {
         await deleteCampaign(AUTH, { campaignId: 'camp-1' });
 
         expect(mockDelete).toHaveBeenCalledWith(
-            'campaigns/camp-1',
+            'camp-1',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -241,7 +241,7 @@ describe('getParticipants', () => {
         await getParticipants(AUTH, { campaignId: 'camp-1' });
 
         expect(mockGet).toHaveBeenCalledWith(
-            'campaigns/camp-1/participants',
+            'camp-1/participants',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -266,7 +266,7 @@ describe('getParticipant', () => {
         await getParticipant(AUTH, { campaignId: 'camp-1', participantId: 'part-1' });
 
         expect(mockGet).toHaveBeenCalledWith(
-            'campaigns/camp-1/participants/part-1',
+            'camp-1/participants/part-1',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -299,7 +299,7 @@ describe('postParticipant', () => {
         await postParticipant(AUTH, joinParams);
 
         expect(mockPost).toHaveBeenCalledWith(
-            'campaigns/camp-1/participants',
+            'camp-1/participants',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -345,7 +345,7 @@ describe('putParticipant', () => {
         await putParticipant(AUTH, updateParams);
 
         expect(mockPut).toHaveBeenCalledWith(
-            'campaigns/camp-1/participants/part-1',
+            'camp-1/participants/part-1',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },
@@ -380,7 +380,7 @@ describe('deleteParticipant', () => {
         await deleteParticipant(AUTH, { campaignId: 'camp-1', participantId: 'part-1' });
 
         expect(mockDelete).toHaveBeenCalledWith(
-            'campaigns/camp-1/participants/part-1',
+            'camp-1/participants/part-1',
             expect.objectContaining({
                 prefixUrl: expect.anything(),
                 headers: { Authorization: AUTH },

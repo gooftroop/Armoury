@@ -15,7 +15,7 @@ import type { Friend, SendFriendRequestPayload } from '@/types.js';
  */
 export async function postFriendRequest(authorization: string, params: SendFriendRequestPayload): Promise<Friend> {
     return ky
-        .post('friends', {
+        .post('', {
             prefixUrl: FRIENDS_BASE_URL,
             headers: { Authorization: authorization },
             json: params,

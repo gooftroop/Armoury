@@ -61,7 +61,7 @@ describe('User API functions', () => {
 
             await getUsers(AUTHORIZATION);
 
-            expect(mockGet).toHaveBeenCalledWith('users', expect.any(Object));
+            expect(mockGet).toHaveBeenCalledWith('', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -91,7 +91,7 @@ describe('User API functions', () => {
 
             await getUser(AUTHORIZATION, params);
 
-            expect(mockGet).toHaveBeenCalledWith('users/user-123', expect.any(Object));
+            expect(mockGet).toHaveBeenCalledWith('user-123', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -126,7 +126,7 @@ describe('User API functions', () => {
 
             await postUser(AUTHORIZATION, params);
 
-            expect(mockPost).toHaveBeenCalledWith('users', expect.any(Object));
+            expect(mockPost).toHaveBeenCalledWith('', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -169,7 +169,7 @@ describe('User API functions', () => {
 
             await putUser(AUTHORIZATION, params);
 
-            expect(mockPut).toHaveBeenCalledWith('users/user-123', expect.any(Object));
+            expect(mockPut).toHaveBeenCalledWith('user-123', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -210,7 +210,7 @@ describe('User API functions', () => {
         it('calls ky.delete with the correct URL including userId', async () => {
             await deleteUser(AUTHORIZATION, params);
 
-            expect(mockDelete).toHaveBeenCalledWith('users/user-123', expect.any(Object));
+            expect(mockDelete).toHaveBeenCalledWith('user-123', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -242,7 +242,7 @@ describe('Account API functions', () => {
 
             await getAccount(AUTHORIZATION, params);
 
-            expect(mockGet).toHaveBeenCalledWith('users/user-456/account', expect.any(Object));
+            expect(mockGet).toHaveBeenCalledWith('user-456/account', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -279,7 +279,7 @@ describe('Account API functions', () => {
 
             await postAccount(AUTHORIZATION, params, body);
 
-            expect(mockPost).toHaveBeenCalledWith('users/user-456/account', expect.any(Object));
+            expect(mockPost).toHaveBeenCalledWith('user-456/account', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -321,7 +321,7 @@ describe('Account API functions', () => {
 
             await putAccount(AUTHORIZATION, params, body);
 
-            expect(mockPut).toHaveBeenCalledWith('users/user-456/account', expect.any(Object));
+            expect(mockPut).toHaveBeenCalledWith('user-456/account', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {
@@ -358,7 +358,7 @@ describe('Account API functions', () => {
         it('calls ky.delete with the correct nested URL', async () => {
             await deleteAccount(AUTHORIZATION, params);
 
-            expect(mockDelete).toHaveBeenCalledWith('users/user-456/account', expect.any(Object));
+            expect(mockDelete).toHaveBeenCalledWith('user-456/account', expect.any(Object));
         });
 
         it('passes prefixUrl in the options', async () => {

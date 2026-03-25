@@ -20,7 +20,7 @@ export async function postAccount(
     body: CreateAccountRequest,
 ): Promise<Account> {
     return ky
-        .post(`users/${params.userId}/account`, {
+        .post(`${params.userId}/account`, {
             prefixUrl: USERS_BASE_URL,
             headers: { Authorization: authorization },
             json: body,

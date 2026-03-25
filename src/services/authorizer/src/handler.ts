@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/aws-serverless';
 import { getJwks } from '@/jwks.js';
 import { getServiceConfig } from '@/utils/secrets.js';
 import { extractTokenFromEvent, buildIssuer } from '@/utils/token.js';
-import { generatePolicy } from '@/utils/policy.js';
+import { generatePolicy, extractHttpMethod } from '@/utils/policy.js';
 import { isJwtPayload } from '@/utils/jwt.js';
 import type { AuthorizerContext, AuthorizerEvent, AuthorizerResult } from '@/types.js';
 
@@ -27,6 +27,14 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
     Sentry.logger.info('[authorizer] Handler invoked', {
         eventType: event.type,
     });
+
+    const httpMethod = extractHttpMethod(event.methodArn);
+
+    if (httpMethod === 'OPTIONS') {
+        Sentry.logger.info('[authorizer] ALLOW: OPTIONS preflight request');
+
+        return generatePolicy('preflight', 'Allow', event.methodArn);
+    }
 
     const token = extractTokenFromEvent(event);
 

@@ -14,7 +14,7 @@ import type { FriendParams } from '@/types.js';
  * @returns Promise resolving when the friend relationship has been deleted.
  */
 export async function deleteFriend(authorization: string, params: FriendParams): Promise<void> {
-    await ky.delete(`friends/${params.friendId}`, {
+    await ky.delete(`${params.friendId}`, {
         prefixUrl: FRIENDS_BASE_URL,
         headers: { Authorization: authorization },
     });
