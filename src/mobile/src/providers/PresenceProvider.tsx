@@ -19,7 +19,7 @@
 import * as React from 'react';
 import { useAuth0 } from 'react-native-auth0';
 import * as Sentry from '@sentry/react-native';
-import type { ConnectionState } from '@armoury/clients-friends';
+import type { ConnectionState, WebSocketErrorEvent } from '@armoury/clients-friends';
 import { createFriendsPresenceClient, DEFAULT_FRIENDS_WS_URL } from '@armoury/clients-friends';
 import { createPresenceStream } from '@armoury/streams';
 import type { Observable, Subscription } from 'rxjs';
@@ -158,7 +158,7 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
             connectionStateSubscription = presenceStream.connectionState$.subscribe((state: ConnectionState) => {
                 setConnectionState(state);
             });
-            errorsSubscription = client.errors$.subscribe(({ error, context }) => {
+            errorsSubscription = client.errors$.subscribe(({ error, context }: WebSocketErrorEvent) => {
                 Sentry.captureException(error, { extra: context });
             });
             setOnlineFriends$(() => presenceStream.onlineFriends$);

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { getAccessToken } from '@auth0/nextjs-auth0/client';
 import * as Sentry from '@sentry/nextjs';
-import type { ConnectionState } from '@armoury/clients-friends';
+import type { ConnectionState, WebSocketErrorEvent } from '@armoury/clients-friends';
 import { createFriendsPresenceClient, DEFAULT_FRIENDS_WS_URL } from '@armoury/clients-friends';
 import { createPresenceStream } from '@armoury/streams';
 import type { Observable, Subscription } from 'rxjs';
@@ -126,7 +126,7 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
             connectionStateSubscription = presenceStream.connectionState$.subscribe((state: ConnectionState) => {
                 setConnectionState(state);
             });
-            errorsSubscription = client.errors$.subscribe(({ error, context }) => {
+            errorsSubscription = client.errors$.subscribe(({ error, context }: WebSocketErrorEvent) => {
                 // Ensure non-Error values (e.g. browser Event objects) are wrapped
                 // so Sentry always gets a proper Error with a meaningful title.
                 const exception = error instanceof Error ? error : new Error(`Presence client error: ${String(error)}`);
