@@ -22,7 +22,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "fast-xml-parser": "^5.3.4"
+        "fast-xml-parser": "^5.5.7"
     },
     "devDependencies": {
         "@armoury/eslint": "*",
