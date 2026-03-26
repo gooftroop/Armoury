@@ -109,7 +109,7 @@ jobs:
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   SENTRY_DSN=$(aws ssm get-parameter \
-                    --name "/armoury/shared/${SERVICE_SHORT_NAME}/sentry-dsn" \
+                    --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/sentry-dsn" \
                     --with-decryption \
                     --query 'Parameter.Value' --output text 2>/dev/null || true)
                   if [ -n "${SENTRY_DSN}" ]; then
@@ -163,6 +163,7 @@ jobs:
                   AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
                   SENTRY_DSN: ${{ env.SENTRY_DSN }}
                   SENTRY_RELEASE: ${{ env.SENTRY_RELEASE }}
+                  ALLOWED_ORIGIN: ${{ format('https://pr-{0}.sandbox.armoury-app.com', github.event.pull_request.number) }}
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
@@ -323,7 +324,7 @@ jobs:
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   SENTRY_DSN=$(aws ssm get-parameter \
-                    --name "/armoury/shared/${SERVICE_SHORT_NAME}/sentry-dsn" \
+                    --name "/armoury/production/${SERVICE_SHORT_NAME}/sentry-dsn" \
                     --with-decryption \
                     --query 'Parameter.Value' --output text 2>/dev/null || true)
                   if [ -n "${SENTRY_DSN}" ]; then
@@ -371,6 +372,7 @@ jobs:
                   AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
                   SENTRY_DSN: ${{ env.SENTRY_DSN }}
                   SENTRY_RELEASE: ${{ env.SENTRY_RELEASE }}
+                  ALLOWED_ORIGIN: ${{ format('https://{0}', vars.DOMAIN_NAME) }}
               run: |
                   DEPLOY_ARGS="--stage production"
                   if [[ -n "${AUTHORIZER_ARN:-}" ]]; then

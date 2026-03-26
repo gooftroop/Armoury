@@ -18,7 +18,7 @@ provider:
         AUTH0_DOMAIN: ${env:AUTH0_DOMAIN, ''}
         AUTH0_AUDIENCE: ${env:AUTH0_AUDIENCE, ''}
         NODE_OPTIONS: '--enable-source-maps'
-        SENTRY_DSN: ${env:SENTRY_DSN, ''}
+        SENTRY_DSN: ${ssm:/armoury/${param:environment}/authorizer/sentry-dsn}
         SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
 
