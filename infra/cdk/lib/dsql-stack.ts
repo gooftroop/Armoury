@@ -281,7 +281,7 @@ export class DsqlStack extends cdk.Stack {
                     actions: ['apigateway:PUT', 'apigateway:POST'],
                     resources: [`arn:aws:apigateway:${this.region}::/tags/*`],
                 }),
-                // CloudWatch Logs: manage log groups for Lambda, WebSocket APIs, and REST APIs
+                // CloudWatch Logs: manage log groups and subscription filters for Lambda, WebSocket APIs, and REST APIs
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
                     actions: [
@@ -291,6 +291,9 @@ export class DsqlStack extends cdk.Stack {
                         'logs:DeleteRetentionPolicy',
                         'logs:TagResource',
                         'logs:UntagResource',
+                        'logs:PutSubscriptionFilter',
+                        'logs:DeleteSubscriptionFilter',
+                        'logs:DescribeSubscriptionFilters',
                     ],
                     resources: [
                         `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/armoury-*`,
