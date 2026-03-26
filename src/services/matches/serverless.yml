@@ -145,13 +145,13 @@ resources:
         MatchesLogGroup:
             Type: AWS::Logs::LogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}-matches'
                 RetentionInDays: 14
         MatchesLogDrainSubscriptionFilter:
             Type: AWS::Logs::SubscriptionFilter
             DependsOn: MatchesLogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}-matches'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
         MatchesWebsocketLogGroup:
@@ -164,5 +164,19 @@ resources:
             DependsOn: MatchesWebsocketLogGroup
             Properties:
                 LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}-matchesWebsocket'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
+        MatchesApiGatewayLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: ApiGatewayLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/api-gateway/armoury-matches-${self:provider.stage}'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
+        MatchesWebsocketApiLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: WebsocketsLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/websocket/armoury-matches-${self:provider.stage}'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

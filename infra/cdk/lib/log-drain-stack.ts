@@ -103,6 +103,13 @@ export class LogDrainStack extends cdk.Stack {
             sourceAccount: this.account,
         });
 
+        this.logDrainFunction.addPermission('CloudWatchLogsInvokeApiGateway', {
+            principal: new iam.ServicePrincipal('logs.amazonaws.com'),
+            action: 'lambda:InvokeFunction',
+            sourceArn: `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/api-gateway/armoury-*`,
+            sourceAccount: this.account,
+        });
+
         // -----------------------------------------------------------------
         // SSM Parameter — Lambda ARN for Serverless services to reference
         // -----------------------------------------------------------------

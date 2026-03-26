@@ -296,6 +296,7 @@ export class DsqlStack extends cdk.Stack {
                         `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/armoury-*`,
                         `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/websocket/armoury-*`,
                         `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/api/armoury-*`,
+                        `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/api-gateway/armoury-*`,
                     ],
                 }),
                 // CloudWatch Logs: DescribeLogGroups is a non-resource-level action

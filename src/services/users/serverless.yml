@@ -119,12 +119,19 @@ resources:
         UsersLogGroup:
             Type: AWS::Logs::LogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}-users'
                 RetentionInDays: 14
         UsersLogDrainSubscriptionFilter:
             Type: AWS::Logs::SubscriptionFilter
             DependsOn: UsersLogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-users-${self:provider.stage}-users'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
+        UsersApiGatewayLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: ApiGatewayLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/api-gateway/armoury-users-${self:provider.stage}'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

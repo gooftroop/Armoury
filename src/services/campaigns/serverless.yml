@@ -126,12 +126,19 @@ resources:
         CampaignsLogGroup:
             Type: AWS::Logs::LogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-campaigns-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-campaigns-${self:provider.stage}-campaigns'
                 RetentionInDays: 14
         CampaignsLogDrainSubscriptionFilter:
             Type: AWS::Logs::SubscriptionFilter
             DependsOn: CampaignsLogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-campaigns-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-campaigns-${self:provider.stage}-campaigns'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
+        CampaignsApiGatewayLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: ApiGatewayLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/api-gateway/armoury-campaigns-${self:provider.stage}'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

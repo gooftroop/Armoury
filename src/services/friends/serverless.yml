@@ -132,13 +132,13 @@ resources:
         FriendsLogGroup:
             Type: AWS::Logs::LogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}-friends'
                 RetentionInDays: 14
         FriendsLogDrainSubscriptionFilter:
             Type: AWS::Logs::SubscriptionFilter
             DependsOn: FriendsLogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}-friends'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
         FriendsWebsocketLogGroup:
@@ -151,5 +151,19 @@ resources:
             DependsOn: FriendsWebsocketLogGroup
             Properties:
                 LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}-friendsWebsocket'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
+        FriendsApiGatewayLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: ApiGatewayLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/api-gateway/armoury-friends-${self:provider.stage}'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
+        FriendsWebsocketApiLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: WebsocketsLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/websocket/armoury-friends-${self:provider.stage}'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

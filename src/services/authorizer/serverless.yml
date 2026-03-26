@@ -55,13 +55,13 @@ resources:
         AuthorizerLogGroup:
             Type: AWS::Logs::LogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-authorizer-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-authorizer-${self:provider.stage}-authorizer'
                 RetentionInDays: 14
         AuthorizerLogDrainSubscriptionFilter:
             Type: AWS::Logs::SubscriptionFilter
             DependsOn: AuthorizerLogGroup
             Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-authorizer-${self:provider.stage}'
+                LogGroupName: !Sub '/aws/lambda/armoury-authorizer-${self:provider.stage}-authorizer'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
 
