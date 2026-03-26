@@ -119,6 +119,20 @@ jobs:
                     echo "::warning::Sentry DSN not found in SSM for ${SERVICE_SHORT_NAME} — Sentry will be disabled"
                   fi
                   echo "SENTRY_RELEASE=${{ inputs.sentry-project }}@${{ github.sha }}" >> "${GITHUB_ENV}"
+
+            - name: Fetch Sentry auth token from SSM
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              run: |
+                  SENTRY_AUTH_TOKEN=$(aws ssm get-parameter \
+                    --name "/armoury/global/sentry-auth-token" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
+                    echo "::add-mask::${SENTRY_AUTH_TOKEN}"
+                    echo "SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry auth token not found in SSM — source map upload will be skipped"
+                  fi
             - name: Fetch DSQL config and generate token
               if: inputs.has-migrations
               run: |
@@ -176,10 +190,10 @@ jobs:
                   serverless deploy ${DEPLOY_ARGS}
 
             - name: Create Sentry release and upload source maps
-              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && secrets.SENTRY_AUTH_TOKEN != ''
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
               working-directory: ${{ inputs.working-directory }}
               env:
-                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
                   SENTRY_ORG: black-lab
               run: |
                   npx @sentry/cli releases new "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
@@ -335,6 +349,20 @@ jobs:
                   fi
                   echo "SENTRY_RELEASE=${{ inputs.sentry-project }}@${{ github.sha }}" >> "${GITHUB_ENV}"
 
+            - name: Fetch Sentry auth token from SSM
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              run: |
+                  SENTRY_AUTH_TOKEN=$(aws ssm get-parameter \
+                    --name "/armoury/global/sentry-auth-token" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
+                    echo "::add-mask::${SENTRY_AUTH_TOKEN}"
+                    echo "SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry auth token not found in SSM — source map upload will be skipped"
+                  fi
+
             - name: Fetch DSQL config and generate token
               if: inputs.has-migrations
               run: |
@@ -382,10 +410,10 @@ jobs:
                   serverless deploy ${DEPLOY_ARGS}
 
             - name: Create Sentry release and upload source maps
-              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && secrets.SENTRY_AUTH_TOKEN != ''
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
               working-directory: ${{ inputs.working-directory }}
               env:
-                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
                   SENTRY_ORG: black-lab
               run: |
                   npx @sentry/cli releases new "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"

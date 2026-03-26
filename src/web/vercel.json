@@ -1,7 +1,7 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "framework": "nextjs",
-    "buildCommand": "NODE_OPTIONS=--max-old-space-size=7168 npx turbo run build --filter=@armoury/web",
+    "buildCommand": "node scripts/fetch-ssm-secrets.mjs --env ${VERCEL_ENV:-preview} --app web --output .env.ssm && set -a && [ -f .env.ssm ] && . .env.ssm && set +a && NODE_OPTIONS=--max-old-space-size=7168 npx turbo run build --filter=@armoury/web",
     "crons": [
         {
             "path": "/api/cron/check-bsdata-updates",
