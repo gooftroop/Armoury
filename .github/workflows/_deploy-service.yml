@@ -176,7 +176,7 @@ jobs:
                   serverless deploy ${DEPLOY_ARGS}
 
             - name: Create Sentry release and upload source maps
-              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && secrets.SENTRY_AUTH_TOKEN != ''
               working-directory: ${{ inputs.working-directory }}
               env:
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -382,7 +382,7 @@ jobs:
                   serverless deploy ${DEPLOY_ARGS}
 
             - name: Create Sentry release and upload source maps
-              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && secrets.SENTRY_AUTH_TOKEN != ''
               working-directory: ${{ inputs.working-directory }}
               env:
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
