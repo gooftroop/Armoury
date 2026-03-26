@@ -69,6 +69,7 @@ custom:
 functions:
     users:
         handler: src/handler.handler
+        disableLogs: true
         events:
             - http:
                   path: /users
