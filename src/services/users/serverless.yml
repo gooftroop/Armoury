@@ -15,7 +15,7 @@ provider:
     memorySize: 256
     timeout: 29
     environment:
-        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/users/dsql-cluster-endpoint'}
+        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${param:environment}/users/dsql-cluster-endpoint'}
         NODE_OPTIONS: '--enable-source-maps'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
@@ -32,7 +32,7 @@ provider:
                 - Effect: Allow
                   Action:
                       - ssm:GetParameter
-                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${param:environment}/*'
     logs:
         restApi: true
 
