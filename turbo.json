@@ -59,6 +59,17 @@
             "dependsOn": ["^build", "^generate:types"],
             "outputs": [],
             "cache": false
+        },
+        "@armoury/data-dao#test:e2e": {
+            "dependsOn": [
+                "^build",
+                "^generate:types",
+                "@armoury/adapters-pglite#build",
+                "@armoury/adapters-dsql#build",
+                "@armoury/adapters-sqlite#build"
+            ],
+            "outputs": [],
+            "cache": false
         }
     }
 }
