@@ -2,8 +2,12 @@ import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import { loadSSMSecrets } from '@/lib/ssm-config.js';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+// Ensure SSM secrets are loaded before Next/Sentry config reads process.env values.
+await loadSSMSecrets();
 
 const nextConfig: NextConfig = {
     eslint: { ignoreDuringBuilds: true },
