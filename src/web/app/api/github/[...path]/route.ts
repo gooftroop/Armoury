@@ -17,6 +17,9 @@
  * 5. Must forward ETag, x-ratelimit-*, and cache-related headers from the upstream response.
  * 6. Must sanitise the path to prevent SSRF beyond the two allowed origins.
  * 7. Must return appropriate HTTP status codes on upstream errors.
+ * 8. Must set CDN caching headers on successful 200 responses.
+ * 9. Must set CDN caching headers on successful 304 responses.
+ * 10. Must set Vercel cache tags based on proxy target and repository identity.
  *
  * @module api/github/[...path]
  */
@@ -51,6 +54,54 @@ const FORWARDED_HEADERS = [
     'x-ratelimit-resource',
     'retry-after',
 ];
+
+const CACHE_CONTROL_HEADER = 'public, s-maxage=30, stale-while-revalidate=60';
+
+const CDN_CACHE_CONTROL_HEADER = 'public, s-maxage=300, stale-while-revalidate=600';
+
+const VERCEL_CDN_CACHE_CONTROL_HEADER = 'public, s-maxage=3600, stale-while-revalidate=86400';
+
+const GITHUB_PROXY_TAG = 'github-proxy';
+
+/**
+ * Builds cache headers and Vercel cache tags for a proxied GitHub request.
+ *
+ * Always includes the broad `github-proxy` tag. For known API/raw path patterns,
+ * also includes repository-specific tags for targeted purging.
+ *
+ * @param pathSegments - Catch-all route path segments.
+ * @returns Cache-control and Vercel cache-tag headers.
+ */
+export function buildCacheHeaders(pathSegments: string[]): Headers {
+    const tags = new Set<string>([GITHUB_PROXY_TAG]);
+    const [prefix, ...rest] = pathSegments;
+
+    if (prefix === 'api' && rest[0] === 'repos') {
+        const owner = rest[1];
+        const repo = rest[2];
+
+        if (owner && repo) {
+            tags.add(`github-api-${owner}-${repo}`);
+        }
+    }
+
+    if (prefix === 'raw') {
+        const owner = rest[0];
+        const repo = rest[1];
+
+        if (owner && repo) {
+            tags.add(`github-raw-${owner}-${repo}`);
+        }
+    }
+
+    const headers = new Headers();
+    headers.set('Cache-Control', CACHE_CONTROL_HEADER);
+    headers.set('CDN-Cache-Control', CDN_CACHE_CONTROL_HEADER);
+    headers.set('Vercel-CDN-Cache-Control', VERCEL_CDN_CACHE_CONTROL_HEADER);
+    headers.set('Vercel-Cache-Tag', [...tags].join(','));
+
+    return headers;
+}
 
 /**
  * Builds the upstream GitHub URL from the catch-all path segments.
@@ -187,9 +238,14 @@ export async function GET(
         });
 
         const forwardedHeaders = pickForwardedHeaders(response.headers);
+        const cacheHeaders = buildCacheHeaders(pathSegments);
 
         // 304 Not Modified: return as-is with forwarded headers (no body)
         if (response.status === 304) {
+            for (const [name, value] of cacheHeaders.entries()) {
+                forwardedHeaders.set(name, value);
+            }
+
             return new Response(null, { status: 304, headers: forwardedHeaders });
         }
 
@@ -204,6 +260,10 @@ export async function GET(
         }
 
         const body = await response.arrayBuffer();
+
+        for (const [name, value] of cacheHeaders.entries()) {
+            forwardedHeaders.set(name, value);
+        }
 
         return new Response(body, {
             status: 200,

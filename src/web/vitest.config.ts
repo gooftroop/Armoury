@@ -12,19 +12,29 @@
  * - REQ-VTEST-WEB-03: Must load jest-dom setup file for custom matchers.
  */
 
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { defineConfig, mergeConfig } from 'vitest/config';
 import { baseConfig } from '@armoury/vitest';
+
+const WEB_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 export default mergeConfig(
     baseConfig,
     defineConfig({
+        resolve: {
+            alias: {
+                '@': path.resolve(WEB_ROOT, 'src'),
+                '#': WEB_ROOT,
+            },
+        },
         esbuild: {
             jsx: 'automatic',
             jsxImportSource: 'react',
         },
         test: {
             environment: 'happy-dom',
-            setupFiles: ['./vitest.setup.ts'],
+            setupFiles: [path.resolve(WEB_ROOT, 'vitest.setup.ts')],
         },
     }),
 );
