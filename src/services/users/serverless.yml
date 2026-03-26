@@ -33,6 +33,12 @@ provider:
                   Action:
                       - ssm:GetParameter
                   Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
+                - Effect: Allow
+                  Action:
+                      - logs:CreateLogStream
+                      - logs:PutLogEvents
+                  Resource:
+                      - !Sub 'arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/lambda/armoury-users-${self:provider.stage}-users:*'
     logs:
         restApi: true
 
