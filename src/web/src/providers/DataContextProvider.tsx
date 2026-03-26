@@ -139,7 +139,16 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
             const { getQueryClient } = await import('@/lib/getQueryClient.js');
             const queryClient = getQueryClient();
-            const githubClient = createGitHubClient(queryClient);
+            const proxyBaseUrl = process.env['NEXT_PUBLIC_GITHUB_PROXY_URL'];
+            const githubClient = createGitHubClient(
+                queryClient,
+                proxyBaseUrl
+                    ? {
+                          apiBaseUrl: `${proxyBaseUrl}/api`,
+                          rawBaseUrl: `${proxyBaseUrl}/raw`,
+                      }
+                    : undefined,
+            );
             const wahapediaAdapter = createWahapediaClient(queryClient);
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
             const dc = await DataContextBuilder.builder()
