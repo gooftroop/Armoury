@@ -54,7 +54,6 @@ build:
         external:
             - '@aws-sdk/dsql-signer'
             - '@aws-sdk/client-ssm'
-            - pg
 
 plugins:
     - serverless-offline
