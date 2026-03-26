@@ -32,6 +32,8 @@ build:
         target: es2022
         platform: node
         format: esm
+        banner:
+            js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
         mainFields:
             - module
             - main
