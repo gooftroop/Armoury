@@ -34,6 +34,9 @@ on:
                     - ios
                     - android
 
+permissions:
+    contents: read
+
 concurrency:
     group: mobile-build-${{ github.ref }}
     cancel-in-progress: true
