@@ -97,48 +97,54 @@ async function loadSSMSecrets(): Promise<void> {
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
-// Ensure SSM secrets are loaded before Next/Sentry config reads process.env values.
-await loadSSMSecrets();
+// Wrap in an async function to avoid top-level await.
+// Next.js compiles next.config.ts to CJS via require(); Node 24 rejects
+// require() on ESM graphs with top-level await (ERR_REQUIRE_ASYNC_MODULE).
+// An async default export is the supported escape hatch.
+export default async function config(): Promise<NextConfig> {
+    // Ensure SSM secrets are loaded before Next/Sentry config reads process.env values.
+    await loadSSMSecrets();
 
-const nextConfig: NextConfig = {
-    eslint: { ignoreDuringBuilds: true },
-    typescript: {
-        tsconfigPath: 'tsconfig.build.json',
-    },
-    productionBrowserSourceMaps: process.env['NODE_ENV'] !== 'production',
-    webpack(config, { isServer, nextRuntime }) {
-        // Align webpack's client target with the project's .browserslistrc config.
-        // Next.js defaults to 'es6' which triggers false warnings for top-level await
-        // even though our browserslist targets (Chrome 109+) fully support ES2022+.
-        if (!isServer) {
-            config.target = ['web', 'browserslist'];
-        }
+    const nextConfig: NextConfig = {
+        eslint: { ignoreDuringBuilds: true },
+        typescript: {
+            tsconfigPath: 'tsconfig.build.json',
+        },
+        productionBrowserSourceMaps: process.env['NODE_ENV'] !== 'production',
+        webpack(config, { isServer, nextRuntime }) {
+            // Align webpack's client target with the project's .browserslistrc config.
+            // Next.js defaults to 'es6' which triggers false warnings for top-level await
+            // even though our browserslist targets (Chrome 109+) fully support ES2022+.
+            if (!isServer) {
+                config.target = ['web', 'browserslist'];
+            }
 
-        // Suppress Edge Runtime warning for @auth0/nextjs-auth0 v4.
-        // dpopUtils.js statically imports Node's 'crypto' but uses Web Crypto
-        // at runtime — the import is dead code in the edge bundle. The warning
-        // is emitted by Next.js's middleware-plugin during parsing (before
-        // resolve.fallback can intercept it), so ignoreWarnings is the only fix.
-        // See: https://github.com/auth0/nextjs-auth0/issues/2517
-        if (nextRuntime === 'edge') {
-            config.ignoreWarnings = [...(config.ignoreWarnings ?? []), { module: /@auth0\/nextjs-auth0/ }];
-        }
+            // Suppress Edge Runtime warning for @auth0/nextjs-auth0 v4.
+            // dpopUtils.js statically imports Node's 'crypto' but uses Web Crypto
+            // at runtime — the import is dead code in the edge bundle. The warning
+            // is emitted by Next.js's middleware-plugin during parsing (before
+            // resolve.fallback can intercept it), so ignoreWarnings is the only fix.
+            // See: https://github.com/auth0/nextjs-auth0/issues/2517
+            if (nextRuntime === 'edge') {
+                config.ignoreWarnings = [...(config.ignoreWarnings ?? []), { module: /@auth0\/nextjs-auth0/ }];
+            }
 
-        config.resolve.plugins = [
-            ...(config.resolve.plugins ?? []),
-            new TsconfigPathsPlugin({ extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'] }),
-        ];
-        config.resolve.extensionAlias = {
-            ...config.resolve.extensionAlias,
-            '.js': ['.ts', '.tsx', '.js', '.jsx'],
-        };
-        return config;
-    },
-};
+            config.resolve.plugins = [
+                ...(config.resolve.plugins ?? []),
+                new TsconfigPathsPlugin({ extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'] }),
+            ];
+            config.resolve.extensionAlias = {
+                ...config.resolve.extensionAlias,
+                '.js': ['.ts', '.tsx', '.js', '.jsx'],
+            };
+            return config;
+        },
+    };
 
-export default withSentryConfig(withNextIntl(nextConfig), {
-    org: process.env['SENTRY_ORG'],
-    project: process.env['SENTRY_PROJECT'],
-    silent: !process.env['CI'],
-    telemetry: false,
-});
+    return withSentryConfig(withNextIntl(nextConfig), {
+        org: process.env['SENTRY_ORG'],
+        project: process.env['SENTRY_PROJECT'],
+        silent: !process.env['CI'],
+        telemetry: false,
+    });
+}
