@@ -46,6 +46,7 @@
         "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
+        "@aws-sdk/client-ssm": "^3.700.0",
         "@armoury/eslint": "*",
         "@armoury/prettier": "*",
         "@armoury/typescript": "*",
