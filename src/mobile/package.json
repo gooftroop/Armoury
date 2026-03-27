@@ -26,6 +26,7 @@
         "@armoury/adapters-sqlite": "*",
         "@armoury/adapters-wahapedia": "*",
         "@armoury/clients-friends": "*",
+        "@armoury/clients-users": "*",
         "@armoury/streams": "*",
         "@armoury/models": "*",
         "@armoury/wh40k10e": "*",
