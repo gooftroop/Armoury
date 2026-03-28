@@ -24,7 +24,6 @@ const COMPOSE_REL = 'infra/dsql-mock/docker-compose.yml';
 function findRepoRoot(startDir: string): string {
     let dir = startDir;
 
-     
     while (true) {
         if (existsSync(resolve(dir, 'turbo.json'))) {
             return dir;
