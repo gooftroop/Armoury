@@ -1,11 +1,5 @@
 service: armoury-matches
 
-params:
-    production:
-        environment: production
-    default:
-        environment: sandbox
-
 provider:
     name: aws
     runtime: nodejs22.x
@@ -15,13 +9,11 @@ provider:
     memorySize: 256
     timeout: 29
     environment:
-        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${param:environment}/matches/dsql-cluster-endpoint'}
-        NODE_OPTIONS: '--enable-source-maps'
-        SENTRY_DSN: ${ssm:/armoury/${param:environment}/matches/sentry-dsn}
-        SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
+        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/matches/dsql-cluster-endpoint'}
+        NODE_OPTIONS: '--import ./src/instrument.js'
+        SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
-        ALLOWED_ORIGIN: ${self:custom.allowedOrigin}
     iam:
         role:
             statements:
@@ -32,22 +24,25 @@ provider:
                 - Effect: Allow
                   Action:
                       - ssm:GetParameter
-                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${param:environment}/*'
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
                 - Effect: Allow
                   Action:
                       - execute-api:ManageConnections
                   Resource: 'arn:aws:execute-api:*:*:*/@connections/*'
+                - Effect: Allow
+                  Action:
+                      - logs:CreateLogGroup
+                      - logs:CreateLogStream
+                      - logs:PutLogEvents
+                  Resource: 'arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/websocket/${self:service}-${self:provider.stage}:*'
     logs:
-        restApi: true
         websocket: true
 
 build:
     esbuild:
         bundle: true
         minify: true
-        sourcemap:
-            enabled: true
-            setNodeOptions: false
+        sourcemap: true
         target: es2022
         platform: node
         format: esm
@@ -60,12 +55,12 @@ build:
             - '@aws-sdk/dsql-signer'
             - '@aws-sdk/client-ssm'
             - '@aws-sdk/client-apigatewaymanagementapi'
+            - pg
 
 plugins:
     - serverless-offline
 
 custom:
-    allowedOrigin: ${env:ALLOWED_ORIGIN, '*'}
     serverless-offline:
         httpPort: 3001
         websocketPort: 3002
@@ -79,26 +74,23 @@ functions:
             - http:
                   path: /matches
                   method: ANY
-                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /matches/{id}
                   method: ANY
-                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /matches/{id}/link
                   method: ANY
-                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
     matchesWebsocket:
-        handler: src/wsHandler.handler
+        handler: src/ws-handler.handler
         events:
             - websocket:
                   route: $connect
@@ -116,66 +108,3 @@ functions:
                   route: subscribeMatch
             - websocket:
                   route: unsubscribeMatch
-
-resources:
-    Resources:
-        GatewayResponseDefault4XX:
-            Type: AWS::ApiGateway::GatewayResponse
-            Properties:
-                RestApiId:
-                    Ref: ApiGatewayRestApi
-                ResponseType: DEFAULT_4XX
-                ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
-                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
-        GatewayResponseDefault5XX:
-            Type: AWS::ApiGateway::GatewayResponse
-            Properties:
-                RestApiId:
-                    Ref: ApiGatewayRestApi
-                ResponseType: DEFAULT_5XX
-                ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
-                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
-                ResponseTemplates:
-                    application/json: '{"message": "$context.error.messageString"}'
-        MatchesLogGroup:
-            Type: AWS::Logs::LogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}-matches'
-                RetentionInDays: 14
-        MatchesLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: MatchesLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}-matches'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
-        MatchesWebsocketLogGroup:
-            Type: AWS::Logs::LogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}-matchesWebsocket'
-                RetentionInDays: 14
-        MatchesWebsocketLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: MatchesWebsocketLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-matches-${self:provider.stage}-matchesWebsocket'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
-        MatchesApiGatewayLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: ApiGatewayLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/api-gateway/armoury-matches-${self:provider.stage}'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
-        MatchesWebsocketApiLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: WebsocketsLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/websocket/armoury-matches-${self:provider.stage}'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

@@ -1,11 +1,5 @@
 service: armoury-friends
 
-params:
-    production:
-        environment: production
-    default:
-        environment: sandbox
-
 provider:
     name: aws
     runtime: nodejs22.x
@@ -15,13 +9,11 @@ provider:
     memorySize: 256
     timeout: 29
     environment:
-        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${param:environment}/friends/dsql-cluster-endpoint'}
-        NODE_OPTIONS: '--enable-source-maps'
-        SENTRY_DSN: ${ssm:/armoury/${param:environment}/friends/sentry-dsn}
-        SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
+        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/friends/dsql-cluster-endpoint'}
+        NODE_OPTIONS: '--import ./src/instrument.js'
+        SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
-        ALLOWED_ORIGIN: ${self:custom.allowedOrigin}
     iam:
         role:
             statements:
@@ -32,22 +24,25 @@ provider:
                 - Effect: Allow
                   Action:
                       - ssm:GetParameter
-                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${param:environment}/*'
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
                 - Effect: Allow
                   Action:
                       - execute-api:ManageConnections
                   Resource: 'arn:aws:execute-api:*:*:*/@connections/*'
+                - Effect: Allow
+                  Action:
+                      - logs:CreateLogGroup
+                      - logs:CreateLogStream
+                      - logs:PutLogEvents
+                  Resource: 'arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/websocket/${self:service}-${self:provider.stage}:*'
     logs:
-        restApi: true
         websocket: true
 
 build:
     esbuild:
         bundle: true
         minify: true
-        sourcemap:
-            enabled: true
-            setNodeOptions: false
+        sourcemap: true
         target: es2022
         platform: node
         format: esm
@@ -60,12 +55,12 @@ build:
             - '@aws-sdk/dsql-signer'
             - '@aws-sdk/client-ssm'
             - '@aws-sdk/client-apigatewaymanagementapi'
+            - pg
 
 plugins:
     - serverless-offline
 
 custom:
-    allowedOrigin: ${env:ALLOWED_ORIGIN, '*'}
     serverless-offline:
         httpPort: 3004
         websocketPort: 3005
@@ -79,19 +74,17 @@ functions:
             - http:
                   path: /friends
                   method: ANY
-                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
             - http:
                   path: /friends/{id}
                   method: ANY
-                  cors: true
                   authorizer:
                       type: token
                       arn: ${param:authorizerArn}
     friendsWebsocket:
-        handler: src/wsHandler.handler
+        handler: src/ws-handler.handler
         events:
             - websocket:
                   route: $connect
@@ -103,66 +96,3 @@ functions:
                   route: $disconnect
             - websocket:
                   route: $default
-
-resources:
-    Resources:
-        GatewayResponseDefault4XX:
-            Type: AWS::ApiGateway::GatewayResponse
-            Properties:
-                RestApiId:
-                    Ref: ApiGatewayRestApi
-                ResponseType: DEFAULT_4XX
-                ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
-                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
-        GatewayResponseDefault5XX:
-            Type: AWS::ApiGateway::GatewayResponse
-            Properties:
-                RestApiId:
-                    Ref: ApiGatewayRestApi
-                ResponseType: DEFAULT_5XX
-                ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
-                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
-                ResponseTemplates:
-                    application/json: '{"message": "$context.error.messageString"}'
-        FriendsLogGroup:
-            Type: AWS::Logs::LogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}-friends'
-                RetentionInDays: 14
-        FriendsLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: FriendsLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}-friends'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
-        FriendsWebsocketLogGroup:
-            Type: AWS::Logs::LogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}-friendsWebsocket'
-                RetentionInDays: 14
-        FriendsWebsocketLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: FriendsWebsocketLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/lambda/armoury-friends-${self:provider.stage}-friendsWebsocket'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
-        FriendsApiGatewayLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: ApiGatewayLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/api-gateway/armoury-friends-${self:provider.stage}'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
-        FriendsWebsocketApiLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: WebsocketsLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/websocket/armoury-friends-${self:provider.stage}'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
