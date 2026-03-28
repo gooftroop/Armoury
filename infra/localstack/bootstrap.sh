@@ -51,6 +51,26 @@ npx turbo run build --filter='./src/services/*'
 
 echo "[bootstrap] Build complete."
 
+# Helper: wait for a Lambda function to reach Active state before updating.
+# LocalStack can leave functions in Pending state briefly after creation,
+# causing UpdateFunctionCode to fail with InternalError.
+wait_for_active() {
+    local fn_name="$1"
+    local max_attempts=10
+    local attempt=0
+    while [ $attempt -lt $max_attempts ]; do
+        state=$(awslocal lambda get-function --function-name "$fn_name" --region "$REGION" --query 'Configuration.State' --output text 2>/dev/null || echo "NotFound")
+        if [ "$state" = "Active" ] || [ "$state" = "NotFound" ]; then
+            return 0
+        fi
+        echo "[bootstrap]   Waiting for ${fn_name} to become Active (currently: ${state})..."
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+    echo "[bootstrap]   WARNING: ${fn_name} did not reach Active state after ${max_attempts}s"
+    return 1
+}
+
 # ---------------------------------------------------------------------------
 # Step 3: Package, deploy, and wire API Gateway for each Lambda service
 # ---------------------------------------------------------------------------
@@ -78,20 +98,24 @@ jq -c '.services[] | select(.hasLambda == true)' "$SERVICES_FILE" | while IFS= r
     # -------------------------------------------------------------------------
     echo "[bootstrap] Deploying Lambda: ${name}..."
 
-    awslocal lambda create-function \
-        --function-name "$name" \
-        --runtime "$LAMBDA_RUNTIME" \
-        --handler "$LAMBDA_HANDLER" \
-        --role "arn:aws:iam::000000000000:role/${ROLE_NAME}" \
-        --zip-file "fileb://${ZIP_FILE}" \
-        --region "$REGION" \
-        --timeout 30 \
-        --environment "Variables={IS_LOCAL=true,AWS_ENDPOINT_URL=${LOCALSTACK_ENDPOINT},SECRET_NAME=armoury/${name}/config}" \
-        2>/dev/null \
-    || awslocal lambda update-function-code \
-        --function-name "$name" \
-        --zip-file "fileb://${ZIP_FILE}" \
-        --region "$REGION"
+    # If function already exists, wait for Active state before updating
+    if awslocal lambda get-function --function-name "$name" --region "$REGION" >/dev/null 2>&1; then
+        wait_for_active "$name"
+        awslocal lambda update-function-code \
+            --function-name "$name" \
+            --zip-file "fileb://${ZIP_FILE}" \
+            --region "$REGION"
+    else
+        awslocal lambda create-function \
+            --function-name "$name" \
+            --runtime "$LAMBDA_RUNTIME" \
+            --handler "$LAMBDA_HANDLER" \
+            --role "arn:aws:iam::000000000000:role/${ROLE_NAME}" \
+            --zip-file "fileb://${ZIP_FILE}" \
+            --region "$REGION" \
+            --timeout 30 \
+            --environment "Variables={IS_LOCAL=true,AWS_ENDPOINT_URL=${LOCALSTACK_ENDPOINT},SECRET_NAME=armoury/${name}/config}"
+    fi
 
     echo "[bootstrap] Lambda deployed: ${name}"
 
