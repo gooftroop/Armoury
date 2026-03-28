@@ -35,11 +35,19 @@ create_secret() {
 
 echo "[seed] Seeding Secrets Manager..."
 
-# Read services from services.json and iterate over those with non-null secretPath
+# Read services from services.json and iterate over those with non-null secretPath.
+# Uses python3 instead of jq since jq is not available in the LocalStack image.
 while IFS= read -r secret_path; do
     create_secret "$secret_path" \
         "{\"dsqlClusterEndpoint\":\"${DSQL_ENDPOINT}\",\"dsqlRegion\":\"${REGION}\"}" &
-done < <(jq -r '.services[] | select(.secretPath != null) | .secretPath' "$SERVICES_FILE")
+done < <(python3 -c "
+import json, sys
+with open('$SERVICES_FILE') as f:
+    data = json.load(f)
+for svc in data['services']:
+    if svc.get('secretPath'):
+        print(svc['secretPath'])
+")
 
 wait
 
