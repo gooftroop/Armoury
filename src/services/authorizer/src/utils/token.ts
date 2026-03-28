@@ -30,7 +30,7 @@ export const extractBearerToken = (authorizationToken: string | undefined): stri
  * Extracts the raw JWT from any supported authorizer event type.
  *
  * TOKEN events use the Authorization header with Bearer scheme.
- * REQUEST events pass the token directly via query string parameters.
+ * REQUEST events pass the token via the `Auth` query string parameter.
  *
  * @param event - API Gateway authorizer event.
  * @returns The raw JWT string or null if missing/invalid.
@@ -40,7 +40,7 @@ export const extractTokenFromEvent = (event: AuthorizerEvent): string | null => 
         return extractBearerToken(event.authorizationToken);
     }
 
-    return event.queryStringParameters?.token ?? null;
+    return event.queryStringParameters?.Auth ?? null;
 };
 
 /**

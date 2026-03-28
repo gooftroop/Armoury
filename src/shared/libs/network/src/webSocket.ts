@@ -185,7 +185,7 @@ export abstract class WebSocketClient<MessageT> {
         this.cleanupWebSocket();
         this.lastError = null;
 
-        const url = `${this.wsUrl}?token=${encodeURIComponent(token)}`;
+        const url = `${this.wsUrl}?Auth=${encodeURIComponent(token)}`;
         this.ws = new WebSocket(url);
 
         this.ws.onerror = (event: Event) => {

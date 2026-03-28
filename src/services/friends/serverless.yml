@@ -35,6 +35,14 @@ provider:
                       - logs:CreateLogStream
                       - logs:PutLogEvents
                   Resource: 'arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/websocket/${self:service}-${self:provider.stage}:*'
+    httpApi:
+        authorizers:
+            auth0Jwt:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl: https://${env:AUTH0_DOMAIN}/
+                audience:
+                    - ${env:AUTH0_AUDIENCE}
     logs:
         websocket: true
 
@@ -71,18 +79,16 @@ functions:
     friends:
         handler: src/handler.handler
         events:
-            - http:
+            - httpApi:
                   path: /friends
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /friends/{id}
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
+                      name: auth0Jwt
     friendsWebsocket:
         handler: src/wsHandler.handler
         events:
@@ -90,7 +96,7 @@ functions:
                   route: $connect
                   authorizer:
                       name: auth
-                      identitySource: route.request.querystring.token
+                      identitySource: route.request.querystring.Auth
                       arn: ${param:authorizerArn}
             - websocket:
                   route: $disconnect

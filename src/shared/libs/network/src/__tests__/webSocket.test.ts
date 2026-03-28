@@ -177,7 +177,7 @@ describe('WebSocketClient', () => {
             await flushPromises();
 
             const socket = getLastSocket();
-            expect(socket.url).toBe('wss://example.test/realtime?token=token%20with%20space');
+            expect(socket.url).toBe('wss://example.test/realtime?Auth=token%20with%20space');
 
             socket.simulateOpen();
 
@@ -194,7 +194,7 @@ describe('WebSocketClient', () => {
             await flushPromises();
 
             const socket = getLastSocket();
-            expect(socket.url).toBe('wss://example.test/realtime?token=async-token');
+            expect(socket.url).toBe('wss://example.test/realtime?Auth=async-token');
         });
 
         it('emits ws:token-resolve and disconnected when token resolution fails', async () => {

@@ -6,9 +6,13 @@ describe('auth middleware', () => {
         const context = extractUserContext({
             requestContext: {
                 authorizer: {
-                    sub: 'user-1',
-                    email: 'user@example.com',
-                    name: 'Test User',
+                    jwt: {
+                        claims: {
+                            sub: 'user-1',
+                            email: 'user@example.com',
+                            name: 'Test User',
+                        },
+                    },
                 },
             },
         });
@@ -24,7 +28,11 @@ describe('auth middleware', () => {
         const context = extractUserContext({
             requestContext: {
                 authorizer: {
-                    sub: 'user-1',
+                    jwt: {
+                        claims: {
+                            sub: 'user-1',
+                        },
+                    },
                 },
             },
         });
@@ -45,7 +53,11 @@ describe('auth middleware', () => {
             extractUserContext({
                 requestContext: {
                     authorizer: {
-                        email: 'user@example.com',
+                        jwt: {
+                            claims: {
+                                email: 'user@example.com',
+                            },
+                        },
                     },
                 },
             }),

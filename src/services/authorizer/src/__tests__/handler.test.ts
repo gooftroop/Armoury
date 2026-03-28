@@ -66,7 +66,7 @@ const WS_WILDCARD_RESOURCE = 'arn:aws:execute-api:us-east-1:123456789012:ws-api-
 const buildRequestEvent = (token?: string): RequestAuthorizerEvent => {
     return {
         type: 'REQUEST',
-        queryStringParameters: token !== undefined ? { token } : undefined,
+        queryStringParameters: token !== undefined ? { Auth: token } : undefined,
         methodArn: TEST_WS_METHOD_ARN,
     };
 };

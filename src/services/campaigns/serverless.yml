@@ -33,8 +33,29 @@ provider:
                   Action:
                       - ssm:GetParameter
                   Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${param:environment}/*'
+    httpApi:
+        authorizers:
+            auth0Jwt:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl: https://${env:AUTH0_DOMAIN}/
+                audience:
+                    - ${env:AUTH0_AUDIENCE}
+        cors:
+            allowedOrigins:
+                - ${self:custom.allowedOrigin}
+            allowedHeaders:
+                - Content-Type
+                - Authorization
+            allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
+                - OPTIONS
     logs:
-        restApi: true
+        httpApi: true
 
 build:
     esbuild:
@@ -69,59 +90,29 @@ functions:
     campaigns:
         handler: src/handler.handler
         events:
-            - http:
+            - httpApi:
                   path: /campaigns
                   method: ANY
-                  cors: true
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /campaigns/{id}
                   method: ANY
-                  cors: true
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /campaigns/{id}/participants
                   method: ANY
-                  cors: true
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /campaigns/{id}/participants/{pid}
                   method: ANY
-                  cors: true
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
+                      name: auth0Jwt
 
 resources:
     Resources:
-        GatewayResponseDefault4XX:
-            Type: AWS::ApiGateway::GatewayResponse
-            Properties:
-                RestApiId:
-                    Ref: ApiGatewayRestApi
-                ResponseType: DEFAULT_4XX
-                ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
-                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
-        GatewayResponseDefault5XX:
-            Type: AWS::ApiGateway::GatewayResponse
-            Properties:
-                RestApiId:
-                    Ref: ApiGatewayRestApi
-                ResponseType: DEFAULT_5XX
-                ResponseParameters:
-                    gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.allowedOrigin}'"
-                    gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-                    gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
-                ResponseTemplates:
-                    application/json: '{"message": "$context.error.messageString"}'
         CampaignsLogGroup:
             Type: AWS::Logs::LogGroup
             Properties:
@@ -132,12 +123,5 @@ resources:
             DependsOn: CampaignsLogGroup
             Properties:
                 LogGroupName: !Sub '/aws/lambda/armoury-campaigns-${self:provider.stage}-campaigns'
-                FilterPattern: ''
-                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
-        CampaignsApiGatewayLogDrainSubscriptionFilter:
-            Type: AWS::Logs::SubscriptionFilter
-            DependsOn: ApiGatewayLogGroup
-            Properties:
-                LogGroupName: !Sub '/aws/api-gateway/armoury-campaigns-${self:provider.stage}'
                 FilterPattern: ''
                 DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'
