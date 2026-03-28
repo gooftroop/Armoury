@@ -1,18 +1,6 @@
 name: Mobile Build
 
 on:
-    pull_request:
-        branches: [main]
-        paths:
-            - 'src/mobile/**'
-            - 'src/shared/**'
-            - 'src/systems/**'
-    push:
-        branches: [main]
-        paths:
-            - 'src/mobile/**'
-            - 'src/shared/**'
-            - 'src/systems/**'
     workflow_dispatch:
         inputs:
             profile:
