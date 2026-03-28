@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Friend, UserContext, WebSocketEvent } from '@/types.js';
+import type { Friend, WebSocketEvent } from '@/types.js';
 import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
 import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 import type { BroadcastRecord } from '@armoury/e2e';
 import { createMockBroadcaster } from '@armoury/e2e';
 import { createTestUserContext, createWebSocketEvent } from '@armoury/e2e';
+import type { TestUserContext } from '@armoury/e2e';
 import { wsRouter } from '@/wsRouter.js';
 
 const mockBroadcast = createMockBroadcaster();
@@ -15,10 +16,10 @@ vi.mock('@/utils/broadcast.js', () => ({
 
 let adapter: LocalDatabaseAdapter;
 
-const userA: UserContext = createTestUserContext({ sub: 'presence-a', name: 'Friend A' });
-const userB: UserContext = createTestUserContext({ sub: 'presence-b', name: 'Friend B' });
+const userA = createTestUserContext({ sub: 'presence-a', name: 'Friend A' });
+const userB = createTestUserContext({ sub: 'presence-b', name: 'Friend B' });
 
-function connectEvent(connectionId: string, userContext: UserContext): WebSocketEvent {
+function connectEvent(connectionId: string, userContext: TestUserContext): WebSocketEvent {
     return createWebSocketEvent({
         routeKey: '$connect',
         connectionId,
