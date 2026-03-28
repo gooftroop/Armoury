@@ -5,11 +5,11 @@ export interface UserContext {
     /** User subject identifier from the identity provider. */
     sub: string;
 
-    /** User email address from the identity provider. */
-    email: string;
+    /** User email address from the identity provider (may be absent from access tokens). */
+    email?: string;
 
-    /** User display name from the identity provider. */
-    name: string;
+    /** User display name from the identity provider (may be absent from access tokens). */
+    name?: string;
 }
 
 /**

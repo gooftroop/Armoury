@@ -23,16 +23,12 @@ export function extractUserContext(event: AuthorizerEvent): UserContext {
     }
 
     const sub = typeof authorizer['sub'] === 'string' ? authorizer['sub'] : null;
-    const email = typeof authorizer['email'] === 'string' ? authorizer['email'] : null;
-    const name = typeof authorizer['name'] === 'string' ? authorizer['name'] : null;
+    const email = typeof authorizer['email'] === 'string' ? authorizer['email'] : undefined;
+    const name = typeof authorizer['name'] === 'string' ? authorizer['name'] : undefined;
 
-    if (!sub || !email || !name) {
+    if (!sub) {
         throw new Error('Missing required user context fields');
     }
 
-    return {
-        sub,
-        email,
-        name,
-    };
+    return { sub, email, name };
 }

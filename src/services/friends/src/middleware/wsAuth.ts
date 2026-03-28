@@ -12,10 +12,10 @@ export function extractWsUserContext(event: WebSocketEvent): UserContext | null 
     }
 
     const sub = typeof authorizer['sub'] === 'string' ? authorizer['sub'] : null;
-    const email = typeof authorizer['email'] === 'string' ? authorizer['email'] : null;
-    const name = typeof authorizer['name'] === 'string' ? authorizer['name'] : null;
+    const email = typeof authorizer['email'] === 'string' ? authorizer['email'] : undefined;
+    const name = typeof authorizer['name'] === 'string' ? authorizer['name'] : undefined;
 
-    if (!sub || !email || !name) {
+    if (!sub) {
         return null;
     }
 

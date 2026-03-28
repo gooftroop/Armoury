@@ -10,7 +10,7 @@ provider:
     timeout: 29
     environment:
         DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/friends/dsql-cluster-endpoint'}
-        NODE_OPTIONS: '--import ./src/instrument.js'
+        NODE_OPTIONS: '--enable-source-maps'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
@@ -84,7 +84,7 @@ functions:
                       type: token
                       arn: ${param:authorizerArn}
     friendsWebsocket:
-        handler: src/ws-handler.handler
+        handler: src/wsHandler.handler
         events:
             - websocket:
                   route: $connect
