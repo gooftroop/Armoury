@@ -19,7 +19,8 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "db:generate": "TSX_TSCONFIG_PATH=tsconfig.drizzle.json NODE_OPTIONS='--import tsx' drizzle-kit generate",
-        "copy:systems": "node ../tooling/scripts/copy-systems.js"
+        "copy:systems": "node ../tooling/scripts/copy-systems.js",
+        "test:e2e": "bash e2e/scripts/run-all.sh"
     },
     "dependencies": {
         "@armoury/adapters-github": "*",

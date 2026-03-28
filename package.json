@@ -50,6 +50,7 @@
         "format": "turbo run format",
         "format:check": "turbo run format:check",
         "test:e2e": "turbo run test:e2e",
+        "test:integration": "turbo run test:integration",
         "test:e2e:services": "turbo run test:e2e --filter='./src/services/*'",
         "test:e2e:shared": "turbo run test:e2e --filter='@armoury/data-dao'",
         "e2e:cleanup": "docker compose -f infra/localstack/docker-compose.yml down -v 2>/dev/null || true; docker compose -f docker-compose.dsql-mock.yml down -v 2>/dev/null || true; for f in src/services/*/docker-compose.yml; do dir=$(dirname \"$f\"); docker compose -f \"$f\" --project-directory \"$dir\" down -v --remove-orphans 2>/dev/null || true; done",
@@ -57,7 +58,7 @@
         "localstack:down": "docker compose -f infra/localstack/docker-compose.yml down -v",
         "localstack:status": "docker compose -f infra/localstack/docker-compose.yml ps",
         "localstack:bootstrap": "bash infra/localstack/bootstrap.sh",
-        "e2e": "npm run localstack:up && npm run localstack:bootstrap && npm run test:e2e; EXIT=$?; npm run e2e:cleanup; exit $EXIT",
+        "e2e": "npm run test:integration && npm run localstack:up && npm run localstack:bootstrap && npm run test:e2e; EXIT=$?; npm run e2e:cleanup; exit $EXIT",
         "generate:theme": "node --import=tsx src/tooling/theme-generator/src/generate.js",
         "postinstall": "npx patch-package && node -e \"const fs=require('fs'),shim='node_modules/drizzle-kit/index.js';fs.existsSync('node_modules/drizzle-kit')&&!fs.existsSync(shim)&&fs.writeFileSync(shim,'module.exports=require(\\\"./index.mjs\\\");')\"",
         "prepare": "husky || true"
