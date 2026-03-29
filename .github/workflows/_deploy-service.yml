@@ -201,18 +201,14 @@ jobs:
                   npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
                   npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
 
-            - name: Create HTTP API routing rule
+            - name: Create HTTP API domain mapping
               if: github.event_name == 'pull_request' && inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  BASE_PRIORITY: ${{ inputs.routing-rule-priority }}
-                  WILDCARD_DOMAIN: '*.api.sandbox.armoury-app.com'
+                  PR_DOMAIN: ${{ format('pr-{0}.api.sandbox.armoury-app.com', github.event.pull_request.number) }}
+                  WILDCARD_CERT_ARN: 'arn:aws:acm:us-east-1:040663841500:certificate/1bb0db8b-41ab-4d77-9c39-1e83d4ecc055'
               run: |
-                  # Compute a unique priority per PR to avoid collisions between concurrent PRs.
-                  # Each service has a unique base priority (1-999); adding PR_NUMBER * 1000
-                  # gives each PR its own priority band (e.g. PR 42 + base 100 = 42100).
-                  PRIORITY=$((PR_NUMBER * 1000 + BASE_PRIORITY))
                   STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
 
                   # Get HTTP API ID from CloudFormation output (Serverless Framework exports HttpApiId)
@@ -232,48 +228,39 @@ jobs:
 
                   echo "HTTP API ID: ${HTTP_API_ID}"
 
-                  # Delete existing routing rule for this PR+service if it exists
-                  EXISTING_RULE_ARN=$(aws apigatewayv2 list-routing-rules \
-                    --domain-name "${WILDCARD_DOMAIN}" \
-                    --output json \
-                    | jq -r ".RoutingRules[] | select(.Priority == ${PRIORITY}) | .RoutingRuleArn" || true)
-
-                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ] && [ "${EXISTING_RULE_ARN}" != "null" ]; then
-                    EXISTING_RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
-                    echo "Deleting existing routing rule: ${EXISTING_RULE_ID}"
-                    aws apigatewayv2 delete-routing-rule \
-                      --domain-name "${WILDCARD_DOMAIN}" \
-                      --routing-rule-id "${EXISTING_RULE_ID}"
+                  # Create per-PR concrete domain if it doesn't exist yet.
+                  # The wildcard DNS record (*.api.sandbox.armoury-app.com) and wildcard ACM cert
+                  # already cover this subdomain — no new DNS record needed.
+                  if ! aws apigatewayv2 get-domain-name --domain-name "${PR_DOMAIN}" >/dev/null 2>&1; then
+                    echo "Creating domain: ${PR_DOMAIN}"
+                    aws apigatewayv2 create-domain-name \
+                      --domain-name "${PR_DOMAIN}" \
+                      --domain-name-configurations "CertificateArn=${WILDCARD_CERT_ARN},EndpointType=REGIONAL,SecurityPolicy=TLS_1_2"
+                  else
+                    echo "Domain ${PR_DOMAIN} already exists"
                   fi
 
-                  # Create routing rule: Host header match + base path match -> HTTP API
-                  aws apigatewayv2 create-routing-rule \
-                    --domain-name "${WILDCARD_DOMAIN}" \
-                    --priority "${PRIORITY}" \
-                    --conditions '[
-                      {
-                        "MatchHeaders": {
-                          "AnyOf": [{
-                            "Header": "Host",
-                            "ValueGlob": "'"pr-${PR_NUMBER}.api.sandbox.armoury-app.com"'"
-                          }]
-                        }
-                      },
-                      {
-                        "MatchBasePaths": {
-                          "AnyOf": ["'"${SERVICE_SHORT_NAME}"'"]
-                        }
-                      }
-                    ]' \
-                    --actions '[{
-                      "InvokeApi": {
-                        "ApiId": "'"${HTTP_API_ID}"'",
-                        "Stage": "$default",
-                        "StripBasePath": false
-                      }
-                    }]'
+                  # Delete existing API mapping for this service if it exists
+                  EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
 
-                  echo "Created routing rule for pr-${PR_NUMBER}.api.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
+                  if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
+                    echo "Deleting existing API mapping: ${EXISTING_MAPPING_ID}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${PR_DOMAIN}" \
+                      --api-mapping-id "${EXISTING_MAPPING_ID}"
+                  fi
+
+                  # Create API mapping: pr-N.api.sandbox.armoury-app.com/{service} -> HTTP API
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${PR_DOMAIN}" \
+                    --api-id "${HTTP_API_ID}" \
+                    --stage "\$default" \
+                    --api-mapping-key "${SERVICE_SHORT_NAME}"
+
+                  echo "Created API mapping: ${PR_DOMAIN}/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
 
             - name: Create WS domain mapping
               if: github.event_name == 'pull_request' && inputs.has-websocket
