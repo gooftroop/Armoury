@@ -192,7 +192,7 @@ export abstract class WebSocketClient<MessageT> {
             const wsError = new Error('WebSocket error event');
             this.lastError = wsError;
             this.emitError(wsError, 'ws:error', {
-                eventType: event.type,
+                ...event,
                 readyState: this.ws?.readyState,
             });
         };
