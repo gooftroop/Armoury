@@ -8,7 +8,7 @@ export default mergeConfig(
     defineConfig({
         test: {
             include: ['e2e/**/*.e2e.test.ts'],
-            globalSetup: [fileURLToPath(import.meta.resolve('@armoury/e2e/dockerSetup.js'))],
+            globalSetup: [fileURLToPath(import.meta.resolve('@armoury/e2e/dockerSetupDbOnly.js'))],
             fileParallelism: false,
             testTimeout: 30_000,
             env: { ...e2eEnv },

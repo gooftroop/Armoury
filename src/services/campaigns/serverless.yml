@@ -1,5 +1,11 @@
 service: armoury-campaigns
 
+params:
+    production:
+        environment: production
+    default:
+        environment: sandbox
+
 provider:
     name: aws
     runtime: nodejs22.x
@@ -9,11 +15,13 @@ provider:
     memorySize: 256
     timeout: 29
     environment:
-        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/campaigns/dsql-cluster-endpoint'}
-        NODE_OPTIONS: '--import ./src/instrument.js'
-        SENTRY_DSN: ${env:SENTRY_DSN, ''}
+        DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${param:environment}/campaigns/dsql-cluster-endpoint'}
+        NODE_OPTIONS: '--enable-source-maps'
+        SENTRY_DSN: ${ssm:/armoury/${param:environment}/campaigns/sentry-dsn}
+        SENTRY_RELEASE: ${env:SENTRY_RELEASE, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
+        ALLOWED_ORIGIN: ${self:custom.allowedOrigin}
     iam:
         role:
             statements:
@@ -24,13 +32,38 @@ provider:
                 - Effect: Allow
                   Action:
                       - ssm:GetParameter
-                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${param:environment}/*'
+    httpApi:
+        authorizers:
+            auth0Jwt:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl: https://${env:AUTH0_DOMAIN}/
+                audience:
+                    - ${env:AUTH0_AUDIENCE}
+        cors:
+            allowedOrigins:
+                - ${self:custom.allowedOrigin}
+            allowedHeaders:
+                - Content-Type
+                - Authorization
+            allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
+                - OPTIONS
+    logs:
+        httpApi: true
 
 build:
     esbuild:
         bundle: true
         minify: true
-        sourcemap: true
+        sourcemap:
+            enabled: true
+            setNodeOptions: false
         target: es2022
         platform: node
         format: esm
@@ -42,42 +75,53 @@ build:
         external:
             - '@aws-sdk/dsql-signer'
             - '@aws-sdk/client-ssm'
-            - pg
 
 plugins:
     - serverless-offline
 
 custom:
+    allowedOrigin: ${env:ALLOWED_ORIGIN, '*'}
     serverless-offline:
-        httpPort: 3000
-        lambdaPort: 3002
+        httpPort: 3010
+        lambdaPort: 3012
         noPrependStageInUrl: true
 
 functions:
     campaigns:
         handler: src/handler.handler
         events:
-            - http:
+            - httpApi:
                   path: /campaigns
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /campaigns/{id}
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /campaigns/{id}/participants
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /campaigns/{id}/participants/{pid}
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
+                      name: auth0Jwt
+
+resources:
+    Resources:
+        CampaignsLogGroup:
+            Type: AWS::Logs::LogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-campaigns-${self:provider.stage}-campaigns'
+                RetentionInDays: 14
+        CampaignsLogDrainSubscriptionFilter:
+            Type: AWS::Logs::SubscriptionFilter
+            DependsOn: CampaignsLogGroup
+            Properties:
+                LogGroupName: !Sub '/aws/lambda/armoury-campaigns-${self:provider.stage}-campaigns'
+                FilterPattern: ''
+                DestinationArn: !Sub '{{resolve:ssm:/armoury/${param:environment}/log-drain/lambda-arn}}'

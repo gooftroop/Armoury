@@ -20,7 +20,7 @@ export async function postParticipant(
     const { campaignId, ...request } = params;
 
     return ky
-        .post(`campaigns/${campaignId}/participants`, {
+        .post(`${campaignId}/participants`, {
             prefixUrl: CAMPAIGNS_BASE_URL,
             headers: { Authorization: authorization },
             json: request,

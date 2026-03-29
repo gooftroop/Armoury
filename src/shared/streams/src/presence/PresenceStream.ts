@@ -103,8 +103,14 @@ export class PresenceStream implements IPresenceStream {
     constructor(client: IFriendsPresenceClient) {
         this.connectionState$ = client.connectionState$;
 
-        this.messagesSubscription = client.messages$.subscribe((message: FriendsServerMessage) => {
-            this.handleMessage(message);
+        this.messagesSubscription = client.messages$.subscribe({
+            next: (message: FriendsServerMessage) => {
+                this.handleMessage(message);
+            },
+            error: (error: unknown) => {
+                // Defensive: messages$ Subject should never error, but log if it does.
+                console.error('[PresenceStream] Unexpected messages$ error:', error);
+            },
         });
     }
 

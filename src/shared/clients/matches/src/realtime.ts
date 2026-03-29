@@ -1,125 +1,109 @@
-import WebSocket from 'ws';
-import { Subject, BehaviorSubject, filter } from 'rxjs';
-import type { Observable } from 'rxjs';
-import { MAX_RECONNECT_ATTEMPTS, BASE_RECONNECT_DELAY_MS } from '@/config.js';
-import type {
-    MatchesWsConfig,
-    IMatchesRealtimeClient,
-    MatchesServerMessage,
-    MatchesClientMessage,
-    MatchStateMessage,
-    MatchUpdatedMessage,
-    UpdateMatchFields,
-    ConnectionState,
-} from '@/types.js';
-
 /**
  * Bidirectional WebSocket client for real-time match updates.
  *
- * Uses the `ws` npm package for WebSocket connectivity and `rxjs` for
- * reactive message streams. Supports subscribing to match state changes,
- * sending match updates, and auto-reconnects with exponential backoff + jitter
- * on unexpected disconnections.
- *
- * Authentication is performed by appending the token as a query string parameter
- * on the WebSocket URL: `?token=<value>`.
+ * Extends the shared `WebSocketClient` base from `@armoury/network` to provide
+ * matches-domain message validation and RxJS streams while reusing common
+ * connection, reconnect, heartbeat, and error lifecycle behavior.
  */
-export class MatchesRealtimeClient implements IMatchesRealtimeClient {
-    private readonly wsUrl: string;
-    private readonly getToken: () => Promise<string> | string;
-    private ws: WebSocket | null = null;
-    private reconnectAttempts = 0;
-    private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    private intentionalDisconnect = false;
-    private disposed = false;
 
+import { WebSocketClient } from '@armoury/network';
+import type { ConnectionState, WebSocketClientConfig, WebSocketErrorEvent } from '@armoury/network';
+import { BehaviorSubject, Subject, filter } from 'rxjs';
+import type { Observable } from 'rxjs';
+import {
+    BASE_RECONNECT_DELAY_MS,
+    HEARTBEAT_TIMEOUT_MS,
+    MAX_RECONNECT_ATTEMPTS,
+    MAX_RECONNECT_DELAY_MS,
+} from '@/config.js';
+import type {
+    IMatchesRealtimeClient,
+    MatchesClientMessage,
+    MatchesServerMessage,
+    MatchesWsConfig,
+    MatchStateMessage,
+    MatchUpdatedMessage,
+    UpdateMatchFields,
+} from '@/types.js';
+
+/**
+ * @requirements
+ * 1. Must expose the same public realtime API contract as `IMatchesRealtimeClient`.
+ * 2. Must delegate websocket lifecycle behavior to `WebSocketClient`.
+ * 3. Must validate inbound server messages before emission.
+ * 4. Must emit messages, connection state, and errors through RxJS observables.
+ * 5. Must keep domain helper streams for `matchState$` and `matchUpdated$`.
+ * 6. Must map `MatchesWsConfig` and config constants into `WebSocketClientConfig`.
+ * 7. Must dispose base websocket resources and complete all subjects on `dispose()`.
+ */
+
+/**
+ * Bidirectional WebSocket client for real-time match updates.
+ */
+export class MatchesRealtimeClient extends WebSocketClient<MatchesServerMessage> implements IMatchesRealtimeClient {
     private readonly messagesSubject = new Subject<MatchesServerMessage>();
     private readonly connectionStateSubject = new BehaviorSubject<ConnectionState>('disconnected');
-
+    private readonly errorsSubject = new Subject<WebSocketErrorEvent>();
     /** Stream of all server-to-client messages. */
     readonly messages$: Observable<MatchesServerMessage> = this.messagesSubject.asObservable();
-
     /** Stream of the current WebSocket connection state. */
     readonly connectionState$: Observable<ConnectionState> = this.connectionStateSubject.asObservable();
+    /** Stream of structured websocket lifecycle errors. */
+    readonly errors$: Observable<WebSocketErrorEvent> = this.errorsSubject.asObservable();
 
     /**
-     * Creates a new MatchesRealtimeClient instance.
+     * Creates a new `MatchesRealtimeClient`.
      *
-     * @param config - Configuration with WebSocket URL and token provider
+     * @param config - Matches websocket URL and token provider.
      */
     constructor(config: MatchesWsConfig) {
-        this.wsUrl = config.wsUrl;
-        this.getToken = config.getToken;
-    }
-
-    /**
-     * Establishes the WebSocket connection with authentication.
-     *
-     * Appends the token as a query string parameter and opens a WebSocket
-     * connection. Incoming messages are parsed as JSON and emitted on the
-     * messages$ observable. Auto-reconnects on unexpected disconnections.
-     */
-    connect(): void {
-        if (this.disposed) {
-            return;
-        }
-
-        this.intentionalDisconnect = false;
-        this.connectionStateSubject.next('connecting');
-        this.establishConnection();
-    }
-
-    /**
-     * Cleanly closes the WebSocket connection.
-     *
-     * Sets the intentional disconnect flag to prevent auto-reconnect.
-     */
-    disconnect(): void {
-        this.intentionalDisconnect = true;
-        this.clearReconnectTimer();
-        this.closeWebSocket();
-        this.connectionStateSubject.next('disconnected');
+        const wsClientConfig: WebSocketClientConfig = {
+            wsUrl: config.wsUrl,
+            getToken: config.getToken,
+            maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
+            baseReconnectDelayMs: BASE_RECONNECT_DELAY_MS,
+            maxReconnectDelayMs: MAX_RECONNECT_DELAY_MS,
+            heartbeatTimeoutMs: HEARTBEAT_TIMEOUT_MS,
+        };
+        super(wsClientConfig);
     }
 
     /**
      * Subscribes to real-time updates for a specific match.
      *
-     * @param matchId - The match ID to subscribe to
-     * @throws Error if the WebSocket is not connected
+     * @param matchId - The match ID to subscribe to.
      */
     subscribeMatch(matchId: string): void {
-        this.send({ action: 'subscribeMatch', matchId });
+        const message: MatchesClientMessage = { action: 'subscribeMatch', matchId };
+        this.send(message);
     }
 
     /**
      * Unsubscribes from real-time updates for a specific match.
      *
-     * @param matchId - The match ID to unsubscribe from
-     * @throws Error if the WebSocket is not connected
+     * @param matchId - The match ID to unsubscribe from.
      */
     unsubscribeMatch(matchId: string): void {
-        this.send({ action: 'unsubscribeMatch', matchId });
+        const message: MatchesClientMessage = { action: 'unsubscribeMatch', matchId };
+        this.send(message);
     }
 
     /**
      * Sends a match update to the server via WebSocket.
      *
-     * @param matchId - The match ID to update
-     * @param data - The fields to update
-     * @throws Error if the WebSocket is not connected
+     * @param matchId - The match ID to update.
+     * @param data - The fields to update.
      */
     sendMatchUpdate(matchId: string, data: UpdateMatchFields): void {
-        this.send({ action: 'updateMatch', matchId, data });
+        const message: MatchesClientMessage = { action: 'updateMatch', matchId, data };
+        this.send(message);
     }
 
     /**
      * Filtered observable for a specific match's state messages.
      *
-     * Emits only MatchStateMessage events for the given match ID. These messages
-     * are sent by the server upon subscribing to a match.
-     *
-     * @param matchId - The match ID to filter for
-     * @returns Observable emitting only MatchStateMessage for the given match
+     * @param matchId - The match ID to filter for.
+     * @returns Observable emitting only `matchState` messages for the provided match.
      */
     matchState$(matchId: string): Observable<MatchStateMessage> {
         return this.messages$.pipe(
@@ -130,11 +114,8 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
     /**
      * Filtered observable for a specific match's update messages.
      *
-     * Emits only MatchUpdatedMessage events for the given match ID. These messages
-     * are broadcast by the server when another client updates the match.
-     *
-     * @param matchId - The match ID to filter for
-     * @returns Observable emitting only MatchUpdatedMessage for the given match
+     * @param matchId - The match ID to filter for.
+     * @returns Observable emitting only `matchUpdated` messages for the provided match.
      */
     matchUpdated$(matchId: string): Observable<MatchUpdatedMessage> {
         return this.messages$.pipe(
@@ -142,118 +123,41 @@ export class MatchesRealtimeClient implements IMatchesRealtimeClient {
         );
     }
 
-    /**
-     * Completes all subjects, closes connection, and cleans up resources.
-     *
-     * After calling dispose, the client cannot be reconnected.
-     */
-    dispose(): void {
-        this.disposed = true;
-        this.disconnect();
+    override dispose(): void {
+        super.dispose();
         this.messagesSubject.complete();
         this.connectionStateSubject.complete();
+        this.errorsSubject.complete();
     }
 
-    private async establishConnection(): Promise<void> {
-        try {
-            const token = await this.getToken();
-            const url = `${this.wsUrl}?token=${encodeURIComponent(token)}`;
-
-            this.ws = new WebSocket(url);
-
-            this.ws.on('open', () => {
-                this.reconnectAttempts = 0;
-                this.connectionStateSubject.next('connected');
-            });
-
-            this.ws.on('message', (data: WebSocket.Data) => {
-                this.handleMessage(data);
-            });
-
-            this.ws.on('close', () => {
-                if (!this.intentionalDisconnect && !this.disposed) {
-                    this.scheduleReconnect();
-                }
-            });
-
-            this.ws.on('error', () => {
-                // Error events are followed by close events; reconnection is handled there.
-            });
-        } catch {
-            if (!this.intentionalDisconnect && !this.disposed) {
-                this.scheduleReconnect();
-            }
-        }
-    }
-
-    private handleMessage(data: WebSocket.Data): void {
-        try {
-            const parsed: unknown = JSON.parse(data.toString());
-
-            if (this.isValidServerMessage(parsed)) {
-                this.messagesSubject.next(parsed);
-            }
-        } catch {
-            // Ignore malformed messages.
-        }
-    }
-
-    private isValidServerMessage(message: unknown): message is MatchesServerMessage {
-        if (typeof message !== 'object' || message === null) {
+    protected override validateMessage(parsed: unknown): parsed is MatchesServerMessage {
+        if (typeof parsed !== 'object' || parsed === null) {
             return false;
         }
 
-        const msg = message as Record<string, unknown>;
+        const message = parsed as Record<string, unknown>;
 
-        return msg['action'] === 'matchState' || msg['action'] === 'matchUpdated';
+        return message['action'] === 'matchState' || message['action'] === 'matchUpdated';
     }
 
-    private send(message: MatchesClientMessage): void {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-            throw new Error('WebSocket is not connected');
-        }
-
-        this.ws.send(JSON.stringify(message));
+    protected override onMessage(message: MatchesServerMessage): void {
+        this.messagesSubject.next(message);
     }
 
-    private scheduleReconnect(): void {
-        if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            this.connectionStateSubject.next('disconnected');
-
-            return;
-        }
-
-        this.connectionStateSubject.next('reconnecting');
-        const delay = BASE_RECONNECT_DELAY_MS * Math.pow(2, this.reconnectAttempts);
-        const jitter = Math.random() * delay * 0.5;
-
-        this.reconnectTimer = setTimeout(() => {
-            this.reconnectAttempts++;
-            this.establishConnection();
-        }, delay + jitter);
+    protected override onConnectionStateChange(state: ConnectionState): void {
+        this.connectionStateSubject.next(state);
     }
 
-    private closeWebSocket(): void {
-        if (this.ws) {
-            this.ws.removeAllListeners();
-            this.ws.close();
-            this.ws = null;
-        }
-    }
-
-    private clearReconnectTimer(): void {
-        if (this.reconnectTimer) {
-            clearTimeout(this.reconnectTimer);
-            this.reconnectTimer = null;
-        }
+    protected override onError(event: WebSocketErrorEvent): void {
+        this.errorsSubject.next(event);
     }
 }
 
 /**
- * Factory function to create a new MatchesRealtimeClient instance.
+ * Factory function to create a new `MatchesRealtimeClient` instance.
  *
- * @param config - Configuration with WebSocket URL and token provider
- * @returns A new MatchesRealtimeClient instance
+ * @param config - Configuration with WebSocket URL and token provider.
+ * @returns A new `MatchesRealtimeClient` instance.
  */
 export function createMatchesRealtimeClient(config: MatchesWsConfig): MatchesRealtimeClient {
     return new MatchesRealtimeClient(config);

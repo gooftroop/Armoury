@@ -27,6 +27,7 @@
         "@armoury/typescript": "*",
         "@armoury/vitest": "*",
         "@armoury/esbuild": "*",
+        "@tanstack/react-query": "^5.0.0",
         "eslint": "^10.0.3",
         "prettier": "^3.0.0",
         "vitest": "^4.0.0"

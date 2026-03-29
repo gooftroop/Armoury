@@ -6,8 +6,8 @@
 /** Authenticated user context for testing. */
 export interface TestUserContext {
     sub: string;
-    email: string;
-    name: string;
+    email?: string;
+    name?: string;
 }
 
 /** Creates a test user context with optional overrides. */

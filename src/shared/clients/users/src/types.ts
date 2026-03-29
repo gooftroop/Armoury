@@ -46,6 +46,15 @@ export interface UserPreferences {
     notificationsEnabled: boolean;
 }
 
+/** Per-game-system preferences for a user. */
+export interface SystemPreferences {
+    /** Whether the user has enabled and downloaded this game system's data. */
+    enabled: boolean;
+
+    /** ISO 8601 timestamp of the last successful data sync, or null if never synced. */
+    lastSyncedAt: string | null;
+}
+
 /** An account entity linked 1:1 with a user, holding preference data. */
 export interface Account {
     /** Unique identifier for this account. Auto-generated UUID. */
@@ -56,6 +65,13 @@ export interface Account {
 
     /** User preference settings. */
     preferences: UserPreferences;
+
+    /**
+     * Per-game-system preferences keyed by system ID (e.g., 'wh40k10e').
+     * Maps each enabled system to its sync state. Systems absent from this
+     * map are considered not enabled.
+     */
+    systems: Record<string, SystemPreferences>;
 
     /** When this account was created. ISO 8601. */
     createdAt: string;
@@ -114,6 +130,12 @@ export interface CreateAccountRequest {
 export interface UpdateAccountRequest {
     /** Updated preference settings. */
     preferences?: UserPreferences;
+
+    /**
+     * Updated per-game-system preferences keyed by system ID.
+     * Only systems included in this map will be updated; omitted systems are left unchanged.
+     */
+    systems?: Record<string, SystemPreferences>;
 }
 
 // === Error Classes ===

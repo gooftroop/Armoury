@@ -14,9 +14,14 @@ import type { BattleScribeGameSystem } from '@armoury/providers-bsdata';
 import { makeCoreRules, makeCrusadeRules, makeFactionData } from './__fixtures__/index.js';
 import { parseGameSystem } from '@armoury/providers-bsdata';
 
-vi.mock('@armoury/providers-bsdata', () => ({
-    parseGameSystem: vi.fn(),
-}));
+vi.mock('@armoury/providers-bsdata', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@armoury/providers-bsdata')>();
+
+    return {
+        ...actual,
+        parseGameSystem: vi.fn(),
+    };
+});
 
 const CORE_RULES_FILE = 'Warhammer%2040%2C000.gst';
 const CORE_RULES_SYNC_KEY = 'core:wh40k-10e.gst';
@@ -260,11 +265,15 @@ describe('Partial failure', () => {
             }),
         );
 
-        await expect(game.sync()).resolves.toBeUndefined();
+        const result = await game.sync();
+
+        expect(result.success).toBe(false);
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures[0]!.dao).toBe('Aeldari');
 
         expect(successDao.load).toHaveBeenCalled();
         expect(failureDao.load).toHaveBeenCalled();
-        expect(warnSpy).toHaveBeenCalled();
+        expect(warnSpy).not.toHaveBeenCalled();
 
         warnSpy.mockRestore();
     });
@@ -282,7 +291,11 @@ describe('Partial failure', () => {
             }),
         );
 
-        await game.sync();
+        const result = await game.sync();
+
+        expect(result.success).toBe(false);
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures[0]!.dao).toBe('Aeldari');
 
         toggle.setShouldFail(false);
         const [coreRulesResult, aeldariResult] = await Promise.all([game.coreRules, game.aeldari]);
@@ -303,9 +316,10 @@ describe('Data consistency', () => {
             }),
         );
 
-        await game.sync();
+        const syncResult = await game.sync();
         const result = await game.coreRules;
 
+        expect(syncResult.success).toBe(true);
         expect(result).toBe(coreRules);
     });
 });

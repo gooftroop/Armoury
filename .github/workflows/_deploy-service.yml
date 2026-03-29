@@ -41,6 +41,11 @@ on:
                 required: false
                 type: number
                 default: 0
+            sentry-project:
+                description: 'Sentry project slug for release tracking and source map uploads (e.g. armoury-campaigns). Empty = skip Sentry release steps.'
+                required: false
+                type: string
+                default: ''
 
 jobs:
     ci:
@@ -99,6 +104,35 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch Sentry DSN from SSM
+              if: inputs.sentry-project != ''
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  SENTRY_DSN=$(aws ssm get-parameter \
+                    --name "/armoury/sandbox/${SERVICE_SHORT_NAME}/sentry-dsn" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_DSN}" ]; then
+                    echo "::add-mask::${SENTRY_DSN}"
+                    echo "SENTRY_DSN=${SENTRY_DSN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry DSN not found in SSM for ${SERVICE_SHORT_NAME} — Sentry will be disabled"
+                  fi
+                  echo "SENTRY_RELEASE=${{ inputs.sentry-project }}@${{ github.sha }}" >> "${GITHUB_ENV}"
+
+            - name: Fetch Sentry auth token from SSM
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              run: |
+                  SENTRY_AUTH_TOKEN=$(aws ssm get-parameter \
+                    --name "/armoury/global/sentry-auth-token" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
+                    echo "::add-mask::${SENTRY_AUTH_TOKEN}"
+                    echo "SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry auth token not found in SSM — source map upload will be skipped"
+                  fi
             - name: Fetch DSQL config and generate token
               if: inputs.has-migrations
               run: |
@@ -139,6 +173,11 @@ jobs:
               env:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+                  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+                  AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+                  SENTRY_DSN: ${{ env.SENTRY_DSN }}
+                  SENTRY_RELEASE: ${{ env.SENTRY_RELEASE }}
+                  ALLOWED_ORIGIN: ${{ format('https://pr-{0}.sandbox.armoury-app.com', github.event.pull_request.number) }}
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
@@ -150,77 +189,78 @@ jobs:
 
                   serverless deploy ${DEPLOY_ARGS}
 
-            - name: Create REST routing rule
+            - name: Create Sentry release and upload source maps
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
+              working-directory: ${{ inputs.working-directory }}
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: black-lab
+              run: |
+                  npx @sentry/cli releases new "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases set-commits "${{ env.SENTRY_RELEASE }}" --auto --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
+
+            - name: Create HTTP API domain mapping
               if: github.event_name == 'pull_request' && inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  BASE_PRIORITY: ${{ inputs.routing-rule-priority }}
-                  WILDCARD_DOMAIN: '*.sandbox.armoury-app.com'
+                  PR_DOMAIN: ${{ format('pr-{0}.api.sandbox.armoury-app.com', github.event.pull_request.number) }}
+                  WILDCARD_CERT_ARN: 'arn:aws:acm:us-east-1:040663841500:certificate/1bb0db8b-41ab-4d77-9c39-1e83d4ecc055'
               run: |
-                  # Compute a unique priority per PR to avoid collisions between concurrent PRs.
-                  # Each service has a unique base priority (1-999); adding PR_NUMBER * 1000
-                  # gives each PR its own priority band (e.g. PR 42 + base 100 = 42100).
-                  PRIORITY=$((PR_NUMBER * 1000 + BASE_PRIORITY))
                   STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
-                  REST_API_ID=$(aws cloudformation describe-stacks \
-                    --stack-name "${STACK_NAME}" \
-                    --query 'Stacks[0].Outputs[?OutputKey==`ServiceEndpoint`].OutputValue' \
-                    --output text | grep -oP '(?<=https://)[^.]+' || true)
 
-                  # Fallback: get REST API ID from CloudFormation resource
-                  if [ -z "${REST_API_ID}" ]; then
-                    REST_API_ID=$(aws cloudformation describe-stack-resource \
+                  # Get HTTP API ID from CloudFormation output (Serverless Framework exports HttpApiId)
+                  HTTP_API_ID=$(aws cloudformation describe-stacks \
+                    --stack-name "${STACK_NAME}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`HttpApiId`].OutputValue' \
+                    --output text || true)
+
+                  # Fallback: get HTTP API ID from CloudFormation resource
+                  if [ -z "${HTTP_API_ID}" ] || [ "${HTTP_API_ID}" = "None" ]; then
+                    HTTP_API_ID=$(aws cloudformation describe-stack-resource \
                       --stack-name "${STACK_NAME}" \
-                      --logical-resource-id ApiGatewayRestApi \
+                      --logical-resource-id HttpApi \
                       --query 'StackResourceDetail.PhysicalResourceId' \
                       --output text)
                   fi
 
-                  echo "REST API ID: ${REST_API_ID}"
+                  echo "HTTP API ID: ${HTTP_API_ID}"
 
-                  # Delete existing routing rule for this PR+service if it exists
-                  EXISTING_RULE_ARN=$(aws apigatewayv2 list-routing-rules \
-                    --domain-name "${WILDCARD_DOMAIN}" \
-                    --output json \
-                    | jq -r ".RoutingRules[] | select(.Priority == ${PRIORITY}) | .RoutingRuleArn" || true)
-
-                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ] && [ "${EXISTING_RULE_ARN}" != "null" ]; then
-                    EXISTING_RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
-                    echo "Deleting existing routing rule: ${EXISTING_RULE_ID}"
-                    aws apigatewayv2 delete-routing-rule \
-                      --domain-name "${WILDCARD_DOMAIN}" \
-                      --routing-rule-id "${EXISTING_RULE_ID}"
+                  # Create per-PR concrete domain if it doesn't exist yet.
+                  # The wildcard DNS record (*.api.sandbox.armoury-app.com) and wildcard ACM cert
+                  # already cover this subdomain — no new DNS record needed.
+                  if ! aws apigatewayv2 get-domain-name --domain-name "${PR_DOMAIN}" >/dev/null 2>&1; then
+                    echo "Creating domain: ${PR_DOMAIN}"
+                    aws apigatewayv2 create-domain-name \
+                      --domain-name "${PR_DOMAIN}" \
+                      --domain-name-configurations "CertificateArn=${WILDCARD_CERT_ARN},EndpointType=REGIONAL,SecurityPolicy=TLS_1_2"
+                  else
+                    echo "Domain ${PR_DOMAIN} already exists"
                   fi
 
-                  # Create routing rule: Host header match + base path match
-                  aws apigatewayv2 create-routing-rule \
-                    --domain-name "${WILDCARD_DOMAIN}" \
-                    --priority "${PRIORITY}" \
-                    --conditions '[
-                      {
-                        "MatchHeaders": {
-                          "AnyOf": [{
-                            "Header": "Host",
-                            "ValueGlob": "'"pr-${PR_NUMBER}.sandbox.armoury-app.com"'"
-                          }]
-                        }
-                      },
-                      {
-                        "MatchBasePaths": {
-                          "AnyOf": ["'"${SERVICE_SHORT_NAME}"'"]
-                        }
-                      }
-                    ]' \
-                    --actions '[{
-                      "InvokeApi": {
-                        "ApiId": "'"${REST_API_ID}"'",
-                        "Stage": "pr-'"${PR_NUMBER}"'",
-                        "StripBasePath": true
-                      }
-                    }]'
+                  # Delete existing API mapping for this service if it exists
+                  EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
 
-                  echo "Created routing rule for pr-${PR_NUMBER}.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${REST_API_ID}"
+                  if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
+                    echo "Deleting existing API mapping: ${EXISTING_MAPPING_ID}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${PR_DOMAIN}" \
+                      --api-mapping-id "${EXISTING_MAPPING_ID}"
+                  fi
+
+                  # Create API mapping: pr-N.api.sandbox.armoury-app.com/{service} -> HTTP API
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${PR_DOMAIN}" \
+                    --api-id "${HTTP_API_ID}" \
+                    --stage "\$default" \
+                    --api-mapping-key "${SERVICE_SHORT_NAME}"
+
+                  echo "Created API mapping: ${PR_DOMAIN}/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
 
             - name: Create WS domain mapping
               if: github.event_name == 'pull_request' && inputs.has-websocket
@@ -282,6 +322,36 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
+            - name: Fetch Sentry DSN from SSM
+              if: inputs.sentry-project != ''
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  SENTRY_DSN=$(aws ssm get-parameter \
+                    --name "/armoury/production/${SERVICE_SHORT_NAME}/sentry-dsn" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_DSN}" ]; then
+                    echo "::add-mask::${SENTRY_DSN}"
+                    echo "SENTRY_DSN=${SENTRY_DSN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry DSN not found in SSM for ${SERVICE_SHORT_NAME} — Sentry will be disabled"
+                  fi
+                  echo "SENTRY_RELEASE=${{ inputs.sentry-project }}@${{ github.sha }}" >> "${GITHUB_ENV}"
+
+            - name: Fetch Sentry auth token from SSM
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != ''
+              run: |
+                  SENTRY_AUTH_TOKEN=$(aws ssm get-parameter \
+                    --name "/armoury/global/sentry-auth-token" \
+                    --with-decryption \
+                    --query 'Parameter.Value' --output text 2>/dev/null || true)
+                  if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
+                    echo "::add-mask::${SENTRY_AUTH_TOKEN}"
+                    echo "SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}" >> "${GITHUB_ENV}"
+                  else
+                    echo "::warning::Sentry auth token not found in SSM — source map upload will be skipped"
+                  fi
+
             - name: Fetch DSQL config and generate token
               if: inputs.has-migrations
               run: |
@@ -315,6 +385,11 @@ jobs:
               working-directory: ${{ inputs.working-directory }}
               env:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+                  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+                  AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+                  SENTRY_DSN: ${{ env.SENTRY_DSN }}
+                  SENTRY_RELEASE: ${{ env.SENTRY_RELEASE }}
+                  ALLOWED_ORIGIN: ${{ format('https://{0}', vars.DOMAIN_NAME) }}
               run: |
                   DEPLOY_ARGS="--stage production"
                   if [[ -n "${AUTHORIZER_ARN:-}" ]]; then
@@ -322,3 +397,97 @@ jobs:
                   fi
 
                   serverless deploy ${DEPLOY_ARGS}
+
+            - name: Create Sentry release and upload source maps
+              if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
+              working-directory: ${{ inputs.working-directory }}
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: black-lab
+              run: |
+                  npx @sentry/cli releases new "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases set-commits "${{ env.SENTRY_RELEASE }}" --auto --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
+                  npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
+            - name: Create HTTP API mapping
+              if: inputs.service-short-name != ''
+              env:
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  PRODUCTION_DOMAIN: 'api.armoury-app.com'
+              run: |
+                  STACK_NAME="armoury-${SERVICE_SHORT_NAME}-production"
+
+                  # Get HTTP API ID from CloudFormation output (Serverless Framework exports HttpApiId)
+                  HTTP_API_ID=$(aws cloudformation describe-stacks \
+                    --stack-name "${STACK_NAME}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`HttpApiId`].OutputValue' \
+                    --output text || true)
+
+                  # Fallback: get HTTP API ID from CloudFormation resource
+                  if [ -z "${HTTP_API_ID}" ] || [ "${HTTP_API_ID}" = "None" ]; then
+                    HTTP_API_ID=$(aws cloudformation describe-stack-resource \
+                      --stack-name "${STACK_NAME}" \
+                      --logical-resource-id HttpApi \
+                      --query 'StackResourceDetail.PhysicalResourceId' \
+                      --output text)
+                  fi
+
+                  echo "HTTP API ID: ${HTTP_API_ID}"
+
+                  # Delete existing API mapping for this service if it exists
+                  EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PRODUCTION_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
+
+                  if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
+                    echo "Updating existing API mapping ${EXISTING_MAPPING_ID}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${PRODUCTION_DOMAIN}" \
+                      --api-mapping-id "${EXISTING_MAPPING_ID}"
+                  fi
+
+                  # Create API mapping: api.armoury-app.com/{service} -> HTTP API $default stage
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${PRODUCTION_DOMAIN}" \
+                    --api-id "${HTTP_API_ID}" \
+                    --stage "\$default" \
+                    --api-mapping-key "${SERVICE_SHORT_NAME}"
+
+                  echo "Created API mapping for api.armoury-app.com/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
+            - name: Create WS API mapping
+              if: inputs.has-websocket
+              env:
+                  SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
+                  WS_DOMAIN: 'ws.armoury-app.com'
+              run: |
+                  STACK_NAME="armoury-${SERVICE_SHORT_NAME}-production"
+
+                  WS_API_ID=$(aws cloudformation describe-stack-resource \
+                    --stack-name "${STACK_NAME}" \
+                    --logical-resource-id WebsocketsApi \
+                    --query 'StackResourceDetail.PhysicalResourceId' \
+                    --output text)
+
+                  echo "WebSocket API ID: ${WS_API_ID}"
+
+                  # Delete existing WS API mapping for this service if it exists
+                  EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${WS_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
+
+                  if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
+                    echo "Deleting existing WS API mapping ${EXISTING_MAPPING_ID}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${WS_DOMAIN}" \
+                      --api-mapping-id "${EXISTING_MAPPING_ID}"
+                  fi
+
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${WS_DOMAIN}" \
+                    --api-id "${WS_API_ID}" \
+                    --stage "production" \
+                    --api-mapping-key "${SERVICE_SHORT_NAME}"
+
+                  echo "Created WS API mapping for ws.armoury-app.com/${SERVICE_SHORT_NAME} -> ${WS_API_ID}"

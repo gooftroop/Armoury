@@ -7,7 +7,7 @@
  * Built with class-variance-authority for variant management.
  *
  * @requirements
- * 1. Must export Badge component with forwardRef.
+ * 1. Must export Badge component with ref prop.
  * 2. Must support 4 variants: default, secondary, destructive, outline.
  * 3. Must use design tokens for styling.
  * 4. Must merge user className with variant styles using cn utility.
@@ -42,18 +42,18 @@ const badgeVariants = cva(
 /**
  * Props for the Badge component.
  */
-export type BadgeProps = React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof badgeVariants>;
+export type BadgeProps = React.ComponentPropsWithRef<'div'> & VariantProps<typeof badgeVariants>;
 
 /**
  * Badge component - displays a small label for status or counts.
  *
  * @param props - Component props including variant and standard div attributes.
- * @param ref - Forwarded ref to the div element.
  * @returns The rendered Badge component.
  */
-const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(({ className, variant, ...props }, ref) => (
-    <div className={cn(badgeVariants({ variant }), className)} ref={ref} {...props} />
-));
+function Badge({ className, variant, ref, ...props }: BadgeProps): React.ReactElement {
+    return <div className={cn(badgeVariants({ variant }), className)} ref={ref} {...props} />;
+}
+
 Badge.displayName = 'Badge';
 
 export { Badge, badgeVariants };

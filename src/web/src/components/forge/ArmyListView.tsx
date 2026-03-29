@@ -98,7 +98,7 @@ function ArmyListView({
                     <h1 className="text-3xl font-bold text-primary">{t('title')}</h1>
                     <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
                 </div>
-                <Link href="armies/new">
+                <Link href="./armies/new">
                     <Button variant="primary">{t('actions.createArmy')}</Button>
                 </Link>
             </div>
@@ -119,7 +119,7 @@ function ArmyListView({
                     title={t('emptyState.title')}
                     description={t('emptyState.description')}
                     action={
-                        <Link href="armies/new">
+                        <Link href="./armies/new">
                             <Button variant="primary">{t('emptyState.action')}</Button>
                         </Link>
                     }

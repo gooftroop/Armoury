@@ -70,7 +70,7 @@ Primary objectives:
 
 | ID | Requirement | Priority | Notes |
 |---|---|---|---|
-| DA-010 | DataContext must be constructed via a builder pattern (not direct instantiation by consumers) | Critical | `DataContext.builder<TGameData>()` |
+| `DataContextBuilder.builder<TGameData>()` |
 | DA-011 | Builder must accept a game system via `.system()` | Critical | Required; builder must reject `.build()` without it |
 | DA-012 | Builder must accept a target platform via `.platform()` | High | Determines which adapter to create |
 | DA-013 | Builder must accept a pre-built adapter instance via `.adapter()` as an alternative to platform | High | For testing and advanced use cases |

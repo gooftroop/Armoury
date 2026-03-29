@@ -10,7 +10,7 @@ provider:
     timeout: 29
     environment:
         DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/matches/dsql-cluster-endpoint'}
-        NODE_OPTIONS: '--import ./src/instrument.js'
+        NODE_OPTIONS: '--enable-source-maps'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
@@ -29,6 +29,22 @@ provider:
                   Action:
                       - execute-api:ManageConnections
                   Resource: 'arn:aws:execute-api:*:*:*/@connections/*'
+                - Effect: Allow
+                  Action:
+                      - logs:CreateLogGroup
+                      - logs:CreateLogStream
+                      - logs:PutLogEvents
+                  Resource: 'arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/websocket/${self:service}-${self:provider.stage}:*'
+    httpApi:
+        authorizers:
+            auth0Jwt:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl: https://${env:AUTH0_DOMAIN}/
+                audience:
+                    - ${env:AUTH0_AUDIENCE}
+    logs:
+        websocket: true
 
 build:
     esbuild:
@@ -63,32 +79,29 @@ functions:
     matches:
         handler: src/handler.handler
         events:
-            - http:
+            - httpApi:
                   path: /matches
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /matches/{id}
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
+                      name: auth0Jwt
+            - httpApi:
                   path: /matches/{id}/link
                   method: ANY
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
+                      name: auth0Jwt
     matchesWebsocket:
-        handler: src/ws-handler.handler
+        handler: src/wsHandler.handler
         events:
             - websocket:
                   route: $connect
                   authorizer:
                       name: auth
-                      identitySource: route.request.querystring.token
+                      identitySource: route.request.querystring.Auth
                       arn: ${param:authorizerArn}
             - websocket:
                   route: $disconnect

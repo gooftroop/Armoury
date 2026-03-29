@@ -110,15 +110,20 @@ describe('GameData (integration)', () => {
         }
     });
 
-    it('sync() invokes all DAO load() calls and tolerates failures', async () => {
+    it('sync() invokes all DAO load() calls and reports failures', async () => {
         const deps = createMockDeps();
         deps.coreRulesDAO = createFailingDAO('core rules failed');
         deps.spaceMarinesDAO = createFailingDAO('space marines failed');
 
-        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
         const gameData = new GameData(deps);
-        await expect(gameData.sync()).resolves.toBeUndefined();
+        const result = await gameData.sync();
+
+        expect(result.success).toBe(false);
+        expect(result.total).toBe(40);
+        expect(result.failures).toHaveLength(2);
+        expect(result.failures.map((failure) => failure.dao)).toEqual(
+            expect.arrayContaining(['CoreRules', 'SpaceMarines']),
+        );
 
         const daoKeys: (keyof GameDataDeps)[] = [
             'chapterApprovedDAO',
@@ -166,9 +171,5 @@ describe('GameData (integration)', () => {
         for (const key of daoKeys) {
             expect((deps[key] as unknown as { load: ReturnType<typeof vi.fn> }).load).toHaveBeenCalledTimes(1);
         }
-
-        expect(warnSpy).toHaveBeenCalledWith('[GameData.sync] 2/40 DAOs failed to sync');
-
-        warnSpy.mockRestore();
     });
 });

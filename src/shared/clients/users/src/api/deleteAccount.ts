@@ -14,7 +14,7 @@ import type { UserParams } from '@/types.js';
  * @returns Promise resolving when the account is deleted
  */
 export async function deleteAccount(authorization: string, params: UserParams): Promise<void> {
-    await ky.delete(`users/${params.userId}/account`, {
+    await ky.delete(`${params.userId}/account`, {
         prefixUrl: USERS_BASE_URL,
         headers: { Authorization: authorization },
     });

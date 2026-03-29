@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/aws-serverless';
 import type { DatabaseAdapter, Friend, UserPresence, WebSocketResponse, WsRouteHandler } from '@/types.js';
 import { createBroadcaster } from '@/utils/broadcast.js';
 
@@ -29,6 +30,18 @@ export const handleWsConnect: WsRouteHandler = async (
     };
 
     await adapter.put('userPresence', presence);
+
+    Sentry.addBreadcrumb({
+        category: 'websocket.connect',
+        message: `WebSocket connection established for user ${userContext.sub}`,
+        level: 'info',
+        data: {
+            connectionId,
+            userId: userContext.sub,
+            userName: userContext.name,
+            timestamp: now,
+        },
+    });
 
     const acceptedFriends = await getAcceptedFriends(adapter, userContext.sub);
     const friendUserIds = acceptedFriends.map((friend) => friend.userId);
@@ -72,6 +85,17 @@ export const handleWsDisconnect: WsRouteHandler = async (
     };
 
     await adapter.put('userPresence', updatedPresence);
+
+    Sentry.addBreadcrumb({
+        category: 'websocket.disconnect',
+        message: `WebSocket connection closed for user ${presence.userId}`,
+        level: 'info',
+        data: {
+            connectionId,
+            userId: presence.userId,
+            timestamp: now,
+        },
+    });
 
     const acceptedFriends = await getAcceptedFriends(adapter, presence.userId);
     const friendUserIds = acceptedFriends.map((friend) => friend.userId);

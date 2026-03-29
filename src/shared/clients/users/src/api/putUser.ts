@@ -17,7 +17,7 @@ export async function putUser(authorization: string, params: UserParams & Update
     const { userId, ...request } = params;
 
     return ky
-        .put(`users/${userId}`, {
+        .put(`${userId}`, {
             prefixUrl: USERS_BASE_URL,
             headers: { Authorization: authorization },
             json: request,

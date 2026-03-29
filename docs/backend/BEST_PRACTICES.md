@@ -133,7 +133,7 @@ import { DataContext, Platform } from '@armoury/shared';
 import { wh40k10eSystem } from '@armoury/wh40k10e';
 import type { Wh40kGameData } from '@armoury/wh40k10e';
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -408,7 +408,7 @@ src/services/<service>/src/
 
 | Never Do This | Do This Instead |
 |---------------|-----------------|
-| Instantiate `DataContext` directly | Use `DataContext.builder()` |
+| Use `DataContextBuilder.builder()` |
 | Use raw string platform identifiers | Use `Platform` enum |
 | Import game-specific code in adapters | Use the codec/hydration registries |
 | Duplicate helper functions across files | Extract to `utils/` directory |

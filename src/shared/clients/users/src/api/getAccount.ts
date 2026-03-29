@@ -15,7 +15,7 @@ import type { Account, UserParams } from '@/types.js';
  */
 export async function getAccount(authorization: string, params: UserParams): Promise<Account> {
     return ky
-        .get(`users/${params.userId}/account`, {
+        .get(`${params.userId}/account`, {
             prefixUrl: USERS_BASE_URL,
             headers: { Authorization: authorization },
         })

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/aws-serverless';
 import type {
     DatabaseAdapter,
     Match,
@@ -38,6 +39,17 @@ export const handleWsConnect: WsRouteHandler = async (
 
     await adapter.put('wsConnection', connection);
 
+    Sentry.addBreadcrumb({
+        category: 'websocket.connect',
+        message: `WebSocket connection established for user ${userContext.sub}`,
+        level: 'info',
+        data: {
+            connectionId,
+            userId: userContext.sub,
+            timestamp: now,
+        },
+    });
+
     return { statusCode: 200 };
 };
 
@@ -50,6 +62,15 @@ export const handleWsDisconnect: WsRouteHandler = async (
     const subscriptions = await adapter.getByField('matchSubscription', 'connectionId', connectionId);
 
     await adapter.delete('wsConnection', connectionId);
+
+    Sentry.addBreadcrumb({
+        category: 'websocket.disconnect',
+        message: `WebSocket connection closed for connectionId ${connectionId}`,
+        level: 'info',
+        data: {
+            connectionId,
+        },
+    });
 
     if (subscriptions.length > 0) {
         await Promise.all(subscriptions.map((subscription) => adapter.delete('matchSubscription', subscription.id)));

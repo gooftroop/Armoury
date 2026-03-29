@@ -15,7 +15,7 @@ import type { Friend, FriendParams } from '@/types.js';
  */
 export async function getFriend(authorization: string, params: FriendParams): Promise<Friend> {
     return ky
-        .get(`friends/${params.friendId}`, {
+        .get(`${params.friendId}`, {
             prefixUrl: FRIENDS_BASE_URL,
             headers: { Authorization: authorization },
         })

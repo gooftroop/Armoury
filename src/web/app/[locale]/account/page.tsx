@@ -20,7 +20,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { auth0 } from '@/lib/auth0.js';
-import { AccountSettings } from '@/components/AccountSettings.js';
+import { AccountSettings } from '@/components/AccountSettingsContainer.js';
 
 /** Props for the locale-parameterized account page. */
 export interface AccountPageProps {
@@ -45,7 +45,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
     setRequestLocale(locale);
 
     const t = await getTranslations('account');
-    const session = await auth0.getSession();
+    const session = (await auth0?.getSession()) ?? null;
 
     return (
         <main className="flex min-h-screen flex-col bg-base p-6 text-foreground">

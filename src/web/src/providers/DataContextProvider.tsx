@@ -14,15 +14,16 @@
  * 1. Must create DataContext on browser mount using PGlite platform.
  * 2. Must track initialization state: idle | initializing | ready | error.
  * 3. Must track per-system sync state: idle | syncing | synced | error
-            4. Must expose enableSystem / disableSystem actions for user-driven system activation.
-            5. Must call dataContext.close() on unmount to release database connections.
-            6. Must not block rendering — no full-screen loader
-            7. Must provide the DataContext instance and sync state via React context.
+ * 4. Must expose enableSystem / disableSystem actions for user-driven system activation.
+ * 5. Must call dataContext.close() on unmount to release database connections.
+ * 6. Must not block rendering — no full-screen loader
+ * 7. Must provide the DataContext instance and sync state via React context.
  *
  * @module DataContextProvider
  */
 
 import * as React from 'react';
+import * as Sentry from '@sentry/nextjs';
 import type { DataContext } from '@armoury/data-context';
 import type { GameSystem } from '@armoury/data-dao';
 /**
@@ -115,11 +116,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const [systemSyncStates, setSystemSyncStates] = React.useState<Record<string, SystemSyncState>>({});
 
     /**
-     * Ref to track the active DataContext instance for cleanup.
-     * Prevents stale closure issues during concurrent enable/disable operations.
-     */
-    const dataContextRef = React.useRef<DataContext | null>(null);
-    /**
      * Enables a game system by building a DataContext and syncing its data.
      *
      * @param system - The GameSystem descriptor to enable.
@@ -137,12 +133,60 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
              * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
              */
-            const { DataContext: DC } = await import('@armoury/data-context');
+            const { DataContextBuilder } = await import('@armoury/data-context');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
+            const { createGitHubClient } = await import('@armoury/adapters-github');
+            const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
+            const { getQueryClient } = await import('@/lib/getQueryClient.js');
+            const queryClient = getQueryClient();
+            const proxyBaseUrl = process.env['NEXT_PUBLIC_GITHUB_PROXY_URL'];
+            const githubClient = createGitHubClient(
+                queryClient,
+                proxyBaseUrl
+                    ? {
+                          apiBaseUrl: `${proxyBaseUrl}/api`,
+                          rawBaseUrl: `${proxyBaseUrl}/raw`,
+                      }
+                    : undefined,
+            );
+            const wahapediaAdapter = createWahapediaClient(queryClient);
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
-            const dc = await DC.builder().system(system).adapter(adapter).build();
-            dataContextRef.current = dc;
+            const dc = await DataContextBuilder.builder()
+                .system(system)
+                .adapter(adapter)
+                .register('github', githubClient)
+                .register('wahapedia', wahapediaAdapter)
+                .build();
             setDataContext(dc);
+
+            // Report partial sync failures from the builder's sync result
+            const syncResult = dc.syncResult;
+
+            if (syncResult && syncResult.failures.length > 0) {
+                // Report each failure to Sentry
+                for (const failure of syncResult.failures) {
+                    Sentry.captureException(new Error(failure.error), {
+                        tags: { dao: failure.dao, system: system.id },
+                        extra: {
+                            total: syncResult.total,
+                            succeeded: syncResult.succeeded.length,
+                            timestamp: syncResult.timestamp,
+                        },
+                    });
+                }
+
+                // Log to console in non-production environments
+                if (process.env.NODE_ENV !== 'production') {
+                    for (const failure of syncResult.failures) {
+                        console.error('[Armoury Sync]', failure.dao, 'failed:', failure.error);
+                    }
+
+                    console.warn(
+                        `[Armoury Sync] Summary: ${syncResult.succeeded.length}/${syncResult.total} succeeded`,
+                    );
+                }
+            }
+
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
@@ -163,32 +207,34 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      *
      * @param systemId - The ID of the system to disable.
      */
-    const disableSystem = React.useCallback(async (systemId: string): Promise<void> => {
-        if (dataContextRef.current) {
-            await dataContextRef.current.close();
-            dataContextRef.current = null;
-        }
+    const disableSystem = React.useCallback(
+        async (systemId: string): Promise<void> => {
+            if (dataContext) {
+                await dataContext.close();
+            }
 
-        setDataContext(null);
-        setStatus('idle');
-        setError(undefined);
-        setSystemSyncStates((prev) => {
-            const next = { ...prev };
-            delete next[systemId];
+            setDataContext(null);
+            setStatus('idle');
+            setError(undefined);
+            setSystemSyncStates((prev) => {
+                const next = { ...prev };
+                delete next[systemId];
 
-            return next;
-        });
-    }, []);
+                return next;
+            });
+        },
+        [dataContext],
+    );
     /**
      * Cleanup on unmount: close the DataContext to release PGlite connections.
      */
     React.useEffect(() => {
         return () => {
-            if (dataContextRef.current) {
-                void dataContextRef.current.close();
+            if (dataContext) {
+                void dataContext.close();
             }
         };
-    }, []);
+    }, [dataContext]);
     const value = React.useMemo<DataContextValue>(
         () => ({
             dataContext,

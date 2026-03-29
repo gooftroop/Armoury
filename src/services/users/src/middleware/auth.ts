@@ -1,38 +1,40 @@
 import type { UserContext } from '@/types.js';
 
 /**
- * Minimal API Gateway event shape for Lambda TOKEN authorizer context.
+ * Minimal API Gateway v2 httpApi event shape for native JWT authorizer context.
+ *
+ * httpApi JWT authorizers nest claims under `authorizer.jwt.claims`.
  */
 interface AuthorizerEvent {
     requestContext: {
-        authorizer?: Record<string, unknown>;
+        authorizer?: {
+            jwt?: {
+                claims?: Record<string, unknown>;
+            };
+        };
     };
 }
 
 /**
- * Extracts user context from the Lambda TOKEN authorizer context.
+ * Extracts user context from the httpApi native JWT authorizer context.
  *
- * Lambda TOKEN authorizers return context values flat on
- * `event.requestContext.authorizer` (not nested under `.claims`).
+ * httpApi JWT authorizers return claims nested under
+ * `event.requestContext.authorizer.jwt.claims`.
  */
 export function extractUserContext(event: AuthorizerEvent): UserContext {
-    const authorizer = event.requestContext.authorizer;
+    const claims = event.requestContext.authorizer?.jwt?.claims;
 
-    if (!authorizer || typeof authorizer !== 'object') {
+    if (!claims || typeof claims !== 'object') {
         throw new Error('Missing authorizer context');
     }
 
-    const sub = typeof authorizer['sub'] === 'string' ? authorizer['sub'] : null;
-    const email = typeof authorizer['email'] === 'string' ? authorizer['email'] : null;
-    const name = typeof authorizer['name'] === 'string' ? authorizer['name'] : null;
+    const sub = typeof claims['sub'] === 'string' ? claims['sub'] : null;
+    const email = typeof claims['email'] === 'string' ? claims['email'] : undefined;
+    const name = typeof claims['name'] === 'string' ? claims['name'] : undefined;
 
-    if (!sub || !email || !name) {
+    if (!sub) {
         throw new Error('Missing required user context fields');
     }
 
-    return {
-        sub,
-        email,
-        name,
-    };
+    return { sub, email, name };
 }

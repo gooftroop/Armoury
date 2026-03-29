@@ -128,7 +128,7 @@ import { DataContext } from '@armoury/shared';
 import { wh40k10eSystem } from '@armoury/systems';
 import type { Wh40kGameData } from '@armoury/systems';
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -148,7 +148,7 @@ const githubClient = createGitHubClient({
     token: process.env.GITHUB_TOKEN,
 });
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .github(githubClient)
@@ -173,7 +173,7 @@ const adapter = await createAdapter({
     },
 });
 
-const dc = await DataContext.builder<Wh40kGameData>()
+const dc = await DataContextBuilder.builder<Wh40kGameData>()
     .system(wh40k10eSystem)
     .adapter(adapter)
     .build();

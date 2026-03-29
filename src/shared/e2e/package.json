@@ -5,15 +5,17 @@
     "type": "module",
     "exports": {
         ".": {
-            "types": "./src/index.ts",
-            "default": "./src/index.ts"
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         },
         "./*.js": {
-            "types": "./src/*.ts",
-            "default": "./src/*.ts"
+            "types": "./dist/*.d.ts",
+            "default": "./dist/*.js"
         }
     },
     "scripts": {
+        "build": "ESBUILD_ENTRIES=src/index.ts,src/dockerSetup.ts,src/dockerSetupDbOnly.ts,src/e2eEnv.ts,src/helpers.ts,src/localstackConfig.ts,src/mockBroadcaster.ts,src/dbSchema.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/service'\"",
+        "generate:types": "tsc -p tsconfig.build.json",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
         "format": "prettier --write .",
@@ -23,6 +25,7 @@
         "@aws-sdk/dsql-signer": "*"
     },
     "devDependencies": {
+        "@armoury/esbuild": "*",
         "@armoury/eslint": "*",
         "@armoury/prettier": "*",
         "@armoury/typescript": "*",

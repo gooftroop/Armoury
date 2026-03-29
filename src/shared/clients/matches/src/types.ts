@@ -2,6 +2,8 @@
  * Matches client types, error classes, and type guards.
  */
 
+import type { ConnectionState, WebSocketErrorEvent } from '@armoury/network';
+
 // Match model types
 
 /** Base interface for system-specific match data. */
@@ -216,10 +218,7 @@ export interface MatchesWsConfig {
     getToken: () => Promise<string> | string;
 }
 
-// Connection state
-
-/** Possible states of the WebSocket connection. */
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
+export type { ConnectionState, WebSocketErrorEvent, WebSocketErrorSource } from '@armoury/network';
 
 // === Param Interfaces ===
 
@@ -312,6 +311,16 @@ export interface IMatchesRealtimeClient {
      * Stream of the current WebSocket connection state.
      */
     readonly connectionState$: import('rxjs').Observable<ConnectionState>;
+
+    /**
+     * Observable stream of structured error events from the WebSocket lifecycle.
+     *
+     * Every error — connection failures, handshake rejections, message parse
+     * failures, token resolution errors, and send failures — is emitted here
+     * with a `source` field identifying the originating event. Consumers can
+     * subscribe once and route all errors to Sentry or a logging backend.
+     */
+    readonly errors$: import('rxjs').Observable<WebSocketErrorEvent>;
 
     /**
      * Establishes the WebSocket connection with authentication.

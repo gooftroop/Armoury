@@ -1,0 +1,46 @@
+{
+    "cli": {
+        "version": ">= 16.0.0",
+        "appVersionSource": "remote"
+    },
+    "build": {
+        "base": {
+            "node": "24.0.0",
+            "env": {
+                "EXPO_MONOREPO_ROOT": "../.."
+            }
+        },
+        "development": {
+            "extends": "base",
+            "developmentClient": true,
+            "distribution": "internal",
+            "ios": {
+                "simulator": true
+            }
+        },
+        "preview": {
+            "extends": "base",
+            "distribution": "internal",
+            "channel": "preview"
+        },
+        "production": {
+            "extends": "base",
+            "autoIncrement": true,
+            "channel": "production"
+        }
+    },
+    "submit": {
+        "production": {
+            "ios": {
+                "ascAppId": "PLACEHOLDER",
+                "appleId": "PLACEHOLDER",
+                "ascApiKeyId": "PLACEHOLDER",
+                "ascApiKeyIssuerId": "PLACEHOLDER",
+                "ascApiKeyPath": "PLACEHOLDER"
+            },
+            "android": {
+                "serviceAccountKeyPath": "PLACEHOLDER"
+            }
+        }
+    }
+}

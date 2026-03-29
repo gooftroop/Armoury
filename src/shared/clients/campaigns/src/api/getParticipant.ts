@@ -15,7 +15,7 @@ import type { CampaignParticipant, ParticipantParams } from '@/types.js';
  */
 export async function getParticipant(authorization: string, params: ParticipantParams): Promise<CampaignParticipant> {
     return ky
-        .get(`campaigns/${params.campaignId}/participants/${params.participantId}`, {
+        .get(`${params.campaignId}/participants/${params.participantId}`, {
             prefixUrl: CAMPAIGNS_BASE_URL,
             headers: { Authorization: authorization },
         })

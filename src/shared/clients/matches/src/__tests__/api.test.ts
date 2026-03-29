@@ -60,7 +60,7 @@ describe('getMatches', () => {
 
         await getMatches(TEST_AUTH);
 
-        expect(mockGet).toHaveBeenCalledWith('matches', expect.any(Object));
+        expect(mockGet).toHaveBeenCalledWith('', expect.any(Object));
     });
 
     it('sets prefixUrl to a truthy value', async () => {
@@ -100,7 +100,7 @@ describe('getMatch', () => {
 
         await getMatch(TEST_AUTH, params);
 
-        expect(mockGet).toHaveBeenCalledWith('matches/match-42', expect.any(Object));
+        expect(mockGet).toHaveBeenCalledWith('match-42', expect.any(Object));
     });
 
     it('sets prefixUrl to a truthy value', async () => {
@@ -143,7 +143,7 @@ describe('postMatch', () => {
 
         await postMatch(TEST_AUTH, params);
 
-        expect(mockPost).toHaveBeenCalledWith('matches', expect.any(Object));
+        expect(mockPost).toHaveBeenCalledWith('', expect.any(Object));
     });
 
     it('sets prefixUrl to a truthy value', async () => {
@@ -196,7 +196,7 @@ describe('putMatch', () => {
 
         await putMatch(TEST_AUTH, params);
 
-        expect(mockPut).toHaveBeenCalledWith('matches/match-42', expect.any(Object));
+        expect(mockPut).toHaveBeenCalledWith('match-42', expect.any(Object));
     });
 
     it('sets prefixUrl to a truthy value', async () => {
@@ -245,7 +245,7 @@ describe('deleteMatch', () => {
     it('calls ky.delete with the correct URL path including matchId', async () => {
         await deleteMatch(TEST_AUTH, params);
 
-        expect(mockDelete).toHaveBeenCalledWith('matches/match-42', expect.any(Object));
+        expect(mockDelete).toHaveBeenCalledWith('match-42', expect.any(Object));
     });
 
     it('sets prefixUrl to a truthy value', async () => {

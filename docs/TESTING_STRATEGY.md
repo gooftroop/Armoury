@@ -1394,8 +1394,8 @@ Prefer fewer, more meaningful tests over many shallow ones.
 
 ### Playwright Conventions
 
-- Use `getByRole` and `getByLabel` selectors first. Fall back to `getByTestId` only when no accessible name exists.
-- Add `data-testid` attributes to elements that have no stable accessible name (e.g., icon-only buttons).
+- Use `getByRole` and `getByLabel` selectors exclusively. Never use `data-testid` attributes — all elements must be queryable via accessible names.
+- Add accessible labels (`aria-label`, `aria-labelledby`) to elements that have no visible text (e.g., icon-only buttons) so they can be queried by role.
 - Never use `page.waitForTimeout()`. Use `waitForURL`, `waitForSelector`, or `expect(locator).toBeVisible()` instead.
 - Keep test files under ~100 lines. Extract repeated interactions into Page Objects or fixtures.
 - One assertion-heavy test per journey. Don't split a single user flow across many `it` blocks.

@@ -73,7 +73,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Subject, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { take, toArray, skip } from 'rxjs/operators';
-import type { FriendsServerMessage, ConnectionState } from '@armoury/clients-friends';
+import type { FriendsServerMessage, ConnectionState, WebSocketErrorEvent } from '@armoury/clients-friends';
 import type { IFriendsPresenceClient } from '@armoury/clients-friends';
 import { PresenceStream, createPresenceStream } from '@/presence/PresenceStream.js';
 
@@ -99,6 +99,7 @@ function createMockClient(): IFriendsPresenceClient & {
         connect: vi.fn(),
         disconnect: vi.fn(),
         dispose: vi.fn(),
+        errors$: new Subject<WebSocketErrorEvent>().asObservable(),
     };
 }
 
@@ -423,7 +424,11 @@ describe('PresenceStream', () => {
         it('completes the onlineFriends$ observable', async () => {
             let completed = false;
 
-            stream.onlineFriends$.subscribe({ complete: () => (completed = true) });
+            stream.onlineFriends$.subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             stream.dispose();
 
@@ -433,7 +438,11 @@ describe('PresenceStream', () => {
         it('completes the onlineCount$ observable', async () => {
             let completed = false;
 
-            stream.onlineCount$.subscribe({ complete: () => (completed = true) });
+            stream.onlineCount$.subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             stream.dispose();
 
@@ -443,7 +452,11 @@ describe('PresenceStream', () => {
         it('completes the isOnline$ observable', async () => {
             let completed = false;
 
-            stream.isOnline$('user-1').subscribe({ complete: () => (completed = true) });
+            stream.isOnline$('user-1').subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             stream.dispose();
 
@@ -476,7 +489,11 @@ describe('PresenceStream', () => {
 
             let completed = false;
 
-            stream.onlineFriends$.subscribe({ complete: () => (completed = true) });
+            stream.onlineFriends$.subscribe({
+                complete: () => {
+                    completed = true;
+                },
+            });
 
             expect(completed).toBe(true);
         });

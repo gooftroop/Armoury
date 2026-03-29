@@ -20,7 +20,7 @@ export async function putParticipant(
     const { campaignId, participantId, ...request } = params;
 
     return ky
-        .put(`campaigns/${campaignId}/participants/${participantId}`, {
+        .put(`${campaignId}/participants/${participantId}`, {
             prefixUrl: CAMPAIGNS_BASE_URL,
             headers: { Authorization: authorization },
             json: request,

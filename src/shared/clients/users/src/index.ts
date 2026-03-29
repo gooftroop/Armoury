@@ -10,6 +10,7 @@
 export type {
     User,
     UserPreferences,
+    SystemPreferences,
     Account,
     UserParams,
     AccountParams,

@@ -6,9 +6,13 @@ describe('auth middleware', () => {
         const context = extractUserContext({
             requestContext: {
                 authorizer: {
-                    sub: 'user-1',
-                    email: 'user@example.com',
-                    name: 'Test User',
+                    jwt: {
+                        claims: {
+                            sub: 'user-1',
+                            email: 'user@example.com',
+                            name: 'Test User',
+                        },
+                    },
                 },
             },
         });
@@ -20,16 +24,40 @@ describe('auth middleware', () => {
         });
     });
 
+    it('extracts user context with only sub (email and name absent)', () => {
+        const context = extractUserContext({
+            requestContext: {
+                authorizer: {
+                    jwt: {
+                        claims: {
+                            sub: 'user-1',
+                        },
+                    },
+                },
+            },
+        });
+
+        expect(context).toEqual({
+            sub: 'user-1',
+            email: undefined,
+            name: undefined,
+        });
+    });
+
     it('throws when authorizer context is missing', () => {
         expect(() => extractUserContext({ requestContext: {} })).toThrow('Missing authorizer context');
     });
 
-    it('throws when required fields are missing', () => {
+    it('throws when sub is missing', () => {
         expect(() =>
             extractUserContext({
                 requestContext: {
                     authorizer: {
-                        sub: 'user-1',
+                        jwt: {
+                            claims: {
+                                email: 'user@example.com',
+                            },
+                        },
                     },
                 },
             }),

@@ -2,6 +2,15 @@ import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserCo
 import { deleteFriend, getFriend, listFriends, sendFriendRequest, updateFriend } from '@/routes/friends.js';
 
 /**
+ * Standard CORS headers included in all API responses.
+ */
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': process.env['ALLOWED_ORIGIN'] ?? '*',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+} as const;
+
+/**
  * Route dispatch key for API Gateway resource and HTTP method.
  */
 type RouteKey = `${string}::${string}`;
@@ -43,6 +52,7 @@ export async function router(
             statusCode: 400,
             headers: {
                 'Content-Type': 'application/json',
+                ...CORS_HEADERS,
             },
             body: JSON.stringify({
                 error: 'ValidationError',
@@ -56,6 +66,7 @@ export async function router(
             statusCode: 404,
             headers: {
                 'Content-Type': 'application/json',
+                ...CORS_HEADERS,
             },
             body: JSON.stringify({
                 error: 'NotFound',

@@ -2,6 +2,9 @@
     "extends": "@armoury/typescript/build.json",
     "compilerOptions": {
         "rootDir": ".",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "rewriteRelativeImportExtensions": false,
         "jsx": "preserve",
         "noEmit": true,
         "lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -13,8 +16,19 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"]
-        }
+        },
+        "allowJs": true
     },
     "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
-    "exclude": ["node_modules", ".next", "**/__tests__/**", "**/__mocks__/**", "**/__fixtures__/**"]
+    "exclude": [
+        "node_modules",
+        ".next",
+        "**/__tests__/**",
+        "**/__mocks__/**",
+        "**/__fixtures__/**",
+        "vitest.setup.ts",
+        "vitest.config.ts",
+        "vitest.integration.config.ts",
+        "e2e/**"
+    ]
 }

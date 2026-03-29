@@ -599,7 +599,13 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
      * Type guard for Drizzle table values.
      */
     private isDrizzleTable(value: unknown): value is DrizzleTable {
-        return typeof value === 'object' && value !== null && 'id' in value;
+        if (typeof value !== 'object' || value === null) {
+            return false;
+        }
+
+        const symbols = Object.getOwnPropertySymbols(value);
+
+        return symbols.some((s) => s.toString().includes('Columns'));
     }
 
     /**

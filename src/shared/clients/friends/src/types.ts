@@ -154,8 +154,8 @@ export interface FriendsPresenceConfig {
     getToken: () => Promise<string> | string;
 }
 
-/** The connection state of the WebSocket presence client. */
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
+/** Re-exported WebSocket lifecycle state and error types from @armoury/network. */
+export type { ConnectionState, WebSocketErrorEvent, WebSocketErrorSource } from '@armoury/network';
 
 // === Error Classes ===
 

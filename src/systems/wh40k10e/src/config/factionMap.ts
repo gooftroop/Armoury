@@ -241,13 +241,13 @@ export const FACTION_MAP: Record<string, FactionConfig> = {
     'adeptus-titanicus': {
         id: 'adeptus-titanicus',
         name: 'Adeptus Titanicus',
-        files: ['Adeptus Titanicus.cat'],
+        files: ['Imperium - Adeptus Titanicus.cat'],
         superFaction: 'Imperium',
     },
     'titanicus-traitoris': {
         id: 'titanicus-traitoris',
         name: 'Titanicus Traitoris',
-        files: ['Titanicus Traitoris.cat'],
+        files: ['Chaos - Titanicus Traitoris.cat'],
         superFaction: 'Chaos',
     },
     'unaligned-forces': {

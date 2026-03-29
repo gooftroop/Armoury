@@ -1,3 +1,6 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+// Must be the first import so Sentry.init() executes before Sentry.wrapHandler().
+import './instrument.js';
 /**
  * Lambda entry point for the users service.
  *
@@ -98,10 +101,8 @@ interface LocalAdapterConstructor {
  * Resolves the DSQLAdapter class from @armoury/adapters-dsql at runtime using dynamic import.
  * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
  */
-const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
-    LocalDatabaseAdapter: LocalAdapterConstructor;
-};
+// Dynamic imports moved inside initializeAdapter() to avoid eager loading of
+// LocalDatabaseAdapter (which depends on 'pg') when 'pg' is externalized by esbuild.
 
 /**
  * Singleton database adapter instance reused across warm Lambda invocations.
@@ -127,20 +128,29 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
 
     const config = await getServiceConfig();
 
-    const adapter =
-        process.env['IS_OFFLINE'] === 'true'
-            ? new LocalDatabaseAdapter({
-                  host: process.env['LOCAL_DB_HOST'] ?? config.dsqlClusterEndpoint,
-                  port: Number(process.env['LOCAL_DB_PORT'] ?? '5432'),
-                  user: process.env['LOCAL_DB_USER'] ?? 'armoury',
-                  password: process.env['LOCAL_DB_PASSWORD'] ?? 'armoury_local',
-                  database: process.env['LOCAL_DB_NAME'] ?? 'armoury_users',
-                  ssl: process.env['LOCAL_DB_SSL'] === 'true',
-              })
-            : new DSQLAdapter({
-                  clusterEndpoint: config.dsqlClusterEndpoint,
-                  region: config.dsqlRegion,
-              });
+    let adapter: DatabaseAdapter & { initialize(): Promise<void> };
+
+    if (process.env['IS_OFFLINE'] === 'true') {
+        const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
+            LocalDatabaseAdapter: LocalAdapterConstructor;
+        };
+        adapter = new LocalDatabaseAdapter({
+            host: process.env['LOCAL_DB_HOST'] ?? config.dsqlClusterEndpoint,
+            port: Number(process.env['LOCAL_DB_PORT'] ?? '5432'),
+            user: process.env['LOCAL_DB_USER'] ?? 'armoury',
+            password: process.env['LOCAL_DB_PASSWORD'] ?? 'armoury_local',
+            database: process.env['LOCAL_DB_NAME'] ?? 'armoury_users',
+            ssl: process.env['LOCAL_DB_SSL'] === 'true',
+        });
+    } else {
+        const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as {
+            DSQLAdapter: DSQLAdapterConstructor;
+        };
+        adapter = new DSQLAdapter({
+            clusterEndpoint: config.dsqlClusterEndpoint,
+            region: config.dsqlRegion,
+        });
+    }
 
     await adapter.initialize();
 
@@ -161,19 +171,34 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
  * @param event - API Gateway proxy integration event with HTTP method, path, body, and authorizer context.
  * @returns API Gateway proxy response with status code, headers, and JSON body.
  */
-export async function handler(event: ApiGatewayEvent): Promise<ApiResponse> {
+export const handler = Sentry.wrapHandler(async (event: ApiGatewayEvent): Promise<ApiResponse> => {
+    Sentry.logger.info('[users] Handler invoked', {
+        httpMethod: event.httpMethod,
+        path: event.path,
+    });
+
     try {
         const adapter = await initializeAdapter();
         const userContext = extractUserContext(event);
         const response = await router(event, adapter, userContext);
 
+        Sentry.logger.info('[users] Handler completed', {
+            httpMethod: event.httpMethod,
+            path: event.path,
+            statusCode: response.statusCode,
+        });
+
         return response;
     } catch (error) {
-        console.error('Users handler error', error);
+        Sentry.logger.error('[users] Handler error', {
+            httpMethod: event.httpMethod,
+            path: event.path,
+            error: error instanceof Error ? error.message : String(error),
+        });
         Sentry.captureException(error);
 
         const normalizedError = error instanceof Error ? error : new Error('Unknown error');
 
         return formatErrorResponse(normalizedError);
     }
-}
+});
