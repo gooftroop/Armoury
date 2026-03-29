@@ -201,7 +201,7 @@ jobs:
                   npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
                   npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
 
-            - name: Create REST routing rule
+            - name: Create HTTP API routing rule
               if: github.event_name == 'pull_request' && inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -214,21 +214,23 @@ jobs:
                   # gives each PR its own priority band (e.g. PR 42 + base 100 = 42100).
                   PRIORITY=$((PR_NUMBER * 1000 + BASE_PRIORITY))
                   STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
-                  REST_API_ID=$(aws cloudformation describe-stacks \
-                    --stack-name "${STACK_NAME}" \
-                    --query 'Stacks[0].Outputs[?OutputKey==`ServiceEndpoint`].OutputValue' \
-                    --output text | grep -oP '(?<=https://)[^.]+' || true)
 
-                  # Fallback: get REST API ID from CloudFormation resource
-                  if [ -z "${REST_API_ID}" ]; then
-                    REST_API_ID=$(aws cloudformation describe-stack-resource \
+                  # Get HTTP API ID from CloudFormation output (Serverless Framework exports HttpApiId)
+                  HTTP_API_ID=$(aws cloudformation describe-stacks \
+                    --stack-name "${STACK_NAME}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`HttpApiId`].OutputValue' \
+                    --output text || true)
+
+                  # Fallback: get HTTP API ID from CloudFormation resource
+                  if [ -z "${HTTP_API_ID}" ] || [ "${HTTP_API_ID}" = "None" ]; then
+                    HTTP_API_ID=$(aws cloudformation describe-stack-resource \
                       --stack-name "${STACK_NAME}" \
-                      --logical-resource-id ApiGatewayRestApi \
+                      --logical-resource-id HttpApi \
                       --query 'StackResourceDetail.PhysicalResourceId' \
                       --output text)
                   fi
 
-                  echo "REST API ID: ${REST_API_ID}"
+                  echo "HTTP API ID: ${HTTP_API_ID}"
 
                   # Delete existing routing rule for this PR+service if it exists
                   EXISTING_RULE_ARN=$(aws apigatewayv2 list-routing-rules \
@@ -244,7 +246,7 @@ jobs:
                       --routing-rule-id "${EXISTING_RULE_ID}"
                   fi
 
-                  # Create routing rule: Host header match + base path match
+                  # Create routing rule: Host header match + base path match -> HTTP API
                   aws apigatewayv2 create-routing-rule \
                     --domain-name "${WILDCARD_DOMAIN}" \
                     --priority "${PRIORITY}" \
@@ -265,13 +267,13 @@ jobs:
                     ]' \
                     --actions '[{
                       "InvokeApi": {
-                        "ApiId": "'"${REST_API_ID}"'",
-                        "Stage": "pr-'"${PR_NUMBER}"'",
+                        "ApiId": "'"${HTTP_API_ID}"'",
+                        "Stage": "$default",
                         "StripBasePath": false
                       }
                     }]'
 
-                  echo "Created routing rule for pr-${PR_NUMBER}.api.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${REST_API_ID}"
+                  echo "Created routing rule for pr-${PR_NUMBER}.api.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
 
             - name: Create WS domain mapping
               if: github.event_name == 'pull_request' && inputs.has-websocket
@@ -420,27 +422,30 @@ jobs:
                   npx @sentry/cli releases set-commits "${{ env.SENTRY_RELEASE }}" --auto --project "${{ inputs.sentry-project }}"
                   npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
                   npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
-            - name: Create REST API mapping
+            - name: Create HTTP API mapping
               if: inputs.service-short-name != ''
               env:
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
                   PRODUCTION_DOMAIN: 'api.armoury-app.com'
               run: |
                   STACK_NAME="armoury-${SERVICE_SHORT_NAME}-production"
-                  REST_API_ID=$(aws cloudformation describe-stacks \
-                    --stack-name "${STACK_NAME}" \
-                    --query 'Stacks[0].Outputs[?OutputKey==`ServiceEndpoint`].OutputValue' \
-                    --output text | grep -oP '(?<=https://)[^.]+' || true)
 
-                  if [ -z "${REST_API_ID}" ]; then
-                    REST_API_ID=$(aws cloudformation describe-stack-resource \
+                  # Get HTTP API ID from CloudFormation output (Serverless Framework exports HttpApiId)
+                  HTTP_API_ID=$(aws cloudformation describe-stacks \
+                    --stack-name "${STACK_NAME}" \
+                    --query 'Stacks[0].Outputs[?OutputKey==`HttpApiId`].OutputValue' \
+                    --output text || true)
+
+                  # Fallback: get HTTP API ID from CloudFormation resource
+                  if [ -z "${HTTP_API_ID}" ] || [ "${HTTP_API_ID}" = "None" ]; then
+                    HTTP_API_ID=$(aws cloudformation describe-stack-resource \
                       --stack-name "${STACK_NAME}" \
-                      --logical-resource-id ApiGatewayRestApi \
+                      --logical-resource-id HttpApi \
                       --query 'StackResourceDetail.PhysicalResourceId' \
                       --output text)
                   fi
 
-                  echo "REST API ID: ${REST_API_ID}"
+                  echo "HTTP API ID: ${HTTP_API_ID}"
 
                   # Delete existing API mapping for this service if it exists
                   EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
@@ -455,21 +460,14 @@ jobs:
                       --api-mapping-id "${EXISTING_MAPPING_ID}"
                   fi
 
-                  # Get the REST API stage name
-                  STAGE_ID=$(aws apigateway get-stages \
-                    --rest-api-id "${REST_API_ID}" \
-                    --query "item[?stageName=='production'].stageName" \
-                    --output text)
-
-                  # Create API mapping: api.armoury-app.com/{service} -> REST API production stage
+                  # Create API mapping: api.armoury-app.com/{service} -> HTTP API $default stage
                   aws apigatewayv2 create-api-mapping \
                     --domain-name "${PRODUCTION_DOMAIN}" \
-                    --api-id "${REST_API_ID}" \
-                    --stage "${STAGE_ID}" \
+                    --api-id "${HTTP_API_ID}" \
+                    --stage "\$default" \
                     --api-mapping-key "${SERVICE_SHORT_NAME}"
 
-                  echo "Created API mapping for api.armoury-app.com/${SERVICE_SHORT_NAME} -> ${REST_API_ID}"
-
+                  echo "Created API mapping for api.armoury-app.com/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
             - name: Create WS API mapping
               if: inputs.has-websocket
               env:
