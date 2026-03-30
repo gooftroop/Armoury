@@ -139,6 +139,7 @@ export abstract class WebSocketClient<MessageT> {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
             const error = new Error('WebSocket is not connected');
             this.emitError(error, 'ws:send', {
+                data,
                 readyState: this.ws?.readyState,
             });
             throw error;
@@ -183,16 +184,14 @@ export abstract class WebSocketClient<MessageT> {
         }
 
         this.cleanupWebSocket();
-        this.lastError = null;
 
         const url = `${this.wsUrl}?Auth=${encodeURIComponent(token)}`;
         this.ws = new WebSocket(url);
 
         this.ws.onerror = (event: Event) => {
             const wsError = new Error('WebSocket error event');
-            this.lastError = wsError;
             this.emitError(wsError, 'ws:error', {
-                ...event,
+                event,
                 readyState: this.ws?.readyState,
             });
         };
@@ -216,13 +215,10 @@ export abstract class WebSocketClient<MessageT> {
 
         this.ws.onclose = (_event: CloseEvent) => {
             this.clearHeartbeat();
-
-            const errorBeforeClose = this.lastError;
-            this.lastError = null;
             this.ws = null;
 
             if (!this.intentionalClose && !this.disposed) {
-                this.scheduleReconnect(errorBeforeClose);
+                this.scheduleReconnect();
             } else {
                 this.setState('disconnected');
             }
@@ -250,7 +246,7 @@ export abstract class WebSocketClient<MessageT> {
         }
     }
 
-    private scheduleReconnect(_causingError?: Error | null): void {
+    private scheduleReconnect(): void {
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
             this.setState('disconnected');
 
