@@ -50,7 +50,7 @@ describe('campaigns REST e2e', () => {
     });
 
     it('creates a campaign and returns 201', async () => {
-        const res = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const res = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
 
         expect(res.statusCode).toBe(201);
         const campaign = JSON.parse(res.body) as Campaign;
@@ -61,28 +61,20 @@ describe('campaigns REST e2e', () => {
     });
 
     it('lists campaigns by organizer', async () => {
-        await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
-        await router(
-            restEvent('POST', '/campaigns', { ...createCampaignBody, name: 'Second War' }),
-            adapter,
-            organizer,
-        );
+        await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
+        await router(restEvent('POST', '/', { ...createCampaignBody, name: 'Second War' }), adapter, organizer);
 
-        const res = await router(restEvent('GET', '/campaigns'), adapter, organizer);
+        const res = await router(restEvent('GET', '/'), adapter, organizer);
         expect(res.statusCode).toBe(200);
         const campaigns = JSON.parse(res.body) as Campaign[];
         expect(campaigns.length).toBeGreaterThanOrEqual(2);
     });
 
     it('gets a campaign by id', async () => {
-        const createRes = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const createRes = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
         const created = JSON.parse(createRes.body) as Campaign;
 
-        const getRes = await router(
-            restEvent('GET', '/campaigns/{id}', undefined, { id: created.id }),
-            adapter,
-            organizer,
-        );
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, organizer);
 
         expect(getRes.statusCode).toBe(200);
         const fetched = JSON.parse(getRes.body) as Campaign;
@@ -90,13 +82,13 @@ describe('campaigns REST e2e', () => {
     });
 
     it('updates a campaign', async () => {
-        const createRes = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const createRes = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
         const created = JSON.parse(createRes.body) as Campaign;
 
         const updateRes = await router(
             restEvent(
                 'PUT',
-                '/campaigns/{id}',
+                '/{id}',
                 { ...createCampaignBody, name: 'Updated Campaign', status: 'completed' },
                 { id: created.id },
             ),
@@ -111,30 +103,22 @@ describe('campaigns REST e2e', () => {
     });
 
     it('deletes a campaign', async () => {
-        const createRes = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const createRes = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
         const created = JSON.parse(createRes.body) as Campaign;
 
-        const deleteRes = await router(
-            restEvent('DELETE', '/campaigns/{id}', undefined, { id: created.id }),
-            adapter,
-            organizer,
-        );
+        const deleteRes = await router(restEvent('DELETE', '/{id}', undefined, { id: created.id }), adapter, organizer);
         expect(deleteRes.statusCode).toBe(204);
 
-        const getRes = await router(
-            restEvent('GET', '/campaigns/{id}', undefined, { id: created.id }),
-            adapter,
-            organizer,
-        );
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, organizer);
         expect(getRes.statusCode).toBe(404);
     });
 
     it('joins a campaign as participant', async () => {
-        const createRes = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const createRes = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
         const campaign = JSON.parse(createRes.body) as Campaign;
 
         const joinRes = await router(
-            restEvent('POST', '/campaigns/{id}/participants', joinBody, { id: campaign.id }),
+            restEvent('POST', '/{id}/participants', joinBody, { id: campaign.id }),
             adapter,
             participant,
         );
@@ -146,17 +130,13 @@ describe('campaigns REST e2e', () => {
     });
 
     it('lists participants for a campaign', async () => {
-        const createRes = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const createRes = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
         const campaign = JSON.parse(createRes.body) as Campaign;
 
-        await router(
-            restEvent('POST', '/campaigns/{id}/participants', joinBody, { id: campaign.id }),
-            adapter,
-            participant,
-        );
+        await router(restEvent('POST', '/{id}/participants', joinBody, { id: campaign.id }), adapter, participant);
 
         const listRes = await router(
-            restEvent('GET', '/campaigns/{id}/participants', undefined, { id: campaign.id }),
+            restEvent('GET', '/{id}/participants', undefined, { id: campaign.id }),
             adapter,
             organizer,
         );
@@ -167,11 +147,11 @@ describe('campaigns REST e2e', () => {
     });
 
     it('updates a participant', async () => {
-        const createRes = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const createRes = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
         const campaign = JSON.parse(createRes.body) as Campaign;
 
         const joinRes = await router(
-            restEvent('POST', '/campaigns/{id}/participants', joinBody, { id: campaign.id }),
+            restEvent('POST', '/{id}/participants', joinBody, { id: campaign.id }),
             adapter,
             participant,
         );
@@ -180,7 +160,7 @@ describe('campaigns REST e2e', () => {
         const updateRes = await router(
             restEvent(
                 'PUT',
-                '/campaigns/{id}/participants/{pid}',
+                '/{id}/participants/{pid}',
                 { ...joinBody, displayName: 'Updated Name', matchesInCurrentPhase: 3 },
                 { id: campaign.id, pid: joined.id },
             ),
@@ -194,18 +174,18 @@ describe('campaigns REST e2e', () => {
     });
 
     it('deletes a participant', async () => {
-        const createRes = await router(restEvent('POST', '/campaigns', createCampaignBody), adapter, organizer);
+        const createRes = await router(restEvent('POST', '/', createCampaignBody), adapter, organizer);
         const campaign = JSON.parse(createRes.body) as Campaign;
 
         const joinRes = await router(
-            restEvent('POST', '/campaigns/{id}/participants', joinBody, { id: campaign.id }),
+            restEvent('POST', '/{id}/participants', joinBody, { id: campaign.id }),
             adapter,
             participant,
         );
         const joined = JSON.parse(joinRes.body) as CampaignParticipant;
 
         const deleteRes = await router(
-            restEvent('DELETE', '/campaigns/{id}/participants/{pid}', undefined, {
+            restEvent('DELETE', '/{id}/participants/{pid}', undefined, {
                 id: campaign.id,
                 pid: joined.id,
             }),
@@ -216,11 +196,7 @@ describe('campaigns REST e2e', () => {
     });
 
     it('returns 404 for nonexistent campaign', async () => {
-        const res = await router(
-            restEvent('GET', '/campaigns/{id}', undefined, { id: 'nonexistent' }),
-            adapter,
-            organizer,
-        );
+        const res = await router(restEvent('GET', '/{id}', undefined, { id: 'nonexistent' }), adapter, organizer);
         expect(res.statusCode).toBe(404);
     });
 });
