@@ -77,7 +77,6 @@ build:
             - '@aws-sdk/dsql-signer'
             - '@aws-sdk/client-ssm'
             - '@aws-sdk/client-apigatewaymanagementapi'
-            - pg
 
 plugins:
     - serverless-offline
