@@ -1,4 +1,4 @@
-# Force redeploy: wildcard CORS origin for sandbox
+# Trigger redeploy: IAM policy fix for apigateway:GET on tags
 service: armoury-friends
 
 provider:
