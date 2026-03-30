@@ -82,7 +82,6 @@ export abstract class WebSocketClient<MessageT> {
     private intentionalClose = false;
     private disposed = false;
     private connectionState: ConnectionState = 'disconnected';
-    private lastError: Error | null = null;
 
     /** Current connection state for this client instance. */
     get state(): ConnectionState {
