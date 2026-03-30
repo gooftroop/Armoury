@@ -179,7 +179,7 @@ export type PresenceStatus = 'online' | 'offline' | 'away' | 'invisible';
  * | user_id        | TEXT | PRIMARY KEY |
  * | status         | TEXT | NOT NULL    |
  * | connection_id  | TEXT |             |
- * | last_active_at | TEXT | NOT NULL    |
+ * | last_seen      | TEXT | NOT NULL    |
  */
 export interface UserPresence {
     /** User identifier (primary key). */
