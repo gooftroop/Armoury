@@ -47,7 +47,7 @@ describe('users REST e2e', () => {
     });
 
     it('creates a user and returns 201', async () => {
-        const res = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const res = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
 
         expect(res.statusCode).toBe(201);
         const user = JSON.parse(res.body) as User;
@@ -58,28 +58,24 @@ describe('users REST e2e', () => {
     });
 
     it('lists users', async () => {
-        await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         await router(
-            restEvent('POST', '/users', { ...createUserBody, sub: 'user-sub-2', name: 'Second User' }),
+            restEvent('POST', '/', { ...createUserBody, sub: 'user-sub-2', name: 'Second User' }),
             adapter,
             userContext,
         );
 
-        const res = await router(restEvent('GET', '/users'), adapter, userContext);
+        const res = await router(restEvent('GET', '/'), adapter, userContext);
         expect(res.statusCode).toBe(200);
         const users = JSON.parse(res.body) as User[];
         expect(users.length).toBeGreaterThanOrEqual(2);
     });
 
     it('gets a user by id', async () => {
-        const createRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const created = JSON.parse(createRes.body) as User;
 
-        const getRes = await router(
-            restEvent('GET', '/users/{id}', undefined, { id: created.id }),
-            adapter,
-            userContext,
-        );
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, userContext);
 
         expect(getRes.statusCode).toBe(200);
         const fetched = JSON.parse(getRes.body) as User;
@@ -87,11 +83,11 @@ describe('users REST e2e', () => {
     });
 
     it('updates a user', async () => {
-        const createRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const created = JSON.parse(createRes.body) as User;
 
         const updateRes = await router(
-            restEvent('PUT', '/users/{id}', { name: 'Updated Name', email: 'updated@armoury.dev' }, { id: created.id }),
+            restEvent('PUT', '/{id}', { name: 'Updated Name', email: 'updated@armoury.dev' }, { id: created.id }),
             adapter,
             userContext,
         );
@@ -103,30 +99,26 @@ describe('users REST e2e', () => {
     });
 
     it('deletes a user', async () => {
-        const createRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const created = JSON.parse(createRes.body) as User;
 
         const deleteRes = await router(
-            restEvent('DELETE', '/users/{id}', undefined, { id: created.id }),
+            restEvent('DELETE', '/{id}', undefined, { id: created.id }),
             adapter,
             userContext,
         );
         expect(deleteRes.statusCode).toBe(204);
 
-        const getRes = await router(
-            restEvent('GET', '/users/{id}', undefined, { id: created.id }),
-            adapter,
-            userContext,
-        );
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, userContext);
         expect(getRes.statusCode).toBe(404);
     });
 
     it('creates an account for a user', async () => {
-        const createUserRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createUserRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const user = JSON.parse(createUserRes.body) as User;
 
         const createAccountRes = await router(
-            restEvent('POST', '/users/{id}/account', createAccountBody, { id: user.id }),
+            restEvent('POST', '/{id}/account', createAccountBody, { id: user.id }),
             adapter,
             userContext,
         );
@@ -139,17 +131,13 @@ describe('users REST e2e', () => {
     });
 
     it('gets an account for a user', async () => {
-        const createUserRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createUserRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const user = JSON.parse(createUserRes.body) as User;
 
-        await router(
-            restEvent('POST', '/users/{id}/account', createAccountBody, { id: user.id }),
-            adapter,
-            userContext,
-        );
+        await router(restEvent('POST', '/{id}/account', createAccountBody, { id: user.id }), adapter, userContext);
 
         const getRes = await router(
-            restEvent('GET', '/users/{id}/account', undefined, { id: user.id }),
+            restEvent('GET', '/{id}/account', undefined, { id: user.id }),
             adapter,
             userContext,
         );
@@ -160,19 +148,15 @@ describe('users REST e2e', () => {
     });
 
     it('updates an account', async () => {
-        const createUserRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createUserRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const user = JSON.parse(createUserRes.body) as User;
 
-        await router(
-            restEvent('POST', '/users/{id}/account', createAccountBody, { id: user.id }),
-            adapter,
-            userContext,
-        );
+        await router(restEvent('POST', '/{id}/account', createAccountBody, { id: user.id }), adapter, userContext);
 
         const updateRes = await router(
             restEvent(
                 'PUT',
-                '/users/{id}/account',
+                '/{id}/account',
                 { preferences: { theme: 'light', language: 'es', notificationsEnabled: false } },
                 { id: user.id },
             ),
@@ -187,24 +171,20 @@ describe('users REST e2e', () => {
     });
 
     it('deletes an account', async () => {
-        const createUserRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createUserRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const user = JSON.parse(createUserRes.body) as User;
 
-        await router(
-            restEvent('POST', '/users/{id}/account', createAccountBody, { id: user.id }),
-            adapter,
-            userContext,
-        );
+        await router(restEvent('POST', '/{id}/account', createAccountBody, { id: user.id }), adapter, userContext);
 
         const deleteRes = await router(
-            restEvent('DELETE', '/users/{id}/account', undefined, { id: user.id }),
+            restEvent('DELETE', '/{id}/account', undefined, { id: user.id }),
             adapter,
             userContext,
         );
         expect(deleteRes.statusCode).toBe(204);
 
         const getRes = await router(
-            restEvent('GET', '/users/{id}/account', undefined, { id: user.id }),
+            restEvent('GET', '/{id}/account', undefined, { id: user.id }),
             adapter,
             userContext,
         );
@@ -212,26 +192,18 @@ describe('users REST e2e', () => {
     });
 
     it('returns 404 for nonexistent user', async () => {
-        const res = await router(
-            restEvent('GET', '/users/{id}', undefined, { id: 'nonexistent' }),
-            adapter,
-            userContext,
-        );
+        const res = await router(restEvent('GET', '/{id}', undefined, { id: 'nonexistent' }), adapter, userContext);
         expect(res.statusCode).toBe(404);
     });
 
     it('returns 409 when creating duplicate account', async () => {
-        const createUserRes = await router(restEvent('POST', '/users', createUserBody), adapter, userContext);
+        const createUserRes = await router(restEvent('POST', '/', createUserBody), adapter, userContext);
         const user = JSON.parse(createUserRes.body) as User;
 
-        await router(
-            restEvent('POST', '/users/{id}/account', createAccountBody, { id: user.id }),
-            adapter,
-            userContext,
-        );
+        await router(restEvent('POST', '/{id}/account', createAccountBody, { id: user.id }), adapter, userContext);
 
         const duplicateRes = await router(
-            restEvent('POST', '/users/{id}/account', createAccountBody, { id: user.id }),
+            restEvent('POST', '/{id}/account', createAccountBody, { id: user.id }),
             adapter,
             userContext,
         );

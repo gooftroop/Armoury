@@ -37,7 +37,7 @@ describe('friends REST e2e', () => {
     });
 
     it('sends a friend request and returns 201 with pending status', async () => {
-        const res = await router(restEvent('POST', '/friends', friendRequestBody), adapter, userA);
+        const res = await router(restEvent('POST', '/', friendRequestBody), adapter, userA);
 
         expect(res.statusCode).toBe(201);
         const friend = JSON.parse(res.body) as Friend;
@@ -48,22 +48,22 @@ describe('friends REST e2e', () => {
     });
 
     it('lists friends filtered by user', async () => {
-        await router(restEvent('POST', '/friends', friendRequestBody), adapter, userA);
+        await router(restEvent('POST', '/', friendRequestBody), adapter, userA);
 
-        const resA = await router(restEvent('GET', '/friends'), adapter, userA);
+        const resA = await router(restEvent('GET', '/'), adapter, userA);
         const friendsA = JSON.parse(resA.body) as Friend[];
         expect(friendsA).toHaveLength(1);
 
-        const resB = await router(restEvent('GET', '/friends'), adapter, userB);
+        const resB = await router(restEvent('GET', '/'), adapter, userB);
         const friendsB = JSON.parse(resB.body) as Friend[];
         expect(friendsB).toHaveLength(1);
     });
 
     it('gets a friend by id', async () => {
-        const createRes = await router(restEvent('POST', '/friends', friendRequestBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', friendRequestBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Friend;
 
-        const getRes = await router(restEvent('GET', '/friends/{id}', undefined, { id: created.id }), adapter, userA);
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, userA);
 
         expect(getRes.statusCode).toBe(200);
         const fetched = JSON.parse(getRes.body) as Friend;
@@ -71,11 +71,11 @@ describe('friends REST e2e', () => {
     });
 
     it('accepts a pending friend request', async () => {
-        const createRes = await router(restEvent('POST', '/friends', friendRequestBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', friendRequestBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Friend;
 
         const updateRes = await router(
-            restEvent('PUT', '/friends/{id}', { status: 'accepted' }, { id: created.id }),
+            restEvent('PUT', '/{id}', { status: 'accepted' }, { id: created.id }),
             adapter,
             userB,
         );
@@ -86,11 +86,11 @@ describe('friends REST e2e', () => {
     });
 
     it('blocks a pending friend request', async () => {
-        const createRes = await router(restEvent('POST', '/friends', friendRequestBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', friendRequestBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Friend;
 
         const updateRes = await router(
-            restEvent('PUT', '/friends/{id}', { status: 'blocked' }, { id: created.id }),
+            restEvent('PUT', '/{id}', { status: 'blocked' }, { id: created.id }),
             adapter,
             userB,
         );
@@ -101,37 +101,29 @@ describe('friends REST e2e', () => {
     });
 
     it('rejects invalid status transition from blocked', async () => {
-        const createRes = await router(restEvent('POST', '/friends', friendRequestBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', friendRequestBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Friend;
 
-        await router(restEvent('PUT', '/friends/{id}', { status: 'blocked' }, { id: created.id }), adapter, userB);
+        await router(restEvent('PUT', '/{id}', { status: 'blocked' }, { id: created.id }), adapter, userB);
 
-        const res = await router(
-            restEvent('PUT', '/friends/{id}', { status: 'accepted' }, { id: created.id }),
-            adapter,
-            userB,
-        );
+        const res = await router(restEvent('PUT', '/{id}', { status: 'accepted' }, { id: created.id }), adapter, userB);
 
         expect(res.statusCode).toBe(400);
     });
 
     it('deletes a friend relationship', async () => {
-        const createRes = await router(restEvent('POST', '/friends', friendRequestBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', friendRequestBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Friend;
 
-        const deleteRes = await router(
-            restEvent('DELETE', '/friends/{id}', undefined, { id: created.id }),
-            adapter,
-            userA,
-        );
+        const deleteRes = await router(restEvent('DELETE', '/{id}', undefined, { id: created.id }), adapter, userA);
         expect(deleteRes.statusCode).toBe(204);
 
-        const getRes = await router(restEvent('GET', '/friends/{id}', undefined, { id: created.id }), adapter, userA);
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, userA);
         expect(getRes.statusCode).toBe(404);
     });
 
     it('returns 404 for nonexistent friend', async () => {
-        const res = await router(restEvent('GET', '/friends/{id}', undefined, { id: 'nonexistent' }), adapter, userA);
+        const res = await router(restEvent('GET', '/{id}', undefined, { id: 'nonexistent' }), adapter, userA);
         expect(res.statusCode).toBe(404);
     });
 });

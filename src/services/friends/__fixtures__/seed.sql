@@ -15,6 +15,6 @@ CREATE TABLE IF NOT EXISTS user_presence (
     user_id TEXT PRIMARY KEY,
     connection_id TEXT,
     status TEXT NOT NULL DEFAULT 'offline',
-    last_active_at TEXT NOT NULL
+    last_seen TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_user_presence_connection_id ON user_presence(connection_id);
