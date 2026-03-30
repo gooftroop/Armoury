@@ -1,3 +1,4 @@
+# Force redeploy: wildcard CORS origin for sandbox
 service: armoury-friends
 
 provider:

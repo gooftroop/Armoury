@@ -177,7 +177,7 @@ jobs:
                   AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
                   SENTRY_DSN: ${{ env.SENTRY_DSN }}
                   SENTRY_RELEASE: ${{ env.SENTRY_RELEASE }}
-                  ALLOWED_ORIGIN: ${{ format('https://pr-{0}.sandbox.armoury-app.com', github.event.pull_request.number) }}
+                  ALLOWED_ORIGIN: '*'
               run: |
                   SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
                   export DSQL_ENDPOINT_PARAM="/armoury/sandbox/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint"
