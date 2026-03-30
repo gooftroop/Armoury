@@ -1,6 +1,7 @@
 import type {
     CreateAccountPayload,
     CreateUserPayload,
+    SystemPreferences,
     UpdateAccountPayload,
     UpdateUserPayload,
     UserPreferences,
@@ -137,6 +138,37 @@ export function isUserPreferences(value: unknown): value is UserPreferences {
 }
 
 /**
+ * Type guard for SystemPreferences objects.
+ *
+ * @param value - Unknown value to test.
+ * @returns True when the value conforms to SystemPreferences shape.
+ */
+export function isSystemPreferences(value: unknown): value is SystemPreferences {
+    if (!isRecord(value)) {
+        return false;
+    }
+
+    const enabled = value['enabled'];
+    const lastSyncedAt = value['lastSyncedAt'];
+
+    return isBoolean(enabled) && (lastSyncedAt === null || isString(lastSyncedAt));
+}
+
+/**
+ * Type guard for a Record of SystemPreferences.
+ *
+ * @param value - Unknown value to test.
+ * @returns True when every value in the record is a valid SystemPreferences.
+ */
+export function isSystemPreferencesMap(value: unknown): value is Record<string, SystemPreferences> {
+    if (!isRecord(value)) {
+        return false;
+    }
+
+    return Object.values(value).every(isSystemPreferences);
+}
+
+/**
  * Validates a create account request payload.
  *
  * @param body - Incoming request body.
@@ -170,16 +202,22 @@ export function parseUpdateAccount(body: unknown | null): UpdateAccountPayload |
     }
 
     const preferences = body['preferences'];
+    const systems = body['systems'];
 
     if (preferences !== undefined && !isUserPreferences(preferences)) {
         return new Error('Invalid preferences value');
     }
 
-    if (preferences === undefined) {
+    if (systems !== undefined && !isSystemPreferencesMap(systems)) {
+        return new Error('Invalid systems value');
+    }
+
+    if (preferences === undefined && systems === undefined) {
         return new Error('No updates provided');
     }
 
     return {
         preferences: isUserPreferences(preferences) ? preferences : undefined,
+        systems: isSystemPreferencesMap(systems) ? systems : undefined,
     };
 }

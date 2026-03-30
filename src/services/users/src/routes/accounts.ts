@@ -149,6 +149,7 @@ export const updateAccount: RouteHandler = async (
     const updated: Account = {
         ...existing,
         preferences: request.preferences ?? existing.preferences,
+        systems: request.systems ? { ...existing.systems, ...request.systems } : existing.systems,
         updatedAt: now,
     };
 

@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/aws-serverless';
 import type { DatabaseAdapter, Friend, UserPresence, WebSocketResponse, WsRouteHandler } from '@/types.js';
 import { createBroadcaster } from '@/utils/broadcast.js';
+import { captureWsError } from '@/utils/wsErrors.js';
 
 const ONLINE_STATUS: UserPresence['status'] = 'online';
 const OFFLINE_STATUS: UserPresence['status'] = 'offline';
@@ -29,7 +30,25 @@ export const handleWsConnect: WsRouteHandler = async (
         lastSeen: now,
     };
 
-    await adapter.put('userPresence', presence);
+    try {
+        await adapter.put('userPresence', presence);
+    } catch (error) {
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(normalizedError, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: userContext.sub,
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'ServerError',
+                message: 'Failed to establish presence',
+            }),
+        };
+    }
 
     Sentry.addBreadcrumb({
         category: 'websocket.connect',

@@ -99,6 +99,17 @@ export interface UserPreferences {
 }
 
 /**
+ * Per-game-system preferences for a user.
+ */
+export interface SystemPreferences {
+    /** Whether the user has enabled and downloaded this game system's data. */
+    enabled: boolean;
+
+    /** ISO 8601 timestamp of the last successful data sync, or null if never synced. */
+    lastSyncedAt: string | null;
+}
+
+/**
  * Account entity — user preferences record.
  *
  * Each user has at most one account. The account stores
@@ -232,4 +243,7 @@ export interface CreateAccountPayload {
 export interface UpdateAccountPayload {
     /** Optional updated user preferences. */
     preferences?: UserPreferences;
+
+    /** Optional updated per-game-system preferences keyed by system ID. */
+    systems?: Record<string, SystemPreferences>;
 }

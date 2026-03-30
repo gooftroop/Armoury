@@ -86,11 +86,32 @@ export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise
         return response;
     } catch (error) {
         const normalizedError = error instanceof Error ? error : new Error(String(error));
+        const routeKey = event.requestContext.routeKey;
+        const connectionId = event.requestContext.connectionId;
 
         captureWsError(normalizedError, 'adapter:init', {
-            connectionId: event.requestContext.connectionId,
-            routeKey: event.requestContext.routeKey,
+            connectionId,
+            routeKey,
         });
+
+        // For non-$connect routes the WebSocket connection is already
+        // established, so we can push a structured error frame to the
+        // client before returning the failure status code.
+        if (routeKey !== '$connect') {
+            try {
+                const { createBroadcaster } = await import('@/utils/broadcast.js');
+                const broadcaster = createBroadcaster(event);
+
+                await broadcaster.send(connectionId, {
+                    action: 'error',
+                    error: 'ServerError',
+                    message: normalizedError.message || 'Unknown error',
+                });
+            } catch {
+                // Best-effort — if the broadcast itself fails we still
+                // return the 500 and let Sentry capture the original error.
+            }
+        }
 
         return {
             statusCode: 500,
