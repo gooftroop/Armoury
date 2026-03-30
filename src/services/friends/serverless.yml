@@ -1,5 +1,10 @@
-# Trigger redeploy: IAM policy fix for apigateway:GET on tags
 service: armoury-friends
+
+params:
+    production:
+        environment: production
+    default:
+        environment: sandbox
 
 provider:
     name: aws
@@ -26,7 +31,7 @@ provider:
                 - Effect: Allow
                   Action:
                       - ssm:GetParameter
-                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${param:environment}/*'
                 - Effect: Allow
                   Action:
                       - execute-api:ManageConnections
