@@ -92,22 +92,52 @@ functions:
         events:
             - httpApi:
                   path: /campaigns
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /campaigns
+                  method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
                   path: /campaigns/{id}
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /campaigns/{id}
+                  method: PUT
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /campaigns/{id}
+                  method: DELETE
                   authorizer:
                       name: auth0Jwt
             - httpApi:
                   path: /campaigns/{id}/participants
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /campaigns/{id}/participants
+                  method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
                   path: /campaigns/{id}/participants/{pid}
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /campaigns/{id}/participants/{pid}
+                  method: PUT
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /campaigns/{id}/participants/{pid}
+                  method: DELETE
                   authorizer:
                       name: auth0Jwt
 

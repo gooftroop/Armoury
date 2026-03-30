@@ -92,17 +92,47 @@ functions:
         events:
             - httpApi:
                   path: /users
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /users
+                  method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
                   path: /users/{id}
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /users/{id}
+                  method: PUT
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /users/{id}
+                  method: DELETE
                   authorizer:
                       name: auth0Jwt
             - httpApi:
                   path: /users/{id}/account
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /users/{id}/account
+                  method: POST
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /users/{id}/account
+                  method: PUT
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /users/{id}/account
+                  method: DELETE
                   authorizer:
                       name: auth0Jwt
 

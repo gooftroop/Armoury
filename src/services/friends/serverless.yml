@@ -14,6 +14,7 @@ provider:
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
+        ALLOWED_ORIGIN: ${self:custom.allowedOrigin}
     iam:
         role:
             statements:
@@ -43,6 +44,19 @@ provider:
                 issuerUrl: https://${env:AUTH0_DOMAIN}/
                 audience:
                     - ${env:AUTH0_AUDIENCE}
+        cors:
+            allowedOrigins:
+                - ${self:custom.allowedOrigin}
+            allowedHeaders:
+                - Content-Type
+                - Authorization
+            allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
+                - OPTIONS
     logs:
         websocket: true
 
@@ -69,6 +83,7 @@ plugins:
     - serverless-offline
 
 custom:
+    allowedOrigin: ${env:ALLOWED_ORIGIN, '*'}
     serverless-offline:
         httpPort: 3004
         websocketPort: 3005
@@ -81,12 +96,27 @@ functions:
         events:
             - httpApi:
                   path: /friends
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /friends
+                  method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
                   path: /friends/{id}
-                  method: ANY
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /friends/{id}
+                  method: PUT
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /friends/{id}
+                  method: DELETE
                   authorizer:
                       name: auth0Jwt
     friendsWebsocket:
