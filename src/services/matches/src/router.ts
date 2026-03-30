@@ -13,11 +13,11 @@ const CORS_HEADERS = {
 type RouteKey = `${string}::${string}`;
 
 const ROUTE_MAP: Record<RouteKey, RouteHandler> = {
-    '/matches::POST': createMatch,
-    '/matches::GET': listMatches,
-    '/matches/{id}::GET': getMatch,
-    '/matches/{id}::PUT': updateMatch,
-    '/matches/{id}::DELETE': deleteMatch,
+    '/::POST': createMatch,
+    '/::GET': listMatches,
+    '/{id}::GET': getMatch,
+    '/{id}::PUT': updateMatch,
+    '/{id}::DELETE': deleteMatch,
 };
 
 /**

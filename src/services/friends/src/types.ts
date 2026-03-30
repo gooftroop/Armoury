@@ -192,7 +192,7 @@ export interface UserPresence {
     connectionId: string | null;
 
     /** Timestamp of last activity. ISO 8601. */
-    lastActiveAt: string;
+    lastSeen: string;
 }
 
 // ---------------------------------------------------------------------------

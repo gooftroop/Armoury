@@ -74,12 +74,12 @@ describe('router', () => {
         await adapter.initialize();
     });
 
-    it('routes POST /campaigns to create', async () => {
+    it('routes POST / to create', async () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -91,12 +91,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ name: createRequest.name });
     });
 
-    it('routes GET /campaigns to list', async () => {
+    it('routes GET / to list', async () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: null,
                 pathParameters: null,
             },
@@ -108,12 +108,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toEqual([]);
     });
 
-    it('routes GET /campaigns/:id to get', async () => {
+    it('routes GET /:id to get', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -125,8 +125,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: `/campaigns/${created.id}`,
-                resource: '/campaigns/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: created.id },
             },
@@ -138,12 +138,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ id: created.id });
     });
 
-    it('routes PUT /campaigns/:id to update', async () => {
+    it('routes PUT /:id to update', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -155,8 +155,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'PUT',
-                path: `/campaigns/${created.id}`,
-                resource: '/campaigns/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: JSON.stringify(updateRequest),
                 pathParameters: { id: created.id },
             },
@@ -168,12 +168,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ name: updateRequest.name });
     });
 
-    it('routes DELETE /campaigns/:id to delete', async () => {
+    it('routes DELETE /:id to delete', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -185,8 +185,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'DELETE',
-                path: `/campaigns/${created.id}`,
-                resource: '/campaigns/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: created.id },
             },
@@ -198,12 +198,12 @@ describe('router', () => {
         expect(response.body).toBe('');
     });
 
-    it('routes POST /campaigns/:id/participants to join', async () => {
+    it('routes POST /:id/participants to join', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -215,8 +215,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: `/campaigns/${created.id}/participants`,
-                resource: '/campaigns/{id}/participants',
+                path: `/${created.id}/participants`,
+                resource: '/{id}/participants',
                 body: JSON.stringify(joinRequest),
                 pathParameters: { id: created.id },
             },
@@ -228,12 +228,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ campaignId: created.id });
     });
 
-    it('routes GET /campaigns/:id/participants to list participants', async () => {
+    it('routes GET /:id/participants to list participants', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -245,8 +245,8 @@ describe('router', () => {
         await router(
             {
                 httpMethod: 'POST',
-                path: `/campaigns/${created.id}/participants`,
-                resource: '/campaigns/{id}/participants',
+                path: `/${created.id}/participants`,
+                resource: '/{id}/participants',
                 body: JSON.stringify(joinRequest),
                 pathParameters: { id: created.id },
             },
@@ -257,8 +257,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: `/campaigns/${created.id}/participants`,
-                resource: '/campaigns/{id}/participants',
+                path: `/${created.id}/participants`,
+                resource: '/{id}/participants',
                 body: null,
                 pathParameters: { id: created.id },
             },
@@ -272,12 +272,12 @@ describe('router', () => {
         expect(payload).toHaveLength(1);
     });
 
-    it('routes GET /campaigns/:id/participants/:pid to get participant', async () => {
+    it('routes GET /:id/participants/:pid to get participant', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -289,8 +289,8 @@ describe('router', () => {
         const joinResponse = await router(
             {
                 httpMethod: 'POST',
-                path: `/campaigns/${created.id}/participants`,
-                resource: '/campaigns/{id}/participants',
+                path: `/${created.id}/participants`,
+                resource: '/{id}/participants',
                 body: JSON.stringify(joinRequest),
                 pathParameters: { id: created.id },
             },
@@ -302,8 +302,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: `/campaigns/${created.id}/participants/${participant.id}`,
-                resource: '/campaigns/{id}/participants/{pid}',
+                path: `/${created.id}/participants/${participant.id}`,
+                resource: '/{id}/participants/{pid}',
                 body: null,
                 pathParameters: { id: created.id, pid: participant.id },
             },
@@ -315,12 +315,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ id: participant.id });
     });
 
-    it('routes PUT /campaigns/:id/participants/:pid to update participant', async () => {
+    it('routes PUT /:id/participants/:pid to update participant', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -332,8 +332,8 @@ describe('router', () => {
         const joinResponse = await router(
             {
                 httpMethod: 'POST',
-                path: `/campaigns/${created.id}/participants`,
-                resource: '/campaigns/{id}/participants',
+                path: `/${created.id}/participants`,
+                resource: '/{id}/participants',
                 body: JSON.stringify(joinRequest),
                 pathParameters: { id: created.id },
             },
@@ -345,8 +345,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'PUT',
-                path: `/campaigns/${created.id}/participants/${participant.id}`,
-                resource: '/campaigns/{id}/participants/{pid}',
+                path: `/${created.id}/participants/${participant.id}`,
+                resource: '/{id}/participants/{pid}',
                 body: JSON.stringify(updateParticipantRequest),
                 pathParameters: { id: created.id, pid: participant.id },
             },
@@ -358,12 +358,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ displayName: updateParticipantRequest.displayName });
     });
 
-    it('routes DELETE /campaigns/:id/participants/:pid to delete participant', async () => {
+    it('routes DELETE /:id/participants/:pid to delete participant', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -375,8 +375,8 @@ describe('router', () => {
         const joinResponse = await router(
             {
                 httpMethod: 'POST',
-                path: `/campaigns/${created.id}/participants`,
-                resource: '/campaigns/{id}/participants',
+                path: `/${created.id}/participants`,
+                resource: '/{id}/participants',
                 body: JSON.stringify(joinRequest),
                 pathParameters: { id: created.id },
             },
@@ -388,8 +388,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'DELETE',
-                path: `/campaigns/${created.id}/participants/${participant.id}`,
-                resource: '/campaigns/{id}/participants/{pid}',
+                path: `/${created.id}/participants/${participant.id}`,
+                resource: '/{id}/participants/{pid}',
                 body: null,
                 pathParameters: { id: created.id, pid: participant.id },
             },
@@ -422,8 +422,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/campaigns',
-                resource: '/campaigns',
+                path: '/',
+                resource: '/',
                 body: '{invalid-json',
                 pathParameters: null,
             },

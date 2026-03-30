@@ -100,37 +100,37 @@ functions:
         handler: src/handler.handler
         events:
             - httpApi:
-                  path: /matches
+                  path: /
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /matches
+                  path: /
                   method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /matches/{id}
+                  path: /{id}
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /matches/{id}
+                  path: /{id}
                   method: PUT
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /matches/{id}
+                  path: /{id}
                   method: DELETE
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /matches/{id}/link
+                  path: /{id}/link
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /matches/{id}/link
+                  path: /{id}/link
                   method: POST
                   authorizer:
                       name: auth0Jwt

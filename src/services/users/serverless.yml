@@ -91,47 +91,47 @@ functions:
         handler: src/handler.handler
         events:
             - httpApi:
-                  path: /users
+                  path: /
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users
+                  path: /
                   method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users/{id}
+                  path: /{id}
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users/{id}
+                  path: /{id}
                   method: PUT
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users/{id}
+                  path: /{id}
                   method: DELETE
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users/{id}/account
+                  path: /{id}/account
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users/{id}/account
+                  path: /{id}/account
                   method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users/{id}/account
+                  path: /{id}/account
                   method: PUT
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /users/{id}/account
+                  path: /{id}/account
                   method: DELETE
                   authorizer:
                       name: auth0Jwt

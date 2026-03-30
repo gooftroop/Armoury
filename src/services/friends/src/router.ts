@@ -16,11 +16,11 @@ const CORS_HEADERS = {
 type RouteKey = `${string}::${string}`;
 
 const ROUTE_MAP: Record<RouteKey, RouteHandler> = {
-    '/friends::POST': sendFriendRequest,
-    '/friends::GET': listFriends,
-    '/friends/{id}::GET': getFriend,
-    '/friends/{id}::PUT': updateFriend,
-    '/friends/{id}::DELETE': deleteFriend,
+    '/::POST': sendFriendRequest,
+    '/::GET': listFriends,
+    '/{id}::GET': getFriend,
+    '/{id}::PUT': updateFriend,
+    '/{id}::DELETE': deleteFriend,
 };
 
 /**

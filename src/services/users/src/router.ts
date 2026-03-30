@@ -17,15 +17,15 @@ const CORS_HEADERS = {
 type RouteKey = `${string}::${string}`;
 
 const ROUTE_MAP: Record<RouteKey, RouteHandler> = {
-    '/users::POST': createUser,
-    '/users::GET': listUsers,
-    '/users/{id}::GET': getUser,
-    '/users/{id}::PUT': updateUser,
-    '/users/{id}::DELETE': deleteUser,
-    '/users/{id}/account::GET': getAccount,
-    '/users/{id}/account::POST': createAccount,
-    '/users/{id}/account::PUT': updateAccount,
-    '/users/{id}/account::DELETE': deleteAccount,
+    '/::POST': createUser,
+    '/::GET': listUsers,
+    '/{id}::GET': getUser,
+    '/{id}::PUT': updateUser,
+    '/{id}::DELETE': deleteUser,
+    '/{id}/account::GET': getAccount,
+    '/{id}/account::POST': createAccount,
+    '/{id}/account::PUT': updateAccount,
+    '/{id}/account::DELETE': deleteAccount,
 };
 
 /**

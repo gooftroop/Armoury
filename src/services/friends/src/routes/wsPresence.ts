@@ -26,7 +26,7 @@ export const handleWsConnect: WsRouteHandler = async (
         userId: userContext.sub,
         status: ONLINE_STATUS,
         connectionId,
-        lastActiveAt: now,
+        lastSeen: now,
     };
 
     await adapter.put('userPresence', presence);
@@ -81,7 +81,7 @@ export const handleWsDisconnect: WsRouteHandler = async (
         ...presence,
         status: OFFLINE_STATUS,
         connectionId: null,
-        lastActiveAt: now,
+        lastSeen: now,
     };
 
     await adapter.put('userPresence', updatedPresence);
@@ -146,7 +146,7 @@ async function markConnectionsOffline(adapter: DatabaseAdapter, connectionIds: s
         ...presence,
         status: OFFLINE_STATUS,
         connectionId: null,
-        lastActiveAt: now,
+        lastSeen: now,
     }));
 
     await Promise.all(updates.map((presence) => adapter.put('userPresence', presence)));

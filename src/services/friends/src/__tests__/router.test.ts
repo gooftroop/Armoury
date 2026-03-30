@@ -16,12 +16,12 @@ describe('router', () => {
         adapter = new MockDatabaseAdapter();
     });
 
-    it('routes POST /friends to sendFriendRequest', async () => {
+    it('routes POST / to sendFriendRequest', async () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/friends',
-                resource: '/friends',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify({ userId: 'user-2' }),
                 pathParameters: null,
             },
@@ -33,12 +33,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ userId: 'user-2' });
     });
 
-    it('routes GET /friends to listFriends', async () => {
+    it('routes GET / to listFriends', async () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: '/friends',
-                resource: '/friends',
+                path: '/',
+                resource: '/',
                 body: null,
                 pathParameters: null,
             },
@@ -50,12 +50,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toEqual([]);
     });
 
-    it('routes GET /friends/{id} to getFriend', async () => {
+    it('routes GET /{id} to getFriend', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/friends',
-                resource: '/friends',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify({ userId: 'user-2' }),
                 pathParameters: null,
             },
@@ -67,8 +67,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: `/friends/${created.id}`,
-                resource: '/friends/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: created.id },
             },
@@ -80,12 +80,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ id: created.id });
     });
 
-    it('routes PUT /friends/{id} to updateFriend', async () => {
+    it('routes PUT /{id} to updateFriend', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/friends',
-                resource: '/friends',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify({ userId: 'user-2' }),
                 pathParameters: null,
             },
@@ -97,8 +97,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'PUT',
-                path: `/friends/${created.id}`,
-                resource: '/friends/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: JSON.stringify({ status: 'accepted' }),
                 pathParameters: { id: created.id },
             },
@@ -110,12 +110,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ status: 'accepted' });
     });
 
-    it('routes DELETE /friends/{id} to deleteFriend', async () => {
+    it('routes DELETE /{id} to deleteFriend', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/friends',
-                resource: '/friends',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify({ userId: 'user-2' }),
                 pathParameters: null,
             },
@@ -127,8 +127,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'DELETE',
-                path: `/friends/${created.id}`,
-                resource: '/friends/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: created.id },
             },
@@ -161,8 +161,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/friends',
-                resource: '/friends',
+                path: '/',
+                resource: '/',
                 body: '{invalid-json',
                 pathParameters: null,
             },

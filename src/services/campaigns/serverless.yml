@@ -91,52 +91,52 @@ functions:
         handler: src/handler.handler
         events:
             - httpApi:
-                  path: /campaigns
+                  path: /
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns
+                  path: /
                   method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}
+                  path: /{id}
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}
+                  path: /{id}
                   method: PUT
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}
+                  path: /{id}
                   method: DELETE
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}/participants
+                  path: /{id}/participants
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}/participants
+                  path: /{id}/participants
                   method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}/participants/{pid}
+                  path: /{id}/participants/{pid}
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}/participants/{pid}
+                  path: /{id}/participants/{pid}
                   method: PUT
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /campaigns/{id}/participants/{pid}
+                  path: /{id}/participants/{pid}
                   method: DELETE
                   authorizer:
                       name: auth0Jwt

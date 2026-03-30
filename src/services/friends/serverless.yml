@@ -100,27 +100,27 @@ functions:
         handler: src/handler.handler
         events:
             - httpApi:
-                  path: /friends
+                  path: /
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /friends
+                  path: /
                   method: POST
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /friends/{id}
+                  path: /{id}
                   method: GET
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /friends/{id}
+                  path: /{id}
                   method: PUT
                   authorizer:
                       name: auth0Jwt
             - httpApi:
-                  path: /friends/{id}
+                  path: /{id}
                   method: DELETE
                   authorizer:
                       name: auth0Jwt
