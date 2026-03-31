@@ -92,6 +92,22 @@ export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise
             routeKey: event.requestContext.routeKey,
         });
 
+        if (event.requestContext.routeKey !== '$connect') {
+            try {
+                const { createBroadcaster } = await import('@/utils/broadcast.js');
+                const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+
+                await broadcaster.send(event.requestContext.connectionId, {
+                    action: 'error',
+                    error: 'ServerError',
+                    message: normalizedError.message || 'Unknown error',
+                });
+            } catch {
+                // Best-effort — if the broadcast itself fails we still
+                // return the 500 and let Sentry capture the original error.
+            }
+        }
+
         return {
             statusCode: 500,
             body: JSON.stringify({

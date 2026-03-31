@@ -55,6 +55,15 @@ export function createBroadcaster(domainName: string, stage: string): Broadcaste
                     staleConnectionIds.push(connectionId);
                 }
             }
+
+            if (result.status === 'rejected') {
+                const connectionId = connectionIds[i];
+
+                console.error(
+                    `[broadcast] sendToMany failed for connection ${connectionId ?? 'unknown'}`,
+                    result.reason,
+                );
+            }
         }
 
         return staleConnectionIds;
