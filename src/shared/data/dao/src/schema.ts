@@ -10,9 +10,11 @@ import { campaignParticipantsTable, campaignParticipantsSqliteTable } from '@/da
 import { campaignsTable, campaignsSqliteTable } from '@/dao/CampaignDAO.js';
 import { friendsTable, friendsSqliteTable } from '@/dao/FriendDAO.js';
 import { matchesTable, matchesSqliteTable } from '@/dao/MatchDAO.js';
+import { matchSubscriptionsTable, matchSubscriptionsSqliteTable } from '@/dao/MatchSubscriptionTable.js';
 import { syncStatusTable, syncStatusSqliteTable } from '@/dao/SyncStatusTable.js';
 import { userPresenceTable, userPresenceSqliteTable } from '@/dao/UserPresenceDAO.js';
 import { usersTable, usersSqliteTable } from '@/dao/UserDAO.js';
+import { wsConnectionsTable, wsConnectionsSqliteTable } from '@/dao/WsConnectionTable.js';
 
 import type { SQLiteSchemaExtension, DSQLSchemaExtension, SchemaExtension } from '@/types.js';
 
@@ -101,21 +103,25 @@ const CORE_SQLITE_SCHEMA: SQLiteSchemaExtension = {
         accounts: accountsSqliteTable,
         friends: friendsSqliteTable,
         matches: matchesSqliteTable,
+        matchSubscriptions: matchSubscriptionsSqliteTable,
         users: usersSqliteTable,
         userPresence: userPresenceSqliteTable,
         campaigns: campaignsSqliteTable,
         campaignParticipants: campaignParticipantsSqliteTable,
         syncStatus: syncStatusSqliteTable,
+        wsConnections: wsConnectionsSqliteTable,
     },
     storeToTable: {
         account: accountsSqliteTable,
         friend: friendsSqliteTable,
         match: matchesSqliteTable,
+        matchSubscription: matchSubscriptionsSqliteTable,
         user: usersSqliteTable,
         userPresence: userPresenceSqliteTable,
         campaign: campaignsSqliteTable,
         campaignParticipant: campaignParticipantsSqliteTable,
         fileSyncStatus: syncStatusSqliteTable,
+        wsConnection: wsConnectionsSqliteTable,
     },
 };
 
@@ -125,21 +131,25 @@ const CORE_DSQL_SCHEMA: DSQLSchemaExtension = {
         accounts: accountsTable,
         friends: friendsTable,
         matches: matchesTable,
+        matchSubscriptions: matchSubscriptionsTable,
         users: usersTable,
         userPresence: userPresenceTable,
         campaigns: campaignsTable,
         campaignParticipants: campaignParticipantsTable,
         syncStatus: syncStatusTable,
+        wsConnections: wsConnectionsTable,
     },
     storeToTable: {
         account: accountsTable,
         friend: friendsTable,
         match: matchesTable,
+        matchSubscription: matchSubscriptionsTable,
         user: usersTable,
         userPresence: userPresenceTable,
         campaign: campaignsTable,
         campaignParticipant: campaignParticipantsTable,
         fileSyncStatus: syncStatusTable,
+        wsConnection: wsConnectionsTable,
     },
 };
 
