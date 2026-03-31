@@ -116,13 +116,29 @@ export interface AuthorizerResult {
 }
 
 /**
+ * Custom claim namespace for the internal user identifier.
+ *
+ * Auth0 requires custom claims in access tokens to use a namespace prefix.
+ * The Post-Login Action writes a stable UUID into this claim so that every
+ * authentication method (Google OAuth, email/password, etc.) resolves to the
+ * same application-level user ID.
+ */
+export const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id' as const;
+
+/**
  * JWT payload fields required by the authorizer.
  */
 export interface JwtPayload {
     /**
-     * The subject identifier for the token.
+     * The subject identifier for the token (Auth0 `sub` — kept for logging/diagnostics).
      */
     sub: string;
+
+    /**
+     * Stable internal user identifier injected by the Auth0 Post-Login Action.
+     * This is the primary key used across all application services.
+     */
+    'https://armoury.app/internal_id': string;
 
     /**
      * The email address for the token subject.

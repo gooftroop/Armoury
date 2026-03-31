@@ -6,7 +6,7 @@ import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 
 let adapter: LocalDatabaseAdapter;
 
-const userContext: UserContext = { sub: 'user-sub-1', email: 'test@armoury.dev', name: 'Test User' };
+const userContext: UserContext = { userId: 'user-sub-1', email: 'test@armoury.dev', name: 'Test User' };
 
 const createUserBody: CreateUserPayload = {
     sub: 'user-sub-1',

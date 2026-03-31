@@ -4,7 +4,7 @@ import { deleteFriend, getFriend, listFriends, sendFriendRequest, updateFriend }
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
-    sub: 'user-1',
+    userId: 'user-1',
     email: 'user@example.com',
     name: 'Test User',
 };
@@ -24,7 +24,7 @@ describe('friend routes', () => {
             const payload = JSON.parse(response.body) as Friend;
 
             expect(payload.id).toEqual(expect.any(String));
-            expect(payload.ownerId).toBe(baseUserContext.sub);
+            expect(payload.ownerId).toBe(baseUserContext.userId);
             expect(payload.userId).toBe('user-2');
             expect(payload.status).toBe('pending');
             expect(payload.canShareArmyLists).toBe(false);

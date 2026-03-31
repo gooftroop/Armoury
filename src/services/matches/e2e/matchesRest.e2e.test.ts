@@ -6,16 +6,16 @@ import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 
 let adapter: LocalDatabaseAdapter;
 
-const userA: UserContext = { sub: 'user-a', email: 'a@armoury.dev', name: 'Player A' };
-const userB: UserContext = { sub: 'user-b', email: 'b@armoury.dev', name: 'Player B' };
+const userA: UserContext = { userId: 'user-a', email: 'a@armoury.dev', name: 'Player A' };
+const userB: UserContext = { userId: 'user-b', email: 'b@armoury.dev', name: 'Player B' };
 
 const validCreateBody: CreateMatchRequest = {
     systemId: 'wh40k10e',
     players: [
-        { playerId: userA.sub, campaignParticipantId: null },
-        { playerId: userB.sub, campaignParticipantId: null },
+        { playerId: userA.userId, campaignParticipantId: null },
+        { playerId: userB.userId, campaignParticipantId: null },
     ],
-    turnOrder: [userA.sub, userB.sub],
+    turnOrder: [userA.userId, userB.userId],
 };
 
 function restEvent(method: string, resource: string, body?: unknown, pathParameters?: Record<string, string>) {

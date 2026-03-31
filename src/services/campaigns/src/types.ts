@@ -5,8 +5,8 @@ import type { CampaignPhase, CampaignRanking, CampaignStatus, NarrativeBase } fr
  * Authenticated user context extracted from API Gateway authorizer.
  */
 export interface UserContext {
-    /** User subject identifier from the identity provider. */
-    sub: string;
+    /** Internal user identifier from the Auth0 custom claim. */
+    userId: string;
 
     /** User email address from the identity provider (may be absent from access tokens). */
     email?: string;

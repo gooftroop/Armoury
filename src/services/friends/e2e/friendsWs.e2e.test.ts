@@ -16,8 +16,8 @@ vi.mock('@/utils/broadcast.js', () => ({
 
 let adapter: LocalDatabaseAdapter;
 
-const userA = createTestUserContext({ sub: 'presence-a', name: 'Friend A' });
-const userB = createTestUserContext({ sub: 'presence-b', name: 'Friend B' });
+const userA = createTestUserContext({ userId: 'presence-a', name: 'Friend A' });
+const userB = createTestUserContext({ userId: 'presence-b', name: 'Friend B' });
 
 function connectEvent(connectionId: string, userContext: TestUserContext): WebSocketEvent {
     return createWebSocketEvent({
@@ -84,7 +84,7 @@ describe('friends WebSocket presence e2e', () => {
 
         expect(res.statusCode).toBe(200);
 
-        const presence = await adapter.get('userPresence', userA.sub);
+        const presence = await adapter.get('userPresence', userA.userId);
         expect(presence).not.toBeNull();
         expect(presence!.status).toBe('online');
         expect(presence!.connectionId).toBe('conn-a');
@@ -102,7 +102,7 @@ describe('friends WebSocket presence e2e', () => {
     });
 
     it('connect broadcasts friendOnline to accepted friends', async () => {
-        await seedAcceptedFriendship(adapter, userA.sub, userB.sub);
+        await seedAcceptedFriendship(adapter, userA.userId, userB.userId);
         await wsRouter(connectEvent('conn-b', userB), adapter, userB);
         mockBroadcast.reset();
 
@@ -112,7 +112,7 @@ describe('friends WebSocket presence e2e', () => {
         const broadcast = mockBroadcast.broadcasts[0] as BroadcastRecord;
         expect(broadcast.connectionId).toBe('conn-b');
         expect((broadcast.data as { action: string }).action).toBe('friendOnline');
-        expect((broadcast.data as { userId: string }).userId).toBe(userA.sub);
+        expect((broadcast.data as { userId: string }).userId).toBe(userA.userId);
     });
 
     it('disconnect sets presence to offline', async () => {
@@ -121,14 +121,14 @@ describe('friends WebSocket presence e2e', () => {
         const res = await wsRouter(disconnectEvent('conn-a'), adapter, null);
         expect(res.statusCode).toBe(200);
 
-        const presence = await adapter.get('userPresence', userA.sub);
+        const presence = await adapter.get('userPresence', userA.userId);
         expect(presence).not.toBeNull();
         expect(presence!.status).toBe('offline');
         expect(presence!.connectionId).toBeNull();
     });
 
     it('disconnect broadcasts friendOffline to accepted friends', async () => {
-        await seedAcceptedFriendship(adapter, userA.sub, userB.sub);
+        await seedAcceptedFriendship(adapter, userA.userId, userB.userId);
         await wsRouter(connectEvent('conn-b', userB), adapter, userB);
         await wsRouter(connectEvent('conn-a', userA), adapter, userA);
         mockBroadcast.reset();
@@ -139,7 +139,7 @@ describe('friends WebSocket presence e2e', () => {
         const broadcast = mockBroadcast.broadcasts[0] as BroadcastRecord;
         expect(broadcast.connectionId).toBe('conn-b');
         expect((broadcast.data as { action: string }).action).toBe('friendOffline');
-        expect((broadcast.data as { userId: string }).userId).toBe(userA.sub);
+        expect((broadcast.data as { userId: string }).userId).toBe(userA.userId);
     });
 
     it('disconnect with unknown connection returns 200 gracefully', async () => {
@@ -150,8 +150,8 @@ describe('friends WebSocket presence e2e', () => {
     it('does not broadcast to non-accepted friends', async () => {
         const pendingFriend: Friend = {
             id: 'friend-pending',
-            ownerId: userA.sub,
-            userId: userB.sub,
+            ownerId: userA.userId,
+            userId: userB.userId,
             status: 'pending',
             canShareArmyLists: false,
             canViewMatchHistory: false,

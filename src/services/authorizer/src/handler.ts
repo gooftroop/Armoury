@@ -8,6 +8,7 @@ import { extractTokenFromEvent, buildIssuer } from '@/utils/token.js';
 import { generatePolicy, extractHttpMethod } from '@/utils/policy.js';
 import { isJwtPayload } from '@/utils/jwt.js';
 import type { AuthorizerContext, AuthorizerEvent, AuthorizerResult } from '@/types.js';
+import { INTERNAL_ID_CLAIM } from '@/types.js';
 
 /**
  * Default principal identifier used when denying access.
@@ -67,6 +68,7 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
         if (!isJwtPayload(payload)) {
             Sentry.logger.warn('[authorizer] DENY: JWT payload shape invalid', {
                 hasSub: 'sub' in payload,
+                hasInternalId: INTERNAL_ID_CLAIM in payload,
                 hasAud: 'aud' in payload,
                 hasIss: 'iss' in payload,
             });
@@ -74,7 +76,10 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
             return generatePolicy(DEFAULT_PRINCIPAL_ID, 'Deny', event.methodArn);
         }
 
+        const internalId = payload[INTERNAL_ID_CLAIM];
+
         const context: AuthorizerContext = {
+            [INTERNAL_ID_CLAIM]: internalId,
             sub: payload.sub,
         };
 
@@ -86,9 +91,9 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
             context.name = payload.name;
         }
 
-        Sentry.logger.info('[authorizer] ALLOW', { sub: payload.sub });
+        Sentry.logger.info('[authorizer] ALLOW', { sub: payload.sub, internalId });
 
-        return generatePolicy(payload.sub, 'Allow', event.methodArn, context);
+        return generatePolicy(internalId, 'Allow', event.methodArn, context);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         const errorName = error instanceof Error ? error.name : 'UnknownError';

@@ -7,8 +7,8 @@ import type { PGliteAdapter } from '@armoury/adapters-pglite';
 
 let adapter: PGliteAdapter;
 
-const organizer: UserContext = { sub: 'user-org', email: 'org@armoury.dev', name: 'Organizer' };
-const participant: UserContext = { sub: 'user-part', email: 'part@armoury.dev', name: 'Participant' };
+const organizer: UserContext = { userId: 'user-org', email: 'org@armoury.dev', name: 'Organizer' };
+const participant: UserContext = { userId: 'user-part', email: 'part@armoury.dev', name: 'Participant' };
 
 const createCampaignBody: CreateCampaignRequest = {
     name: 'Battle for Armageddon',
@@ -55,7 +55,7 @@ describe('campaigns REST e2e', () => {
         expect(res.statusCode).toBe(201);
         const campaign = JSON.parse(res.body) as Campaign;
         expect(campaign.name).toBe('Battle for Armageddon');
-        expect(campaign.organizerId).toBe(organizer.sub);
+        expect(campaign.organizerId).toBe(organizer.userId);
         expect(campaign.status).toBe('active');
         expect(campaign.id).toBeTruthy();
     });
@@ -126,7 +126,7 @@ describe('campaigns REST e2e', () => {
         expect(joinRes.statusCode).toBe(201);
         const joined = JSON.parse(joinRes.body) as CampaignParticipant;
         expect(joined.campaignId).toBe(campaign.id);
-        expect(joined.userId).toBe(participant.sub);
+        expect(joined.userId).toBe(participant.userId);
     });
 
     it('lists participants for a campaign', async () => {

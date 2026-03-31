@@ -1,3 +1,4 @@
+import { INTERNAL_ID_CLAIM } from '@/types.js';
 import type { JwtPayload } from '@/types.js';
 
 /**
@@ -12,6 +13,13 @@ export const isJwtPayload = (payload: unknown): payload is JwtPayload => {
     }
 
     if (!('sub' in payload) || typeof payload.sub !== 'string') {
+        return false;
+    }
+
+    if (
+        !(INTERNAL_ID_CLAIM in payload) ||
+        typeof (payload as Record<string, unknown>)[INTERNAL_ID_CLAIM] !== 'string'
+    ) {
         return false;
     }
 

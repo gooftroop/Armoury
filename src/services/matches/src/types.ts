@@ -64,7 +64,7 @@ export interface Match<TMatchData extends MatchDataBase<object> | null = MatchDa
 // ---------------------------------------------------------------------------
 
 export interface UserContext {
-    sub: string;
+    userId: string;
     email?: string;
     name?: string;
 }

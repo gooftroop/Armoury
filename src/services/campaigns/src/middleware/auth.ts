@@ -1,5 +1,7 @@
 import type { UserContext } from '@/types.js';
 
+const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
+
 /**
  * Minimal API Gateway v2 httpApi event shape for native JWT authorizer context.
  *
@@ -28,13 +30,13 @@ export function extractUserContext(event: AuthorizerEvent): UserContext {
         throw new Error('Missing authorizer context');
     }
 
-    const sub = typeof claims['sub'] === 'string' ? claims['sub'] : null;
+    const userId = typeof claims[INTERNAL_ID_CLAIM] === 'string' ? claims[INTERNAL_ID_CLAIM] : null;
     const email = typeof claims['email'] === 'string' ? claims['email'] : undefined;
     const name = typeof claims['name'] === 'string' ? claims['name'] : undefined;
 
-    if (!sub) {
+    if (!userId) {
         throw new Error('Missing required user context fields');
     }
 
-    return { sub, email, name };
+    return { userId, email, name };
 }

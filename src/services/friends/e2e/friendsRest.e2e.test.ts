@@ -6,8 +6,8 @@ import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 
 let adapter: LocalDatabaseAdapter;
 
-const userA: UserContext = { sub: 'user-a', email: 'a@armoury.dev', name: 'Player A' };
-const userB: UserContext = { sub: 'user-b', email: 'b@armoury.dev', name: 'Player B' };
+const userA: UserContext = { userId: 'user-a', email: 'a@armoury.dev', name: 'Player A' };
+const userB: UserContext = { userId: 'user-b', email: 'b@armoury.dev', name: 'Player B' };
 
 const friendRequestBody: SendFriendRequestPayload = {
     userId: 'user-b',
@@ -41,8 +41,8 @@ describe('friends REST e2e', () => {
 
         expect(res.statusCode).toBe(201);
         const friend = JSON.parse(res.body) as Friend;
-        expect(friend.ownerId).toBe(userA.sub);
-        expect(friend.userId).toBe(userB.sub);
+        expect(friend.ownerId).toBe(userA.userId);
+        expect(friend.userId).toBe(userB.userId);
         expect(friend.status).toBe('pending');
         expect(friend.id).toBeTruthy();
     });

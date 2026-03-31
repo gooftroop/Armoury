@@ -24,7 +24,7 @@ export const handleWsConnect: WsRouteHandler = async (
     const now = new Date().toISOString();
     const connectionId = event.requestContext.connectionId;
     const presence: UserPresence = {
-        userId: userContext.sub,
+        userId: userContext.userId,
         status: ONLINE_STATUS,
         connectionId,
         lastSeen: now,
@@ -38,7 +38,7 @@ export const handleWsConnect: WsRouteHandler = async (
         captureWsError(normalizedError, 'db:operation', {
             connectionId,
             routeKey: event.requestContext.routeKey,
-            userId: userContext.sub,
+            userId: userContext.userId,
         });
 
         return {
@@ -52,11 +52,11 @@ export const handleWsConnect: WsRouteHandler = async (
 
     Sentry.addBreadcrumb({
         category: 'websocket.connect',
-        message: `WebSocket connection established for user ${userContext.sub}`,
+        message: `WebSocket connection established for user ${userContext.userId}`,
         level: 'info',
         data: {
             connectionId,
-            userId: userContext.sub,
+            userId: userContext.userId,
             userName: userContext.name,
             timestamp: now,
         },
@@ -65,13 +65,13 @@ export const handleWsConnect: WsRouteHandler = async (
     // Best-effort friend notification — failures here should not
     // prevent the $connect from succeeding since presence is already stored.
     try {
-        const acceptedFriends = await getAcceptedFriends(adapter, userContext.sub);
+        const acceptedFriends = await getAcceptedFriends(adapter, userContext.userId);
         const friendUserIds = acceptedFriends.map((friend) => friend.userId);
         const connectionIds = await getConnectionIds(adapter, friendUserIds);
         const broadcaster = createBroadcaster(event);
         const goneConnections = await broadcaster.sendToMany(connectionIds, {
             action: 'friendOnline',
-            userId: userContext.sub,
+            userId: userContext.userId,
             name: userContext.name,
         });
 
@@ -84,7 +84,7 @@ export const handleWsConnect: WsRouteHandler = async (
         captureWsError(err, 'broadcast:send', {
             connectionId,
             routeKey: event.requestContext.routeKey,
-            userId: userContext.sub,
+            userId: userContext.userId,
         });
     }
 

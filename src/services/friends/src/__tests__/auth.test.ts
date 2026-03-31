@@ -8,7 +8,7 @@ describe('auth middleware', () => {
                 authorizer: {
                     jwt: {
                         claims: {
-                            sub: 'user-1',
+                            'https://armoury.app/internal_id': 'user-1',
                             email: 'user@example.com',
                             name: 'Test User',
                         },
@@ -18,19 +18,19 @@ describe('auth middleware', () => {
         });
 
         expect(context).toEqual({
-            sub: 'user-1',
+            userId: 'user-1',
             email: 'user@example.com',
             name: 'Test User',
         });
     });
 
-    it('extracts user context with only sub (email and name absent)', () => {
+    it('extracts user context with only userId (email and name absent)', () => {
         const context = extractUserContext({
             requestContext: {
                 authorizer: {
                     jwt: {
                         claims: {
-                            sub: 'user-1',
+                            'https://armoury.app/internal_id': 'user-1',
                         },
                     },
                 },
@@ -38,7 +38,7 @@ describe('auth middleware', () => {
         });
 
         expect(context).toEqual({
-            sub: 'user-1',
+            userId: 'user-1',
             email: undefined,
             name: undefined,
         });
@@ -48,7 +48,7 @@ describe('auth middleware', () => {
         expect(() => extractUserContext({ requestContext: {} })).toThrow('Missing authorizer context');
     });
 
-    it('throws when sub is missing', () => {
+    it('throws when internal_id claim is missing', () => {
         expect(() =>
             extractUserContext({
                 requestContext: {

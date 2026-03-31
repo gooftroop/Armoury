@@ -34,7 +34,7 @@ export const handleWsConnect: WsRouteHandler = async (
     const connectionId = event.requestContext.connectionId;
     const connection: WsConnection = {
         connectionId,
-        userId: userContext.sub,
+        userId: userContext.userId,
         connectedAt: now,
     };
 
@@ -46,7 +46,7 @@ export const handleWsConnect: WsRouteHandler = async (
         captureWsError(err, 'db:operation', {
             connectionId,
             routeKey: event.requestContext.routeKey,
-            userId: userContext.sub,
+            userId: userContext.userId,
         });
 
         return {
@@ -60,11 +60,11 @@ export const handleWsConnect: WsRouteHandler = async (
 
     Sentry.addBreadcrumb({
         category: 'websocket.connect',
-        message: `WebSocket connection established for user ${userContext.sub}`,
+        message: `WebSocket connection established for user ${userContext.userId}`,
         level: 'info',
         data: {
             connectionId,
-            userId: userContext.sub,
+            userId: userContext.userId,
             timestamp: now,
         },
     });
