@@ -12,6 +12,7 @@ import { friendsTable, friendsSqliteTable } from '@/dao/FriendDAO.js';
 import { matchesTable, matchesSqliteTable } from '@/dao/MatchDAO.js';
 import { syncStatusTable, syncStatusSqliteTable } from '@/dao/SyncStatusTable.js';
 import { userPresenceTable, userPresenceSqliteTable } from '@/dao/UserPresenceDAO.js';
+import { usersTable, usersSqliteTable } from '@/dao/UserDAO.js';
 
 import type { SQLiteSchemaExtension, DSQLSchemaExtension, SchemaExtension } from '@/types.js';
 
@@ -100,6 +101,7 @@ const CORE_SQLITE_SCHEMA: SQLiteSchemaExtension = {
         accounts: accountsSqliteTable,
         friends: friendsSqliteTable,
         matches: matchesSqliteTable,
+        users: usersSqliteTable,
         userPresence: userPresenceSqliteTable,
         campaigns: campaignsSqliteTable,
         campaignParticipants: campaignParticipantsSqliteTable,
@@ -109,6 +111,7 @@ const CORE_SQLITE_SCHEMA: SQLiteSchemaExtension = {
         account: accountsSqliteTable,
         friend: friendsSqliteTable,
         match: matchesSqliteTable,
+        user: usersSqliteTable,
         userPresence: userPresenceSqliteTable,
         campaign: campaignsSqliteTable,
         campaignParticipant: campaignParticipantsSqliteTable,
@@ -122,6 +125,7 @@ const CORE_DSQL_SCHEMA: DSQLSchemaExtension = {
         accounts: accountsTable,
         friends: friendsTable,
         matches: matchesTable,
+        users: usersTable,
         userPresence: userPresenceTable,
         campaigns: campaignsTable,
         campaignParticipants: campaignParticipantsTable,
@@ -131,6 +135,7 @@ const CORE_DSQL_SCHEMA: DSQLSchemaExtension = {
         account: accountsTable,
         friend: friendsTable,
         match: matchesTable,
+        user: usersTable,
         userPresence: userPresenceTable,
         campaign: campaignsTable,
         campaignParticipant: campaignParticipantsTable,
