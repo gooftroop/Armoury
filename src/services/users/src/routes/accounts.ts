@@ -32,6 +32,8 @@ export const getAccount: RouteHandler = async (
     const user = await resolveUser(adapter, userId);
 
     if (!user) {
+        console.error('[accounts:getAccount] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -39,6 +41,11 @@ export const getAccount: RouteHandler = async (
     const account = accounts[0];
 
     if (!account) {
+        console.error(
+            '[accounts:getAccount] 404 Account not found',
+            JSON.stringify({ userId, resolvedUserId: user.id }),
+        );
+
         return errorResponse(404, 'NotFound', 'Account not found for this user');
     }
 
@@ -78,6 +85,8 @@ export const createAccount: RouteHandler = async (
     const user = await resolveUser(adapter, userId);
 
     if (!user) {
+        console.error('[accounts:createAccount] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -136,6 +145,8 @@ export const updateAccount: RouteHandler = async (
     const user = await resolveUser(adapter, userId);
 
     if (!user) {
+        console.error('[accounts:updateAccount] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -143,6 +154,11 @@ export const updateAccount: RouteHandler = async (
     const existing = accounts[0];
 
     if (!existing) {
+        console.error(
+            '[accounts:updateAccount] 404 Account not found',
+            JSON.stringify({ userId, resolvedUserId: user.id }),
+        );
+
         return errorResponse(404, 'NotFound', 'Account not found for this user');
     }
 
@@ -183,6 +199,8 @@ export const deleteAccount: RouteHandler = async (
     const user = await resolveUser(adapter, userId);
 
     if (!user) {
+        console.error('[accounts:deleteAccount] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -190,6 +208,11 @@ export const deleteAccount: RouteHandler = async (
     const existing = accounts[0];
 
     if (!existing) {
+        console.error(
+            '[accounts:deleteAccount] 404 Account not found',
+            JSON.stringify({ userId, resolvedUserId: user.id }),
+        );
+
         return errorResponse(404, 'NotFound', 'Account not found for this user');
     }
 

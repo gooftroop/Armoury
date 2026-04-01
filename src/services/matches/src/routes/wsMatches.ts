@@ -21,6 +21,14 @@ export const handleWsConnect: WsRouteHandler = async (
     userContext,
 ): Promise<WebSocketResponse> => {
     if (!userContext) {
+        console.error(
+            '[wsMatches:handleWsConnect] 401 Missing user context',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                routeKey: event.requestContext.routeKey,
+            }),
+        );
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -110,7 +118,15 @@ export const handleWsDisconnect: WsRouteHandler = async (
     return { statusCode: 200 };
 };
 
-export const handleWsDefault: WsRouteHandler = async (): Promise<WebSocketResponse> => {
+export const handleWsDefault: WsRouteHandler = async (event): Promise<WebSocketResponse> => {
+    console.error(
+        '[wsMatches:handleWsDefault] 400 Unsupported action',
+        JSON.stringify({
+            connectionId: event.requestContext.connectionId,
+            routeKey: event.requestContext.routeKey,
+        }),
+    );
+
     return {
         statusCode: 400,
         body: JSON.stringify({
@@ -128,6 +144,14 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const parsedBody = parseMessageBody(event);
 
     if (parsedBody instanceof Error) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: parsedBody.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -140,6 +164,14 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const request = parseUpdateMatchMessage(parsedBody);
 
     if (request instanceof Error) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: request.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -153,6 +185,8 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const connection = await adapter.get('wsConnection', connectionId);
 
     if (!connection) {
+        console.error('[wsMatches:handleUpdateMatch] 401 Missing connection context', JSON.stringify({ connectionId }));
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -165,6 +199,14 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const match = await adapter.get('match', request.matchId);
 
     if (!match) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 404 Match not found',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+            }),
+        );
+
         return {
             statusCode: 404,
             body: JSON.stringify({
@@ -178,6 +220,15 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const isPlayer = existingMatch.players.some((p) => p.playerId === connection.userId);
 
     if (!isPlayer) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 403 Non-player update attempt',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+                userId: connection.userId,
+            }),
+        );
+
         return {
             statusCode: 403,
             body: JSON.stringify({
@@ -267,6 +318,14 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const parsedBody = parseMessageBody(event);
 
     if (parsedBody instanceof Error) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: parsedBody.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -279,6 +338,14 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const request = parseSubscribeMatchMessage(parsedBody);
 
     if (request instanceof Error) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: request.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -292,6 +359,11 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const connection = await adapter.get('wsConnection', connectionId);
 
     if (!connection) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 401 Missing connection context',
+            JSON.stringify({ connectionId }),
+        );
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -304,6 +376,14 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const match = await adapter.get('match', request.matchId);
 
     if (!match) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 404 Match not found',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+            }),
+        );
+
         return {
             statusCode: 404,
             body: JSON.stringify({
@@ -317,6 +397,15 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const isPlayer = existingMatch.players.some((p) => p.playerId === connection.userId);
 
     if (!isPlayer) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 403 Not authorized to subscribe',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+                userId: connection.userId,
+            }),
+        );
+
         return {
             statusCode: 403,
             body: JSON.stringify({
@@ -396,6 +485,14 @@ export const handleUnsubscribeMatch: WsRouteHandler = async (
     const parsedBody = parseMessageBody(event);
 
     if (parsedBody instanceof Error) {
+        console.error(
+            '[wsMatches:handleUnsubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: parsedBody.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -408,6 +505,14 @@ export const handleUnsubscribeMatch: WsRouteHandler = async (
     const request = parseUnsubscribeMatchMessage(parsedBody);
 
     if (request instanceof Error) {
+        console.error(
+            '[wsMatches:handleUnsubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: request.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({

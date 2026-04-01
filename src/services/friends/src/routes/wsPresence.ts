@@ -12,6 +12,14 @@ export const handleWsConnect: WsRouteHandler = async (
     userContext,
 ): Promise<WebSocketResponse> => {
     if (!userContext) {
+        console.error(
+            '[wsPresence:handleWsConnect] 401 Missing user context',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                routeKey: event.requestContext.routeKey,
+            }),
+        );
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -153,7 +161,15 @@ export const handleWsDisconnect: WsRouteHandler = async (
     };
 };
 
-export const handleWsDefault: WsRouteHandler = async (): Promise<WebSocketResponse> => {
+export const handleWsDefault: WsRouteHandler = async (event): Promise<WebSocketResponse> => {
+    console.error(
+        '[wsPresence:handleWsDefault] 400 Unsupported action',
+        JSON.stringify({
+            connectionId: event.requestContext.connectionId,
+            routeKey: event.requestContext.routeKey,
+        }),
+    );
+
     return {
         statusCode: 400,
         body: JSON.stringify({

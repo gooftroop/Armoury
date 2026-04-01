@@ -208,14 +208,23 @@ export const handler = Sentry.wrapHandler(async (event: HttpApiV2Event): Promise
 
         return response;
     } catch (error) {
-        Sentry.logger.error('[friends] Handler error', {
-            httpMethod: normalized.httpMethod,
-            path: normalized.path,
-            error: error instanceof Error ? error.message : String(error),
-        });
-        Sentry.captureException(error);
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
 
-        const normalizedError = error instanceof Error ? error : new Error('Unknown error');
+        console.error(
+            '[friends] Handler error',
+            JSON.stringify({
+                httpMethod: normalized.httpMethod,
+                path: normalized.path,
+                pathParameters: event.pathParameters,
+                errorName: normalizedError.name,
+                errorMessage: normalizedError.message,
+                stack: normalizedError.stack,
+                body: normalized.body,
+                authorizer: event.requestContext.authorizer,
+            }),
+        );
+
+        Sentry.captureException(error);
 
         return formatErrorResponse(normalizedError);
     }

@@ -93,6 +93,8 @@ export const getUser: RouteHandler = async (
     const user = await resolveUser(adapter, userId);
 
     if (!user) {
+        console.error('[users:getUser] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -132,6 +134,8 @@ export const updateUser: RouteHandler = async (
     const existing = await resolveUser(adapter, userId);
 
     if (!existing) {
+        console.error('[users:updateUser] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -173,6 +177,8 @@ export const deleteUser: RouteHandler = async (
     const existing = await resolveUser(adapter, userId);
 
     if (!existing) {
+        console.error('[users:deleteUser] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 

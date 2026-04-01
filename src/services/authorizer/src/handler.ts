@@ -42,6 +42,14 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
     const token = extractTokenFromEvent(event);
 
     if (!token) {
+        console.error(
+            '[authorizer] DENY: No token found in event',
+            JSON.stringify({
+                eventType: event.type,
+                hasQueryParams: 'queryStringParameters' in event,
+            }),
+        );
+
         Sentry.logger.warn('[authorizer] DENY: No token found in event', {
             eventType: event.type,
             hasQueryParams: 'queryStringParameters' in event,
@@ -66,6 +74,16 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
         });
 
         if (!isJwtPayload(payload)) {
+            console.error(
+                '[authorizer] DENY: JWT payload shape invalid',
+                JSON.stringify({
+                    hasSub: 'sub' in payload,
+                    hasInternalId: INTERNAL_ID_CLAIM in payload,
+                    hasAud: 'aud' in payload,
+                    hasIss: 'iss' in payload,
+                }),
+            );
+
             Sentry.logger.warn('[authorizer] DENY: JWT payload shape invalid', {
                 hasSub: 'sub' in payload,
                 hasInternalId: INTERNAL_ID_CLAIM in payload,
@@ -97,6 +115,15 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         const errorName = error instanceof Error ? error.name : 'UnknownError';
+
+        console.error(
+            '[authorizer] DENY: Verification failed',
+            JSON.stringify({
+                errorName,
+                errorMessage,
+                stack: error instanceof Error ? error.stack : undefined,
+            }),
+        );
 
         Sentry.logger.error('[authorizer] DENY: Verification failed', {
             errorName,

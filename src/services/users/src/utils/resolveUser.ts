@@ -29,7 +29,30 @@ export async function resolveUser(adapter: DatabaseAdapter, userId: string): Pro
         return byId;
     }
 
-    const bySub = await adapter.getByField('user', 'sub', userId);
+    console.warn('[resolveUser] PK lookup miss, trying sub fallback', JSON.stringify({ userId }));
 
-    return bySub[0] ?? null;
+    const bySub = await adapter.getByField('user', 'sub', userId);
+    const resolved = bySub[0] ?? null;
+
+    if (!resolved) {
+        console.error(
+            '[resolveUser] User not found by PK or sub',
+            JSON.stringify({
+                userId,
+                pkResult: null,
+                subResults: bySub.length,
+            }),
+        );
+    } else {
+        console.warn(
+            '[resolveUser] Resolved via sub fallback',
+            JSON.stringify({
+                userId,
+                resolvedId: resolved.id,
+                resolvedSub: resolved.sub,
+            }),
+        );
+    }
+
+    return resolved;
 }
