@@ -116,6 +116,11 @@ functions:
                   authorizer:
                       name: auth0Jwt
             - httpApi:
+                  path: /upsert
+                  method: POST
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
                   path: /{id}/account
                   method: GET
                   authorizer:
