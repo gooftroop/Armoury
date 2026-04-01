@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { Account, ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from '@/types.js';
+import { resolveUser } from '@/utils/resolveUser.js';
 import { errorResponse, jsonResponse } from '@/utils/response.js';
 import { parseCreateAccount, parseUpdateAccount } from '@/utils/validation.js';
 
@@ -28,13 +29,13 @@ export const getAccount: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const user = await adapter.get('user', userId);
+    const user = await resolveUser(adapter, userId);
 
     if (!user) {
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
-    const accounts = await adapter.getByField('account', 'userId', userId);
+    const accounts = await adapter.getByField('account', 'userId', user.id);
     const account = accounts[0];
 
     if (!account) {
@@ -74,13 +75,13 @@ export const createAccount: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const user = await adapter.get('user', userId);
+    const user = await resolveUser(adapter, userId);
 
     if (!user) {
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
-    const existingAccounts = await adapter.getByField('account', 'userId', userId);
+    const existingAccounts = await adapter.getByField('account', 'userId', user.id);
 
     if (existingAccounts.length > 0) {
         return errorResponse(409, 'Conflict', 'Account already exists for this user');
@@ -90,7 +91,7 @@ export const createAccount: RouteHandler = async (
 
     const account: Account = {
         id: randomUUID(),
-        userId,
+        userId: user.id,
         preferences: request.preferences,
         systems: {},
         createdAt: now,
@@ -132,13 +133,13 @@ export const updateAccount: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const user = await adapter.get('user', userId);
+    const user = await resolveUser(adapter, userId);
 
     if (!user) {
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
-    const accounts = await adapter.getByField('account', 'userId', userId);
+    const accounts = await adapter.getByField('account', 'userId', user.id);
     const existing = accounts[0];
 
     if (!existing) {
@@ -179,7 +180,13 @@ export const deleteAccount: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const accounts = await adapter.getByField('account', 'userId', userId);
+    const user = await resolveUser(adapter, userId);
+
+    if (!user) {
+        return errorResponse(404, 'NotFound', 'User not found');
+    }
+
+    const accounts = await adapter.getByField('account', 'userId', user.id);
     const existing = accounts[0];
 
     if (!existing) {

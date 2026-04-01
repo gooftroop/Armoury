@@ -8,8 +8,8 @@
  * @requirements
  * 1. Must be a Server Component (no 'use client').
  * 2. Must fetch the Auth0 session via auth0.getSession().
- * 3. Must pass userId (session.user.sub) to ForgeContainer when authenticated.
- * 4. Must redirect to /auth/login when no session exists.
+ * 3. Must pass userId (internal_id claim) to ForgeContainer when authenticated.
+ * 4. Must redirect to /auth/logout when no session exists or internal_id claim is missing (stale session).
  * 5. Must use next-intl for locale setup.
  * 6. Must set the request locale for next-intl server-side.
  */
@@ -17,7 +17,7 @@
 import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
-import { auth0 } from '@/lib/auth0.js';
+import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
 import { ForgeContainer } from '@/components/forge/index.js';
 
 export interface ArmiesPageProps {
@@ -46,9 +46,15 @@ export default async function ArmiesPage({ params }: ArmiesPageProps) {
         redirect('/auth/login');
     }
 
+    const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
+
+    if (!userId) {
+        redirect('/auth/logout');
+    }
+
     return (
         <div className="flex flex-1 flex-col p-6">
-            <ForgeContainer userId={session.user.sub as string} />
+            <ForgeContainer userId={userId} />
         </div>
     );
 }

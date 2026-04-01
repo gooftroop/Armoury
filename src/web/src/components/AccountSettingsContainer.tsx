@@ -31,10 +31,10 @@ import type { SaveState } from '@/components/AccountSettingsView.js';
  * Props for the AccountSettings container component.
  */
 export interface AccountSettingsProps {
-    /** Auth0 user profile containing sub, name, email, and picture. */
+    /** User identity and profile for the authenticated user. */
     user: {
-        /** Auth0 subject identifier. */
-        sub: string;
+        /** Internal user identifier (UUID) from the Auth0 custom claim. */
+        userId: string;
         /** User display name. */
         name: string;
         /** User email address. */
@@ -91,7 +91,7 @@ function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): 
     const tProfile = useTranslations('profile');
 
     const authorization = `Bearer ${accessToken}`;
-    const params = { userId: user.sub };
+    const params = { userId: user.userId };
 
     const accountQuery = useQuery<Account, Error>(queryAccount(authorization, params));
 

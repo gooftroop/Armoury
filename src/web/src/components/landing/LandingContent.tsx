@@ -10,8 +10,10 @@
  * @requirements
  * 1. Must be a Server Component (no 'use client').
  * 2. Must call auth0.getSession() at request time to detect authentication.
- * 3. Must discover game system manifests via discoverSystemManifests().
- * 4. Must prefetch account data via React Query when authenticated.
+ * 3. Must extract the internal_id custom claim from session.user for user identification.
+ * 4. Must redirect to /auth/logout when authenticated but internal_id claim is missing (stale session).
+ * 5. Must discover game system manifests via discoverSystemManifests().
+ * 6. Must prefetch account data via React Query when authenticated.
  * 5. Must wrap authenticated path in HydrationBoundary with dehydrated state.
  * 6. Must render AuthenticatedLanding for logged-in users.
  * 7. Must render UnauthenticatedLanding for anonymous users.
@@ -25,7 +27,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { queryAccount } from '@armoury/clients-users';
 
-import { auth0 } from '@/lib/auth0.js';
+import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
 import { discoverSystemManifests } from '@/lib/discoverSystems.js';
 import { getQueryClient } from '@/lib/getQueryClient.js';
 import { AuthenticatedLanding } from '@/components/landing/AuthenticatedLanding.js';
@@ -56,7 +58,11 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
 
     if (isAuthenticated && session.user && session.tokenSet?.accessToken) {
         const authorization = `Bearer ${session.tokenSet.accessToken as string}`;
-        const userId = session.user.sub as string;
+        const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
+
+        if (!userId) {
+            return <meta httpEquiv="refresh" content="0;url=/auth/logout" />;
+        }
 
         const queryClient = getQueryClient();
         await queryClient.prefetchQuery(queryAccount(authorization, { userId }));

@@ -34,8 +34,8 @@ export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 export interface AccountSettingsViewProps {
     /** User profile shown in the profile summary card. */
     user: {
-        /** Auth0 subject identifier. */
-        sub: string;
+        /** Internal user identifier (UUID). */
+        userId: string;
         /** User display name. */
         name: string;
         /** User email address. */

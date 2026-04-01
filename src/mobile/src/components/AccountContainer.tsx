@@ -5,6 +5,7 @@
  * 1. Must own auth, query, mutation, and local preference orchestration.
  * 2. Must delegate rendering to AccountView/AccountUnauthenticatedView.
  * 3. Must preserve existing Auth0 and account preference update behavior.
+ * 4. Must use the internal_id custom claim (UUID) as the user identifier for all API calls.
  *
  * @module account-container
  */
@@ -17,6 +18,13 @@ import type { Account, UserPreferences } from '@armoury/clients-users';
 
 import { AccountUnauthenticatedView, AccountView } from '@/components/AccountView.js';
 import type { SaveState } from '@/components/AccountView.js';
+
+/**
+ * Custom claim namespace for the internal user identifier.
+ *
+ * Must match the claim key set by the Auth0 Post-Login Action.
+ */
+const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id' as const;
 
 /**
  * Returns the user-facing label for account save lifecycle state.
@@ -69,9 +77,11 @@ function AccountContainer(): React.ReactElement {
         })();
     }, [getCredentials, isAuthenticated]);
 
+    const userId = user?.[INTERNAL_ID_CLAIM] as string | undefined;
+
     const accountQuery = useQuery<Account, Error>({
-        ...queryAccount(authorization, { userId: user?.sub ?? '' }),
-        enabled: isAuthenticated && authorization.length > 0,
+        ...queryAccount(authorization, { userId: userId ?? '' }),
+        enabled: isAuthenticated && authorization.length > 0 && userId !== undefined,
     });
 
     React.useEffect(() => {
@@ -84,12 +94,12 @@ function AccountContainer(): React.ReactElement {
         mutationFn: async () => {
             const credentials = await getCredentials();
 
-            if (!credentials?.accessToken || !user?.sub) {
+            if (!credentials?.accessToken || !userId) {
                 throw new Error('Not authenticated');
             }
 
             const auth = `Bearer ${credentials.accessToken}`;
-            const opts = mutationUpdateAccount(auth, { userId: user.sub }, { preferences: localPreferences });
+            const opts = mutationUpdateAccount(auth, { userId }, { preferences: localPreferences });
 
             return opts.mutationFn!();
         },

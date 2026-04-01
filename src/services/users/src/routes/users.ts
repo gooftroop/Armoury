@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, User, UserContext } from '@/types.js';
+import { resolveUser } from '@/utils/resolveUser.js';
 import { errorResponse, jsonResponse } from '@/utils/response.js';
 import { parseCreateUser, parseUpdateUser } from '@/utils/validation.js';
 
@@ -89,7 +90,7 @@ export const getUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const user = await adapter.get('user', userId);
+    const user = await resolveUser(adapter, userId);
 
     if (!user) {
         return errorResponse(404, 'NotFound', 'User not found');
@@ -128,7 +129,7 @@ export const updateUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const existing = await adapter.get('user', userId);
+    const existing = await resolveUser(adapter, userId);
 
     if (!existing) {
         return errorResponse(404, 'NotFound', 'User not found');
@@ -169,13 +170,13 @@ export const deleteUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const existing = await adapter.get('user', userId);
+    const existing = await resolveUser(adapter, userId);
 
     if (!existing) {
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
-    await adapter.delete('user', userId);
+    await adapter.delete('user', existing.id);
 
     return {
         statusCode: 204,
