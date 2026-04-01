@@ -67,6 +67,8 @@ export function ProfileTileContainer({ locale }: ProfileTileContainerProps): Rea
                 welcomeText={t('welcome', { name: String(user.name ?? '') })}
                 settingsLabel={t('editProfile')}
                 settingsHref={`/${locale}/account`}
+                signOutLabel={t('signOut')}
+                signOutHref="/auth/logout"
             />
         );
     }

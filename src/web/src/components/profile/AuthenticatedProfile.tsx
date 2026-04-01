@@ -10,7 +10,7 @@
  */
 
 import * as React from 'react';
-import { Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 
 import {
     Avatar,
@@ -31,8 +31,9 @@ import { getInitials } from '@/lib/getInitials.js';
  * 1. Must be a pure render component — no hooks, no side effects.
  * 2. Must render accessible avatar with initials fallback.
  * 3. Must render a tooltip-wrapped settings link with aria-label.
- * 4. Must NOT use data-testid attributes.
- * 5. Must use Card for consistent surface styling.
+ * 4. Must render a tooltip-wrapped sign-out link with aria-label.
+ * 5. Must NOT use data-testid attributes.
+ * 6. Must use Card for consistent surface styling.
  */
 
 /** Props for AuthenticatedProfile. */
@@ -47,6 +48,10 @@ export interface AuthenticatedProfileProps {
     settingsLabel: string;
     /** Href for the account/settings page. */
     settingsHref: string;
+    /** Localised tooltip label for the sign-out link. */
+    signOutLabel: string;
+    /** Href for the Auth0 logout route (e.g. "/auth/logout"). */
+    signOutHref: string;
 }
 
 /**
@@ -62,6 +67,8 @@ export function AuthenticatedProfile({
     welcomeText,
     settingsLabel,
     settingsHref,
+    signOutLabel,
+    signOutHref,
 }: AuthenticatedProfileProps): React.ReactElement {
     return (
         <Card className="border-border/40 bg-surface/60">
@@ -74,20 +81,36 @@ export function AuthenticatedProfile({
                     {welcomeText}
                 </span>
                 <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="link" asChild>
-                                <a
-                                    href={settingsHref}
-                                    className="ml-auto rounded-md p-1 text-secondary transition-colors hover:text-secondary-hover"
-                                    aria-label={settingsLabel}
-                                >
-                                    <Settings className="h-4 w-4" />
-                                </a>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{settingsLabel}</TooltipContent>
-                    </Tooltip>
+                    <div className="ml-auto flex items-center gap-1">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="link" asChild>
+                                    <a
+                                        href={settingsHref}
+                                        className="rounded-md p-1 text-secondary transition-colors hover:text-secondary-hover"
+                                        aria-label={settingsLabel}
+                                    >
+                                        <Settings className="h-4 w-4" />
+                                    </a>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{settingsLabel}</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="link" asChild>
+                                    <a
+                                        href={signOutHref}
+                                        className="rounded-md p-1 text-secondary transition-colors hover:text-secondary-hover"
+                                        aria-label={signOutLabel}
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                    </a>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{signOutLabel}</TooltipContent>
+                        </Tooltip>
+                    </div>
                 </TooltipProvider>
             </CardContent>
         </Card>

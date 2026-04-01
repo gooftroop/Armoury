@@ -16,6 +16,7 @@
         "legal": "This is an unofficial, fan-made tool. It is not affiliated with or endorsed by any game publisher. All game-specific trademarks are property of their respective owners. Game data is provided by community sources.",
         "welcome": "Welcome, {name}",
         "editProfile": "Click to edit your profile",
+        "signOut": "Sign Out",
         "selectSystem": "Select",
         "comingSoon": "Coming Soon",
         "downloadOverlay": "Click to download",
