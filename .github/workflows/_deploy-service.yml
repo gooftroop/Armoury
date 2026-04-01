@@ -46,6 +46,11 @@ on:
                 required: false
                 type: string
                 default: ''
+            sync-tables:
+                description: 'Space-separated table names to sync from production during PR sandbox deploys (e.g. "users accounts"). Empty = skip sync.'
+                required: false
+                type: string
+                default: ''
 
 jobs:
     ci:
@@ -158,6 +163,30 @@ jobs:
               env:
                   DB_SCHEMA: ${{ github.event_name == 'pull_request' && format('pr_{0}', github.event.pull_request.number) || 'public' }}
               run: npm run db:migrate -w ${{ inputs.service-name }}
+
+            - name: Sync production data
+              if: inputs.has-migrations && inputs.sync-tables != '' && github.event_name == 'pull_request'
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_PROD_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/production/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  export DSQL_PROD_ENDPOINT
+                  node --import=tsx src/shared/e2e/src/dbSchema.ts sync "${DB_SCHEMA}" ${{ inputs.sync-tables }}
+
+            - name: Verify sync
+              if: inputs.has-migrations && inputs.sync-tables != '' && github.event_name == 'pull_request'
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: |
+                  SERVICE_SHORT_NAME=$(basename "${{ inputs.working-directory }}")
+                  DSQL_PROD_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/production/${SERVICE_SHORT_NAME}/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  export DSQL_PROD_ENDPOINT
+                  node --import=tsx src/shared/e2e/src/dbSchema.ts verify-sync "${DB_SCHEMA}" ${{ inputs.sync-tables }}
 
             - name: Set Authorizer ARN
               if: inputs.authorizer-arn != ''
