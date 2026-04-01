@@ -4,6 +4,7 @@ import type {
     CreateUserPayload,
     UpdateAccountPayload,
     UpdateUserPayload,
+    UpsertUserPayload,
     UserPreferences,
 } from '@/types.js';
 import {
@@ -14,6 +15,7 @@ import {
     parseCreateUser,
     parseUpdateAccount,
     parseUpdateUser,
+    parseUpsertUser,
 } from '@/utils/validation.js';
 
 describe('validation utilities', () => {
@@ -66,6 +68,81 @@ describe('validation utilities', () => {
 
         it('returns error for invalid picture value', () => {
             const result = parseCreateUser({
+                sub: 'auth0|user-1',
+                email: 'user@test.com',
+                name: 'Test',
+                picture: 123,
+            });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Invalid picture value');
+        });
+    });
+
+    describe('parseUpsertUser', () => {
+        it('returns parsed payload for valid input', () => {
+            const result = parseUpsertUser({
+                sub: 'auth0|user-1',
+                email: 'user@test.com',
+                name: 'Test',
+                picture: null,
+            });
+
+            expect(result).not.toBeInstanceOf(Error);
+
+            const payload = result as UpsertUserPayload;
+
+            expect(payload.sub).toBe('auth0|user-1');
+            expect(payload.email).toBe('user@test.com');
+            expect(payload.name).toBe('Test');
+            expect(payload.picture).toBeNull();
+        });
+
+        it('returns parsed payload with picture URL', () => {
+            const result = parseUpsertUser({
+                sub: 'auth0|user-1',
+                email: 'user@test.com',
+                name: 'Test',
+                picture: 'https://example.com/pic.jpg',
+            });
+
+            expect(result).not.toBeInstanceOf(Error);
+
+            const payload = result as UpsertUserPayload;
+
+            expect(payload.picture).toBe('https://example.com/pic.jpg');
+        });
+
+        it('returns error when body is null', () => {
+            const result = parseUpsertUser(null);
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Request body is required');
+        });
+
+        it('returns error when sub is missing', () => {
+            const result = parseUpsertUser({ email: 'user@test.com', name: 'Test' });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Missing required field: sub');
+        });
+
+        it('returns error when email is missing', () => {
+            const result = parseUpsertUser({ sub: 'auth0|user-1', name: 'Test' });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Missing required field: email');
+        });
+
+        it('returns error when name is missing', () => {
+            const result = parseUpsertUser({ sub: 'auth0|user-1', email: 'user@test.com' });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Missing required field: name');
+        });
+
+        it('returns error for invalid picture value', () => {
+            const result = parseUpsertUser({
                 sub: 'auth0|user-1',
                 email: 'user@test.com',
                 name: 'Test',

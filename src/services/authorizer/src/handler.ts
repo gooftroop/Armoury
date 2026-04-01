@@ -6,9 +6,9 @@ import { getJwks } from '@/jwks.js';
 import { getServiceConfig } from '@/utils/secrets.js';
 import { extractTokenFromEvent, buildIssuer } from '@/utils/token.js';
 import { generatePolicy, extractHttpMethod } from '@/utils/policy.js';
-import { isJwtPayload } from '@/utils/jwt.js';
+import { isJwtPayload, isM2mPayload } from '@/utils/jwt.js';
 import type { AuthorizerContext, AuthorizerEvent, AuthorizerResult } from '@/types.js';
-import { INTERNAL_ID_CLAIM } from '@/types.js';
+import { INTERNAL_ID_CLAIM, M2M_PRINCIPAL_ID } from '@/types.js';
 
 /**
  * Default principal identifier used when denying access.
@@ -72,6 +72,14 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
             audience: config.auth0Audience,
             issuer,
         });
+
+        if (isM2mPayload(payload)) {
+            Sentry.logger.info('[authorizer] ALLOW: M2M token', {
+                sub: payload.sub,
+            });
+
+            return generatePolicy(M2M_PRINCIPAL_ID, 'Allow', event.methodArn);
+        }
 
         if (!isJwtPayload(payload)) {
             console.error(

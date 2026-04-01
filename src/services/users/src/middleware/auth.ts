@@ -1,6 +1,7 @@
 import type { UserContext } from '@/types.js';
 
 const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
+const M2M_GRANT_TYPE = 'client-credentials';
 
 /**
  * Minimal API Gateway v2 httpApi event shape for native JWT authorizer context.
@@ -22,12 +23,20 @@ interface AuthorizerEvent {
  *
  * httpApi JWT authorizers return claims nested under
  * `event.requestContext.authorizer.jwt.claims`.
+ *
+ * M2M tokens (client_credentials grant) lack user-specific claims.
+ * When an M2M token is detected, a sentinel context with `userId` set
+ * to `'m2m'` is returned so callers can distinguish M2M requests.
  */
 export function extractUserContext(event: AuthorizerEvent): UserContext {
     const claims = event.requestContext.authorizer?.jwt?.claims;
 
     if (!claims || typeof claims !== 'object') {
         throw new Error('Missing authorizer context');
+    }
+
+    if (claims['gty'] === M2M_GRANT_TYPE) {
+        return { userId: 'm2m' };
     }
 
     const userId = typeof claims[INTERNAL_ID_CLAIM] === 'string' ? claims[INTERNAL_ID_CLAIM] : null;

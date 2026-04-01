@@ -230,6 +230,27 @@ export interface UpdateUserPayload {
 }
 
 /**
+ * Request body for upserting a user on login.
+ *
+ * Called by the Auth0 Post-Login Action via M2M token to ensure
+ * the user exists in the database. Creates on first login, updates
+ * profile fields on subsequent logins.
+ */
+export interface UpsertUserPayload {
+    /** User subject identifier from the identity provider. */
+    sub: string;
+
+    /** User email address. */
+    email: string;
+
+    /** User display name. */
+    name: string;
+
+    /** User profile picture URL, or null if not set. */
+    picture: string | null;
+}
+
+/**
  * Request body for creating an account for a user.
  */
 export interface CreateAccountPayload {

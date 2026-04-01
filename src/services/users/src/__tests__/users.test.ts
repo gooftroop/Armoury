@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { User, UserContext } from '@/types.js';
-import { createUser, listUsers, getUser, updateUser, deleteUser } from '@/routes/users.js';
+import { createUser, listUsers, getUser, updateUser, deleteUser, upsertUser } from '@/routes/users.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
@@ -196,6 +196,84 @@ describe('user routes', () => {
 
             expect(response.statusCode).toBe(404);
             expect(JSON.parse(response.body)).toMatchObject({ error: 'NotFound' });
+        });
+    });
+
+    describe('upsertUser', () => {
+        it('creates a new user on first upsert', async () => {
+            const response = await upsertUser(
+                adapter,
+                { sub: 'auth0|user-1', email: 'user@test.com', name: 'Test', picture: null },
+                null,
+                baseUserContext,
+            );
+
+            expect(response.statusCode).toBe(200);
+
+            const payload = JSON.parse(response.body) as User;
+
+            expect(payload.id).toEqual(expect.any(String));
+            expect(payload.sub).toBe('auth0|user-1');
+            expect(payload.email).toBe('user@test.com');
+            expect(payload.name).toBe('Test');
+            expect(payload.picture).toBeNull();
+            expect(payload.accountId).toBeNull();
+            expect(payload.createdAt).toEqual(expect.any(String));
+            expect(payload.updatedAt).toEqual(expect.any(String));
+        });
+
+        it('updates an existing user on subsequent upsert', async () => {
+            const firstResponse = await upsertUser(
+                adapter,
+                { sub: 'auth0|user-1', email: 'old@test.com', name: 'Old Name', picture: null },
+                null,
+                baseUserContext,
+            );
+            const firstUser = JSON.parse(firstResponse.body) as User;
+
+            const secondResponse = await upsertUser(
+                adapter,
+                {
+                    sub: 'auth0|user-1',
+                    email: 'new@test.com',
+                    name: 'New Name',
+                    picture: 'https://example.com/pic.jpg',
+                },
+                null,
+                baseUserContext,
+            );
+            const secondUser = JSON.parse(secondResponse.body) as User;
+
+            expect(secondResponse.statusCode).toBe(200);
+            expect(secondUser.id).toBe(firstUser.id);
+            expect(secondUser.email).toBe('new@test.com');
+            expect(secondUser.name).toBe('New Name');
+            expect(secondUser.picture).toBe('https://example.com/pic.jpg');
+        });
+
+        it('is idempotent with identical data', async () => {
+            const body = { sub: 'auth0|user-1', email: 'user@test.com', name: 'Test', picture: null };
+
+            const first = JSON.parse((await upsertUser(adapter, body, null, baseUserContext)).body) as User;
+            const second = JSON.parse((await upsertUser(adapter, body, null, baseUserContext)).body) as User;
+            const third = JSON.parse((await upsertUser(adapter, body, null, baseUserContext)).body) as User;
+
+            expect(first.id).toBe(second.id);
+            expect(second.id).toBe(third.id);
+        });
+
+        it('returns 400 when body is null', async () => {
+            const response = await upsertUser(adapter, null, null, baseUserContext);
+
+            expect(response.statusCode).toBe(400);
+            expect(JSON.parse(response.body)).toMatchObject({ error: 'ValidationError' });
+        });
+
+        it('returns 400 when required fields are missing', async () => {
+            const response = await upsertUser(adapter, { sub: 'auth0|user-1' }, null, baseUserContext);
+
+            expect(response.statusCode).toBe(400);
+            expect(JSON.parse(response.body)).toMatchObject({ error: 'ValidationError' });
         });
     });
 });

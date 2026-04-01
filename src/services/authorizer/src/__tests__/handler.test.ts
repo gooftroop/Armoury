@@ -379,6 +379,99 @@ describe('handler - OPTIONS preflight bypass', () => {
     });
 });
 
+describe('handler - M2M token support', () => {
+    beforeEach(() => {
+        resetMocks();
+    });
+
+    it('returns Allow policy with m2m principal for valid M2M token', async () => {
+        joseMocks.jwtVerifyMock.mockResolvedValue({
+            payload: {
+                sub: 'client-id-abc@clients',
+                gty: 'client-credentials',
+                aud: 'https://api.armoury.com',
+                iss: 'https://test.auth0.com/',
+            },
+            protectedHeader: { alg: 'RS256' },
+            key: {},
+        });
+
+        const result = await invokeHandler(buildEvent('Bearer m2m-token'));
+
+        expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
+        expect(result.principalId).toBe('m2m');
+        expect(result.context).toBeUndefined();
+    });
+
+    it('returns Allow without user context for M2M token', async () => {
+        joseMocks.jwtVerifyMock.mockResolvedValue({
+            payload: {
+                sub: 'client-id-abc@clients',
+                gty: 'client-credentials',
+                aud: 'https://api.armoury.com',
+                iss: 'https://test.auth0.com/',
+            },
+            protectedHeader: { alg: 'RS256' },
+            key: {},
+        });
+
+        const result = await invokeHandler(buildEvent('Bearer m2m-token'));
+
+        expect(result.context).toBeUndefined();
+    });
+
+    it('returns Deny when M2M token is missing sub claim', async () => {
+        joseMocks.jwtVerifyMock.mockResolvedValue({
+            payload: {
+                gty: 'client-credentials',
+                aud: 'https://api.armoury.com',
+                iss: 'https://test.auth0.com/',
+            },
+            protectedHeader: { alg: 'RS256' },
+            key: {},
+        });
+
+        const result = await invokeHandler(buildEvent('Bearer m2m-token'));
+
+        expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
+    });
+
+    it('returns Deny when gty has wrong value', async () => {
+        joseMocks.jwtVerifyMock.mockResolvedValue({
+            payload: {
+                sub: 'client-id-abc@clients',
+                gty: 'authorization_code',
+                aud: 'https://api.armoury.com',
+                iss: 'https://test.auth0.com/',
+            },
+            protectedHeader: { alg: 'RS256' },
+            key: {},
+        });
+
+        const result = await invokeHandler(buildEvent('Bearer m2m-token'));
+
+        expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
+    });
+
+    it('falls through to user token validation when gty is absent', async () => {
+        joseMocks.jwtVerifyMock.mockResolvedValue({
+            payload: {
+                sub: 'auth0|user-123',
+                'https://armoury.app/internal_id': 'internal-uuid-123',
+                aud: 'https://api.armoury.com',
+                iss: 'https://test.auth0.com/',
+            },
+            protectedHeader: { alg: 'RS256' },
+            key: {},
+        });
+
+        const result = await invokeHandler(buildEvent('Bearer user-token'));
+
+        expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
+        expect(result.principalId).toBe('internal-uuid-123');
+    });
+});
+
 describe('generatePolicy', () => {
     it('creates Allow policy with correct structure and wildcard resource', () => {
         const result = generatePolicy('internal-uuid-1', 'Allow', TEST_METHOD_ARN, {

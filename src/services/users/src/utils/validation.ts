@@ -4,6 +4,7 @@ import type {
     SystemPreferences,
     UpdateAccountPayload,
     UpdateUserPayload,
+    UpsertUserPayload,
     UserPreferences,
 } from '@/types.js';
 
@@ -44,6 +45,46 @@ export function isBoolean(value: unknown): value is boolean {
  * @returns Parsed payload or error.
  */
 export function parseCreateUser(body: unknown | null): CreateUserPayload | Error {
+    if (!body || !isRecord(body)) {
+        return new Error('Request body is required');
+    }
+
+    const sub = body['sub'];
+    const email = body['email'];
+    const name = body['name'];
+    const picture = body['picture'];
+
+    if (!isString(sub)) {
+        return new Error('Missing required field: sub');
+    }
+
+    if (!isString(email)) {
+        return new Error('Missing required field: email');
+    }
+
+    if (!isString(name)) {
+        return new Error('Missing required field: name');
+    }
+
+    if (picture !== null && picture !== undefined && !isString(picture)) {
+        return new Error('Invalid picture value');
+    }
+
+    return {
+        sub,
+        email,
+        name,
+        picture: isString(picture) ? picture : null,
+    };
+}
+
+/**
+ * Validates an upsert user request payload from the Auth0 Post-Login Action.
+ *
+ * @param body - Incoming request body.
+ * @returns Parsed payload or error.
+ */
+export function parseUpsertUser(body: unknown | null): UpsertUserPayload | Error {
     if (!body || !isRecord(body)) {
         return new Error('Request body is required');
     }

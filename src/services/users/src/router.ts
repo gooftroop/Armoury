@@ -1,6 +1,6 @@
 import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from '@/types.js';
 import { createAccount, deleteAccount, getAccount, updateAccount } from '@/routes/accounts.js';
-import { createUser, deleteUser, getUser, listUsers, updateUser } from '@/routes/users.js';
+import { createUser, deleteUser, getUser, listUsers, updateUser, upsertUser } from '@/routes/users.js';
 
 /**
  * Standard CORS headers included in all API responses.
@@ -22,6 +22,7 @@ const ROUTE_MAP: Record<RouteKey, RouteHandler> = {
     '/{id}::GET': getUser,
     '/{id}::PUT': updateUser,
     '/{id}::DELETE': deleteUser,
+    '/upsert::POST': upsertUser,
     '/{id}/account::GET': getAccount,
     '/{id}/account::POST': createAccount,
     '/{id}/account::PUT': updateAccount,
