@@ -2,14 +2,14 @@
  * Authenticated user context extracted from API Gateway authorizer.
  */
 export interface UserContext {
-    /** User subject identifier from the identity provider. */
-    sub: string;
+    /** Internal user identifier from the Auth0 custom claim. */
+    userId: string;
 
-    /** User email address from the identity provider. */
-    email: string;
+    /** User email address from the identity provider (may be absent from access tokens). */
+    email?: string;
 
-    /** User display name from the identity provider. */
-    name: string;
+    /** User display name from the identity provider (may be absent from access tokens). */
+    name?: string;
 }
 
 /**
@@ -179,7 +179,7 @@ export type PresenceStatus = 'online' | 'offline' | 'away' | 'invisible';
  * | user_id        | TEXT | PRIMARY KEY |
  * | status         | TEXT | NOT NULL    |
  * | connection_id  | TEXT |             |
- * | last_active_at | TEXT | NOT NULL    |
+ * | last_seen      | TEXT | NOT NULL    |
  */
 export interface UserPresence {
     /** User identifier (primary key). */
@@ -192,7 +192,7 @@ export interface UserPresence {
     connectionId: string | null;
 
     /** Timestamp of last activity. ISO 8601. */
-    lastActiveAt: string;
+    lastSeen: string;
 }
 
 // ---------------------------------------------------------------------------

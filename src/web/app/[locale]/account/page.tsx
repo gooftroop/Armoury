@@ -9,18 +9,20 @@
  * @requirements
  * 1. Must be a Server Component (no 'use client').
  * 2. Must fetch the Auth0 session via auth0.getSession().
- * 3. Must pass user and accessToken to the AccountSettings client component when authenticated.
- * 4. Must show a sign-in message when no session exists.
+ * 3. Must pass userId (internal_id claim) and accessToken to the AccountSettings client component when authenticated.
+ * 4. Must redirect to /auth/logout when authenticated but internal_id claim is missing (stale session).
+ * 5. Must show a sign-in message when no session exists.
  * 5. Must use next-intl for all user-facing text.
  * 6. Must set the request locale for next-intl server-side.
  *
  * @module account-page
  */
 
+import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { auth0 } from '@/lib/auth0.js';
-import { AccountSettings } from '@/components/AccountSettings.js';
+import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
+import { AccountSettings } from '@/components/AccountSettingsContainer.js';
 
 /** Props for the locale-parameterized account page. */
 export interface AccountPageProps {
@@ -45,20 +47,30 @@ export default async function AccountPage({ params }: AccountPageProps) {
     setRequestLocale(locale);
 
     const t = await getTranslations('account');
-    const session = await auth0.getSession();
+    const session = (await auth0?.getSession()) ?? null;
 
     return (
         <main className="flex min-h-screen flex-col bg-base p-6 text-foreground">
             {session ? (
-                <AccountSettings
-                    user={{
-                        sub: session.user.sub as string,
-                        name: session.user.name as string,
-                        email: session.user.email as string,
-                        picture: session.user.picture as string,
-                    }}
-                    accessToken={session.tokenSet.accessToken as string}
-                />
+                (() => {
+                    const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
+
+                    if (!userId) {
+                        redirect('/auth/logout');
+                    }
+
+                    return (
+                        <AccountSettings
+                            user={{
+                                userId,
+                                name: session.user.name as string,
+                                email: session.user.email as string,
+                                picture: session.user.picture as string,
+                            }}
+                            accessToken={session.tokenSet.accessToken as string}
+                        />
+                    );
+                })()
             ) : (
                 <div className="mx-auto w-full max-w-3xl">
                     <p className="text-secondary">{t('notAuthenticated')}</p>

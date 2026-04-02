@@ -27,15 +27,15 @@
         "@armoury/typescript": "*",
         "@armoury/vitest": "*",
         "@armoury/esbuild": "*",
-        "@types/ws": "^8.18.1",
         "eslint": "^10.0.3",
         "prettier": "^3.0.0",
         "vitest": "^4.0.0"
     },
     "dependencies": {
+        "@armoury/config": "*",
+        "@armoury/network": "*",
         "@tanstack/react-query": "^5.0.0",
         "rxjs": "^7.0.0",
-        "ws": "^8.0.0",
         "ky": "^1.0.0"
     },
     "lint-staged": {

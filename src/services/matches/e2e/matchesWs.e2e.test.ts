@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Match, UserContext, WebSocketEvent } from '@/types.js';
+import type { Match, WebSocketEvent } from '@/types.js';
 import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
 import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 import type { BroadcastRecord } from '@armoury/e2e';
 import { createMockBroadcaster } from '@armoury/e2e';
 import { createTestUserContext, createWebSocketEvent } from '@armoury/e2e';
+import type { TestUserContext } from '@armoury/e2e';
 import { wsRouter } from '@/wsRouter.js';
 
 const mockBroadcast = createMockBroadcaster();
@@ -15,10 +16,10 @@ vi.mock('@/utils/broadcast.js', () => ({
 
 let adapter: LocalDatabaseAdapter;
 
-const userA: UserContext = createTestUserContext({ sub: 'ws-user-a', name: 'WS Player A' });
-const userB: UserContext = createTestUserContext({ sub: 'ws-user-b', name: 'WS Player B' });
+const userA = createTestUserContext({ userId: 'ws-user-a', name: 'WS Player A' });
+const userB = createTestUserContext({ userId: 'ws-user-b', name: 'WS Player B' });
 
-function connectEvent(connectionId: string, userContext: UserContext): WebSocketEvent {
+function connectEvent(connectionId: string, userContext: TestUserContext): WebSocketEvent {
     return createWebSocketEvent({
         routeKey: '$connect',
         connectionId,
@@ -88,7 +89,7 @@ describe('matches WebSocket e2e', () => {
 
         const connection = await adapter.get('wsConnection', 'conn-a');
         expect(connection).not.toBeNull();
-        expect(connection!.userId).toBe(userA.sub);
+        expect(connection!.userId).toBe(userA.userId);
     });
 
     it('connect without user context returns 401', async () => {
@@ -104,7 +105,7 @@ describe('matches WebSocket e2e', () => {
 
     it('subscribe sends initial match state and stores subscription', async () => {
         await wsRouter(connectEvent('conn-a', userA), adapter, userA);
-        const match = await seedMatch(adapter, userA.sub);
+        const match = await seedMatch(adapter, userA.userId);
 
         const res = await wsRouter(
             messageEvent('conn-a', { action: 'subscribeMatch', matchId: match.id }),
@@ -125,12 +126,16 @@ describe('matches WebSocket e2e', () => {
     });
 
     it('subscribe returns 403 for non-participant', async () => {
-        await wsRouter(connectEvent('conn-other', { sub: 'other-user', email: 'o@test.dev', name: 'Other' }), adapter, {
-            sub: 'other-user',
-            email: 'o@test.dev',
-            name: 'Other',
-        });
-        const match = await seedMatch(adapter, userA.sub);
+        await wsRouter(
+            connectEvent('conn-other', { userId: 'other-user', email: 'o@test.dev', name: 'Other' }),
+            adapter,
+            {
+                userId: 'other-user',
+                email: 'o@test.dev',
+                name: 'Other',
+            },
+        );
+        const match = await seedMatch(adapter, userA.userId);
 
         const res = await wsRouter(
             messageEvent('conn-other', { action: 'subscribeMatch', matchId: match.id }),
@@ -145,7 +150,7 @@ describe('matches WebSocket e2e', () => {
         await wsRouter(connectEvent('conn-a', userA), adapter, userA);
         await wsRouter(connectEvent('conn-b', userB), adapter, userB);
 
-        const match = await seedMatch(adapter, userA.sub, userB.sub);
+        const match = await seedMatch(adapter, userA.userId, userB.userId);
 
         await wsRouter(messageEvent('conn-b', { action: 'subscribeMatch', matchId: match.id }), adapter, null);
         mockBroadcast.reset();
@@ -174,7 +179,7 @@ describe('matches WebSocket e2e', () => {
 
     it('updateMatch returns 403 for non-owner', async () => {
         await wsRouter(connectEvent('conn-b', userB), adapter, userB);
-        const match = await seedMatch(adapter, userA.sub);
+        const match = await seedMatch(adapter, userA.userId);
 
         const res = await wsRouter(
             messageEvent('conn-b', {
@@ -191,7 +196,7 @@ describe('matches WebSocket e2e', () => {
 
     it('unsubscribe removes the subscription', async () => {
         await wsRouter(connectEvent('conn-a', userA), adapter, userA);
-        const match = await seedMatch(adapter, userA.sub);
+        const match = await seedMatch(adapter, userA.userId);
 
         await wsRouter(messageEvent('conn-a', { action: 'subscribeMatch', matchId: match.id }), adapter, null);
 
@@ -209,7 +214,7 @@ describe('matches WebSocket e2e', () => {
 
     it('disconnect removes connection and all subscriptions', async () => {
         await wsRouter(connectEvent('conn-a', userA), adapter, userA);
-        const match = await seedMatch(adapter, userA.sub);
+        const match = await seedMatch(adapter, userA.userId);
 
         await wsRouter(messageEvent('conn-a', { action: 'subscribeMatch', matchId: match.id }), adapter, null);
 

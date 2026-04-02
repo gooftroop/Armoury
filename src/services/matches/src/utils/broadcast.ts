@@ -1,4 +1,5 @@
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk/client-apigatewaymanagementapi';
+import { captureWsError } from '@/utils/wsErrors.js';
 
 const encoder = new TextEncoder();
 
@@ -28,6 +29,10 @@ export function createBroadcaster(domainName: string, stage: string): Broadcaste
                 return true;
             }
 
+            const err = error instanceof Error ? error : new Error(String(error));
+
+            captureWsError(err, 'broadcast:send', { connectionId });
+
             throw error;
         }
     }
@@ -49,6 +54,15 @@ export function createBroadcaster(domainName: string, stage: string): Broadcaste
                 if (connectionId) {
                     staleConnectionIds.push(connectionId);
                 }
+            }
+
+            if (result.status === 'rejected') {
+                const connectionId = connectionIds[i];
+
+                console.error(
+                    `[broadcast] sendToMany failed for connection ${connectionId ?? 'unknown'}`,
+                    result.reason,
+                );
             }
         }
 

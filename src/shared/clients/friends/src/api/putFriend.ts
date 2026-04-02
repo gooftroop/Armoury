@@ -17,7 +17,7 @@ export async function putFriend(authorization: string, params: FriendParams & Up
     const { friendId, ...updateFields } = params;
 
     return ky
-        .put(`friends/${friendId}`, {
+        .put(`${friendId}`, {
             prefixUrl: FRIENDS_BASE_URL,
             headers: { Authorization: authorization },
             json: updateFields,

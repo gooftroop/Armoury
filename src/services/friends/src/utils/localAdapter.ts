@@ -72,7 +72,7 @@ const STORE_CONFIGS: Record<EntityType, StoreConfig> = {
             userId: 'user_id',
             status: 'status',
             connectionId: 'connection_id',
-            lastActiveAt: 'last_active_at',
+            lastSeen: 'last_seen',
         },
     },
 };

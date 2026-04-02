@@ -57,7 +57,7 @@ describe('getFriends', () => {
 
         await getFriends(authorization);
 
-        expect(mockGet).toHaveBeenCalledWith('friends', expect.any(Object));
+        expect(mockGet).toHaveBeenCalledWith('', expect.any(Object));
     });
 
     it('sets prefixUrl from FRIENDS_BASE_URL', async () => {
@@ -98,7 +98,7 @@ describe('getFriend', () => {
 
         await getFriend(authorization, { friendId: 'friend-1' });
 
-        expect(mockGet).toHaveBeenCalledWith('friends/friend-1', expect.any(Object));
+        expect(mockGet).toHaveBeenCalledWith('friend-1', expect.any(Object));
     });
 
     it('sets prefixUrl from FRIENDS_BASE_URL', async () => {
@@ -139,7 +139,7 @@ describe('postFriendRequest', () => {
 
         await postFriendRequest(authorization, { userId: 'user-2' });
 
-        expect(mockPost).toHaveBeenCalledWith('friends', expect.any(Object));
+        expect(mockPost).toHaveBeenCalledWith('', expect.any(Object));
     });
 
     it('sets prefixUrl from FRIENDS_BASE_URL', async () => {
@@ -190,7 +190,7 @@ describe('putFriend', () => {
 
         await putFriend(authorization, { friendId: 'friend-1', status: 'accepted' });
 
-        expect(mockPut).toHaveBeenCalledWith('friends/friend-1', expect.any(Object));
+        expect(mockPut).toHaveBeenCalledWith('friend-1', expect.any(Object));
     });
 
     it('sets prefixUrl from FRIENDS_BASE_URL', async () => {
@@ -245,7 +245,7 @@ describe('deleteFriend', () => {
     it('calls ky.delete with the correct URL path including friendId', async () => {
         await deleteFriend(authorization, { friendId: 'friend-1' });
 
-        expect(mockDelete).toHaveBeenCalledWith('friends/friend-1', expect.any(Object));
+        expect(mockDelete).toHaveBeenCalledWith('friend-1', expect.any(Object));
     });
 
     it('sets prefixUrl from FRIENDS_BASE_URL', async () => {

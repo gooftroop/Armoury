@@ -4,7 +4,7 @@ import { createAccount, deleteAccount, getAccount, updateAccount } from '@/route
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
-    sub: 'user-1',
+    userId: 'user-1',
     email: 'user@example.com',
     name: 'Test User',
 };

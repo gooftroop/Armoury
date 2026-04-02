@@ -78,10 +78,16 @@ export interface IGitHubClient {
  *
  * @property userAgent - Custom User-Agent header to send with requests. Defaults to DEFAULT_USER_AGENT if not provided.
  * @property token - Optional GitHub personal access token for authenticated requests. Increases API rate limits from 60 to 5000 requests per hour.
+ * @property apiBaseUrl - Override the GitHub REST API base URL (e.g. to route through a proxy). Defaults to `https://api.github.com`.
+ * @property rawBaseUrl - Override the raw content CDN base URL (e.g. to route through a proxy). Defaults to `https://raw.githubusercontent.com`.
  */
 export interface GitHubClientConfig {
     userAgent?: string;
     token?: string;
+    /** Override the GitHub REST API base URL (e.g. `/api/github/api` for proxy routing). */
+    apiBaseUrl?: string;
+    /** Override the raw content CDN base URL (e.g. `/api/github/raw` for proxy routing). */
+    rawBaseUrl?: string;
 }
 
 /**

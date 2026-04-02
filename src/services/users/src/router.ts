@@ -1,6 +1,15 @@
 import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, UserContext } from '@/types.js';
 import { createAccount, deleteAccount, getAccount, updateAccount } from '@/routes/accounts.js';
-import { createUser, deleteUser, getUser, listUsers, updateUser } from '@/routes/users.js';
+import { createUser, deleteUser, getUser, listUsers, updateUser, upsertUser } from '@/routes/users.js';
+
+/**
+ * Standard CORS headers included in all API responses.
+ */
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': process.env['ALLOWED_ORIGIN'] ?? '*',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+} as const;
 
 /**
  * Route dispatch key for API Gateway resource and HTTP method.
@@ -8,15 +17,16 @@ import { createUser, deleteUser, getUser, listUsers, updateUser } from '@/routes
 type RouteKey = `${string}::${string}`;
 
 const ROUTE_MAP: Record<RouteKey, RouteHandler> = {
-    '/users::POST': createUser,
-    '/users::GET': listUsers,
-    '/users/{id}::GET': getUser,
-    '/users/{id}::PUT': updateUser,
-    '/users/{id}::DELETE': deleteUser,
-    '/users/{id}/account::GET': getAccount,
-    '/users/{id}/account::POST': createAccount,
-    '/users/{id}/account::PUT': updateAccount,
-    '/users/{id}/account::DELETE': deleteAccount,
+    '/::POST': createUser,
+    '/::GET': listUsers,
+    '/{id}::GET': getUser,
+    '/{id}::PUT': updateUser,
+    '/{id}::DELETE': deleteUser,
+    '/upsert::POST': upsertUser,
+    '/{id}/account::GET': getAccount,
+    '/{id}/account::POST': createAccount,
+    '/{id}/account::PUT': updateAccount,
+    '/{id}/account::DELETE': deleteAccount,
 };
 
 /**
@@ -48,6 +58,7 @@ export async function router(
             statusCode: 400,
             headers: {
                 'Content-Type': 'application/json',
+                ...CORS_HEADERS,
             },
             body: JSON.stringify({
                 error: 'ValidationError',
@@ -61,6 +72,7 @@ export async function router(
             statusCode: 404,
             headers: {
                 'Content-Type': 'application/json',
+                ...CORS_HEADERS,
             },
             body: JSON.stringify({
                 error: 'NotFound',

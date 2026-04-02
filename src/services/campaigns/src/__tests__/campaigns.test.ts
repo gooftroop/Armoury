@@ -5,7 +5,7 @@ import { createCampaign, deleteCampaign, getCampaign, listCampaigns, updateCampa
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
-    sub: 'user-1',
+    userId: 'user-1',
     email: 'user@example.com',
     name: 'Test User',
 };
@@ -51,7 +51,7 @@ describe('campaign routes', () => {
         const payload = JSON.parse(response.body) as Campaign;
 
         expect(payload.id).toEqual(expect.any(String));
-        expect(payload.organizerId).toBe(baseUserContext.sub);
+        expect(payload.organizerId).toBe(baseUserContext.userId);
         expect(payload.name).toBe(createRequest.name);
         expect(payload.participantIds).toEqual([]);
     });

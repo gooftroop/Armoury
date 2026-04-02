@@ -9,14 +9,14 @@
  * Authenticated user context extracted from API Gateway authorizer.
  */
 export interface UserContext {
-    /** User subject identifier from the identity provider. */
-    sub: string;
+    /** Internal user identifier from the Auth0 custom claim. */
+    userId: string;
 
-    /** User email address from the identity provider. */
-    email: string;
+    /** User email address from the identity provider (may be absent from access tokens). */
+    email?: string;
 
-    /** User display name from the identity provider. */
-    name: string;
+    /** User display name from the identity provider (may be absent from access tokens). */
+    name?: string;
 }
 
 /**
@@ -96,6 +96,17 @@ export interface UserPreferences {
     language: string;
     /** Whether push notifications are enabled for this user. */
     notificationsEnabled: boolean;
+}
+
+/**
+ * Per-game-system preferences for a user.
+ */
+export interface SystemPreferences {
+    /** Whether the user has enabled and downloaded this game system's data. */
+    enabled: boolean;
+
+    /** ISO 8601 timestamp of the last successful data sync, or null if never synced. */
+    lastSyncedAt: string | null;
 }
 
 /**
@@ -219,6 +230,27 @@ export interface UpdateUserPayload {
 }
 
 /**
+ * Request body for upserting a user on login.
+ *
+ * Called by the Auth0 Post-Login Action via M2M token to ensure
+ * the user exists in the database. Creates on first login, updates
+ * profile fields on subsequent logins.
+ */
+export interface UpsertUserPayload {
+    /** User subject identifier from the identity provider. */
+    sub: string;
+
+    /** User email address. */
+    email: string;
+
+    /** User display name. */
+    name: string;
+
+    /** User profile picture URL, or null if not set. */
+    picture: string | null;
+}
+
+/**
  * Request body for creating an account for a user.
  */
 export interface CreateAccountPayload {
@@ -232,4 +264,7 @@ export interface CreateAccountPayload {
 export interface UpdateAccountPayload {
     /** Optional updated user preferences. */
     preferences?: UserPreferences;
+
+    /** Optional updated per-game-system preferences keyed by system ID. */
+    systems?: Record<string, SystemPreferences>;
 }

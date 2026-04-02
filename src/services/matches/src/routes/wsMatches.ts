@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/aws-serverless';
 import type {
     DatabaseAdapter,
     Match,
@@ -7,6 +8,7 @@ import type {
     WsRouteHandler,
 } from '@/types.js';
 import { createBroadcaster } from '@/utils/broadcast.js';
+import { captureWsError } from '@/utils/wsErrors.js';
 import {
     parseSubscribeMatchMessage,
     parseUnsubscribeMatchMessage,
@@ -19,6 +21,14 @@ export const handleWsConnect: WsRouteHandler = async (
     userContext,
 ): Promise<WebSocketResponse> => {
     if (!userContext) {
+        console.error(
+            '[wsMatches:handleWsConnect] 401 Missing user context',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                routeKey: event.requestContext.routeKey,
+            }),
+        );
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -32,11 +42,40 @@ export const handleWsConnect: WsRouteHandler = async (
     const connectionId = event.requestContext.connectionId;
     const connection: WsConnection = {
         connectionId,
-        userId: userContext.sub,
+        userId: userContext.userId,
         connectedAt: now,
     };
 
-    await adapter.put('wsConnection', connection);
+    try {
+        await adapter.put('wsConnection', connection);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: userContext.userId,
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'ServerError',
+                message: 'Failed to establish connection',
+            }),
+        };
+    }
+
+    Sentry.addBreadcrumb({
+        category: 'websocket.connect',
+        message: `WebSocket connection established for user ${userContext.userId}`,
+        level: 'info',
+        data: {
+            connectionId,
+            userId: userContext.userId,
+            timestamp: now,
+        },
+    });
 
     return { statusCode: 200 };
 };
@@ -47,18 +86,47 @@ export const handleWsDisconnect: WsRouteHandler = async (
     _userContext,
 ): Promise<WebSocketResponse> => {
     const connectionId = event.requestContext.connectionId;
-    const subscriptions = await adapter.getByField('matchSubscription', 'connectionId', connectionId);
 
-    await adapter.delete('wsConnection', connectionId);
+    try {
+        const subscriptions = await adapter.getByField('matchSubscription', 'connectionId', connectionId);
 
-    if (subscriptions.length > 0) {
-        await Promise.all(subscriptions.map((subscription) => adapter.delete('matchSubscription', subscription.id)));
+        await adapter.delete('wsConnection', connectionId);
+
+        Sentry.addBreadcrumb({
+            category: 'websocket.disconnect',
+            message: `WebSocket connection closed for connectionId ${connectionId}`,
+            level: 'info',
+            data: {
+                connectionId,
+            },
+        });
+
+        if (subscriptions.length > 0) {
+            await Promise.all(
+                subscriptions.map((subscription) => adapter.delete('matchSubscription', subscription.id)),
+            );
+        }
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+        });
     }
 
     return { statusCode: 200 };
 };
 
-export const handleWsDefault: WsRouteHandler = async (): Promise<WebSocketResponse> => {
+export const handleWsDefault: WsRouteHandler = async (event): Promise<WebSocketResponse> => {
+    console.error(
+        '[wsMatches:handleWsDefault] 400 Unsupported action',
+        JSON.stringify({
+            connectionId: event.requestContext.connectionId,
+            routeKey: event.requestContext.routeKey,
+        }),
+    );
+
     return {
         statusCode: 400,
         body: JSON.stringify({
@@ -76,6 +144,14 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const parsedBody = parseMessageBody(event);
 
     if (parsedBody instanceof Error) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: parsedBody.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -88,6 +164,14 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const request = parseUpdateMatchMessage(parsedBody);
 
     if (request instanceof Error) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: request.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -101,6 +185,8 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const connection = await adapter.get('wsConnection', connectionId);
 
     if (!connection) {
+        console.error('[wsMatches:handleUpdateMatch] 401 Missing connection context', JSON.stringify({ connectionId }));
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -113,6 +199,14 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const match = await adapter.get('match', request.matchId);
 
     if (!match) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 404 Match not found',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+            }),
+        );
+
         return {
             statusCode: 404,
             body: JSON.stringify({
@@ -126,6 +220,15 @@ export const handleUpdateMatch: WsRouteHandler = async (
     const isPlayer = existingMatch.players.some((p) => p.playerId === connection.userId);
 
     if (!isPlayer) {
+        console.error(
+            '[wsMatches:handleUpdateMatch] 403 Non-player update attempt',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+                userId: connection.userId,
+            }),
+        );
+
         return {
             statusCode: 403,
             body: JSON.stringify({
@@ -145,7 +248,35 @@ export const handleUpdateMatch: WsRouteHandler = async (
         updatedAt: new Date().toISOString(),
     };
 
-    await adapter.put('match', updated);
+    try {
+        await adapter.put('match', updated);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            matchId: request.matchId,
+        });
+
+        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+
+        await broadcaster
+            .send(connectionId, {
+                action: 'error',
+                error: 'ServerError',
+                message: 'Failed to update match',
+            })
+            .catch(() => {});
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'ServerError',
+                message: 'Failed to update match',
+            }),
+        };
+    }
 
     const subscriptions = await adapter.getByField('matchSubscription', 'matchId', request.matchId);
     const connectionIds = subscriptions
@@ -153,15 +284,26 @@ export const handleUpdateMatch: WsRouteHandler = async (
         .filter((id) => id !== connectionId);
 
     if (connectionIds.length > 0) {
-        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
-        const goneConnections = await broadcaster.sendToMany(connectionIds, {
-            action: 'matchUpdated',
-            matchId: request.matchId,
-            data: updated,
-        });
+        try {
+            const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+            const goneConnections = await broadcaster.sendToMany(connectionIds, {
+                action: 'matchUpdated',
+                matchId: request.matchId,
+                data: updated,
+            });
 
-        if (goneConnections.length > 0) {
-            await cleanupGoneConnections(adapter, goneConnections);
+            if (goneConnections.length > 0) {
+                await cleanupGoneConnections(adapter, goneConnections);
+            }
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+
+            captureWsError(err, 'broadcast:send', {
+                connectionId,
+                routeKey: event.requestContext.routeKey,
+                matchId: request.matchId,
+                recipientCount: connectionIds.length,
+            });
         }
     }
 
@@ -176,6 +318,14 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const parsedBody = parseMessageBody(event);
 
     if (parsedBody instanceof Error) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: parsedBody.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -188,6 +338,14 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const request = parseSubscribeMatchMessage(parsedBody);
 
     if (request instanceof Error) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: request.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -201,6 +359,11 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const connection = await adapter.get('wsConnection', connectionId);
 
     if (!connection) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 401 Missing connection context',
+            JSON.stringify({ connectionId }),
+        );
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -213,6 +376,14 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const match = await adapter.get('match', request.matchId);
 
     if (!match) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 404 Match not found',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+            }),
+        );
+
         return {
             statusCode: 404,
             body: JSON.stringify({
@@ -226,6 +397,15 @@ export const handleSubscribeMatch: WsRouteHandler = async (
     const isPlayer = existingMatch.players.some((p) => p.playerId === connection.userId);
 
     if (!isPlayer) {
+        console.error(
+            '[wsMatches:handleSubscribeMatch] 403 Not authorized to subscribe',
+            JSON.stringify({
+                connectionId,
+                matchId: request.matchId,
+                userId: connection.userId,
+            }),
+        );
+
         return {
             statusCode: 403,
             body: JSON.stringify({
@@ -243,17 +423,55 @@ export const handleSubscribeMatch: WsRouteHandler = async (
         userId: connection.userId,
     };
 
-    await adapter.put('matchSubscription', subscription);
+    try {
+        await adapter.put('matchSubscription', subscription);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
 
-    const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
-    const shouldCleanup = await broadcaster.send(connectionId, {
-        action: 'matchState',
-        matchId: request.matchId,
-        data: existingMatch,
-    });
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            matchId: request.matchId,
+        });
 
-    if (shouldCleanup) {
-        await cleanupGoneConnections(adapter, [connectionId]);
+        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+
+        await broadcaster
+            .send(connectionId, {
+                action: 'error',
+                error: 'ServerError',
+                message: 'Failed to subscribe to match',
+            })
+            .catch(() => {});
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'ServerError',
+                message: 'Failed to subscribe to match',
+            }),
+        };
+    }
+
+    try {
+        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+        const shouldCleanup = await broadcaster.send(connectionId, {
+            action: 'matchState',
+            matchId: request.matchId,
+            data: existingMatch,
+        });
+
+        if (shouldCleanup) {
+            await cleanupGoneConnections(adapter, [connectionId]);
+        }
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'broadcast:send', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            matchId: request.matchId,
+        });
     }
 
     return { statusCode: 200 };
@@ -267,6 +485,14 @@ export const handleUnsubscribeMatch: WsRouteHandler = async (
     const parsedBody = parseMessageBody(event);
 
     if (parsedBody instanceof Error) {
+        console.error(
+            '[wsMatches:handleUnsubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: parsedBody.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -279,6 +505,14 @@ export const handleUnsubscribeMatch: WsRouteHandler = async (
     const request = parseUnsubscribeMatchMessage(parsedBody);
 
     if (request instanceof Error) {
+        console.error(
+            '[wsMatches:handleUnsubscribeMatch] 400 Validation error',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                error: request.message,
+            }),
+        );
+
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -291,7 +525,35 @@ export const handleUnsubscribeMatch: WsRouteHandler = async (
     const connectionId = event.requestContext.connectionId;
     const subscriptionId = `${connectionId}:${request.matchId}`;
 
-    await adapter.delete('matchSubscription', subscriptionId);
+    try {
+        await adapter.delete('matchSubscription', subscriptionId);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            matchId: request.matchId,
+        });
+
+        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+
+        await broadcaster
+            .send(connectionId, {
+                action: 'error',
+                error: 'ServerError',
+                message: 'Failed to unsubscribe from match',
+            })
+            .catch(() => {});
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'ServerError',
+                message: 'Failed to unsubscribe from match',
+            }),
+        };
+    }
 
     return { statusCode: 200 };
 };

@@ -15,3 +15,17 @@ export {
 } from '@/types.js';
 export { GITHUB_API_BASE_URL, GITHUB_RAW_BASE_URL, DEFAULT_USER_AGENT, MAX_RETRIES, BASE_DELAY_MS } from '@/config.js';
 export { createAuthHeaders } from '@/utils.js';
+
+// === Query Key Builders ===
+export {
+    buildQueryGitHubFilesKey,
+    buildQueryGitHubFileShaKey,
+    buildQueryGitHubFileKey,
+    buildQueryGitHubUpdateCheckKey,
+} from '@/queries/buildQueryGitHubKeys.js';
+
+// === Query Options Builders ===
+export { queryGitHubFiles } from '@/queries/queryGitHubFiles.js';
+export { queryGitHubFileSha } from '@/queries/queryGitHubFileSha.js';
+export { queryGitHubFile } from '@/queries/queryGitHubFile.js';
+export { queryGitHubUpdateCheck } from '@/queries/queryGitHubUpdateCheck.js';

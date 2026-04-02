@@ -4,14 +4,18 @@ import type {
     CreateUserPayload,
     UpdateAccountPayload,
     UpdateUserPayload,
+    UpsertUserPayload,
     UserPreferences,
 } from '@/types.js';
 import {
+    isSystemPreferences,
+    isSystemPreferencesMap,
     isUserPreferences,
     parseCreateAccount,
     parseCreateUser,
     parseUpdateAccount,
     parseUpdateUser,
+    parseUpsertUser,
 } from '@/utils/validation.js';
 
 describe('validation utilities', () => {
@@ -64,6 +68,81 @@ describe('validation utilities', () => {
 
         it('returns error for invalid picture value', () => {
             const result = parseCreateUser({
+                sub: 'auth0|user-1',
+                email: 'user@test.com',
+                name: 'Test',
+                picture: 123,
+            });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Invalid picture value');
+        });
+    });
+
+    describe('parseUpsertUser', () => {
+        it('returns parsed payload for valid input', () => {
+            const result = parseUpsertUser({
+                sub: 'auth0|user-1',
+                email: 'user@test.com',
+                name: 'Test',
+                picture: null,
+            });
+
+            expect(result).not.toBeInstanceOf(Error);
+
+            const payload = result as UpsertUserPayload;
+
+            expect(payload.sub).toBe('auth0|user-1');
+            expect(payload.email).toBe('user@test.com');
+            expect(payload.name).toBe('Test');
+            expect(payload.picture).toBeNull();
+        });
+
+        it('returns parsed payload with picture URL', () => {
+            const result = parseUpsertUser({
+                sub: 'auth0|user-1',
+                email: 'user@test.com',
+                name: 'Test',
+                picture: 'https://example.com/pic.jpg',
+            });
+
+            expect(result).not.toBeInstanceOf(Error);
+
+            const payload = result as UpsertUserPayload;
+
+            expect(payload.picture).toBe('https://example.com/pic.jpg');
+        });
+
+        it('returns error when body is null', () => {
+            const result = parseUpsertUser(null);
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Request body is required');
+        });
+
+        it('returns error when sub is missing', () => {
+            const result = parseUpsertUser({ email: 'user@test.com', name: 'Test' });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Missing required field: sub');
+        });
+
+        it('returns error when email is missing', () => {
+            const result = parseUpsertUser({ sub: 'auth0|user-1', name: 'Test' });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Missing required field: email');
+        });
+
+        it('returns error when name is missing', () => {
+            const result = parseUpsertUser({ sub: 'auth0|user-1', email: 'user@test.com' });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Missing required field: name');
+        });
+
+        it('returns error for invalid picture value', () => {
+            const result = parseUpsertUser({
                 sub: 'auth0|user-1',
                 email: 'user@test.com',
                 name: 'Test',
@@ -198,6 +277,31 @@ describe('validation utilities', () => {
             expect(payload.preferences).toEqual(prefs);
         });
 
+        it('returns parsed payload with systems only', () => {
+            const systems = { wh40k10e: { enabled: true, lastSyncedAt: '2025-01-01T00:00:00Z' } };
+            const result = parseUpdateAccount({ systems });
+
+            expect(result).not.toBeInstanceOf(Error);
+
+            const payload = result as UpdateAccountPayload;
+
+            expect(payload.systems).toEqual(systems);
+            expect(payload.preferences).toBeUndefined();
+        });
+
+        it('returns parsed payload with both preferences and systems', () => {
+            const prefs: UserPreferences = { theme: 'dark', language: 'en', notificationsEnabled: true };
+            const systems = { wh40k10e: { enabled: true, lastSyncedAt: null } };
+            const result = parseUpdateAccount({ preferences: prefs, systems });
+
+            expect(result).not.toBeInstanceOf(Error);
+
+            const payload = result as UpdateAccountPayload;
+
+            expect(payload.preferences).toEqual(prefs);
+            expect(payload.systems).toEqual(systems);
+        });
+
         it('returns error when body is null', () => {
             const result = parseUpdateAccount(null);
 
@@ -217,6 +321,60 @@ describe('validation utilities', () => {
 
             expect(result).toBeInstanceOf(Error);
             expect((result as Error).message).toBe('Invalid preferences value');
+        });
+
+        it('returns error for invalid systems value', () => {
+            const result = parseUpdateAccount({ systems: 'bad' });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Invalid systems value');
+        });
+
+        it('returns error when systems contains invalid entry', () => {
+            const result = parseUpdateAccount({ systems: { wh40k10e: { enabled: 'yes' } } });
+
+            expect(result).toBeInstanceOf(Error);
+            expect((result as Error).message).toBe('Invalid systems value');
+        });
+    });
+
+    describe('isSystemPreferences', () => {
+        it('returns true for valid system preferences', () => {
+            expect(isSystemPreferences({ enabled: true, lastSyncedAt: '2025-01-01T00:00:00Z' })).toBe(true);
+        });
+
+        it('returns true when lastSyncedAt is null', () => {
+            expect(isSystemPreferences({ enabled: false, lastSyncedAt: null })).toBe(true);
+        });
+
+        it('returns false when enabled is not a boolean', () => {
+            expect(isSystemPreferences({ enabled: 'yes', lastSyncedAt: null })).toBe(false);
+        });
+
+        it('returns false when lastSyncedAt is a number', () => {
+            expect(isSystemPreferences({ enabled: true, lastSyncedAt: 12345 })).toBe(false);
+        });
+
+        it('returns false for non-object', () => {
+            expect(isSystemPreferences('not-an-object')).toBe(false);
+        });
+    });
+
+    describe('isSystemPreferencesMap', () => {
+        it('returns true for valid map', () => {
+            expect(isSystemPreferencesMap({ wh40k10e: { enabled: true, lastSyncedAt: null } })).toBe(true);
+        });
+
+        it('returns true for empty map', () => {
+            expect(isSystemPreferencesMap({})).toBe(true);
+        });
+
+        it('returns false when a value is invalid', () => {
+            expect(isSystemPreferencesMap({ wh40k10e: { enabled: 'no' } })).toBe(false);
+        });
+
+        it('returns false for non-object', () => {
+            expect(isSystemPreferencesMap('bad')).toBe(false);
         });
     });
 });

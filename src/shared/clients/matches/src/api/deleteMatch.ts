@@ -10,7 +10,7 @@ import type { MatchParams } from '@/types.js';
  * @returns Promise resolving when the match is deleted.
  */
 export async function deleteMatch(authorization: string, params: MatchParams): Promise<void> {
-    await ky.delete(`matches/${params.matchId}`, {
+    await ky.delete(`${params.matchId}`, {
         prefixUrl: MATCHES_BASE_URL,
         headers: { Authorization: authorization },
     });

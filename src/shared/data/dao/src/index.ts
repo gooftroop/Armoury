@@ -14,6 +14,7 @@ export { registerPluginEntity } from '@/adapter.js';
 export type { SchemaExtension, SQLiteSchemaExtension, DSQLSchemaExtension } from '@/schema.js';
 export type {
     FileSyncStatus,
+    SyncResult,
     GameSystem,
     GameSystemManifest,
     GameContextResult,

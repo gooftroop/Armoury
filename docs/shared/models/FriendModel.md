@@ -94,7 +94,7 @@ const friendRequest: Friend = {
 import { DataContext, Platform } from '@armoury/shared';
 import { wh40k10eSystem } from '@armoury/systems';
 
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -121,7 +121,7 @@ await dc.social.save(friendRequest);
 ### Accept a friend request
 
 ```typescript
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -141,7 +141,7 @@ if (friendRequest && friendRequest.status === 'pending') {
 ### List friends by status
 
 ```typescript
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -163,7 +163,7 @@ for (const friend of friends) {
 ### Update sharing permissions
 
 ```typescript
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -183,7 +183,7 @@ if (friend) {
 ### Block a friend
 
 ```typescript
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -204,7 +204,7 @@ if (friend) {
 ### Query friends for a specific user
 
 ```typescript
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();
@@ -221,7 +221,7 @@ console.log(`User has ${userFriends.length} friends`);
 ### Display friend with correct name/picture
 
 ```typescript
-const dc = await DataContext.builder()
+const dc = await DataContextBuilder.builder()
     .system(wh40k10eSystem)
     .platform(Platform.IndexedDB)
     .build();

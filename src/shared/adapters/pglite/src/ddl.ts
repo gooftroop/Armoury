@@ -30,7 +30,7 @@ function mapDrizzleTypeToSQL(dataType: string, columnType: string): string {
         return 'BOOLEAN';
     }
 
-    if (columnType === 'PgTimestamp' || dataType === 'date') {
+    if (columnType === 'PgTimestamp' || columnType === 'PgTimestampString' || dataType === 'date') {
         return 'TIMESTAMP';
     }
 

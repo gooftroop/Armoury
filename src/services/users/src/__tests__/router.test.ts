@@ -4,7 +4,7 @@ import { router } from '@/router.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
-    sub: 'user-1',
+    userId: 'user-1',
     email: 'user@example.com',
     name: 'Test User',
 };
@@ -36,12 +36,12 @@ describe('router', () => {
         adapter = new MockDatabaseAdapter();
     });
 
-    it('routes POST /users to createUser (returns 201)', async () => {
+    it('routes POST / to createUser (returns 201)', async () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/users',
-                resource: '/users',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify({ sub: 'auth0|user-1', email: 'user@test.com', name: 'Test', picture: null }),
                 pathParameters: null,
             },
@@ -53,12 +53,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ sub: 'auth0|user-1' });
     });
 
-    it('routes GET /users to listUsers (returns 200, empty array)', async () => {
+    it('routes GET / to listUsers (returns 200, empty array)', async () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: '/users',
-                resource: '/users',
+                path: '/',
+                resource: '/',
                 body: null,
                 pathParameters: null,
             },
@@ -70,14 +70,14 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toEqual([]);
     });
 
-    it('routes GET /users/{id} to getUser (returns 200)', async () => {
+    it('routes GET /{id} to getUser (returns 200)', async () => {
         await adapter.put('user', seedUser);
 
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: '/users/user-1',
-                resource: '/users/{id}',
+                path: '/user-1',
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: 'user-1' },
             },
@@ -89,14 +89,14 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ id: 'user-1' });
     });
 
-    it('routes PUT /users/{id} to updateUser (returns 200)', async () => {
+    it('routes PUT /{id} to updateUser (returns 200)', async () => {
         await adapter.put('user', seedUser);
 
         const response = await router(
             {
                 httpMethod: 'PUT',
-                path: '/users/user-1',
-                resource: '/users/{id}',
+                path: '/user-1',
+                resource: '/{id}',
                 body: JSON.stringify({ email: 'updated@test.com' }),
                 pathParameters: { id: 'user-1' },
             },
@@ -108,14 +108,14 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ email: 'updated@test.com' });
     });
 
-    it('routes DELETE /users/{id} to deleteUser (returns 204)', async () => {
+    it('routes DELETE /{id} to deleteUser (returns 204)', async () => {
         await adapter.put('user', seedUser);
 
         const response = await router(
             {
                 httpMethod: 'DELETE',
-                path: '/users/user-1',
-                resource: '/users/{id}',
+                path: '/user-1',
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: 'user-1' },
             },
@@ -127,15 +127,15 @@ describe('router', () => {
         expect(response.body).toBe('');
     });
 
-    it('routes GET /users/{id}/account to getAccount (returns 200)', async () => {
+    it('routes GET /{id}/account to getAccount (returns 200)', async () => {
         await adapter.put('user', seedUser);
         await adapter.put('account', seedAccount);
 
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: '/users/user-1/account',
-                resource: '/users/{id}/account',
+                path: '/user-1/account',
+                resource: '/{id}/account',
                 body: null,
                 pathParameters: { id: 'user-1' },
             },
@@ -147,14 +147,14 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ userId: 'user-1' });
     });
 
-    it('routes POST /users/{id}/account to createAccount (returns 201)', async () => {
+    it('routes POST /{id}/account to createAccount (returns 201)', async () => {
         await adapter.put('user', seedUser);
 
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/users/user-1/account',
-                resource: '/users/{id}/account',
+                path: '/user-1/account',
+                resource: '/{id}/account',
                 body: JSON.stringify({
                     preferences: { theme: 'dark', language: 'en', notificationsEnabled: true },
                 }),
@@ -168,15 +168,15 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ userId: 'user-1' });
     });
 
-    it('routes PUT /users/{id}/account to updateAccount (returns 200)', async () => {
+    it('routes PUT /{id}/account to updateAccount (returns 200)', async () => {
         await adapter.put('user', seedUser);
         await adapter.put('account', seedAccount);
 
         const response = await router(
             {
                 httpMethod: 'PUT',
-                path: '/users/user-1/account',
-                resource: '/users/{id}/account',
+                path: '/user-1/account',
+                resource: '/{id}/account',
                 body: JSON.stringify({ preferences: { theme: 'light', language: 'en', notificationsEnabled: false } }),
                 pathParameters: { id: 'user-1' },
             },
@@ -188,15 +188,15 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ preferences: { theme: 'light' } });
     });
 
-    it('routes DELETE /users/{id}/account to deleteAccount (returns 204)', async () => {
+    it('routes DELETE /{id}/account to deleteAccount (returns 204)', async () => {
         await adapter.put('user', seedUser);
         await adapter.put('account', seedAccount);
 
         const response = await router(
             {
                 httpMethod: 'DELETE',
-                path: '/users/user-1/account',
-                resource: '/users/{id}/account',
+                path: '/user-1/account',
+                resource: '/{id}/account',
                 body: null,
                 pathParameters: { id: 'user-1' },
             },
@@ -229,8 +229,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/users',
-                resource: '/users',
+                path: '/',
+                resource: '/',
                 body: '{invalid-json',
                 pathParameters: null,
             },

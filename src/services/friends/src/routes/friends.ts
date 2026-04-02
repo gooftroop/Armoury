@@ -50,7 +50,7 @@ export const sendFriendRequest: RouteHandler = async (
 
     const senderRecord: Friend = {
         id: randomUUID(),
-        ownerId: userContext.sub,
+        ownerId: userContext.userId,
         userId: request.userId,
         status: 'pending',
         canShareArmyLists: false,
@@ -62,7 +62,7 @@ export const sendFriendRequest: RouteHandler = async (
     const receiverRecord: Friend = {
         id: randomUUID(),
         ownerId: request.userId,
-        userId: userContext.sub,
+        userId: userContext.userId,
         status: 'pending',
         canShareArmyLists: false,
         canViewMatchHistory: false,
@@ -95,7 +95,7 @@ export const listFriends: RouteHandler = async (
     _pathParameters: PathParameters | null | undefined,
     userContext: UserContext,
 ): Promise<ApiResponse> => {
-    const friends = await adapter.getByField('friend', 'ownerId', userContext.sub);
+    const friends = await adapter.getByField('friend', 'ownerId', userContext.userId);
 
     return jsonResponse(200, friends);
 };
@@ -190,7 +190,7 @@ export const updateFriend: RouteHandler = async (
 
     if (request.status !== undefined) {
         const mirrorRecords = await adapter.getByField('friend', 'ownerId', existing.userId);
-        const mirror = mirrorRecords.find((r) => r.userId === userContext.sub);
+        const mirror = mirrorRecords.find((r) => r.userId === userContext.userId);
 
         if (mirror) {
             const updatedMirror: Friend = {
@@ -238,7 +238,7 @@ export const deleteFriend: RouteHandler = async (
     await adapter.delete('friend', friendId);
 
     const mirrorRecords = await adapter.getByField('friend', 'ownerId', existing.userId);
-    const mirror = mirrorRecords.find((r) => r.userId === userContext.sub);
+    const mirror = mirrorRecords.find((r) => r.userId === userContext.userId);
 
     if (mirror) {
         await adapter.delete('friend', mirror.id);

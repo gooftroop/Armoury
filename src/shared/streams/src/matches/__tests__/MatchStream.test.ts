@@ -65,6 +65,7 @@ import type {
     MatchUpdatedMessage,
     UpdateMatchFields,
     ConnectionState,
+    WebSocketErrorEvent,
 } from '@armoury/clients-matches';
 import { MatchStream, createMatchStream } from '@/matches/MatchStream.js';
 
@@ -123,6 +124,7 @@ function createMockClient() {
         matchState$: vi.fn(),
         matchUpdated$: vi.fn(),
         dispose: vi.fn(),
+        errors$: new Subject<WebSocketErrorEvent>().asObservable(),
     };
 
     return { client, messagesSubject, connectionStateSubject };

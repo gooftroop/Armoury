@@ -21,6 +21,10 @@ import { createAuthHeaders } from '@/utils.js';
 export class GitHubClient implements IGitHubClient {
     private readonly userAgent: string;
     private readonly token?: string;
+    /** Base URL for GitHub REST API v3 endpoints. Overridable for proxy routing. */
+    private readonly apiBaseUrl: string;
+    /** Base URL for raw file content CDN. Overridable for proxy routing. */
+    private readonly rawBaseUrl: string;
     private readonly etagCache = new Map<string, string>();
     private readonly shaCache = new Map<string, string>();
 
@@ -30,10 +34,14 @@ export class GitHubClient implements IGitHubClient {
      * @param config - Optional configuration object
      * @param config.userAgent - Custom User-Agent header (defaults to DEFAULT_USER_AGENT)
      * @param config.token - Optional GitHub personal access token for authenticated requests (increases rate limits)
+     * @param config.apiBaseUrl - Override the GitHub REST API base URL (defaults to GITHUB_API_BASE_URL)
+     * @param config.rawBaseUrl - Override the raw content CDN base URL (defaults to GITHUB_RAW_BASE_URL)
      */
     constructor(config?: GitHubClientConfig) {
         this.userAgent = config?.userAgent ?? DEFAULT_USER_AGENT;
         this.token = config?.token;
+        this.apiBaseUrl = config?.apiBaseUrl ?? GITHUB_API_BASE_URL;
+        this.rawBaseUrl = config?.rawBaseUrl ?? GITHUB_RAW_BASE_URL;
     }
 
     /**
@@ -51,7 +59,7 @@ export class GitHubClient implements IGitHubClient {
      * @throws NetworkError if the request fails after all retries
      */
     async listFiles(owner: string, repo: string, path: string): Promise<GitHubFileInfo[]> {
-        const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contents/${path}`;
+        const url = `${this.apiBaseUrl}/repos/${owner}/${repo}/contents/${path}`;
         const response = await this.fetchWithRetry(url);
         const data = (await response.json()) as GitHubContentsResponse[];
 
@@ -84,7 +92,7 @@ export class GitHubClient implements IGitHubClient {
      * @throws NetworkError if the request fails after all retries
      */
     async getFileSha(owner: string, repo: string, path: string): Promise<string> {
-        const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contents/${path}`;
+        const url = `${this.apiBaseUrl}/repos/${owner}/${repo}/contents/${path}`;
         const response = await this.fetchWithRetry(url);
         const data = (await response.json()) as GitHubContentsResponse;
 
@@ -112,7 +120,7 @@ export class GitHubClient implements IGitHubClient {
      * @throws NetworkError if the request fails after all retries
      */
     async downloadFile(owner: string, repo: string, path: string): Promise<string> {
-        const url = `${GITHUB_RAW_BASE_URL}/${owner}/${repo}/main/${path}`;
+        const url = `${this.rawBaseUrl}/${owner}/${repo}/main/${path}`;
         const response = await this.fetchWithRetry(url, false);
 
         return response.text();
@@ -139,7 +147,7 @@ export class GitHubClient implements IGitHubClient {
      * @throws NetworkError if the request fails
      */
     async checkForUpdates(owner: string, repo: string, path: string, knownSha: string): Promise<boolean> {
-        const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contents/${path}`;
+        const url = `${this.apiBaseUrl}/repos/${owner}/${repo}/contents/${path}`;
         const cachedEtag = this.etagCache.get(url);
 
         const headers = createAuthHeaders(this.userAgent, this.token, true);

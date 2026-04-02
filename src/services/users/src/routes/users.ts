@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
 import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, User, UserContext } from '@/types.js';
+import { resolveUser } from '@/utils/resolveUser.js';
 import { errorResponse, jsonResponse } from '@/utils/response.js';
-import { parseCreateUser, parseUpdateUser } from '@/utils/validation.js';
+import { parseCreateUser, parseUpdateUser, parseUpsertUser } from '@/utils/validation.js';
 
 /**
  * Creates a new user.
@@ -89,9 +90,11 @@ export const getUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const user = await adapter.get('user', userId);
+    const user = await resolveUser(adapter, userId);
 
     if (!user) {
+        console.error('[users:getUser] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -128,9 +131,11 @@ export const updateUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const existing = await adapter.get('user', userId);
+    const existing = await resolveUser(adapter, userId);
 
     if (!existing) {
+        console.error('[users:updateUser] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
@@ -169,13 +174,15 @@ export const deleteUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const existing = await adapter.get('user', userId);
+    const existing = await resolveUser(adapter, userId);
 
     if (!existing) {
+        console.error('[users:deleteUser] 404 User not found', JSON.stringify({ userId }));
+
         return errorResponse(404, 'NotFound', 'User not found');
     }
 
-    await adapter.delete('user', userId);
+    await adapter.delete('user', existing.id);
 
     return {
         statusCode: 204,
@@ -184,4 +191,63 @@ export const deleteUser: RouteHandler = async (
         },
         body: '',
     };
+};
+
+/**
+ * Upserts a user on login.
+ *
+ * Called by the Auth0 Post-Login Action via an M2M token. Looks up the
+ * user by `sub`; creates a new record on first login or updates profile
+ * fields on subsequent logins. Always returns the user with their stable
+ * internal `id`.
+ *
+ * @param adapter - Database adapter instance.
+ * @param body - Request body containing user details from Auth0.
+ * @param _pathParameters - Unused path parameters.
+ * @param _userContext - Unused authenticated user context (M2M tokens lack user context).
+ * @returns 200 with the upserted user entity.
+ */
+export const upsertUser: RouteHandler = async (
+    adapter: DatabaseAdapter,
+    body: unknown | null,
+    _pathParameters: PathParameters | null | undefined,
+    _userContext: UserContext,
+): Promise<ApiResponse> => {
+    const request = parseUpsertUser(body);
+
+    if (request instanceof Error) {
+        return errorResponse(400, 'ValidationError', request.message);
+    }
+
+    const existing = await adapter.getByField('user', 'sub', request.sub);
+    const now = new Date().toISOString();
+
+    if (existing.length > 0) {
+        const updated: User = {
+            ...existing[0],
+            email: request.email,
+            name: request.name,
+            picture: request.picture,
+            updatedAt: now,
+        };
+
+        await adapter.put('user', updated);
+
+        return jsonResponse(200, updated);
+    }
+
+    const user: User = {
+        id: randomUUID(),
+        sub: request.sub,
+        email: request.email,
+        name: request.name,
+        picture: request.picture,
+        accountId: null,
+        createdAt: now,
+        updatedAt: now,
+    };
+
+    await adapter.put('user', user);
+
+    return jsonResponse(200, user);
 };

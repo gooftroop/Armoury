@@ -37,6 +37,7 @@ jobs:
             working-directory: src/services/authorizer
             needs-shared-build: false
             has-migrations: false
+            sentry-project: armoury-authorizer
         secrets: inherit
 
     # ── Sandbox: resolve authorizer ARN after deploy ────────────────
@@ -87,7 +88,9 @@ jobs:
             routing-rule-priority: 200
             needs-shared-build: true
             has-migrations: true
+            sync-tables: 'campaigns campaign_participants'
             authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+            sentry-project: armoury-campaigns
         secrets: inherit
 
     deploy-matches-sandbox:
@@ -102,7 +105,9 @@ jobs:
             has-websocket: true
             needs-shared-build: true
             has-migrations: true
+            sync-tables: 'matches'
             authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+            sentry-project: armoury-matches
         secrets: inherit
 
     deploy-friends-sandbox:
@@ -117,7 +122,9 @@ jobs:
             has-websocket: true
             needs-shared-build: true
             has-migrations: true
+            sync-tables: 'friends user_presence'
             authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+            sentry-project: armoury-friends
         secrets: inherit
 
     deploy-users-sandbox:
@@ -131,7 +138,9 @@ jobs:
             routing-rule-priority: 100
             needs-shared-build: true
             has-migrations: true
+            sync-tables: 'users accounts'
             authorizer-arn: ${{ needs.resolve-authorizer-sandbox.outputs.authorizer-arn }}
+            sentry-project: armoury-users
         secrets: inherit
 
     # ── Production: resolve authorizer ARN after deploy ─────────────
@@ -183,6 +192,7 @@ jobs:
             needs-shared-build: true
             has-migrations: true
             authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+            sentry-project: armoury-campaigns
         secrets: inherit
 
     deploy-matches-production:
@@ -198,6 +208,7 @@ jobs:
             needs-shared-build: true
             has-migrations: true
             authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+            sentry-project: armoury-matches
         secrets: inherit
 
     deploy-friends-production:
@@ -213,6 +224,7 @@ jobs:
             needs-shared-build: true
             has-migrations: true
             authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+            sentry-project: armoury-friends
         secrets: inherit
 
     deploy-users-production:
@@ -227,4 +239,5 @@ jobs:
             needs-shared-build: true
             has-migrations: true
             authorizer-arn: ${{ needs.resolve-authorizer-production.outputs.authorizer-arn }}
+            sentry-project: armoury-users
         secrets: inherit

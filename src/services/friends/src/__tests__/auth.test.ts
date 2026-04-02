@@ -6,17 +6,41 @@ describe('auth middleware', () => {
         const context = extractUserContext({
             requestContext: {
                 authorizer: {
-                    sub: 'user-1',
-                    email: 'user@example.com',
-                    name: 'Test User',
+                    jwt: {
+                        claims: {
+                            'https://armoury.app/internal_id': 'user-1',
+                            email: 'user@example.com',
+                            name: 'Test User',
+                        },
+                    },
                 },
             },
         });
 
         expect(context).toEqual({
-            sub: 'user-1',
+            userId: 'user-1',
             email: 'user@example.com',
             name: 'Test User',
+        });
+    });
+
+    it('extracts user context with only userId (email and name absent)', () => {
+        const context = extractUserContext({
+            requestContext: {
+                authorizer: {
+                    jwt: {
+                        claims: {
+                            'https://armoury.app/internal_id': 'user-1',
+                        },
+                    },
+                },
+            },
+        });
+
+        expect(context).toEqual({
+            userId: 'user-1',
+            email: undefined,
+            name: undefined,
         });
     });
 
@@ -24,12 +48,16 @@ describe('auth middleware', () => {
         expect(() => extractUserContext({ requestContext: {} })).toThrow('Missing authorizer context');
     });
 
-    it('throws when required fields are missing', () => {
+    it('throws when internal_id claim is missing', () => {
         expect(() =>
             extractUserContext({
                 requestContext: {
                     authorizer: {
-                        sub: 'user-1',
+                        jwt: {
+                            claims: {
+                                email: 'user@example.com',
+                            },
+                        },
                     },
                 },
             }),

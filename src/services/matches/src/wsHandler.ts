@@ -1,4 +1,7 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+import './instrument.js';
 import * as Sentry from '@sentry/aws-serverless';
+import { captureWsError } from '@/utils/wsErrors.js';
 import { extractWsUserContext } from '@/middleware/wsAuth.js';
 import { wsRouter } from '@/wsRouter.js';
 import type { DatabaseAdapter, WebSocketEvent, WebSocketResponse } from '@/types.js';
@@ -26,10 +29,8 @@ interface LocalAdapterConstructor {
     new (config: LocalAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
 }
 
-const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
-    LocalDatabaseAdapter: LocalAdapterConstructor;
-};
+// Dynamic imports moved inside initializeAdapter() to avoid eager loading of
+// LocalDatabaseAdapter (which depends on 'pg') when 'pg' is externalized by esbuild.
 
 let adapterInstance: DatabaseAdapter | null = null;
 
@@ -40,20 +41,29 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
 
     const config = await getServiceConfig();
 
-    const adapter =
-        process.env['IS_OFFLINE'] === 'true'
-            ? new LocalDatabaseAdapter({
-                  host: process.env['LOCAL_DB_HOST'] ?? 'localhost',
-                  port: Number(process.env['LOCAL_DB_PORT'] ?? '5433'),
-                  user: process.env['LOCAL_DB_USER'] ?? 'armoury',
-                  password: process.env['LOCAL_DB_PASSWORD'] ?? 'armoury_local',
-                  database: process.env['LOCAL_DB_NAME'] ?? 'armoury_matches',
-                  ssl: process.env['LOCAL_DB_SSL'] === 'true',
-              })
-            : new DSQLAdapter({
-                  clusterEndpoint: config.dsqlClusterEndpoint,
-                  region: config.dsqlRegion,
-              });
+    let adapter: DatabaseAdapter & { initialize(): Promise<void> };
+
+    if (process.env['IS_OFFLINE'] === 'true') {
+        const { LocalDatabaseAdapter } = (await import('@/utils/localAdapter.js')) as unknown as {
+            LocalDatabaseAdapter: LocalAdapterConstructor;
+        };
+        adapter = new LocalDatabaseAdapter({
+            host: process.env['LOCAL_DB_HOST'] ?? 'localhost',
+            port: Number(process.env['LOCAL_DB_PORT'] ?? '5433'),
+            user: process.env['LOCAL_DB_USER'] ?? 'armoury',
+            password: process.env['LOCAL_DB_PASSWORD'] ?? 'armoury_local',
+            database: process.env['LOCAL_DB_NAME'] ?? 'armoury_matches',
+            ssl: process.env['LOCAL_DB_SSL'] === 'true',
+        });
+    } else {
+        const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as {
+            DSQLAdapter: DSQLAdapterConstructor;
+        };
+        adapter = new DSQLAdapter({
+            clusterEndpoint: config.dsqlClusterEndpoint,
+            region: config.dsqlRegion,
+        });
+    }
 
     await adapter.initialize();
 
@@ -62,18 +72,41 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
     return adapter;
 }
 
-export async function handler(event: WebSocketEvent): Promise<WebSocketResponse> {
+export const handler = Sentry.wrapHandler(async (event: WebSocketEvent): Promise<WebSocketResponse> => {
     try {
+        Sentry.logger.info('[matches:ws] Handler invoked', {
+            routeKey: event.requestContext.routeKey,
+            connectionId: event.requestContext.connectionId,
+        });
+
         const adapter = await initializeAdapter();
         const userContext = event.requestContext.routeKey === '$connect' ? extractWsUserContext(event) : null;
         const response = await wsRouter(event, adapter, userContext);
 
         return response;
     } catch (error) {
-        console.error('Matches WebSocket handler error', error);
-        Sentry.captureException(error);
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
 
-        const normalizedError = error instanceof Error ? error : new Error('Unknown error');
+        captureWsError(normalizedError, 'adapter:init', {
+            connectionId: event.requestContext.connectionId,
+            routeKey: event.requestContext.routeKey,
+        });
+
+        if (event.requestContext.routeKey !== '$connect') {
+            try {
+                const { createBroadcaster } = await import('@/utils/broadcast.js');
+                const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+
+                await broadcaster.send(event.requestContext.connectionId, {
+                    action: 'error',
+                    error: 'ServerError',
+                    message: normalizedError.message || 'Unknown error',
+                });
+            } catch {
+                // Best-effort — if the broadcast itself fails we still
+                // return the 500 and let Sentry capture the original error.
+            }
+        }
 
         return {
             statusCode: 500,
@@ -83,4 +116,4 @@ export async function handler(event: WebSocketEvent): Promise<WebSocketResponse>
             }),
         };
     }
-}
+});

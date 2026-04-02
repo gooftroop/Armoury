@@ -1,6 +1,7 @@
 /**
  * Configuration for the campaigns client.
  */
+import { config } from '@armoury/config';
 
-/** Base URL for the campaigns REST API, sourced from the environment. */
-export const CAMPAIGNS_BASE_URL = process.env['CAMPAIGNS_BASE_URL'] ?? 'http://localhost:3000';
+/** Base URL for the campaigns REST API. */
+export const CAMPAIGNS_BASE_URL = config.services.campaigns.apiBaseUrl;

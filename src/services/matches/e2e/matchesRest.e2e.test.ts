@@ -6,16 +6,16 @@ import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
 
 let adapter: LocalDatabaseAdapter;
 
-const userA: UserContext = { sub: 'user-a', email: 'a@armoury.dev', name: 'Player A' };
-const userB: UserContext = { sub: 'user-b', email: 'b@armoury.dev', name: 'Player B' };
+const userA: UserContext = { userId: 'user-a', email: 'a@armoury.dev', name: 'Player A' };
+const userB: UserContext = { userId: 'user-b', email: 'b@armoury.dev', name: 'Player B' };
 
 const validCreateBody: CreateMatchRequest = {
     systemId: 'wh40k10e',
     players: [
-        { playerId: userA.sub, campaignParticipantId: null },
-        { playerId: userB.sub, campaignParticipantId: null },
+        { playerId: userA.userId, campaignParticipantId: null },
+        { playerId: userB.userId, campaignParticipantId: null },
     ],
-    turnOrder: [userA.sub, userB.sub],
+    turnOrder: [userA.userId, userB.userId],
 };
 
 function restEvent(method: string, resource: string, body?: unknown, pathParameters?: Record<string, string>) {
@@ -42,7 +42,7 @@ describe('matches REST e2e', () => {
     });
 
     it('creates a match and returns 201', async () => {
-        const res = await router(restEvent('POST', '/matches', validCreateBody), adapter, userA);
+        const res = await router(restEvent('POST', '/', validCreateBody), adapter, userA);
 
         expect(res.statusCode).toBe(201);
         const match = JSON.parse(res.body) as Match;
@@ -52,19 +52,19 @@ describe('matches REST e2e', () => {
     });
 
     it('lists matches filtered by player', async () => {
-        await router(restEvent('POST', '/matches', validCreateBody), adapter, userA);
+        await router(restEvent('POST', '/', validCreateBody), adapter, userA);
 
-        const resA = await router(restEvent('GET', '/matches'), adapter, userA);
+        const resA = await router(restEvent('GET', '/'), adapter, userA);
         const matchesA = JSON.parse(resA.body) as Match[];
         expect(matchesA).toHaveLength(1);
         expect(matchesA[0]!.systemId).toBe('wh40k10e');
     });
 
     it('gets a match by id', async () => {
-        const createRes = await router(restEvent('POST', '/matches', validCreateBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', validCreateBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Match;
 
-        const getRes = await router(restEvent('GET', '/matches/{id}', undefined, { id: created.id }), adapter, userA);
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, userA);
 
         expect(getRes.statusCode).toBe(200);
         const fetched = JSON.parse(getRes.body) as Match;
@@ -72,17 +72,17 @@ describe('matches REST e2e', () => {
     });
 
     it('returns 404 for nonexistent match', async () => {
-        const res = await router(restEvent('GET', '/matches/{id}', undefined, { id: 'nonexistent' }), adapter, userA);
+        const res = await router(restEvent('GET', '/{id}', undefined, { id: 'nonexistent' }), adapter, userA);
 
         expect(res.statusCode).toBe(404);
     });
 
     it('updates a match', async () => {
-        const createRes = await router(restEvent('POST', '/matches', validCreateBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', validCreateBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Match;
 
         const updateRes = await router(
-            restEvent('PUT', '/matches/{id}', { notes: 'Updated' }, { id: created.id }),
+            restEvent('PUT', '/{id}', { notes: 'Updated' }, { id: created.id }),
             adapter,
             userA,
         );
@@ -93,25 +93,21 @@ describe('matches REST e2e', () => {
     });
 
     it('deletes a match', async () => {
-        const createRes = await router(restEvent('POST', '/matches', validCreateBody), adapter, userA);
+        const createRes = await router(restEvent('POST', '/', validCreateBody), adapter, userA);
         const created = JSON.parse(createRes.body) as Match;
 
-        const deleteRes = await router(
-            restEvent('DELETE', '/matches/{id}', undefined, { id: created.id }),
-            adapter,
-            userA,
-        );
+        const deleteRes = await router(restEvent('DELETE', '/{id}', undefined, { id: created.id }), adapter, userA);
         expect(deleteRes.statusCode).toBe(204);
 
-        const getRes = await router(restEvent('GET', '/matches/{id}', undefined, { id: created.id }), adapter, userA);
+        const getRes = await router(restEvent('GET', '/{id}', undefined, { id: created.id }), adapter, userA);
         expect(getRes.statusCode).toBe(404);
     });
 
     it('links a match to an opponent match', async () => {
-        const resA = await router(restEvent('POST', '/matches', validCreateBody), adapter, userA);
+        const resA = await router(restEvent('POST', '/', validCreateBody), adapter, userA);
         const matchA = JSON.parse(resA.body) as Match;
 
-        const resB = await router(restEvent('POST', '/matches', validCreateBody), adapter, userB);
+        const resB = await router(restEvent('POST', '/', validCreateBody), adapter, userB);
         const matchB = JSON.parse(resB.body) as Match;
 
         expect(matchA.id).toBeTruthy();
@@ -121,8 +117,8 @@ describe('matches REST e2e', () => {
     it('returns 400 for invalid JSON body', async () => {
         const event = {
             httpMethod: 'POST',
-            path: '/matches',
-            resource: '/matches',
+            path: '/',
+            resource: '/',
             body: '{invalid json',
             pathParameters: null,
         };
@@ -132,7 +128,7 @@ describe('matches REST e2e', () => {
     });
 
     it('returns 404 for unknown route', async () => {
-        const res = await router(restEvent('PATCH', '/matches'), adapter, userA);
+        const res = await router(restEvent('PATCH', '/'), adapter, userA);
         expect(res.statusCode).toBe(404);
     });
 });

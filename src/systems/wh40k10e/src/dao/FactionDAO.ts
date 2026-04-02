@@ -65,6 +65,7 @@ export const factionsSqliteTable = sl.sqliteTable('factions', {
 /**
  * DAO for syncing and caching Warhammer 40K faction data models.
  * Handles multi-catalogue merging and stores extracted units, weapons, and abilities.
+ *
  */
 class FactionDAO extends BaseDAO<FactionData> {
     private readonly factionConfig: FactionConfig;

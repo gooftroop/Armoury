@@ -1,5 +1,11 @@
 service: armoury-friends
 
+params:
+    production:
+        environment: production
+    default:
+        environment: sandbox
+
 provider:
     name: aws
     runtime: nodejs22.x
@@ -10,10 +16,11 @@ provider:
     timeout: 29
     environment:
         DSQL_ENDPOINT_PARAM: ${env:DSQL_ENDPOINT_PARAM, '/armoury/${self:provider.stage}/friends/dsql-cluster-endpoint'}
-        NODE_OPTIONS: '--import ./src/instrument.js'
+        NODE_OPTIONS: '--enable-source-maps'
         SENTRY_DSN: ${env:SENTRY_DSN, ''}
         SENTRY_ENVIRONMENT: ${self:provider.stage}
         DB_SCHEMA: ${env:DB_SCHEMA, 'public'}
+        ALLOWED_ORIGIN: ${self:custom.allowedOrigin}
     iam:
         role:
             statements:
@@ -24,11 +31,40 @@ provider:
                 - Effect: Allow
                   Action:
                       - ssm:GetParameter
-                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${self:provider.stage}/*'
+                  Resource: 'arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/armoury/${param:environment}/*'
                 - Effect: Allow
                   Action:
                       - execute-api:ManageConnections
                   Resource: 'arn:aws:execute-api:*:*:*/@connections/*'
+                - Effect: Allow
+                  Action:
+                      - logs:CreateLogGroup
+                      - logs:CreateLogStream
+                      - logs:PutLogEvents
+                  Resource: 'arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/websocket/${self:service}-${self:provider.stage}:*'
+    httpApi:
+        authorizers:
+            auth0Jwt:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl: https://${env:AUTH0_DOMAIN}/
+                audience:
+                    - ${env:AUTH0_AUDIENCE}
+        cors:
+            allowedOrigins:
+                - ${self:custom.allowedOrigin}
+            allowedHeaders:
+                - Content-Type
+                - Authorization
+            allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
+                - OPTIONS
+    logs:
+        websocket: true
 
 build:
     esbuild:
@@ -47,12 +83,12 @@ build:
             - '@aws-sdk/dsql-signer'
             - '@aws-sdk/client-ssm'
             - '@aws-sdk/client-apigatewaymanagementapi'
-            - pg
 
 plugins:
     - serverless-offline
 
 custom:
+    allowedOrigin: ${env:ALLOWED_ORIGIN, '*'}
     serverless-offline:
         httpPort: 3004
         websocketPort: 3005
@@ -63,26 +99,39 @@ functions:
     friends:
         handler: src/handler.handler
         events:
-            - http:
-                  path: /friends
-                  method: ANY
+            - httpApi:
+                  path: /
+                  method: GET
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
-            - http:
-                  path: /friends/{id}
-                  method: ANY
+                      name: auth0Jwt
+            - httpApi:
+                  path: /
+                  method: POST
                   authorizer:
-                      type: token
-                      arn: ${param:authorizerArn}
+                      name: auth0Jwt
+            - httpApi:
+                  path: /{id}
+                  method: GET
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /{id}
+                  method: PUT
+                  authorizer:
+                      name: auth0Jwt
+            - httpApi:
+                  path: /{id}
+                  method: DELETE
+                  authorizer:
+                      name: auth0Jwt
     friendsWebsocket:
-        handler: src/ws-handler.handler
+        handler: src/wsHandler.handler
         events:
             - websocket:
                   route: $connect
                   authorizer:
                       name: auth
-                      identitySource: route.request.querystring.token
+                      identitySource: route.request.querystring.Auth
                       arn: ${param:authorizerArn}
             - websocket:
                   route: $disconnect

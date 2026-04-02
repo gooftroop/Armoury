@@ -116,10 +116,13 @@ const DropdownMenuRadioGroup = DropdownMenu.RadioGroup;
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuSubTrigger component.
  */
-function DropdownMenuSubTrigger(
-    { className, inset, children, ...props }: DropdownMenuSubTriggerProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuSubTrigger({
+    className,
+    inset,
+    children,
+    ref,
+    ...props
+}: DropdownMenuSubTriggerProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return (
         <DropdownMenu.SubTrigger
             className={cn(
@@ -145,10 +148,11 @@ DropdownMenuSubTrigger.displayName = 'DropdownMenuSubTrigger';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuSubContent component.
  */
-function DropdownMenuSubContent(
-    { className, ...props }: DropdownMenuSubContentProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuSubContent({
+    className,
+    ref,
+    ...props
+}: DropdownMenuSubContentProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return (
         <DropdownMenu.Portal>
             <DropdownMenu.SubContent
@@ -172,10 +176,12 @@ DropdownMenuSubContent.displayName = 'DropdownMenuSubContent';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuContent component.
  */
-function DropdownMenuContent(
-    { className, sideOffset = 4, ...props }: DropdownMenuContentProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuContent({
+    className,
+    sideOffset = 4,
+    ref,
+    ...props
+}: DropdownMenuContentProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return (
         <DropdownMenu.Portal>
             <DropdownMenu.Content
@@ -200,10 +206,12 @@ DropdownMenuContent.displayName = 'DropdownMenuContent';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuItem component.
  */
-function DropdownMenuItem(
-    { className, inset, ...props }: DropdownMenuItemProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuItem({
+    className,
+    inset,
+    ref,
+    ...props
+}: DropdownMenuItemProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return (
         <DropdownMenu.Item
             className={cn(
@@ -226,10 +234,13 @@ DropdownMenuItem.displayName = 'DropdownMenuItem';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuCheckboxItem component.
  */
-function DropdownMenuCheckboxItem(
-    { className, children, checked, ...props }: DropdownMenuCheckboxItemProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuCheckboxItem({
+    className,
+    children,
+    checked,
+    ref,
+    ...props
+}: DropdownMenuCheckboxItemProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return (
         <DropdownMenu.CheckboxItem
             checked={checked}
@@ -259,10 +270,12 @@ DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuRadioItem component.
  */
-function DropdownMenuRadioItem(
-    { className, children, ...props }: DropdownMenuRadioItemProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuRadioItem({
+    className,
+    children,
+    ref,
+    ...props
+}: DropdownMenuRadioItemProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return (
         <DropdownMenu.RadioItem
             className={cn(
@@ -291,10 +304,12 @@ DropdownMenuRadioItem.displayName = 'DropdownMenuRadioItem';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuLabel component.
  */
-function DropdownMenuLabel(
-    { className, inset, ...props }: DropdownMenuLabelProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuLabel({
+    className,
+    inset,
+    ref,
+    ...props
+}: DropdownMenuLabelProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return (
         <DropdownMenu.Label
             className={cn('px-2 py-1.5 text-sm font-semibold', inset && 'pl-8', className)}
@@ -313,10 +328,11 @@ DropdownMenuLabel.displayName = 'DropdownMenuLabel';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered DropdownMenuSeparator component.
  */
-function DropdownMenuSeparator(
-    { className, ...props }: DropdownMenuSeparatorProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+function DropdownMenuSeparator({
+    className,
+    ref,
+    ...props
+}: DropdownMenuSeparatorProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
     return <DropdownMenu.Separator className={cn('-mx-1 my-1 h-px bg-muted', className)} ref={ref} {...props} />;
 }
 
@@ -329,10 +345,11 @@ DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';
  * @param ref - Forwarded ref to the span element.
  * @returns The rendered DropdownMenuShortcut component.
  */
-function DropdownMenuShortcut(
-    { className, ...props }: DropdownMenuShortcutProps,
-    ref: React.ForwardedRef<HTMLSpanElement>,
-): React.ReactElement {
+function DropdownMenuShortcut({
+    className,
+    ref,
+    ...props
+}: DropdownMenuShortcutProps & { ref?: React.Ref<HTMLSpanElement> }): React.ReactElement {
     return <span className={cn('ml-auto text-xs tracking-widest opacity-60', className)} ref={ref} {...props} />;
 }
 

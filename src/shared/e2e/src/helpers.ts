@@ -5,15 +5,15 @@
 
 /** Authenticated user context for testing. */
 export interface TestUserContext {
-    sub: string;
-    email: string;
-    name: string;
+    userId: string;
+    email?: string;
+    name?: string;
 }
 
 /** Creates a test user context with optional overrides. */
 export function createTestUserContext(overrides: Partial<TestUserContext> = {}): TestUserContext {
     return {
-        sub: overrides.sub ?? 'test-user-1',
+        userId: overrides.userId ?? 'test-user-1',
         email: overrides.email ?? 'test@armoury.dev',
         name: overrides.name ?? 'Test User',
     };
@@ -45,9 +45,13 @@ export function createApiGatewayEvent(options: {
         pathParameters: options.pathParameters ?? null,
         requestContext: {
             authorizer: {
-                sub: userContext.sub,
-                email: userContext.email,
-                name: userContext.name,
+                jwt: {
+                    claims: {
+                        'https://armoury.app/internal_id': userContext.userId,
+                        email: userContext.email,
+                        name: userContext.name,
+                    },
+                },
             },
         },
     };
@@ -84,7 +88,7 @@ export function createWebSocketEvent(options: {
             ...(userContext
                 ? {
                       authorizer: {
-                          sub: userContext.sub,
+                          'https://armoury.app/internal_id': userContext.userId,
                           email: userContext.email,
                           name: userContext.name,
                       },

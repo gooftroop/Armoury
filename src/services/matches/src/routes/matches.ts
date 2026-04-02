@@ -19,7 +19,7 @@ export const createMatch: RouteHandler = async (
     const now = new Date().toISOString();
     const playerIds = request.players.map((p) => p.playerId);
 
-    if (!playerIds.includes(userContext.sub)) {
+    if (!playerIds.includes(userContext.userId)) {
         return errorResponse(403, 'Forbidden', 'Authenticated user must be a player in the match');
     }
 
@@ -54,7 +54,7 @@ export const listMatches: RouteHandler = async (
     userContext: UserContext,
 ): Promise<ApiResponse> => {
     const allMatches = await adapter.getAll('match');
-    const userMatches = (allMatches as Match[]).filter((m) => m.players.some((p) => p.playerId === userContext.sub));
+    const userMatches = (allMatches as Match[]).filter((m) => m.players.some((p) => p.playerId === userContext.userId));
 
     return jsonResponse(200, userMatches);
 };

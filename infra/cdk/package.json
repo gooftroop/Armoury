@@ -16,7 +16,9 @@
         "constructs": "^10.4.2"
     },
     "devDependencies": {
+        "@types/aws-lambda": "^8.10.161",
         "aws-cdk": "^2.200.0",
+        "esbuild": "^0.27.4",
         "tsx": "^4.21.0",
         "typescript": "^5.8.3"
     }

@@ -10,21 +10,30 @@ import {
 } from '@/routes/participants.js';
 
 /**
+ * Standard CORS headers included in all API responses.
+ */
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': process.env['ALLOWED_ORIGIN'] ?? '*',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+} as const;
+
+/**
  * Route dispatch key for API Gateway resource and HTTP method.
  */
 type RouteKey = `${string}::${string}`;
 
 const ROUTE_MAP: Record<RouteKey, RouteHandler> = {
-    '/campaigns::POST': createCampaign,
-    '/campaigns::GET': listCampaigns,
-    '/campaigns/{id}::GET': getCampaign,
-    '/campaigns/{id}::PUT': updateCampaign,
-    '/campaigns/{id}::DELETE': deleteCampaign,
-    '/campaigns/{id}/participants::POST': joinCampaign,
-    '/campaigns/{id}/participants::GET': listParticipants,
-    '/campaigns/{id}/participants/{pid}::GET': getParticipant,
-    '/campaigns/{id}/participants/{pid}::PUT': updateParticipant,
-    '/campaigns/{id}/participants/{pid}::DELETE': deleteParticipant,
+    '/::POST': createCampaign,
+    '/::GET': listCampaigns,
+    '/{id}::GET': getCampaign,
+    '/{id}::PUT': updateCampaign,
+    '/{id}::DELETE': deleteCampaign,
+    '/{id}/participants::POST': joinCampaign,
+    '/{id}/participants::GET': listParticipants,
+    '/{id}/participants/{pid}::GET': getParticipant,
+    '/{id}/participants/{pid}::PUT': updateParticipant,
+    '/{id}/participants/{pid}::DELETE': deleteParticipant,
 };
 
 /**
@@ -51,6 +60,7 @@ export async function router(
             statusCode: 400,
             headers: {
                 'Content-Type': 'application/json',
+                ...CORS_HEADERS,
             },
             body: JSON.stringify({
                 error: 'ValidationError',
@@ -64,6 +74,7 @@ export async function router(
             statusCode: 404,
             headers: {
                 'Content-Type': 'application/json',
+                ...CORS_HEADERS,
             },
             body: JSON.stringify({
                 error: 'NotFound',

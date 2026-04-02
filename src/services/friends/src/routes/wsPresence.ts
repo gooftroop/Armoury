@@ -1,5 +1,7 @@
+import * as Sentry from '@sentry/aws-serverless';
 import type { DatabaseAdapter, Friend, UserPresence, WebSocketResponse, WsRouteHandler } from '@/types.js';
 import { createBroadcaster } from '@/utils/broadcast.js';
+import { captureWsError } from '@/utils/wsErrors.js';
 
 const ONLINE_STATUS: UserPresence['status'] = 'online';
 const OFFLINE_STATUS: UserPresence['status'] = 'offline';
@@ -10,6 +12,14 @@ export const handleWsConnect: WsRouteHandler = async (
     userContext,
 ): Promise<WebSocketResponse> => {
     if (!userContext) {
+        console.error(
+            '[wsPresence:handleWsConnect] 401 Missing user context',
+            JSON.stringify({
+                connectionId: event.requestContext.connectionId,
+                routeKey: event.requestContext.routeKey,
+            }),
+        );
+
         return {
             statusCode: 401,
             body: JSON.stringify({
@@ -22,26 +32,68 @@ export const handleWsConnect: WsRouteHandler = async (
     const now = new Date().toISOString();
     const connectionId = event.requestContext.connectionId;
     const presence: UserPresence = {
-        userId: userContext.sub,
+        userId: userContext.userId,
         status: ONLINE_STATUS,
         connectionId,
-        lastActiveAt: now,
+        lastSeen: now,
     };
 
-    await adapter.put('userPresence', presence);
+    try {
+        await adapter.put('userPresence', presence);
+    } catch (error) {
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
 
-    const acceptedFriends = await getAcceptedFriends(adapter, userContext.sub);
-    const friendUserIds = acceptedFriends.map((friend) => friend.userId);
-    const connectionIds = await getConnectionIds(adapter, friendUserIds);
-    const broadcaster = createBroadcaster(event);
-    const goneConnections = await broadcaster.sendToMany(connectionIds, {
-        action: 'friendOnline',
-        userId: userContext.sub,
-        name: userContext.name,
+        captureWsError(normalizedError, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: userContext.userId,
+        });
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'ServerError',
+                message: 'Failed to establish presence',
+            }),
+        };
+    }
+
+    Sentry.addBreadcrumb({
+        category: 'websocket.connect',
+        message: `WebSocket connection established for user ${userContext.userId}`,
+        level: 'info',
+        data: {
+            connectionId,
+            userId: userContext.userId,
+            userName: userContext.name,
+            timestamp: now,
+        },
     });
 
-    if (goneConnections.length > 0) {
-        await markConnectionsOffline(adapter, goneConnections);
+    // Best-effort friend notification — failures here should not
+    // prevent the $connect from succeeding since presence is already stored.
+    try {
+        const acceptedFriends = await getAcceptedFriends(adapter, userContext.userId);
+        const friendUserIds = acceptedFriends.map((friend) => friend.userId);
+        const connectionIds = await getConnectionIds(adapter, friendUserIds);
+        const broadcaster = createBroadcaster(event);
+        const goneConnections = await broadcaster.sendToMany(connectionIds, {
+            action: 'friendOnline',
+            userId: userContext.userId,
+            name: userContext.name,
+        });
+
+        if (goneConnections.length > 0) {
+            await markConnectionsOffline(adapter, goneConnections);
+        }
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'broadcast:send', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+            userId: userContext.userId,
+        });
     }
 
     return {
@@ -54,41 +106,70 @@ export const handleWsDisconnect: WsRouteHandler = async (
     adapter: DatabaseAdapter,
 ): Promise<WebSocketResponse> => {
     const connectionId = event.requestContext.connectionId;
-    const presences = await adapter.getByField('userPresence', 'connectionId', connectionId);
-    const presence = presences[0];
 
-    if (!presence) {
-        return {
-            statusCode: 200,
+    try {
+        const presences = await adapter.getByField('userPresence', 'connectionId', connectionId);
+        const presence = presences[0];
+
+        if (!presence) {
+            return {
+                statusCode: 200,
+            };
+        }
+
+        const now = new Date().toISOString();
+        const updatedPresence: UserPresence = {
+            ...presence,
+            status: OFFLINE_STATUS,
+            connectionId: null,
+            lastSeen: now,
         };
+
+        await adapter.put('userPresence', updatedPresence);
+
+        Sentry.addBreadcrumb({
+            category: 'websocket.disconnect',
+            message: `WebSocket connection closed for user ${presence.userId}`,
+            level: 'info',
+            data: {
+                connectionId,
+                userId: presence.userId,
+                timestamp: now,
+            },
+        });
+
+        const acceptedFriends = await getAcceptedFriends(adapter, presence.userId);
+        const friendUserIds = acceptedFriends.map((friend) => friend.userId);
+        const connectionIds = await getConnectionIds(adapter, friendUserIds);
+        const broadcaster = createBroadcaster(event);
+
+        await broadcaster.sendToMany(connectionIds, {
+            action: 'friendOffline',
+            userId: presence.userId,
+        });
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        captureWsError(err, 'db:operation', {
+            connectionId,
+            routeKey: event.requestContext.routeKey,
+        });
     }
-
-    const now = new Date().toISOString();
-    const updatedPresence: UserPresence = {
-        ...presence,
-        status: OFFLINE_STATUS,
-        connectionId: null,
-        lastActiveAt: now,
-    };
-
-    await adapter.put('userPresence', updatedPresence);
-
-    const acceptedFriends = await getAcceptedFriends(adapter, presence.userId);
-    const friendUserIds = acceptedFriends.map((friend) => friend.userId);
-    const connectionIds = await getConnectionIds(adapter, friendUserIds);
-    const broadcaster = createBroadcaster(event);
-
-    await broadcaster.sendToMany(connectionIds, {
-        action: 'friendOffline',
-        userId: presence.userId,
-    });
 
     return {
         statusCode: 200,
     };
 };
 
-export const handleWsDefault: WsRouteHandler = async (): Promise<WebSocketResponse> => {
+export const handleWsDefault: WsRouteHandler = async (event): Promise<WebSocketResponse> => {
+    console.error(
+        '[wsPresence:handleWsDefault] 400 Unsupported action',
+        JSON.stringify({
+            connectionId: event.requestContext.connectionId,
+            routeKey: event.requestContext.routeKey,
+        }),
+    );
+
     return {
         statusCode: 400,
         body: JSON.stringify({
@@ -122,7 +203,7 @@ async function markConnectionsOffline(adapter: DatabaseAdapter, connectionIds: s
         ...presence,
         status: OFFLINE_STATUS,
         connectionId: null,
-        lastActiveAt: now,
+        lastSeen: now,
     }));
 
     await Promise.all(updates.map((presence) => adapter.put('userPresence', presence)));

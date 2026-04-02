@@ -329,7 +329,7 @@ Test every DAO method against a real PGlite adapter:
 ### 3. DataContext Integration Tests (`src/shared/e2e/datacontext/`)
 
 Build a real DataContext with the wh40k10e plugin against PGlite:
-- `DataContext.builder().system(wh40k10eSystem).build()` succeeds
+|- `DataContextBuilder.builder().system(wh40k10eSystem).build()` succeeds
 - All DAO accessors return working DAO instances
 - Plugin schema extensions are registered (40k tables exist)
 - Entity CRUD through DataContext DAOs works end-to-end

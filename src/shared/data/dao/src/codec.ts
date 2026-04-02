@@ -6,11 +6,13 @@ export interface EntityCodec<T = unknown> {
     hydrate: (raw: Record<string, unknown>) => T;
 }
 
-const codecRegistry = new Map<string, EntityCodec>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Type-erased storage; callers use generic registerEntityCodec<T>
+const codecRegistry = new Map<string, EntityCodec<any>>();
 
 /** Registers a codec for an entity type. */
-export function registerEntityCodec(entityKind: string, codec: EntityCodec): void {
-    codecRegistry.set(entityKind, codec);
+export function registerEntityCodec<T>(entityKind: string, codec: EntityCodec<T>): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Type-erased cast; generic T is preserved at call site
+    codecRegistry.set(entityKind, codec as EntityCodec<any>);
 }
 
 /** Returns the codec for an entity type, or undefined if none. */

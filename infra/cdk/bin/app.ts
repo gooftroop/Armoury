@@ -12,6 +12,8 @@
 import * as cdk from 'aws-cdk-lib';
 
 import { DsqlStack } from '../lib/dsql-stack.js';
+import { LogDrainStack } from '../lib/log-drain-stack.js';
+import { ProductionDomainStack } from '../lib/production-domain-stack.js';
 import { WildcardDomainStack } from '../lib/wildcard-domain-stack.js';
 
 /**
@@ -20,6 +22,8 @@ import { WildcardDomainStack } from '../lib/wildcard-domain-stack.js';
  * - REQ-APP-002: Each stack must target the region specified in context.
  * - REQ-APP-003: Stack names follow the pattern Armoury-Dsql-<Environment>.
  * - REQ-APP-004: Create a WildcardDomainStack for sandbox environment only.
+ * - REQ-APP-005: Create a ProductionDomainStack for production environment only.
+ * - REQ-APP-006: Create a LogDrainStack for each environment.
  */
 
 /** Shape of a single environment entry in cdk.json context. */
@@ -50,11 +54,27 @@ for (const [envName, config] of Object.entries(environments)) {
         },
     });
 
+    new LogDrainStack(app, `Armoury-LogDrain-${envName.charAt(0).toUpperCase()}${envName.slice(1)}`, {
+        environment: envName,
+        env: {
+            region: config.region,
+        },
+    });
+
     // Wildcard domain stack is sandbox-only — provisions shared wildcard
     // custom domains for PR sandbox deployments (REST routing rules + WS API mappings).
     if (envName === 'sandbox') {
         new WildcardDomainStack(app, 'Armoury-WildcardDomain-Sandbox', {
             environment: 'sandbox',
+            env: {
+                region: config.region,
+            },
+        });
+    }
+
+    if (envName === 'production') {
+        new ProductionDomainStack(app, 'Armoury-ProductionDomain', {
+            environment: 'production',
             env: {
                 region: config.region,
             },

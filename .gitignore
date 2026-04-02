@@ -42,8 +42,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 
-# generated system assets (copied at build time)
-**/public/systems/
+# generated system assets (copied at build time) — keep manifest files for system discovery
+**/public/systems/**
+!**/public/systems/*/
+!**/public/systems/*/manifest.json
 
 # agent worktrees
 .worktrees
@@ -61,3 +63,11 @@ infra/cdk/cdk.out
 
 # serverless framework cache
 .serverless/
+
+# playwright e2e auth state
+e2e/web/.auth/
+
+# playwright test artifacts
+playwright-report/
+test-results/
+blob-report/

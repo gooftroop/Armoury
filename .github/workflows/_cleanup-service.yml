@@ -27,6 +27,16 @@ on:
                 required: false
                 type: number
                 default: 0
+            has-secrets:
+                description: 'Whether the service has Secrets Manager secrets to clean up (e.g. authorizer)'
+                required: false
+                type: boolean
+                default: false
+            has-rest-api-logs:
+                description: 'Whether the service has API Gateway access logs to clean up'
+                required: false
+                type: boolean
+                default: false
 
 jobs:
     teardown:
@@ -74,33 +84,44 @@ jobs:
               working-directory: ${{ inputs.working-directory }}
               env:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
-              run: serverless remove --stage pr-${{ github.event.pull_request.number }}
+              run: serverless remove --stage pr-${{ github.event.pull_request.number }} --param="authorizerArn=arn:aws:lambda:us-east-1:000000000000:function:cleanup-placeholder"
 
-            - name: Delete REST routing rule
+            - name: Delete HTTP API domain mapping
               if: inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  BASE_PRIORITY: ${{ inputs.routing-rule-priority }}
-                  WILDCARD_DOMAIN: '*.sandbox.armoury-app.com'
+                  PR_DOMAIN: ${{ format('pr-{0}.api.sandbox.armoury-app.com', github.event.pull_request.number) }}
               run: |
-                  # Compute priority using same formula as deploy: PR_NUMBER * 1000 + BASE_PRIORITY
-                  PRIORITY=$((PR_NUMBER * 1000 + BASE_PRIORITY))
-                  # Find and delete routing rule by priority
-                  EXISTING_RULE_ARN=$(aws apigatewayv2 list-routing-rules \
-                    --domain-name "${WILDCARD_DOMAIN}" \
-                    --output json \
-                    | jq -r ".RoutingRules[] | select(.Priority == ${PRIORITY}) | .RoutingRuleArn" || true)
+                  # Delete the API mapping for this service on the per-PR domain
+                  MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
 
-                  if [ -n "${EXISTING_RULE_ARN}" ] && [ "${EXISTING_RULE_ARN}" != "None" ] && [ "${EXISTING_RULE_ARN}" != "null" ]; then
-                    RULE_ID=$(echo "${EXISTING_RULE_ARN}" | grep -oP '[^/]+$')
-                    echo "Deleting routing rule ${RULE_ID} (priority ${PRIORITY}) for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}"
-                    aws apigatewayv2 delete-routing-rule \
-                      --domain-name "${WILDCARD_DOMAIN}" \
-                      --routing-rule-id "${RULE_ID}"
-                    echo "Routing rule deleted."
+                  if [ -n "${MAPPING_ID}" ] && [ "${MAPPING_ID}" != "None" ]; then
+                    echo "Deleting API mapping ${MAPPING_ID} for ${PR_DOMAIN}/${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${PR_DOMAIN}" \
+                      --api-mapping-id "${MAPPING_ID}"
+                    echo "API mapping deleted."
                   else
-                    echo "No routing rule found at priority ${PRIORITY} — skipping."
+                    echo "No API mapping found for ${PR_DOMAIN}/${SERVICE_SHORT_NAME} — skipping."
+                  fi
+
+                  # If no more API mappings remain on this PR domain, delete the domain itself.
+                  # This cleans up the per-PR domain after the last service is torn down.
+                  REMAINING=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query 'Items | length(@)' \
+                    --output text 2>/dev/null || echo "0")
+
+                  if [ "${REMAINING}" = "0" ] || [ "${REMAINING}" = "None" ]; then
+                    echo "No remaining mappings on ${PR_DOMAIN} — deleting domain"
+                    aws apigatewayv2 delete-domain-name --domain-name "${PR_DOMAIN}" 2>/dev/null || true
+                    echo "Domain deleted."
+                  else
+                    echo "${REMAINING} mapping(s) still on ${PR_DOMAIN} — keeping domain."
                   fi
 
             - name: Delete WS API mapping
@@ -125,3 +146,60 @@ jobs:
                   else
                     echo "No WS API mapping found for pr-${PR_NUMBER}-${SERVICE_SHORT_NAME} — skipping."
                   fi
+
+            - name: Delete CloudWatch Lambda log groups
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_NAME: armoury-${{ inputs.service-short-name || 'authorizer' }}
+              run: |
+                  # Lambda log groups are auto-created by the runtime (not part of CF stack),
+                  # so `serverless remove` does NOT delete them. Clean up explicitly.
+                  PREFIX="/aws/lambda/${SERVICE_NAME}-pr-${PR_NUMBER}"
+                  echo "Searching for log groups with prefix: ${PREFIX}"
+                  LOG_GROUPS=$(aws logs describe-log-groups \
+                    --log-group-name-prefix "${PREFIX}" \
+                    --query 'logGroups[].logGroupName' --output text || true)
+
+                  if [ -z "${LOG_GROUPS}" ] || [ "${LOG_GROUPS}" = "None" ]; then
+                    echo "No Lambda log groups found with prefix ${PREFIX} — skipping."
+                  else
+                    for LG in ${LOG_GROUPS}; do
+                      echo "Deleting log group: ${LG}"
+                      aws logs delete-log-group --log-group-name "${LG}" || true
+                    done
+                    echo "Lambda log group cleanup complete."
+                  fi
+
+            - name: Delete API Gateway access log group
+              if: inputs.has-rest-api-logs
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_NAME: armoury-${{ inputs.service-short-name }}
+              run: |
+                  # API Gateway access log groups follow this naming pattern
+                  LOG_GROUP="/aws/api-gateway/${SERVICE_NAME}-pr-${PR_NUMBER}"
+                  echo "Checking for API Gateway log group: ${LOG_GROUP}"
+                  EXISTS=$(aws logs describe-log-groups \
+                    --log-group-name-prefix "${LOG_GROUP}" \
+                    --query "logGroups[?logGroupName=='${LOG_GROUP}'].logGroupName" \
+                    --output text || true)
+
+                  if [ -n "${EXISTS}" ] && [ "${EXISTS}" != "None" ]; then
+                    echo "Deleting API Gateway log group: ${LOG_GROUP}"
+                    aws logs delete-log-group --log-group-name "${LOG_GROUP}" || true
+                    echo "API Gateway log group deleted."
+                  else
+                    echo "No API Gateway log group found at ${LOG_GROUP} — skipping."
+                  fi
+
+            - name: Delete Secrets Manager secret
+              if: inputs.has-secrets
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+              run: |
+                  SECRET_NAME="armoury/pr-${PR_NUMBER}/authorizer"
+                  echo "Deleting secret: ${SECRET_NAME}"
+                  aws secretsmanager delete-secret \
+                    --secret-id "${SECRET_NAME}" \
+                    --force-delete-without-recovery || true
+                  echo "Secret deletion requested (or already absent)."

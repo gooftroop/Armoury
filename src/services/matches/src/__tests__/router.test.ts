@@ -4,7 +4,7 @@ import { router } from '@/router.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
 const baseUserContext: UserContext = {
-    sub: 'user-1',
+    userId: 'user-1',
     email: 'user@example.com',
     name: 'Test User',
 };
@@ -32,12 +32,12 @@ describe('router', () => {
         await adapter.initialize();
     });
 
-    it('routes POST /matches to create', async () => {
+    it('routes POST / to create', async () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/matches',
-                resource: '/matches',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -51,12 +51,12 @@ describe('router', () => {
         expect(payload.players).toHaveLength(2);
     });
 
-    it('routes GET /matches to list', async () => {
+    it('routes GET / to list', async () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: '/matches',
-                resource: '/matches',
+                path: '/',
+                resource: '/',
                 body: null,
                 pathParameters: null,
             },
@@ -68,12 +68,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toEqual([]);
     });
 
-    it('routes GET /matches/:id to get', async () => {
+    it('routes GET /:id to get', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/matches',
-                resource: '/matches',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -85,8 +85,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'GET',
-                path: `/matches/${created.id}`,
-                resource: '/matches/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: created.id },
             },
@@ -98,12 +98,12 @@ describe('router', () => {
         expect(JSON.parse(response.body)).toMatchObject({ id: created.id });
     });
 
-    it('routes PUT /matches/:id to update', async () => {
+    it('routes PUT /:id to update', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/matches',
-                resource: '/matches',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -115,8 +115,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'PUT',
-                path: `/matches/${created.id}`,
-                resource: '/matches/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: JSON.stringify(updateRequest),
                 pathParameters: { id: created.id },
             },
@@ -130,12 +130,12 @@ describe('router', () => {
         expect(payload.outcome.status).toBe('completed');
     });
 
-    it('routes DELETE /matches/:id to delete', async () => {
+    it('routes DELETE /:id to delete', async () => {
         const createResponse = await router(
             {
                 httpMethod: 'POST',
-                path: '/matches',
-                resource: '/matches',
+                path: '/',
+                resource: '/',
                 body: JSON.stringify(createRequest),
                 pathParameters: null,
             },
@@ -147,8 +147,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'DELETE',
-                path: `/matches/${created.id}`,
-                resource: '/matches/{id}',
+                path: `/${created.id}`,
+                resource: '/{id}',
                 body: null,
                 pathParameters: { id: created.id },
             },
@@ -181,8 +181,8 @@ describe('router', () => {
         const response = await router(
             {
                 httpMethod: 'POST',
-                path: '/matches',
-                resource: '/matches',
+                path: '/',
+                resource: '/',
                 body: '{invalid-json',
                 pathParameters: null,
             },

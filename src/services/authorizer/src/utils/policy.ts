@@ -1,10 +1,13 @@
 import type { AuthorizerContext, AuthorizerResult, PolicyEffect } from '@/types.js';
 
 /**
- * Builds a wildcard resource ARN for all API routes.
+ * Builds a wildcard resource ARN scoped to the API stage.
+ *
+ * Uses a single trailing wildcard to match both REST API routes
+ * (e.g. {stage}/GET/users) and WebSocket routes (e.g. {stage}/$connect).
  *
  * @param methodArn - API Gateway method ARN.
- * @returns Wildcard resource ARN.
+ * @returns Stage-scoped wildcard resource ARN.
  */
 const buildWildcardResource = (methodArn: string): string => {
     const arnParts = methodArn.split('/');
@@ -13,7 +16,26 @@ const buildWildcardResource = (methodArn: string): string => {
         return methodArn;
     }
 
-    return `${arnParts[0]}/${arnParts[1]}/*/*`;
+    return `${arnParts[0]}/${arnParts[1]}/*`;
+};
+
+/**
+ * Extracts the HTTP method from an API Gateway method ARN.
+ *
+ * The expected ARN format is:
+ * `arn:aws:execute-api:{region}:{account}:{api-id}/{stage}/{method}/{resource}`
+ *
+ * @param methodArn - API Gateway method ARN.
+ * @returns The HTTP method (e.g. GET, POST, OPTIONS) or null if unparseable.
+ */
+export const extractHttpMethod = (methodArn: string): string | null => {
+    const arnParts = methodArn.split('/');
+
+    if (arnParts.length < 3) {
+        return null;
+    }
+
+    return arnParts[2] ?? null;
 };
 
 /**

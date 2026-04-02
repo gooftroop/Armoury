@@ -1,3 +1,6 @@
+// Side-effect import: initializes Sentry before any handler code runs.
+// Must be the first import so Sentry.init() executes before Sentry.wrapHandler().
+import './instrument.js';
 /**
  * Lambda entry point for the users service.
  *
@@ -17,29 +20,54 @@ import type { ApiResponse, DatabaseAdapter } from '@/types.js';
 import { getServiceConfig } from '@/utils/secrets.js';
 
 /**
- * Minimal API Gateway proxy event payload.
- * Defines only the fields used by the users handler to avoid
- * depending on the full @types/aws-lambda package at runtime.
+ * HTTP API v2 event from API Gateway.
+ *
+ * Uses `routeKey` ("PUT /{id}/account") and `rawPath` instead of the
+ * REST API v1 `httpMethod` / `path` / `resource` triple.
  */
-interface ApiGatewayEvent {
-    /** HTTP method name (GET, POST, PUT, DELETE). */
-    httpMethod: string;
-
-    /** Request path (e.g., "/users/abc-123"). */
-    path: string;
-
-    /** Request resource template (e.g., "/users/{id}"). */
-    resource: string;
-
-    /** Raw JSON request body string, or null for bodiless requests. */
-    body: string | null;
-
-    /** Path parameters extracted by API Gateway (e.g., { id: "abc-123" }). */
+interface HttpApiV2Event {
+    routeKey: string;
+    rawPath: string;
+    body?: string | null;
     pathParameters?: Record<string, string | undefined> | null;
-
-    /** Request context populated by the Lambda TOKEN authorizer. */
     requestContext: {
-        authorizer?: Record<string, unknown>;
+        authorizer?: {
+            jwt?: {
+                claims?: Record<string, unknown>;
+            };
+        };
+    };
+}
+
+/**
+ * Normalized event shape consumed by the router — maps HTTP API v2 fields
+ * to the REST API v1 names so the router dispatch stays unchanged.
+ */
+interface NormalizedEvent {
+    httpMethod: string;
+    path: string;
+    resource: string;
+    body: string | null;
+    pathParameters?: Record<string, string | undefined> | null;
+    requestContext: HttpApiV2Event['requestContext'];
+}
+
+/**
+ * Splits an HTTP API v2 `routeKey` ("PUT /{id}/account") into the
+ * `httpMethod` + `resource` pair the router expects.
+ */
+function normalizeEvent(event: HttpApiV2Event): NormalizedEvent {
+    const spaceIndex = event.routeKey.indexOf(' ');
+    const httpMethod = event.routeKey.slice(0, spaceIndex);
+    const resource = event.routeKey.slice(spaceIndex + 1);
+
+    return {
+        httpMethod,
+        path: event.rawPath,
+        resource,
+        body: event.body ?? null,
+        pathParameters: event.pathParameters,
+        requestContext: event.requestContext,
     };
 }
 
@@ -98,10 +126,8 @@ interface LocalAdapterConstructor {
  * Resolves the DSQLAdapter class from @armoury/adapters-dsql at runtime using dynamic import.
  * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
  */
-const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
-    LocalDatabaseAdapter: LocalAdapterConstructor;
-};
+// Dynamic imports moved inside initializeAdapter() to avoid eager loading of
+// LocalDatabaseAdapter (which depends on 'pg') when 'pg' is externalized by esbuild.
 
 /**
  * Singleton database adapter instance reused across warm Lambda invocations.
@@ -127,20 +153,29 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
 
     const config = await getServiceConfig();
 
-    const adapter =
-        process.env['IS_OFFLINE'] === 'true'
-            ? new LocalDatabaseAdapter({
-                  host: process.env['LOCAL_DB_HOST'] ?? config.dsqlClusterEndpoint,
-                  port: Number(process.env['LOCAL_DB_PORT'] ?? '5432'),
-                  user: process.env['LOCAL_DB_USER'] ?? 'armoury',
-                  password: process.env['LOCAL_DB_PASSWORD'] ?? 'armoury_local',
-                  database: process.env['LOCAL_DB_NAME'] ?? 'armoury_users',
-                  ssl: process.env['LOCAL_DB_SSL'] === 'true',
-              })
-            : new DSQLAdapter({
-                  clusterEndpoint: config.dsqlClusterEndpoint,
-                  region: config.dsqlRegion,
-              });
+    let adapter: DatabaseAdapter & { initialize(): Promise<void> };
+
+    if (process.env['IS_OFFLINE'] === 'true') {
+        const { LocalDatabaseAdapter } = (await import('./utils/localAdapter.js')) as unknown as {
+            LocalDatabaseAdapter: LocalAdapterConstructor;
+        };
+        adapter = new LocalDatabaseAdapter({
+            host: process.env['LOCAL_DB_HOST'] ?? config.dsqlClusterEndpoint,
+            port: Number(process.env['LOCAL_DB_PORT'] ?? '5432'),
+            user: process.env['LOCAL_DB_USER'] ?? 'armoury',
+            password: process.env['LOCAL_DB_PASSWORD'] ?? 'armoury_local',
+            database: process.env['LOCAL_DB_NAME'] ?? 'armoury_users',
+            ssl: process.env['LOCAL_DB_SSL'] === 'true',
+        });
+    } else {
+        const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as {
+            DSQLAdapter: DSQLAdapterConstructor;
+        };
+        adapter = new DSQLAdapter({
+            clusterEndpoint: config.dsqlClusterEndpoint,
+            region: config.dsqlRegion,
+        });
+    }
 
     await adapter.initialize();
 
@@ -161,19 +196,45 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
  * @param event - API Gateway proxy integration event with HTTP method, path, body, and authorizer context.
  * @returns API Gateway proxy response with status code, headers, and JSON body.
  */
-export async function handler(event: ApiGatewayEvent): Promise<ApiResponse> {
+export const handler = Sentry.wrapHandler(async (event: HttpApiV2Event): Promise<ApiResponse> => {
+    const normalized = normalizeEvent(event);
+
+    Sentry.logger.info('[users] Handler invoked', {
+        httpMethod: normalized.httpMethod,
+        path: normalized.path,
+    });
+
     try {
         const adapter = await initializeAdapter();
         const userContext = extractUserContext(event);
-        const response = await router(event, adapter, userContext);
+        const response = await router(normalized, adapter, userContext);
+
+        Sentry.logger.info('[users] Handler completed', {
+            httpMethod: normalized.httpMethod,
+            path: normalized.path,
+            statusCode: response.statusCode,
+        });
 
         return response;
     } catch (error) {
-        console.error('Users handler error', error);
-        Sentry.captureException(error);
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
 
-        const normalizedError = error instanceof Error ? error : new Error('Unknown error');
+        console.error(
+            '[users] Handler error',
+            JSON.stringify({
+                httpMethod: normalized.httpMethod,
+                path: normalized.path,
+                pathParameters: event.pathParameters,
+                errorName: normalizedError.name,
+                errorMessage: normalizedError.message,
+                stack: normalizedError.stack,
+                body: normalized.body,
+                authorizer: event.requestContext.authorizer,
+            }),
+        );
+
+        Sentry.captureException(error);
 
         return formatErrorResponse(normalizedError);
     }
-}
+});

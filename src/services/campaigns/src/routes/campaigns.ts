@@ -26,7 +26,7 @@ export const createCampaign: RouteHandler = async (
         id: randomUUID(),
         name: request.name,
         type: request.type,
-        organizerId: userContext.sub,
+        organizerId: userContext.userId,
         narrative: request.narrative as Campaign['narrative'],
         campaignData: (request.campaignData ?? undefined) as Campaign['campaignData'],
         startDate: request.startDate,

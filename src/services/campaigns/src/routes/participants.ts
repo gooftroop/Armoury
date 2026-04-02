@@ -37,7 +37,7 @@ export const joinCampaign: RouteHandler = async (
     const participant: CampaignParticipant = {
         id: randomUUID(),
         campaignId,
-        userId: userContext.sub,
+        userId: userContext.userId,
         displayName: request.displayName,
         isOrganizer: false,
         armyId: request.armyId,
