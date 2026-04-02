@@ -74,14 +74,16 @@ function json(relPath, obj) {
 }
 
 /**
- * Parameterize content — replace @armoury with @{scope} and armoury references.
- * Strips Armoury-specific business logic references.
+ * Parameterize content — replace scope/org references only.
+ * Domain-specific content is handled by static templates in templates/.
  */
 function parameterize(content) {
+    const Scope = scope.charAt(0).toUpperCase() + scope.slice(1);
+
     return content
         .replace(/@armoury\b/g, `@${scope}`)
         .replace(/\barmoury\b/g, scope)
-        .replace(/\bArmoury\b/g, scope.charAt(0).toUpperCase() + scope.slice(1))
+        .replace(/\bArmoury\b/g, Scope)
         .replace(/gooftroop\/Armoury/g, `your-org/${scope}`)
         .replace(/git\+ssh:\/\/git@github\.com\/gooftroop\/Armoury\.git/g, `git+ssh://git@github.com/your-org/${scope}.git`)
         .replace(/https:\/\/github\.com\/gooftroop\/Armoury/g, `https://github.com/your-org/${scope}`);
@@ -99,6 +101,21 @@ function copyParameterized(srcRelPath, destRelPath) {
 
     const content = readFileSync(srcAbs, 'utf-8');
     w(destRelPath || srcRelPath, parameterize(content));
+}
+
+/**
+ * Copy from a pre-edited template in scripts/bootstrap/templates/.
+ * Only scope/org replacements are applied — domain content is already generic.
+ */
+function copyFromTemplate(templateRelPath, destRelPath) {
+    const templateAbs = join(__dirname, 'templates', templateRelPath);
+    if (!existsSync(templateAbs)) {
+        console.log(`  skipped template ${templateRelPath} (not found)`);
+        return;
+    }
+
+    const content = readFileSync(templateAbs, 'utf-8');
+    w(destRelPath || templateRelPath, parameterize(content));
 }
 
 /**
@@ -161,6 +178,7 @@ json('package.json', {
         format: 'turbo run format',
         'format:check': 'turbo run format:check',
         'test:e2e': 'turbo run test:e2e',
+        prepare: 'husky || true',
     },
     devDependencies: {
         '@commitlint/config-conventional': '^20.4.3',
@@ -359,6 +377,9 @@ on:
     pull_request:
         branches: [main]
 
+permissions:
+    contents: read
+
 concurrency:
     group: ci-\${{ github.workflow }}-\${{ github.ref }}
     cancel-in-progress: true
@@ -520,6 +541,25 @@ jobs:
                       src/*/node_modules
                       src/*/*/node_modules
                   key: \${{ runner.os }}-node-full-\${{ hashFiles('package-lock.json') }}
+
+            - name: Get Playwright version
+              id: pw-version
+              run: echo "version=$(npx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Playwright browsers
+              id: pw-cache
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: \${{ runner.os }}-playwright-\${{ steps.pw-version.outputs.version }}
+
+            - name: Install Playwright browsers
+              if: steps.pw-cache.outputs.cache-hit != 'true'
+              run: npx playwright install --with-deps chromium
+
+            - name: Install Playwright system deps
+              if: steps.pw-cache.outputs.cache-hit == 'true'
+              run: npx playwright install-deps chromium
 
             - name: Run e2e tests
               run: npm run test:e2e
@@ -1061,17 +1101,13 @@ buildService({ entryPoints, cwd }).catch((err) => {
 console.log('\nDocumentation:');
 
 // Core docs
-copyParameterized('docs/CODING_STANDARDS.md');
-copyParameterized('docs/AGENT_CATEGORIES.md');
+copyFromTemplate('docs/CODING_STANDARDS.md');
+// AGENT_CATEGORIES.md excluded — too domain-specific to parameterize cleanly.
 copyParameterized('docs/tooling.md');
 copyParameterized('CONTRIBUTING.md');
 
-// Best practices — copy both if they exist
-copyParameterized('docs/frontend/plan/BEST_PRACTICES.md');
-copyParameterized('docs/backend/BEST_PRACTICES.md');
-
 // Agent instructions
-copyParameterized('.opencode/AGENTS.md');
+copyFromTemplate('.opencode/AGENTS.md');
 
 // ---------------------------------------------------------------------------
 // OpenCode config
