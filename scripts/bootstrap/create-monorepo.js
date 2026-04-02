@@ -56,7 +56,7 @@ if (!scope || !outDir) {
 const root = resolve(outDir);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const sourceRoot = resolve(__dirname, '..', '..');
+const templateRoot = join(__dirname, 'templates');
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -75,7 +75,6 @@ function json(relPath, obj) {
 
 /**
  * Parameterize content — replace scope/org references only.
- * Domain-specific content is handled by static templates in templates/.
  */
 function parameterize(content) {
     const Scope = scope.charAt(0).toUpperCase() + scope.slice(1);
@@ -90,27 +89,12 @@ function parameterize(content) {
 }
 
 /**
- * Copy a source file, parameterizing its content.
+ * Copy a file from templates/, parameterizing its content.
  */
-function copyParameterized(srcRelPath, destRelPath) {
-    const srcAbs = join(sourceRoot, srcRelPath);
-    if (!existsSync(srcAbs)) {
-        console.log(`  skipped ${srcRelPath} (not found)`);
-        return;
-    }
-
-    const content = readFileSync(srcAbs, 'utf-8');
-    w(destRelPath || srcRelPath, parameterize(content));
-}
-
-/**
- * Copy from a pre-edited template in scripts/bootstrap/templates/.
- * Only scope/org replacements are applied — domain content is already generic.
- */
-function copyFromTemplate(templateRelPath, destRelPath) {
-    const templateAbs = join(__dirname, 'templates', templateRelPath);
+function copyTemplate(templateRelPath, destRelPath) {
+    const templateAbs = join(templateRoot, templateRelPath);
     if (!existsSync(templateAbs)) {
-        console.log(`  skipped template ${templateRelPath} (not found)`);
+        console.log(`  skipped ${templateRelPath} (not found in templates)`);
         return;
     }
 
@@ -119,23 +103,23 @@ function copyFromTemplate(templateRelPath, destRelPath) {
 }
 
 /**
- * Recursively copy a directory, parameterizing all file contents.
+ * Recursively copy a directory from templates/, parameterizing all file contents.
  */
-function copyDirParameterized(srcRelDir, destRelDir) {
-    const srcAbs = join(sourceRoot, srcRelDir);
+function copyTemplateDir(templateRelDir, destRelDir) {
+    const srcAbs = join(templateRoot, templateRelDir);
     if (!existsSync(srcAbs)) {
-        console.log(`  skipped ${srcRelDir}/ (not found)`);
+        console.log(`  skipped ${templateRelDir}/ (not found in templates)`);
         return;
     }
 
     const entries = readdirSync(srcAbs, { withFileTypes: true });
     for (const entry of entries) {
-        const srcPath = join(srcRelDir, entry.name);
-        const destPath = join(destRelDir || srcRelDir, entry.name);
+        const srcPath = join(templateRelDir, entry.name);
+        const destPath = join(destRelDir || templateRelDir, entry.name);
         if (entry.isDirectory()) {
-            copyDirParameterized(srcPath, destPath);
+            copyTemplateDir(srcPath, destPath);
         } else {
-            copyParameterized(srcPath, destPath);
+            copyTemplate(srcPath, destPath);
         }
     }
 }
@@ -1101,13 +1085,13 @@ buildService({ entryPoints, cwd }).catch((err) => {
 console.log('\nDocumentation:');
 
 // Core docs
-copyFromTemplate('docs/CODING_STANDARDS.md');
+copyTemplate('docs/CODING_STANDARDS.md');
 // AGENT_CATEGORIES.md excluded — too domain-specific to parameterize cleanly.
-copyParameterized('docs/tooling.md');
-copyParameterized('CONTRIBUTING.md');
+copyTemplate('docs/tooling.md');
+copyTemplate('CONTRIBUTING.md');
 
 // Agent instructions
-copyFromTemplate('.opencode/AGENTS.md');
+copyTemplate('.opencode/AGENTS.md');
 
 // ---------------------------------------------------------------------------
 // OpenCode config
@@ -1136,19 +1120,19 @@ json('opencode.jsonc', {
 
 console.log('\nSkills:');
 
-const skillsDir = join(sourceRoot, '.opencode/skills');
+const skillsDir = join(templateRoot, '.opencode/skills');
 if (existsSync(skillsDir)) {
     const skills = readdirSync(skillsDir, { withFileTypes: true });
     for (const skill of skills) {
         if (skill.isDirectory()) {
-            copyDirParameterized(
+            copyTemplateDir(
                 join('.opencode/skills', skill.name),
                 join('.opencode/skills', skill.name),
             );
         }
     }
 } else {
-    console.log('  skipped .opencode/skills/ (not found)');
+    console.log('  skipped .opencode/skills/ (not found in templates)');
 }
 
 // ---------------------------------------------------------------------------

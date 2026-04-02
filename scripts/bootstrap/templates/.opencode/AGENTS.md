@@ -4,19 +4,18 @@ Behavioral rules for LLM agents on this monorepo. For coding conventions, see `d
 
 ## Documentation Map
 
-| Document                      | Contains                                                    | When to Read                                                  |
-| ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
-| `docs/CODING_STANDARDS.md`    | Code style, naming, exports, types, testing, error handling | **Phase 3 only** — before writing or modifying code           |
-| `docs/tooling.md`             | Shared configs, workspace scripts, adding workspaces        | When modifying tooling configs or adding workspaces           |
-| `docs/services/`              | Service-specific documentation                              | When working on service workspaces                            |
+| Document                   | Contains                                                    | When to Read                                    |
+| -------------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| `docs/CODING_STANDARDS.md` | Code style, naming, exports, types, testing, error handling | Before writing or modifying code                |
+| `docs/tooling.md`          | Shared configs, workspace scripts, adding workspaces        | When modifying tooling configs or adding workspaces |
 
 ### Document Loading Strategy
 
-**Do NOT read documentation files upfront.** Read them lazily, only when entering the relevant phase or scope:
+**Do NOT read documentation files upfront.** Read them lazily, only when entering the relevant scope:
 
-- **Discovery/Planning** (Phase 1-2): Use this file (AGENTS.md) and `grep` only. Do not read CODING_STANDARDS.md or other docs.
-- **Implementation** (Phase 3): Load `git-worktree-agent-workflow` skill **before any code changes**. Read `docs/CODING_STANDARDS.md` before writing code. Read workspace-specific docs only for the workspace you're modifying.
-- **Integration** (Phase 4): Load `mastering-github-cli` skill. Do not re-read coding standards.
+- **Discovery/Planning**: Use this file (AGENTS.md) and `grep` only. Do not read CODING_STANDARDS.md or other docs.
+- **Implementation**: Load `git-worktree-agent-workflow` skill **before any code changes**. Read `docs/CODING_STANDARDS.md` before writing code. Read workspace-specific docs only for the workspace you're modifying.
+- **Integration**: Load `mastering-github-cli` skill. Do not re-read coding standards.
 - **Never read a doc "just in case"** — grep for the specific section you need if unsure.
 
 ## Project Overview
@@ -35,7 +34,7 @@ For tooling configuration details (Vitest, TypeScript, ESLint, Prettier), worksp
 
 Available skills in `.opencode/skills/`. Load via the `skill` tool only when needed — do not read SKILL.md files upfront.
 
-**Git & CI**: `git-worktree-agent-workflow` (**before any code changes — Phase 3+**), `mastering-github-cli` (Phase 4), `gh-fix-ci`, `gh-address-comments`, `code-reviewer`
+**Git & CI**: `git-worktree-agent-workflow` (**before any code changes**), `mastering-github-cli`, `gh-fix-ci`, `gh-address-comments`, `code-reviewer`
 **Frontend**: `accessibility`, `core-web-vitals`, `perf-web-optimization`, `seo`, `figma`, `figma-implement-design`
 **Security**: `security-best-practices`, `security-threat-model`
 **Docs & Design**: `docs-writer`, `technical-design-doc-creator`
@@ -46,7 +45,7 @@ Available skills in `.opencode/skills/`. Load via the `skill` tool only when nee
 
 **Read `docs/CODING_STANDARDS.md` before writing or modifying code.** It covers: code style, naming, exports, types, imports, file extensions, error handling, database schema, and testing patterns.
 
-Key rules that apply at all phases (not just implementation):
+Key rules:
 
 - Every source file must have a `@requirements` block at the top (after imports).
 - Follow TDD: requirements → test plan → tests → implementation → refactor.
@@ -54,36 +53,34 @@ Key rules that apply at all phases (not just implementation):
 - Comment **why**, not **what**. JSDoc on public APIs only.
 - Tests should be meaningful — do not add tests purely for coverage.
 
-## Phase-Based Workflow
+## Task Workflow
 
-Every task follows phases. The number of phases and gates depends on task risk level.
+Every task follows a discovery → plan → implement → integrate flow. The level of ceremony depends on risk.
 
-### Risk-Based Phase Gates
+### Risk Levels
 
-Not all tasks need the same ceremony. Classify risk first, then apply the matching gate pattern:
-
-| Risk Level | Examples | Required Gates |
-|-----------|----------|---------------|
-| **Trivial** | Typo fixes, comment updates, single-line config changes | **No gate** — execute, present result. No approval needed before acting. |
-| **Low** | Doc edits, single-file changes in established patterns, test additions | Combine Phase 1+2 → present plan → Phase 3 → Phase 4 |
-| **Medium** | Feature in established patterns, multi-file edits, refactors within one module | Full Phase 1 → 2 → 3 → 4 with gates at each boundary |
-| **High** | Cross-module refactors, schema changes, new architecture patterns, security-sensitive changes | Full Phase 1 → 2 → 3 → 4 with gates + Oracle review before Phase 3 |
+| Risk Level | Examples | Approach |
+|-----------|----------|----------|
+| **Trivial** | Typo fixes, comment updates, single-line config changes | Execute directly, present result. No approval needed. |
+| **Low** | Doc edits, single-file changes in established patterns, test additions | Quick plan → implement → integrate |
+| **Medium** | Feature in established patterns, multi-file edits, refactors within one module | Present findings → plan with approval → implement → integrate |
+| **High** | Cross-module refactors, schema changes, new architecture patterns, security-sensitive changes | Present findings → plan with approval → implement with review gates → integrate |
 
 When uncertain about risk level, **default to Medium**. The human can always say "just do it" to skip gates.
 
-### Phase 1 — Discovery
+### Discovery
 
 Understand the problem before proposing solutions. Read relevant code, identify root cause or affected areas, list unknowns and risks.
 
 **Gate** (Medium/High risk): Present findings → wait for human approval.
 
-### Phase 2 — Plan
+### Planning
 
 Break work into the smallest possible incremental changes. Identify blocking vs. parallelizable work. Each increment should be a single, independently mergeable PR. Include a test plan.
 
 **Gate** (Medium/High risk): Present plan → wait for human approval.
 
-### Phase 3 — Implementation (per increment)
+### Implementation (per increment)
 
 **⚠️ MANDATORY: Load `git-worktree-agent-workflow` skill BEFORE writing any code.** All code changes MUST happen inside a git worktree — no exceptions unless the human explicitly says "skip worktree" or "work on main".
 
@@ -91,15 +88,15 @@ Implement one increment at a time. Run linting, type checks, and tests on affect
 
 **Gate** (Medium/High risk): After each increment → wait for human feedback.
 
-### Phase 4 — Integration
+### Integration
 
-Commit, push, create PR. Load `mastering-github-cli` skill. Worktree skill should already be loaded from Phase 3.
+Commit, push, create PR. Load `mastering-github-cli` skill. Worktree skill should already be loaded from Implementation.
 
 **Gate** (Medium/High risk): Present PR for review before starting the next increment.
 
-### Phase Gate Approval Signals
+### Approval Signals
 
-The phase gates above require human approval to advance. Recognize these approval patterns:
+Recognize these approval patterns:
 
 - **Explicit approval**: "Approved", "LGTM", "Go ahead", "Proceed"
 - **Forward intent**: "Continue", "Continue if you have next steps", "Keep going", "What's next?"
@@ -109,7 +106,7 @@ If the human expresses forward intent and there are pending tasks in your todo l
 
 ### Approval Persistence
 
-**An approved plan remains approved across the entire implementation phase.** Once the human approves a plan:
+**An approved plan remains approved across the entire implementation.** Once the human approves a plan:
 
 - Do not re-ask for permission to perform operations that are part of the approved plan (builds, tests, linting, multi-file edits, npm install in worktrees).
 - Each completed increment within the plan gets a brief summary, not a new approval request.
@@ -137,16 +134,16 @@ The system may inject a `TODO CONTINUATION` directive when you have incomplete t
 3. If the human's last message redirected the approach, follow the redirect instead.
 4. If there was no human message (pure system directive after inactivity), continue with the next pending task.
 
-**Never stall on a TODO continuation when prior approval was given.** The purpose of phase gates is to get human input at decision points — once input is received, execute until the next gate or until all tasks are complete.
+**Never stall on a TODO continuation when prior approval was given.**
 
 ### Approval Recovery After Compaction
 
 When context is compacted (long sessions), approval state may be lost. To recover:
 
-1. Check your todo list — items marked `completed` indicate prior phases were approved.
+1. Check your todo list — items marked `completed` indicate prior work was approved.
 2. Check the last human message — forward intent signals still apply.
-3. If both indicate prior approval, **resume work at the current phase**. Do not restart from Phase 1.
-4. If uncertain, present a one-line summary: "Resuming [task] at Phase [N] — prior phases were approved. OK to continue?"
+3. If both indicate prior approval, **resume work**. Do not restart from discovery.
+4. If uncertain, present a one-line summary: "Resuming [task] — prior steps were approved. OK to continue?"
 
 ## Agile Delivery
 
@@ -158,7 +155,7 @@ When context is compacted (long sessions), approval state may be lost. To recove
 
 You are a partner, not an autonomous executor. The human drives decisions.
 
-- **Never auto-advance between phases** (at Medium/High risk). Always present results and wait.
+- **Never auto-advance** past approval gates (at Medium/High risk). Always present results and wait.
 - **Never assume approval.** Silence is not consent. Ask explicitly.
 - **Never expand scope.** If you discover additional work, report it — don't do it.
 - **Present options, not decisions.** When tradeoffs exist, lay them out. Let the human choose.
