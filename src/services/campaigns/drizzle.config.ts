@@ -17,4 +17,7 @@ export default defineConfig({
     out: './drizzle',
     dbCredentials,
     schemaFilter: process.env['DB_SCHEMA'] ?? 'public',
+    migrations: {
+        schema: 'drizzle_campaigns',
+    },
 });
