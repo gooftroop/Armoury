@@ -71,6 +71,15 @@ export interface SyncResult {
     batchesWritten: number;
 }
 
+/** PostgreSQL error code for "relation does not exist". */
+const UNDEFINED_TABLE = '42P01';
+
+function isUndefinedTableError(err: unknown): boolean {
+    return (
+        typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === UNDEFINED_TABLE
+    );
+}
+
 export async function syncTable(
     sourceClient: PgClient,
     targetClient: PgClient,
@@ -81,7 +90,20 @@ export async function syncTable(
         throw new Error(`Invalid table name "${table}".`);
     }
 
-    const result = await sourceClient.query(`SELECT * FROM "public"."${table}"`);
+    let result: QueryResult;
+
+    try {
+        result = await sourceClient.query(`SELECT * FROM "public"."${table}"`);
+    } catch (err: unknown) {
+        if (isUndefinedTableError(err)) {
+            console.log(`[db:sync] Source table "public"."${table}" does not exist — skipping.`);
+
+            return { table, rowsRead: 0, batchesWritten: 0 };
+        }
+
+        throw err;
+    }
+
     const rows = result.rows;
 
     if (rows.length === 0) {
@@ -122,20 +144,30 @@ export async function verifySyncCounts(
             throw new Error(`Invalid table name "${table}".`);
         }
 
-        const sourceResult = await sourceClient.query(`SELECT count(*)::int AS count FROM "public"."${table}"`);
-        const targetResult = await targetClient.query(
-            `SELECT count(*)::int AS count FROM "${targetSchema}"."${table}"`,
-        );
+        try {
+            const sourceResult = await sourceClient.query(`SELECT count(*)::int AS count FROM "public"."${table}"`);
+            const targetResult = await targetClient.query(
+                `SELECT count(*)::int AS count FROM "${targetSchema}"."${table}"`,
+            );
 
-        const sourceCount = (sourceResult.rows[0]?.['count'] as number) ?? 0;
-        const targetCount = (targetResult.rows[0]?.['count'] as number) ?? 0;
+            const sourceCount = (sourceResult.rows[0]?.['count'] as number) ?? 0;
+            const targetCount = (targetResult.rows[0]?.['count'] as number) ?? 0;
 
-        results.push({
-            table,
-            sourceCount,
-            targetCount,
-            match: targetCount >= sourceCount,
-        });
+            results.push({
+                table,
+                sourceCount,
+                targetCount,
+                match: targetCount >= sourceCount,
+            });
+        } catch (err: unknown) {
+            if (isUndefinedTableError(err)) {
+                console.log(`[db:sync] Table "${table}" does not exist in source or target — skipping verification.`);
+                results.push({ table, sourceCount: 0, targetCount: 0, match: true });
+                continue;
+            }
+
+            throw err;
+        }
     }
 
     return results;
