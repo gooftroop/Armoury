@@ -25,7 +25,7 @@
  */
 
 import { DsqlSigner } from '@aws-sdk/dsql-signer';
-import { SCHEMA_NAME_PATTERN, syncTable, verifySyncCounts, type PgClient } from '@/syncHelpers.js';
+import { SCHEMA_NAME_PATTERN, syncTable, verifySyncCounts, type PgClient } from './syncHelpers.js';
 
 interface DsqlConfig {
     /** Aurora DSQL cluster endpoint hostname. */
