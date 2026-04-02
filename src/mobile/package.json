@@ -38,7 +38,7 @@
         "expo-constants": "~17.0.0",
         "expo-linking": "~7.0.0",
         "expo-router": "~4.0.0",
-        "expo-sqlite": "~16.0.0",
+        "expo-sqlite": "~55.0.11",
         "expo-status-bar": "~2.0.0",
         "react": "^19.0.0",
         "react-native": "~0.79.0",
