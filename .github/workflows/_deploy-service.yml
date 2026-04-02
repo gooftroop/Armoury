@@ -327,7 +327,9 @@ jobs:
     deploy-production:
         name: Deploy Production
         needs: ci
-        if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: >-
+            vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' &&
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         runs-on: ubuntu-latest
         environment: production
         steps:
