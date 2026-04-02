@@ -1,18 +1,18 @@
 # Tooling Packages
 
-Shared configuration packages for the Armoury monorepo. Each package lives under `src/tooling/` and is consumed by workspace packages as a dev dependency.
+Shared configuration packages for the {{SCOPE}} monorepo. Each package lives under `src/tooling/` and is consumed by workspace packages as a dev dependency.
 
 All tooling packages are:
 
 - Private (`"private": true`)
 - ESM (`"type": "module"`)
 - Configuration-only (no runtime code shipped to users)
-- Installed via npm workspaces (symlinked from `node_modules/@armoury/`)
+- Installed via npm workspaces (symlinked from `node_modules/@{{scope}}/`)
 
-## @armoury/typescript
+## @{{scope}}/typescript
 
 **Location:** `src/tooling/typescript/`
-**Package name:** `@armoury/typescript`
+**Package name:** `@{{scope}}/typescript`
 
 Shared TypeScript compiler configurations. Exports three JSON configs that workspaces extend.
 
@@ -75,7 +75,7 @@ In a workspace `tsconfig.json`:
 
 ```json
 {
-    "extends": "@armoury/typescript/base.json",
+    "extends": "@{{scope}}/typescript/base.json",
     "compilerOptions": {
         "rootDir": ".",
         "outDir": "dist",
@@ -93,7 +93,7 @@ In a workspace `tsconfig.json`:
 
 ```json
 {
-    "name": "@armoury/typescript",
+    "name": "@{{scope}}/typescript",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -105,10 +105,10 @@ In a workspace `tsconfig.json`:
 }
 ```
 
-## @armoury/eslint
+## @{{scope}}/eslint
 
 **Location:** `src/tooling/eslint/`
-**Package name:** `@armoury/eslint`
+**Package name:** `@{{scope}}/eslint`
 
 Shared ESLint flat config for TypeScript projects. Uses ESLint 9+ flat config format with `typescript-eslint`.
 
@@ -172,7 +172,7 @@ In `**/__tests__/**/*.ts` and `**/*.test.ts`:
 In a workspace `eslint.config.js`:
 
 ```javascript
-import createConfig from '@armoury/eslint';
+import createConfig from '@{{scope}}/eslint';
 
 export default createConfig('./tsconfig.test.json');
 ```
@@ -181,7 +181,7 @@ export default createConfig('./tsconfig.test.json');
 
 ```json
 {
-    "name": "@armoury/eslint",
+    "name": "@{{scope}}/eslint",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -196,10 +196,10 @@ export default createConfig('./tsconfig.test.json');
 }
 ```
 
-## @armoury/prettier
+## @{{scope}}/prettier
 
 **Location:** `src/tooling/prettier/`
-**Package name:** `@armoury/prettier`
+**Package name:** `@{{scope}}/prettier`
 
 Shared Prettier configuration as a JSON file.
 
@@ -230,7 +230,7 @@ Shared Prettier configuration as a JSON file.
 In a workspace `prettier.config.js`:
 
 ```javascript
-import config from '@armoury/prettier' with { type: 'json' };
+import config from '@{{scope}}/prettier' with { type: 'json' };
 
 export default config;
 ```
@@ -241,7 +241,7 @@ Note: The `with { type: 'json' }` import attribute is required because the confi
 
 ```json
 {
-    "name": "@armoury/prettier",
+    "name": "@{{scope}}/prettier",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -254,10 +254,10 @@ Note: The `with { type: 'json' }` import attribute is required because the confi
 }
 ```
 
-## @armoury/vitest
+## @{{scope}}/vitest
 
 **Location:** `src/tooling/vitest/`
-**Package name:** `@armoury/vitest`
+**Package name:** `@{{scope}}/vitest`
 
 Shared Vitest configuration for test suites.
 
@@ -298,7 +298,7 @@ In a workspace `vitest.config.ts`:
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig, mergeConfig } from 'vitest/config';
-import { baseConfig } from '@armoury/vitest';
+import { baseConfig } from '@{{scope}}/vitest';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -331,7 +331,7 @@ Integration tests use a separate config that includes only `*.integration.test.t
 
 ```json
 {
-    "name": "@armoury/vitest",
+    "name": "@{{scope}}/vitest",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -366,20 +366,20 @@ Integration tests use a separate config that includes only `*.integration.test.t
 ### Dependency Graph
 
 ```
-@armoury/shared (consumer)
+@{{scope}}/shared (consumer)
   devDependencies:
-    @armoury/eslint      -> src/tooling/eslint/
-    @armoury/prettier    -> src/tooling/prettier/
-    @armoury/typescript  -> src/tooling/typescript/
-    @armoury/vitest      -> src/tooling/vitest/
+    @{{scope}}/eslint      -> src/tooling/eslint/
+    @{{scope}}/prettier    -> src/tooling/prettier/
+    @{{scope}}/typescript  -> src/tooling/typescript/
+    @{{scope}}/vitest      -> src/tooling/vitest/
 
 Root (provides peer dependencies)
   devDependencies:
-    eslint               (satisfies @armoury/eslint peer dep)
-    @eslint/js           (satisfies @armoury/eslint peer dep)
-    typescript-eslint    (satisfies @armoury/eslint peer dep)
-    prettier             (satisfies @armoury/prettier peer dep)
-    vitest               (satisfies @armoury/vitest peer dep)
+    eslint               (satisfies @{{scope}}/eslint peer dep)
+    @eslint/js           (satisfies @{{scope}}/eslint peer dep)
+    typescript-eslint    (satisfies @{{scope}}/eslint peer dep)
+    prettier             (satisfies @{{scope}}/prettier peer dep)
+    vitest               (satisfies @{{scope}}/vitest peer dep)
     typescript           (used by all workspaces)
     turbo                (task runner)
     husky                (git hooks)
@@ -410,11 +410,11 @@ Root (provides peer dependencies)
 ### Adding a New Workspace
 
 1. Create the package directory (e.g., `src/web/`)
-2. Add a `package.json` with `"name": "@armoury/web"` and tooling dev dependencies
+2. Add a `package.json` with `"name": "@{{scope}}/web"` and tooling dev dependencies
 3. Add the path to root `package.json` workspaces array
 4. Create config files extending the shared configs:
-    - `tsconfig.json` extending `@armoury/typescript/base.json`
-    - `eslint.config.js` importing from `@armoury/eslint`
-    - `prettier.config.js` importing from `@armoury/prettier`
-    - `vitest.config.ts` merging with `@armoury/vitest`
+    - `tsconfig.json` extending `@{{scope}}/typescript/base.json`
+    - `eslint.config.js` importing from `@{{scope}}/eslint`
+    - `prettier.config.js` importing from `@{{scope}}/prettier`
+    - `vitest.config.ts` merging with `@{{scope}}/vitest`
 5. Run `npm install` to link the new workspace

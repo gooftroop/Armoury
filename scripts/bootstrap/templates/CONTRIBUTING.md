@@ -1,4 +1,4 @@
-# Contributing to Armoury
+# Contributing to {{SCOPE}}
 
 ## Getting Started
 

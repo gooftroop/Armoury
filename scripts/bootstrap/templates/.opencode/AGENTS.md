@@ -1,4 +1,4 @@
-# Armoury - Agent Instructions
+# {{SCOPE}} - Agent Instructions
 
 Behavioral rules for LLM agents on this monorepo. For coding conventions, see `docs/CODING_STANDARDS.md`.
 

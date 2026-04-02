@@ -1,4 +1,4 @@
-# Armoury Style Guide
+# {{SCOPE}} Style Guide
 
 ## Core Rules
 
@@ -23,7 +23,7 @@ Use constants and enums instead of hardcoded string or number literals.
 
 ```typescript
 // Good
-import { Platform } from '@armoury/models';
+import { Platform } from '@{{scope}}/models';
 if (adapter.platform === Platform.SQLite) { ... }
 
 // Bad
@@ -123,19 +123,19 @@ Available alias conventions (see each workspace's `tsconfig.json` for exact mapp
 |-------|---------|--------------|
 | `@/*` | Within-workspace self-reference (`./src/*`) | All workspaces |
 | `#/*` | Workspace root | All workspaces |
-| `@armoury/<package>` | Cross-workspace barrel import | All workspaces |
+| `@{{scope}}/<package>` | Cross-workspace barrel import | All workspaces |
 
 Order imports as follows:
 
 1. External packages (node_modules)
-2. Aliased internal imports (`@/...`, `#/...`, `@armoury/<package>`, etc.)
+2. Aliased internal imports (`@/...`, `#/...`, `@{{scope}}/<package>`, etc.)
 
 ```typescript
 // Good — aliased imports with .js extension
 import { describe, it, expect } from 'vitest';
-import type { Item } from '@armoury/models';
-import { ItemDataModel } from '@armoury/models';
-import type { DatabaseAdapter } from '@armoury/data';
+import type { Item } from '@{{scope}}/models';
+import { ItemDataModel } from '@{{scope}}/models';
+import type { DatabaseAdapter } from '@{{scope}}/data';
 import { makeItem } from '@/e2e/__fixtures__/makeItem.js';
 
 // Bad — relative import
@@ -152,8 +152,8 @@ import type { Item } from '@/models/ItemModel.ts';
 
 ```typescript
 // Good
-import { Platform } from '@armoury/models';
-import type { EntityRank } from '@armoury/data';
+import { Platform } from '@{{scope}}/models';
+import type { EntityRank } from '@{{scope}}/data';
 import { ItemDataModel } from '@/models/ItemDataModel.js';
 import { makeAccount } from '@/utils/makeAccount.js';
 
@@ -327,9 +327,9 @@ Use barrel files at module boundaries to define the public API. Use named re-exp
 
 ```typescript
 // src/shared/data/index.ts
-export { createAdapter, type AdapterFactoryConfig } from '@armoury/data';
-export { registerHydrator, getHydrator, clearHydrationRegistry } from '@armoury/data';
-export type { DatabaseAdapter, EntityType, EntityMap } from '@armoury/data';
+export { createAdapter, type AdapterFactoryConfig } from '@{{scope}}/data';
+export { registerHydrator, getHydrator, clearHydrationRegistry } from '@{{scope}}/data';
+export type { DatabaseAdapter, EntityType, EntityMap } from '@{{scope}}/data';
 ```
 
 Use `// === Section Name ===` separators for logical groupings in larger barrel files:
@@ -337,13 +337,13 @@ Use `// === Section Name ===` separators for logical groupings in larger barrel 
 ```typescript
 // === Core Exports ===
 
-export { createAdapter } from '@armoury/data';
-export { Platform } from '@armoury/models';
+export { createAdapter } from '@{{scope}}/data';
+export { Platform } from '@{{scope}}/models';
 
 // === DataContext (v2 DAO-based API) ===
 
-export { DataContext } from '@armoury/data';
-export { DataContextBuilder } from '@armoury/data';
+export { DataContext } from '@{{scope}}/data';
+export { DataContextBuilder } from '@{{scope}}/data';
 ```
 
 ## Types
@@ -375,15 +375,15 @@ Use `import type { X }` when importing only types. This enables tree-shaking and
 
 ```typescript
 // Good — type-only import
-import type { Item } from '@armoury/models';
-import type { DatabaseAdapter } from '@armoury/data';
+import type { Item } from '@{{scope}}/models';
+import type { DatabaseAdapter } from '@{{scope}}/data';
 
 // Good — mixed import (values + types)
-import { Platform } from '@armoury/models';
-import { registerEntityCodec, type EntityCodec } from '@armoury/data';
+import { Platform } from '@{{scope}}/models';
+import { registerEntityCodec, type EntityCodec } from '@{{scope}}/data';
 
 // Bad — importing types without 'type' keyword
-import { Item } from '@armoury/models';
+import { Item } from '@{{scope}}/models';
 ```
 
 ### Type Guards
@@ -455,7 +455,7 @@ Create `make*` functions in `__fixtures__/` that accept `Partial<T>` overrides a
 
 ```typescript
 // __fixtures__/makeItem.ts
-import type { Item } from '@armoury/models';
+import type { Item } from '@{{scope}}/models';
 
 /** Creates a minimal Item fixture. */
 export function makeItem(overrides: Partial<Item> = {}): Item {
@@ -476,7 +476,7 @@ export function makeItem(overrides: Partial<Item> = {}): Item {
 When testing code that uses global registries (codec, hydration, schema), call the registry's `clear*` function in `beforeEach` to prevent cross-test pollution.
 
 ```typescript
-import { clearCodecRegistry } from '@armoury/data';
+import { clearCodecRegistry } from '@{{scope}}/data';
 
 describe('codec registry', () => {
     beforeEach(() => {
@@ -529,10 +529,10 @@ const token = process.env.GITHUB_TOKEN;
 
 ## Error Handling
 
-Use typed error classes from `@armoury/models`:
+Use typed error classes from `@{{scope}}/models`:
 
 ```typescript
-import { GitHubApiError, isGitHubApiError } from '@armoury/models';
+import { GitHubApiError, isGitHubApiError } from '@{{scope}}/models';
 
 try {
     await client.downloadFile(path);

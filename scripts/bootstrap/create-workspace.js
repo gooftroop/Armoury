@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Generates a new workspace within an existing monorepo following Armoury patterns.
+ * Generates a new workspace within an existing monorepo.
  *
  * Workspace types:
  *   - library:        Shared library with dual browser+node ESM bundles

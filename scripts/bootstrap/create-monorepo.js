@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Bootstraps a new TypeScript monorepo skeleton following Armoury patterns.
+ * Bootstraps a new TypeScript monorepo skeleton.
  *
  * Generates:
  * - Root configs (package.json, turbo.json, tsconfig.json, .nvmrc, etc.)
@@ -9,7 +9,7 @@
  * - GitHub Actions CI workflow with format:check step
  * - Husky git hooks (pre-commit, commit-msg)
  * - Dependabot config
- * - Documentation files (parameterized from Armoury docs)
+ * - Documentation files (parameterized from templates)
  * - OpenCode agent config and skills
  *
  * Usage:
@@ -74,18 +74,16 @@ function json(relPath, obj) {
 }
 
 /**
- * Parameterize content — replace scope/org references only.
+ * Parameterize content — replace template placeholders with scope/org values.
  */
 function parameterize(content) {
     const Scope = scope.charAt(0).toUpperCase() + scope.slice(1);
 
     return content
-        .replace(/@armoury\b/g, `@${scope}`)
-        .replace(/\barmoury\b/g, scope)
-        .replace(/\bArmoury\b/g, Scope)
-        .replace(/gooftroop\/Armoury/g, `your-org/${scope}`)
-        .replace(/git\+ssh:\/\/git@github\.com\/gooftroop\/Armoury\.git/g, `git+ssh://git@github.com/your-org/${scope}.git`)
-        .replace(/https:\/\/github\.com\/gooftroop\/Armoury/g, `https://github.com/your-org/${scope}`);
+        .replace(/\{\{ORG\}\}/g, 'your-org')
+        .replace(/\{\{SCOPE\}\}/g, Scope)
+        .replace(/\{\{scope\}\}/g, scope)
+        .replace(/@\{\{scope\}\}/g, `@${scope}`);
 }
 
 /**
