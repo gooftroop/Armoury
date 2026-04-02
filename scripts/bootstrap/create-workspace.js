@@ -11,10 +11,10 @@
  *   - nestjs-docker:  NestJS service with Docker Compose
  *
  * Usage:
- *   node scripts/create-workspace.js --name <pkg-name> --location <path> --type <type> [--scope <scope>]
+ *   node scripts/bootstrap/create-workspace.js --name <pkg-name> --location <path> --type <type> [--scope <scope>]
  *
  * Example:
- *   node scripts/create-workspace.js --name models --location src/shared/models --type library --scope myapp
+ *   node scripts/bootstrap/create-workspace.js --name models --location src/shared/models --type library --scope myapp
  *   → Creates @myapp/models at src/shared/models/
  *
  * All input via CLI args — no interactive prompts (agent-runnable).
@@ -48,11 +48,11 @@ const scope = getArg('scope') || detectScope();
 
 if (!name || !location || !type) {
     console.error(
-        'Usage: node scripts/create-workspace.js --name <pkg-name> --location <path> --type <type> [--scope <scope>]',
+        'Usage: node scripts/bootstrap/create-workspace.js --name <pkg-name> --location <path> --type <type> [--scope <scope>]',
     );
     console.error(`Types: ${VALID_TYPES.join(' | ')}`);
     console.error(
-        'Example: node scripts/create-workspace.js --name models --location src/shared/models --type library --scope myapp',
+        'Example: node scripts/bootstrap/create-workspace.js --name models --location src/shared/models --type library --scope myapp',
     );
     process.exit(1);
 }
@@ -275,6 +275,7 @@ function generateServerless() {
             'generate:types': `tsc -p tsconfig.build.json && node --input-type=module -e "await import('@${scope}/typescript/fix-declaration-paths')"`,
             dev: 'serverless offline',
             test: 'vitest run',
+            'test:integration': 'vitest run --config vitest.integration.config.ts',
             lint: 'eslint .',
             typecheck: 'tsc --noEmit',
             format: 'prettier --write .',

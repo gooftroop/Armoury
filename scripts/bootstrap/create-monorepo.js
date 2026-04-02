@@ -13,18 +13,18 @@
  * - OpenCode agent config and skills
  *
  * Usage:
- *   node scripts/create-monorepo.js --name <scope> --dir <output-dir> [--node <version>]
+ *   node scripts/bootstrap/create-monorepo.js --name <scope> --dir <output-dir> [--node <version>]
  *
  * Example:
- *   node scripts/create-monorepo.js --name myapp --dir /tmp/myapp
+ *   node scripts/bootstrap/create-monorepo.js --name myapp --dir /tmp/myapp
  *   → Creates @myapp/* monorepo at /tmp/myapp
  *
  * All input via CLI args — no interactive prompts (agent-runnable).
  * Uses only Node built-ins (fs, path, child_process).
  */
 
-import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, statSync, cpSync } from 'node:fs';
-import { resolve, join, dirname, relative } from 'node:path';
+import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from 'node:fs';
+import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 
@@ -48,15 +48,15 @@ const outDir = getArg('dir');
 const nodeVersion = getArg('node') || '24';
 
 if (!scope || !outDir) {
-    console.error('Usage: node scripts/create-monorepo.js --name <scope> --dir <output-dir> [--node <version>]');
-    console.error('Example: node scripts/create-monorepo.js --name myapp --dir /tmp/myapp');
+    console.error('Usage: node scripts/bootstrap/create-monorepo.js --name <scope> --dir <output-dir> [--node <version>]');
+    console.error('Example: node scripts/bootstrap/create-monorepo.js --name myapp --dir /tmp/myapp');
     process.exit(1);
 }
 
 const root = resolve(outDir);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const sourceRoot = resolve(__dirname, '..');
+const sourceRoot = resolve(__dirname, '..', '..');
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -155,13 +155,20 @@ json('package.json', {
     scripts: {
         build: 'turbo run build',
         test: 'turbo run test',
+        'test:integration': 'turbo run test:integration',
         lint: 'turbo run lint format:check',
         typecheck: 'turbo run typecheck',
         format: 'turbo run format',
         'format:check': 'turbo run format:check',
+        'test:e2e': 'turbo run test:e2e',
     },
     devDependencies: {
         '@commitlint/config-conventional': '^20.4.3',
+        '@playwright/test': '^1.58.2',
+        '@testing-library/jest-dom': '^6.9.1',
+        '@testing-library/react': '^16.3.2',
+        '@testing-library/user-event': '^14.6.1',
+        'happy-dom': '^20.8.4',
         'lint-staged': '^16.3.2',
         tsx: '^4.21.0',
         turbo: '^2.0.0',
@@ -186,6 +193,15 @@ json('turbo.json', {
         test: {
             dependsOn: ['^generate:types'],
             outputs: [],
+        },
+        'test:integration': {
+            dependsOn: ['^generate:types'],
+            outputs: [],
+        },
+        'test:e2e': {
+            dependsOn: ['^build', '^generate:types'],
+            outputs: [],
+            cache: false,
         },
         lint: {
             outputs: [],
@@ -258,6 +274,11 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 
+# generated system assets (copied at build time) — keep manifest files for system discovery
+**/public/systems/**
+!**/public/systems/*/
+!**/public/systems/*/manifest.json
+
 # agent worktrees
 .worktrees
 
@@ -268,6 +289,14 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # serverless framework cache
 .serverless/
+
+# playwright e2e auth state
+e2e/web/.auth/
+
+# playwright test artifacts
+playwright-report/
+test-results/
+blob-report/
 `);
 
 // .prettierignore
@@ -380,6 +409,29 @@ jobs:
             - name: Run tests
               run: npm run test
 
+    test-integration:
+        name: Test Integration
+        runs-on: ubuntu-latest
+        needs: install
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
+                  key: \${{ runner.os }}-node-full-\${{ hashFiles('package-lock.json') }}
+
+            - name: Run integration tests
+              run: npm run test:integration
+
     lint:
         name: Lint & Format
         runs-on: ubuntu-latest
@@ -429,7 +481,7 @@ jobs:
     build:
         name: Build
         runs-on: ubuntu-latest
-        needs: [install, test, lint, typecheck]
+        needs: [install, test, test-integration, lint, typecheck]
         steps:
             - uses: actions/checkout@v6
 
@@ -448,6 +500,29 @@ jobs:
 
             - name: Build all packages
               run: npm run build
+
+    test-e2e:
+        name: Test E2E
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Restore dependencies
+              uses: actions/cache/restore@v5
+              with:
+                  path: |
+                      node_modules
+                      src/*/node_modules
+                      src/*/*/node_modules
+                  key: \${{ runner.os }}-node-full-\${{ hashFiles('package-lock.json') }}
+
+            - name: Run e2e tests
+              run: npm run test:e2e
 `);
 
 // dependabot.yml
@@ -997,9 +1072,6 @@ copyParameterized('docs/backend/BEST_PRACTICES.md');
 
 // Agent instructions
 copyParameterized('.opencode/AGENTS.md');
-
-// Copilot instructions
-copyParameterized('.github/copilot-instructions.md');
 
 // ---------------------------------------------------------------------------
 // OpenCode config
