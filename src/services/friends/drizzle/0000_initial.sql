@@ -1,4 +1,4 @@
-CREATE TABLE "friends" (
+CREATE TABLE IF NOT EXISTS "friends" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"owner_id" text NOT NULL,
 	"user_id" text NOT NULL,
@@ -9,13 +9,13 @@ CREATE TABLE "friends" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "user_presence" (
+CREATE TABLE IF NOT EXISTS "user_presence" (
 	"user_id" text PRIMARY KEY NOT NULL,
 	"connection_id" text,
 	"status" text NOT NULL,
 	"last_seen" text NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_friends_ownerId" ON "friends" ("owner_id");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_friends_ownerId" ON "friends" ("owner_id");
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_friends_userId" ON "friends" ("user_id");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_friends_userId" ON "friends" ("user_id");

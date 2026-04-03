@@ -1,4 +1,4 @@
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"sub" text NOT NULL,
 	"email" text NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE "users" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "accounts" (
+CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"preferences" text,
@@ -18,8 +18,8 @@ CREATE TABLE "accounts" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_users_sub" ON "users" ("sub");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_users_sub" ON "users" ("sub");
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_users_email" ON "users" ("email");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_users_email" ON "users" ("email");
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_accounts_user_id" ON "accounts" ("user_id");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_accounts_user_id" ON "accounts" ("user_id");

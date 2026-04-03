@@ -1,4 +1,4 @@
-CREATE TABLE "matches" (
+CREATE TABLE IF NOT EXISTS "matches" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"system_id" text NOT NULL,
 	"players" text NOT NULL,

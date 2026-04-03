@@ -1,4 +1,4 @@
-CREATE TABLE "campaigns" (
+CREATE TABLE IF NOT EXISTS "campaigns" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
 	"type" text NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE "campaigns" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "campaign_participants" (
+CREATE TABLE IF NOT EXISTS "campaign_participants" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"campaign_id" text NOT NULL,
 	"user_id" text NOT NULL,
@@ -33,10 +33,10 @@ CREATE TABLE "campaign_participants" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_campaigns_organizer_id" ON "campaigns" ("organizer_id");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_campaigns_organizer_id" ON "campaigns" ("organizer_id");
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_campaigns_type" ON "campaigns" ("type");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_campaigns_type" ON "campaigns" ("type");
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_campaign_participants_campaign_id" ON "campaign_participants" ("campaign_id");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_campaign_participants_campaign_id" ON "campaign_participants" ("campaign_id");
 --> statement-breakpoint
-CREATE INDEX ASYNC "idx_campaign_participants_user_id" ON "campaign_participants" ("user_id");
+CREATE INDEX ASYNC IF NOT EXISTS "idx_campaign_participants_user_id" ON "campaign_participants" ("user_id");
