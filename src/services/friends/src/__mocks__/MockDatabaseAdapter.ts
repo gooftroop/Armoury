@@ -6,6 +6,7 @@ import type { DatabaseAdapter, EntityMap, EntityType } from '@/types.js';
 export class MockDatabaseAdapter implements DatabaseAdapter {
     private stores: Record<string, Map<string, unknown>> = {
         friend: new Map(),
+        userPresence: new Map(),
     };
 
     /** No-op initialization. */
