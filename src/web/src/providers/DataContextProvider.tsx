@@ -187,6 +187,21 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 }
             }
 
+            // Partial sync failure: some DAOs succeeded but others failed.
+            // Surface as error so the tile reflects the incomplete state.
+            if (syncResult && !syncResult.success) {
+                const failedDaos = syncResult.failures.map((f: { dao: string }) => f.dao).join(', ');
+                const message = `Partial sync failure: ${syncResult.failures.length}/${syncResult.total} DAOs failed (${failedDaos})`;
+                setStatus('error');
+                setError(message);
+                setSystemSyncStates((prev) => ({
+                    ...prev,
+                    [system.id]: { status: 'error', error: message },
+                }));
+
+                return;
+            }
+
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
