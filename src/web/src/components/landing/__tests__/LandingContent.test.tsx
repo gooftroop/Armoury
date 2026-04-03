@@ -134,7 +134,9 @@ type ReactElement = { type: unknown; props: Record<string, unknown> };
 function flattenTree(element: ReactElement): ReactElement[] {
     const results: ReactElement[] = [];
 
-    if (!element || typeof element !== 'object') {return results;}
+    if (!element || typeof element !== 'object') {
+        return results;
+    }
 
     results.push(element);
 

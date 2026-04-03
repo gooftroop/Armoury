@@ -323,7 +323,11 @@ describe('wsPresence handlers', () => {
     });
 });
 
-function makeWebSocketEvent(overrides?: Partial<WebSocketEvent>): WebSocketEvent {
+function makeWebSocketEvent(
+    overrides?: Partial<Omit<WebSocketEvent, 'requestContext'>> & {
+        requestContext?: Partial<WebSocketEvent['requestContext']>;
+    },
+): WebSocketEvent {
     return {
         requestContext: {
             routeKey: '$connect',
