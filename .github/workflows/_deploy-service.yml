@@ -158,10 +158,16 @@ jobs:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
               run: node --import=tsx src/shared/e2e/src/dbSchema.ts create "${DB_SCHEMA}"
 
-            - name: Run migrations
-              if: inputs.has-migrations
+            - name: Push schema (PR sandboxes)
+              if: inputs.has-migrations && github.event_name == 'pull_request'
               env:
-                  DB_SCHEMA: ${{ github.event_name == 'pull_request' && format('pr_{0}', github.event.pull_request.number) || 'public' }}
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: npm run db:push -w ${{ inputs.service-name }}
+
+            - name: Run migrations (production)
+              if: inputs.has-migrations && github.event_name != 'pull_request'
+              env:
+                  DB_SCHEMA: public
               run: npm run db:migrate -w ${{ inputs.service-name }}
 
             - name: Sync production data

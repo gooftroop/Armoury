@@ -291,6 +291,8 @@ export class DsqlStack extends cdk.Stack {
                         'logs:DeleteRetentionPolicy',
                         'logs:TagResource',
                         'logs:UntagResource',
+                        'logs:ListTagsForResource',
+                        'logs:ListTagsLogGroup',
                         'logs:PutSubscriptionFilter',
                         'logs:DeleteSubscriptionFilter',
                         'logs:DescribeSubscriptionFilters',
@@ -300,6 +302,7 @@ export class DsqlStack extends cdk.Stack {
                         `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/websocket/armoury-*`,
                         `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/api/armoury-*`,
                         `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/api-gateway/armoury-*`,
+                        `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/http-api/armoury-*`,
                     ],
                 }),
                 // CloudWatch Logs: DescribeLogGroups is a non-resource-level action
