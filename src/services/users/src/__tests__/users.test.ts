@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { User, UserContext } from '@/types.js';
+import type { Account, User, UserContext } from '@/types.js';
 import { createUser, listUsers, getUser, updateUser, deleteUser, upsertUser } from '@/routes/users.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 
@@ -200,7 +200,7 @@ describe('user routes', () => {
     });
 
     describe('upsertUser', () => {
-        it('creates a new user on first upsert', async () => {
+        it('creates a new user with an auto-created account on first upsert', async () => {
             const response = await upsertUser(
                 adapter,
                 { sub: 'auth0|user-1', email: 'user@test.com', name: 'Test', picture: null },
@@ -217,9 +217,25 @@ describe('user routes', () => {
             expect(payload.email).toBe('user@test.com');
             expect(payload.name).toBe('Test');
             expect(payload.picture).toBeNull();
-            expect(payload.accountId).toBeNull();
+            expect(payload.accountId).toEqual(expect.any(String));
             expect(payload.createdAt).toEqual(expect.any(String));
             expect(payload.updatedAt).toEqual(expect.any(String));
+
+            // Verify the account was persisted with correct defaults
+            const accounts = await adapter.getByField('account', 'userId', payload.id);
+
+            expect(accounts).toHaveLength(1);
+
+            const account = accounts[0] as Account;
+
+            expect(account.id).toBe(payload.accountId);
+            expect(account.userId).toBe(payload.id);
+            expect(account.preferences).toEqual({
+                theme: 'auto',
+                language: 'en',
+                notificationsEnabled: false,
+            });
+            expect(account.systems).toEqual({});
         });
 
         it('updates an existing user on subsequent upsert', async () => {
