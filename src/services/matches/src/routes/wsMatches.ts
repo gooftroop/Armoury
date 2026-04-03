@@ -119,6 +119,20 @@ export const handleWsDisconnect: WsRouteHandler = async (
 };
 
 export const handleWsDefault: WsRouteHandler = async (event): Promise<WebSocketResponse> => {
+    const body = parseMessageBody(event);
+    const isPing =
+        typeof body === 'object' &&
+        body !== null &&
+        !(body instanceof Error) &&
+        (body as Record<string, unknown>)['action'] === 'ping';
+
+    if (isPing) {
+        const broadcaster = createBroadcaster(event.requestContext.domainName, event.requestContext.stage);
+        await broadcaster.send(event.requestContext.connectionId, { action: 'pong' });
+
+        return { statusCode: 200 };
+    }
+
     console.error(
         '[wsMatches:handleWsDefault] 400 Unsupported action',
         JSON.stringify({

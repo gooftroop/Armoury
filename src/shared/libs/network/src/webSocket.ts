@@ -17,14 +17,16 @@
  * 6. Must emit structured WebSocketErrorEvent objects for all error paths.
  * 7. Must support capped exponential reconnect with jitter and max attempts.
  * 8. Must use timer-based heartbeat reset on open and every received message.
- * 9. Must close stale sockets on heartbeat timeout and before reconnecting.
- * 10. Must prevent reconnect/disconnect side effects after dispose.
+ * 9. Must send periodic ping messages while connected to keep the connection alive.
+ * 10. Must close stale sockets on heartbeat timeout and before reconnecting.
+ * 11. Must prevent reconnect/disconnect side effects after dispose.
  */
 
 const DEFAULT_MAX_RECONNECT_ATTEMPTS = 10;
 const DEFAULT_BASE_RECONNECT_DELAY_MS = 1000;
 const DEFAULT_MAX_RECONNECT_DELAY_MS = 30000;
 const DEFAULT_HEARTBEAT_TIMEOUT_MS = 31000;
+const DEFAULT_PING_INTERVAL_MS = 25000;
 
 /** Connection states exposed by the WebSocket client lifecycle. */
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
@@ -64,6 +66,8 @@ export interface WebSocketClientConfig {
     maxReconnectDelayMs?: number;
     /** Heartbeat timeout in ms. Default: 31000. */
     heartbeatTimeoutMs?: number;
+    /** Ping interval in ms. Sends a keepalive ping to the server. Default: 25000. */
+    pingIntervalMs?: number;
 }
 
 /** Abstract browser WebSocket client base class. */
@@ -74,11 +78,13 @@ export abstract class WebSocketClient<MessageT> {
     private readonly baseReconnectDelayMs: number;
     private readonly maxReconnectDelayMs: number;
     private readonly heartbeatTimeoutMs: number;
+    private readonly pingIntervalMs: number;
 
     private ws: WebSocket | null = null;
     private reconnectAttempts = 0;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
+    private pingTimer: ReturnType<typeof setInterval> | null = null;
     private intentionalClose = false;
     private disposed = false;
     private connectionState: ConnectionState = 'disconnected';
@@ -100,6 +106,7 @@ export abstract class WebSocketClient<MessageT> {
         this.baseReconnectDelayMs = config.baseReconnectDelayMs ?? DEFAULT_BASE_RECONNECT_DELAY_MS;
         this.maxReconnectDelayMs = config.maxReconnectDelayMs ?? DEFAULT_MAX_RECONNECT_DELAY_MS;
         this.heartbeatTimeoutMs = config.heartbeatTimeoutMs ?? DEFAULT_HEARTBEAT_TIMEOUT_MS;
+        this.pingIntervalMs = config.pingIntervalMs ?? DEFAULT_PING_INTERVAL_MS;
     }
 
     /** Connects to the configured WebSocket endpoint with token authentication. */
@@ -199,6 +206,7 @@ export abstract class WebSocketClient<MessageT> {
             try {
                 this.reconnectAttempts = 0;
                 this.startHeartbeat();
+                this.startPing();
                 this.setState('connected');
             } catch (error) {
                 const openError = error instanceof Error ? error : new Error(String(error));
@@ -290,6 +298,29 @@ export abstract class WebSocketClient<MessageT> {
         }
     }
 
+    private startPing(): void {
+        this.clearPing();
+
+        this.pingTimer = setInterval(() => {
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                return;
+            }
+
+            try {
+                this.ws.send(JSON.stringify({ action: 'ping' }));
+            } catch {
+                // Send failure will be caught by the heartbeat timeout.
+            }
+        }, this.pingIntervalMs);
+    }
+
+    private clearPing(): void {
+        if (this.pingTimer !== null) {
+            clearInterval(this.pingTimer);
+            this.pingTimer = null;
+        }
+    }
+
     private clearReconnectTimer(): void {
         if (this.reconnectTimer !== null) {
             clearTimeout(this.reconnectTimer);
@@ -299,6 +330,7 @@ export abstract class WebSocketClient<MessageT> {
 
     private cleanupWebSocket(): void {
         this.clearHeartbeat();
+        this.clearPing();
 
         if (this.ws) {
             this.ws.onopen = null;

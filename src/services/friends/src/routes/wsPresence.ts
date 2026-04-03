@@ -162,6 +162,15 @@ export const handleWsDisconnect: WsRouteHandler = async (
 };
 
 export const handleWsDefault: WsRouteHandler = async (event): Promise<WebSocketResponse> => {
+    const body = parseBody(event);
+
+    if (body?.action === 'ping') {
+        const broadcaster = createBroadcaster(event);
+        await broadcaster.send(event.requestContext.connectionId, { action: 'pong' });
+
+        return { statusCode: 200 };
+    }
+
     console.error(
         '[wsPresence:handleWsDefault] 400 Unsupported action',
         JSON.stringify({
@@ -178,6 +187,20 @@ export const handleWsDefault: WsRouteHandler = async (event): Promise<WebSocketR
         }),
     };
 };
+
+function parseBody(event: { body?: string | null }): Record<string, unknown> | null {
+    if (!event.body) {
+        return null;
+    }
+
+    try {
+        const parsed: unknown = JSON.parse(event.body);
+
+        return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : null;
+    } catch {
+        return null;
+    }
+}
 
 async function getAcceptedFriends(adapter: DatabaseAdapter, ownerId: string): Promise<Friend[]> {
     const friends = await adapter.getByField('friend', 'ownerId', ownerId);

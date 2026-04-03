@@ -25,6 +25,8 @@ import {
  * 8. Must emit structured error events with correct source values.
  * 9. Must send only when connected and report ws:send errors when disconnected.
  * 10. Must dispose safely, prevent reuse, and clean socket/timer resources.
+ * 11. Must send periodic ping messages at a configurable interval while connected.
+ * 12. Must stop ping when connection closes or client is disposed.
  */
 
 /**
@@ -351,6 +353,92 @@ describe('WebSocketClient', () => {
 
             expect(closeSpy).toHaveBeenCalled();
             expect(client.errors.at(-1)?.source).toBe('ws:heartbeat-timeout');
+        });
+    });
+
+    describe('ping', () => {
+        it('sends ping at the configured interval while connected', async () => {
+            const client = makeClient({ pingIntervalMs: 500 });
+
+            client.connect();
+            await flushPromises();
+
+            const socket = getLastSocket();
+            socket.simulateOpen();
+
+            expect(socket.send).not.toHaveBeenCalled();
+
+            vi.advanceTimersByTime(500);
+            expect(socket.send).toHaveBeenCalledTimes(1);
+            expect(socket.send).toHaveBeenCalledWith('{"action":"ping"}');
+
+            vi.advanceTimersByTime(500);
+            expect(socket.send).toHaveBeenCalledTimes(2);
+        });
+
+        it('stops pinging when the socket closes', async () => {
+            const client = makeClient({
+                pingIntervalMs: 500,
+                maxReconnectAttempts: 0,
+            });
+
+            client.connect();
+            await flushPromises();
+
+            const socket = getLastSocket();
+            socket.simulateOpen();
+
+            vi.advanceTimersByTime(500);
+            expect(socket.send).toHaveBeenCalledTimes(1);
+
+            socket.simulateClose();
+
+            vi.advanceTimersByTime(1500);
+            expect(socket.send).toHaveBeenCalledTimes(1);
+        });
+
+        it('stops pinging when the client is disposed', async () => {
+            const client = makeClient({ pingIntervalMs: 500 });
+
+            client.connect();
+            await flushPromises();
+
+            const socket = getLastSocket();
+            socket.simulateOpen();
+
+            vi.advanceTimersByTime(500);
+            expect(socket.send).toHaveBeenCalledTimes(1);
+
+            client.dispose();
+
+            vi.advanceTimersByTime(1500);
+            expect(socket.send).toHaveBeenCalledTimes(1);
+        });
+
+        it('prevents heartbeat timeout when server responds to pings', async () => {
+            const client = makeClient({
+                pingIntervalMs: 500,
+                heartbeatTimeoutMs: 1000,
+            });
+
+            client.connect();
+            await flushPromises();
+
+            const socket = getLastSocket();
+            socket.simulateOpen();
+
+            // At 500ms: ping fires
+            vi.advanceTimersByTime(500);
+            expect(socket.send).toHaveBeenCalledTimes(1);
+
+            // Server responds with pong at 600ms — resets heartbeat timer
+            vi.advanceTimersByTime(100);
+            socket.simulateMessage('{"action":"pong"}');
+
+            // At 1100ms: heartbeat would have fired at 1000ms without the pong reset
+            vi.advanceTimersByTime(500);
+            expect(socket.close).not.toHaveBeenCalled();
+            expect(client.errors).toEqual([]);
         });
     });
 
