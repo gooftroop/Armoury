@@ -1,9 +1,24 @@
 import { randomUUID } from 'node:crypto';
 
-import type { ApiResponse, DatabaseAdapter, PathParameters, RouteHandler, User, UserContext } from '@/types.js';
+import type {
+    Account,
+    ApiResponse,
+    DatabaseAdapter,
+    PathParameters,
+    RouteHandler,
+    User,
+    UserContext,
+} from '@/types.js';
 import { resolveUser } from '@/utils/resolveUser.js';
 import { errorResponse, jsonResponse } from '@/utils/response.js';
 import { parseCreateUser, parseUpdateUser, parseUpsertUser } from '@/utils/validation.js';
+
+/** Default preferences applied when auto-creating an account on first login. */
+const DEFAULT_PREFERENCES = {
+    theme: 'auto' as const,
+    language: 'en',
+    notificationsEnabled: false,
+};
 
 /**
  * Creates a new user.
@@ -236,17 +251,30 @@ export const upsertUser: RouteHandler = async (
         return jsonResponse(200, updated);
     }
 
-    const user: User = {
-        id: randomUUID(),
-        sub: request.sub,
-        email: request.email,
-        name: request.name,
-        picture: request.picture,
-        accountId: null,
+    const userId = randomUUID();
+    const accountId = randomUUID();
+
+    const account: Account = {
+        id: accountId,
+        userId,
+        preferences: DEFAULT_PREFERENCES,
+        systems: {},
         createdAt: now,
         updatedAt: now,
     };
 
+    const user: User = {
+        id: userId,
+        sub: request.sub,
+        email: request.email,
+        name: request.name,
+        picture: request.picture,
+        accountId,
+        createdAt: now,
+        updatedAt: now,
+    };
+
+    await adapter.put('account', account);
     await adapter.put('user', user);
 
     return jsonResponse(200, user);
