@@ -25,11 +25,23 @@ import type { Unit } from '@/models/UnitModel.js';
 import type { Faction } from '@/types/entities.js';
 import type { CrusadeRules } from '@/models/CrusadeRulesModel.js';
 import type { Weapon, Ability, Stratagem, Detachment } from '@/types/entities.js';
-import { CoreRulesDAO } from '@/dao/CoreRulesDAO.js';
-import { ChapterApprovedDAO } from '@/dao/ChapterApprovedDAO.js';
+import { CoreRulesDAO, coreRulesTable, coreRulesSqliteTable } from '@/dao/CoreRulesDAO.js';
+import { ChapterApprovedDAO, chapterApprovedTable, chapterApprovedSqliteTable } from '@/dao/ChapterApprovedDAO.js';
 import type { IWahapediaClient } from '@armoury/clients-wahapedia';
-import { CrusadeRulesDAO } from '@/dao/CrusadeRulesDAO.js';
-import { ArmyDAO } from '@/dao/ArmyDAO.js';
+import { CrusadeRulesDAO, crusadeRulesTable, crusadeRulesSqliteTable } from '@/dao/CrusadeRulesDAO.js';
+import { ArmyDAO, armiesTable, armiesSqliteTable } from '@/dao/ArmyDAO.js';
+import {
+    factionsTable,
+    factionsSqliteTable,
+    factionModelsTable,
+    factionModelsSqliteTable,
+    unitsTable,
+    unitsSqliteTable,
+    weaponsTable,
+    weaponsSqliteTable,
+    abilitiesTable,
+    abilitiesSqliteTable,
+} from '@/dao/FactionDAO.js';
 import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
 
 import { GameData } from '@/dao/GameData.js';
@@ -252,10 +264,59 @@ class Wh40k10eSystem implements Wh40kGameSystem {
 
     /**
      * Returns the schema extension for wh40k10e database tables.
-     * TODO(Phase 4): Populate with game-specific table definitions after plugin extraction.
+     * Maps entity store keys to Drizzle table definitions for both PGlite (DSQL) and SQLite.
      */
     getSchemaExtension(): SchemaExtension {
-        return {};
+        return {
+            dsql: {
+                tables: {
+                    factions: factionsTable,
+                    factionModels: factionModelsTable,
+                    coreRules: coreRulesTable,
+                    chapterApproved: chapterApprovedTable,
+                    crusadeRules: crusadeRulesTable,
+                    armies: armiesTable,
+                    units: unitsTable,
+                    weapons: weaponsTable,
+                    abilities: abilitiesTable,
+                },
+                storeToTable: {
+                    faction: factionsTable,
+                    factionModel: factionModelsTable,
+                    coreRules: coreRulesTable,
+                    chapterApproved: chapterApprovedTable,
+                    crusadeRules: crusadeRulesTable,
+                    army: armiesTable,
+                    unit: unitsTable,
+                    weapon: weaponsTable,
+                    ability: abilitiesTable,
+                },
+            },
+            sqlite: {
+                tables: {
+                    factions: factionsSqliteTable,
+                    factionModels: factionModelsSqliteTable,
+                    coreRules: coreRulesSqliteTable,
+                    chapterApproved: chapterApprovedSqliteTable,
+                    crusadeRules: crusadeRulesSqliteTable,
+                    armies: armiesSqliteTable,
+                    units: unitsSqliteTable,
+                    weapons: weaponsSqliteTable,
+                    abilities: abilitiesSqliteTable,
+                },
+                storeToTable: {
+                    faction: factionsSqliteTable,
+                    factionModel: factionModelsSqliteTable,
+                    coreRules: coreRulesSqliteTable,
+                    chapterApproved: chapterApprovedSqliteTable,
+                    crusadeRules: crusadeRulesSqliteTable,
+                    army: armiesSqliteTable,
+                    unit: unitsSqliteTable,
+                    weapon: weaponsSqliteTable,
+                    ability: abilitiesSqliteTable,
+                },
+            },
+        };
     }
 
     /**
@@ -292,6 +353,15 @@ class Wh40k10eSystem implements Wh40kGameSystem {
             hydrate: (raw) => hydrateFactionData(raw),
         });
 
+        registerEntityCodec<FactionData>('factionModel', {
+            serialize: (entity) => ({ id: entity.id, data: entity }),
+            hydrate: (raw) => {
+                const row = raw as Record<string, unknown>;
+
+                return hydrateFactionData(row.data ?? row);
+            },
+        });
+
         registerEntityCodec<CoreRules>('coreRules', {
             serialize: (entity) => ({ ...entity }),
             hydrate: (raw) => hydrateCoreRules(raw),
@@ -300,6 +370,37 @@ class Wh40k10eSystem implements Wh40kGameSystem {
         registerEntityCodec<ChapterApproved>('chapterApproved', {
             serialize: (entity) => ({ ...entity }),
             hydrate: (raw) => hydrateChapterApproved(raw),
+        });
+
+        registerEntityCodec<Unit & { factionId?: string }>('unit', {
+            serialize: (entity) => ({
+                id: entity.id,
+                factionId: (entity as Unit & { factionId?: string }).factionId ?? '',
+                data: entity,
+            }),
+            hydrate: (raw) => {
+                const row = raw as Record<string, unknown>;
+
+                return (row.data ?? row) as Unit;
+            },
+        });
+
+        registerEntityCodec<Weapon>('weapon', {
+            serialize: (entity) => ({ id: entity.id, data: entity }),
+            hydrate: (raw) => {
+                const row = raw as Record<string, unknown>;
+
+                return (row.data ?? row) as Weapon;
+            },
+        });
+
+        registerEntityCodec<Ability>('ability', {
+            serialize: (entity) => ({ id: entity.id, data: entity }),
+            hydrate: (raw) => {
+                const row = raw as Record<string, unknown>;
+
+                return (row.data ?? row) as Ability;
+            },
         });
 
         registerSchemaExtension(this.getSchemaExtension());

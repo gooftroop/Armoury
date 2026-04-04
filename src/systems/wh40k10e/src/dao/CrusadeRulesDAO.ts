@@ -137,6 +137,10 @@ class CrusadeRulesDAO extends BaseDAO<CrusadeRules> {
     protected override async needsSync(): Promise<boolean> {
         return false;
     }
+
+    protected override async onPostFetch(_data: CrusadeRules): Promise<void> {
+        await this.adapter.setSyncStatus(this.getSyncFileKey(), 'static');
+    }
 }
 
 export { CrusadeRulesDAO };

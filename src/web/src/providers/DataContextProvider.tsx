@@ -159,6 +159,12 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 .build();
             setDataContext(dc);
 
+            // Expose raw query function for e2e test helpers (avoids opening a second PGlite connection).
+            if (process.env.NODE_ENV !== 'production') {
+                (window as unknown as Record<string, unknown>).__armoury_raw_query = (sql: string) =>
+                    adapter.rawQuery(sql);
+            }
+
             // Report partial sync failures from the builder's sync result
             const syncResult = dc.syncResult;
 
@@ -209,6 +215,13 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             }));
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to initialize DataContext';
+            // TODO(e2e-debug): remove after root cause identified
+            console.error('[Armoury enableSystem] caught error:', message);
+
+            if (err instanceof Error && err.stack) {
+                console.error('[Armoury enableSystem] stack:', err.stack);
+            }
+
             setStatus('error');
             setError(message);
             setSystemSyncStates((prev) => ({

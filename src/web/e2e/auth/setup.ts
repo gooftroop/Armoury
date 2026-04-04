@@ -22,10 +22,14 @@
 import { test as setup } from '@playwright/test';
 import { generateSessionCookie } from '@auth0/nextjs-auth0/testing';
 import { mkdir } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-/** Path where authenticated session state is persisted between projects. */
-const AUTH_STATE_PATH = './src/web/e2e/.auth/user.json';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/** Path where authenticated session state is persisted between projects.
+ *  Must resolve to the same location as storageState in playwright.config.ts. */
+const AUTH_STATE_PATH = resolve(__dirname, '../.auth/user.json');
 
 /** Auth0 session cookie name used by the v4 SDK. */
 const AUTH0_COOKIE_NAME = '__session';
@@ -33,10 +37,7 @@ const AUTH0_COOKIE_NAME = '__session';
 /** Must match INTERNAL_ID_CLAIM in src/web/src/lib/auth0.ts. */
 const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
 
-/** Must match the seeded user in LocalStack (see e2e/fixtures/localstack.ts). */
-export const E2E_USER_ID = 'e2e-test-user-00000000-0000-0000-0000-000000000001';
-
-export const E2E_USER_SUB = 'auth0|e2e-test-user';
+import { E2E_USER_ID, E2E_USER_SUB } from '../constants.js';
 
 setup('forge authenticated session', async ({ context }) => {
     const secret = process.env['AUTH0_SECRET'] ?? 'e2e-test-secret';

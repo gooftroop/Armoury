@@ -16,6 +16,7 @@ import { generateAllTablesDDL } from '@/ddl.js';
 type PGliteInstance = {
     close: () => Promise<void>;
     exec: (sql: string) => Promise<void>;
+    query: <T = Record<string, unknown>>(sql: string) => Promise<{ rows: T[] }>;
 };
 
 type PGliteConstructor = new (dataDir?: string, options?: { relaxedDurability?: boolean }) => PGliteInstance;
@@ -156,6 +157,19 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
             this.client = null;
             this.db = null;
         }
+    }
+
+    /**
+     * Executes a raw SQL query against the underlying PGlite connection.
+     *
+     * Intended for test/debug use only — production code should use typed DAO methods.
+     */
+    async rawQuery<T = Record<string, unknown>>(sql: string): Promise<{ rows: T[] }> {
+        if (!this.client) {
+            throw new DatabaseError('PGlite adapter not initialized', 'SELECT');
+        }
+
+        return this.client.query<T>(sql);
     }
 
     async get<T extends EntityType>(store: T, id: string): Promise<EntityMap[T] | null> {

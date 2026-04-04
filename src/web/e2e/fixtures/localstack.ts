@@ -16,9 +16,7 @@
 
 import pg from 'pg';
 
-import { E2E_USER_ID, E2E_USER_SUB } from '../auth/setup.js';
-
-const E2E_ACCOUNT_ID = 'e2e-test-account-00000000-0000-0000-0000-000000000001';
+import { E2E_ACCOUNT_ID, E2E_USER_ID, E2E_USER_SUB } from '../constants.js';
 
 /** Postgres connection config matching src/services/users/docker-compose.yml. */
 const PG_CONFIG = {
