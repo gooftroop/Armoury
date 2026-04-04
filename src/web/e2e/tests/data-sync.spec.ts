@@ -39,12 +39,22 @@ async function clickSystemTileOverlay(page: import('@playwright/test').Page): Pr
 }
 
 test.describe('WH40K system data sync lifecycle', () => {
-    test('first-time download enables Forge and exposes game data in UI', async ({ page }) => {
+    test('first-time download enables Forge and exposes game data in UI', async ({ page, usersApiRequests }) => {
         await page.goto('/');
 
         await clickSystemTileOverlay(page);
 
         await expect(page.locator('text=/ready|synced/i').first()).toBeVisible({ timeout: 30_000 });
+
+        expect(usersApiRequests.length).toBeGreaterThan(0);
+
+        const accountRequest = usersApiRequests[0]!;
+        expect(accountRequest.method()).toBe('PUT');
+        expect(accountRequest.url()).toContain('/account');
+
+        const body = accountRequest.postDataJSON() as { systems?: Record<string, unknown> };
+        expect(body.systems).toBeDefined();
+        expect(body.systems!['wh40k10e']).toBeDefined();
 
         await page.goto('/wh40k10e/armies');
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

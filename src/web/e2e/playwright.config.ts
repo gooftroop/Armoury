@@ -96,6 +96,8 @@ export default defineConfig({
             APP_BASE_URL: 'http://localhost:3000',
             NEXT_PUBLIC_AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] ?? '',
             NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] ?? '',
+            NEXT_PUBLIC_USERS_BASE_URL:
+                process.env['NEXT_PUBLIC_USERS_BASE_URL'] ?? 'http://localhost:4566/_aws/execute-api/users-api/local',
         },
     },
 });
