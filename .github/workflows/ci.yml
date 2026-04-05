@@ -184,6 +184,9 @@ jobs:
                   done
                   shopt -u nullglob
 
+            - name: Install awslocal CLI
+              run: pip install awscli-local
+
             - name: Build services and bootstrap LocalStack
               run: bash infra/localstack/bootstrap.sh
 

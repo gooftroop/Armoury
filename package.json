@@ -58,7 +58,7 @@
         "localstack:down": "docker compose -f infra/localstack/docker-compose.yml down -v",
         "localstack:status": "docker compose -f infra/localstack/docker-compose.yml ps",
         "localstack:bootstrap": "bash infra/localstack/bootstrap.sh",
-        "e2e": "npm run test:integration && npm run localstack:up && npm run localstack:bootstrap && npm run test:e2e && npm run --workspace @armoury/web e2e; EXIT=$?; npm run e2e:cleanup; exit $EXIT",
+        "e2e": "npm run test:integration && npm run localstack:up && npm run localstack:bootstrap && npm run test:e2e && npm run --workspace @armoury/web test:ui; EXIT=$?; npm run e2e:cleanup; exit $EXIT",
         "generate:theme": "node --import=tsx src/tooling/theme-generator/src/generate.js",
         "postinstall": "npx patch-package && node -e \"const fs=require('fs'),shim='node_modules/drizzle-kit/index.js';fs.existsSync('node_modules/drizzle-kit')&&!fs.existsSync(shim)&&fs.writeFileSync(shim,'module.exports=require(\\\"./index.mjs\\\");')\"",
         "prepare": "husky || true"
