@@ -40,12 +40,12 @@ const NAV_ITEMS = [
  * @param props - Component props
  * @returns The SideNav component
  */
-export function SideNav({ locale, gameSystem, userName, userPicture: _userPicture, userPlan }: SideNavProps) {
+export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _userPicture, userPlan }: SideNavProps) {
     const t = useTranslations('nav');
     const pathname = usePathname();
     const [collapsed, setCollapsed] = React.useState(false);
 
-    const basePath = `/${locale}/${gameSystem}`;
+    const basePath = `/${gameSystem}`;
 
     return (
         <aside
@@ -87,6 +87,7 @@ export function SideNav({ locale, gameSystem, userName, userPicture: _userPictur
                         <Link
                             key={item.id}
                             href={href}
+                            aria-current={isActive ? 'page' : undefined}
                             title={
                                 collapsed
                                     ? t(item.id as 'armies' | 'matches' | 'campaigns' | 'social' | 'references')

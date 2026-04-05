@@ -22,12 +22,9 @@
  * @module landing-page
  */
 
-import { Suspense } from 'react';
-
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { LandingContent } from '@/components/landing/LandingContent.js';
-import { LandingSkeleton } from '@/components/landing/LandingSkeleton.js';
 
 /**
  * Forces dynamic rendering so auth0.getSession() reads cookies at request time.
@@ -56,9 +53,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
             </h1>
             <p className="mb-8 tracking-wide text-tertiary">{t('tagline')}</p>
 
-            <Suspense fallback={<LandingSkeleton />}>
-                <LandingContent params={params} />
-            </Suspense>
+            <LandingContent params={params} />
 
             <div className="mt-8 px-6 text-center">
                 <p className="mx-auto max-w-[480px] text-[11px] leading-relaxed text-foreground">{t('legal')}</p>

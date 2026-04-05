@@ -170,6 +170,8 @@ export class GameData {
                 succeeded.push(name);
             } else {
                 const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
+                // TODO(e2e-debug): remove after root cause identified
+                console.error(`[GameData.sync] ${name} failed:`, reason);
                 failures.push({ dao: name, error: reason });
             }
         }

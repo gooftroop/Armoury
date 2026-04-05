@@ -22,6 +22,7 @@
  * @module landing-content
  */
 
+import { cookies } from 'next/headers';
 import { setRequestLocale } from 'next-intl/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
@@ -52,7 +53,17 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
     const { locale } = await params;
     setRequestLocale(locale);
 
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('__session');
+    console.error(
+        `[E2E-DIAG] LandingContent cookies(): __session exists=${!!sessionCookie}, len=${sessionCookie?.value?.length ?? 0}`,
+    );
+
     const [session, manifests] = await Promise.all([auth0?.getSession() ?? null, discoverSystemManifests()]);
+
+    console.error(
+        `[E2E-DIAG] LandingContent: auth0=${!!auth0}, session=${!!session}, user=${!!session?.user}, sub=${session?.user?.sub}`,
+    );
 
     const isAuthenticated = session !== null && session !== undefined;
 

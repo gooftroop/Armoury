@@ -16,11 +16,13 @@ services:
         ports:
             - '4566:4566'
         environment:
-            SERVICES: ssm,secretsmanager,apigateway,iam
+            SERVICES: ssm,secretsmanager,apigateway,iam,lambda
             LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:-}
+            LAMBDA_DOCKER_NETWORK: ${COMPOSE_PROJECT_NAME:-localstack}_default
             DEBUG: 0
         volumes:
             - localstack-cache:/var/lib/localstack
+            - /var/run/docker.sock:/var/run/docker.sock
             - ./seed.sh:/etc/localstack/init/ready.d/seed.sh
             - ./services.json:/etc/localstack/init/ready.d/services.json
         healthcheck:

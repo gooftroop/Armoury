@@ -18,20 +18,29 @@ import { defineConfig, devices } from '@playwright/test';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+/** Absolute path to this config's directory (src/web/e2e/). */
+const CONFIG_DIR = dirname(fileURLToPath(import.meta.url));
+
 /** Absolute path to the monorepo root (three levels up from src/web/e2e/). */
-const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const ROOT_DIR = resolve(CONFIG_DIR, '../../..');
 
-/** Directory where authenticated session state is persisted. */
-const AUTH_STATE_DIR = './.auth';
+/** Absolute path to the authenticated user's storage state file. */
+const AUTH_STATE_PATH = resolve(CONFIG_DIR, '.auth/user.json');
 
-/** Path to the authenticated user's storage state file. */
-const AUTH_STATE_PATH = `${AUTH_STATE_DIR}/user.json`;
+/**
+ * Dummy Auth0 values for e2e — the forged-cookie approach never contacts Auth0,
+ * but the SDK requires non-empty strings so the Auth0Client is instantiated
+ * and middleware processes the session cookie.
+ */
+const E2E_AUTH0_SECRET = process.env['AUTH0_SECRET'] ?? 'e2e-test-secret';
+const E2E_AUTH0_DOMAIN = process.env['AUTH0_DOMAIN'] || 'e2e.us.auth0.com';
+const E2E_AUTH0_CLIENT_ID = process.env['AUTH0_CLIENT_ID'] || 'e2e-fake-client-id';
 
 /**
  * Whether AUTH0_SECRET is available (controls authenticated test inclusion).
  * The forged-cookie approach only needs the secret — no real Auth0 credentials required.
  */
-const hasAuth0 = Boolean(process.env['AUTH0_SECRET']);
+const hasAuth0 = Boolean(E2E_AUTH0_SECRET);
 
 export default defineConfig({
     testDir: './tests',
@@ -48,6 +57,7 @@ export default defineConfig({
 
     use: {
         baseURL: 'http://localhost:3000',
+        headless: true,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'off',
@@ -89,13 +99,15 @@ export default defineConfig({
         reuseExistingServer: !process.env['CI'],
         timeout: 120_000,
         env: {
-            AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] ?? '',
-            AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] ?? '',
+            AUTH0_DOMAIN: E2E_AUTH0_DOMAIN,
+            AUTH0_CLIENT_ID: E2E_AUTH0_CLIENT_ID,
             AUTH0_CLIENT_SECRET: process.env['AUTH0_CLIENT_SECRET'] ?? '',
-            AUTH0_SECRET: process.env['AUTH0_SECRET'] ?? 'e2e-test-secret',
+            AUTH0_SECRET: E2E_AUTH0_SECRET,
             APP_BASE_URL: 'http://localhost:3000',
-            NEXT_PUBLIC_AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] ?? '',
-            NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] ?? '',
+            NEXT_PUBLIC_AUTH0_DOMAIN: E2E_AUTH0_DOMAIN,
+            NEXT_PUBLIC_AUTH0_CLIENT_ID: E2E_AUTH0_CLIENT_ID,
+            NEXT_PUBLIC_USERS_BASE_URL:
+                process.env['NEXT_PUBLIC_USERS_BASE_URL'] ?? 'http://localhost:4566/_aws/execute-api/users-api/local',
         },
     },
 });

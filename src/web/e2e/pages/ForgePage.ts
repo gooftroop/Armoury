@@ -39,7 +39,7 @@ export class ForgePage {
         this.mainContent = page.locator('main, [class*="flex-1"]').first();
         this.sideNav = page.locator('aside');
         this.bottomNav = page.locator('nav.fixed');
-        this.sideNavArmiesLink = this.sideNav.getByRole('link', { name: /armies/i });
+        this.sideNavArmiesLink = this.sideNav.getByRole('link', { name: /the forge/i });
         this.sideNavLogoLink = this.sideNav.getByRole('link', { name: /armoury/i });
     }
 
@@ -76,7 +76,7 @@ export class ForgePage {
      * @returns A locator for the currently active side nav link.
      */
     getActiveSideNavLink(): Locator {
-        return this.sideNav.locator('[class*="accent-primary-muted"]');
+        return this.sideNav.locator('[aria-current="page"]');
     }
 
     /**
@@ -85,6 +85,6 @@ export class ForgePage {
      * @returns A locator for the currently active bottom nav link.
      */
     getActiveBottomNavLink(): Locator {
-        return this.bottomNav.locator('[class*="text-accent-primary"]');
+        return this.bottomNav.locator('[aria-current="page"]');
     }
 }

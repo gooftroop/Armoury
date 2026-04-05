@@ -13,7 +13,7 @@
  * 3. Must render ArmyFilterPanel above the army grid.
  * 4. Must render a responsive grid: 1 col at mobile, 2 at md, 3 at lg.
  * 5. Must show ArmyCardSkeleton placeholders during loading.
- * 6. Must show EmptyState when no armies exist.
+ * 6. Must show EmptyState callout (no action button) when no armies exist.
  * 7. Must use next-intl useTranslations for all user-facing strings.
  * 8. Must not own any state or perform data fetching.
  * 9. Must display displayName in React DevTools.
@@ -114,16 +114,7 @@ function ArmyListView({
 
             {/* Empty state — no armies at all */}
             {!isLoading && isEmpty && (
-                <EmptyState
-                    icon={<Shield />}
-                    title={t('emptyState.title')}
-                    description={t('emptyState.description')}
-                    action={
-                        <Link href="./armies/new">
-                            <Button variant="primary">{t('emptyState.action')}</Button>
-                        </Link>
-                    }
-                />
+                <EmptyState icon={<Shield />} title={t('emptyState.title')} description={t('emptyState.description')} />
             )}
 
             {/* Army list with filters */}

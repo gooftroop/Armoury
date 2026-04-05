@@ -46,7 +46,7 @@ test.describe('Landing Page (authenticated)', () => {
 
         // Settings gear icon should link to the profile page.
         await expect(landingPage.userSettingsLink).toBeVisible();
-        await expect(landingPage.userSettingsLink).toHaveAttribute('href', /profile/);
+        await expect(landingPage.userSettingsLink).toHaveAttribute('href', /account/);
     });
 
     test('renders system tiles', async () => {

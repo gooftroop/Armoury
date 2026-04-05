@@ -39,6 +39,10 @@ export function isAuth0Configured(): boolean {
     const clientId = process.env['AUTH0_CLIENT_ID'];
     const secret = process.env['AUTH0_SECRET'];
 
+    console.error(
+        `[E2E-DIAG] isAuth0Configured: domain=${!!domain}, clientId=${!!clientId}, secret=${!!secret}, result=${Boolean(domain && clientId && secret)}`,
+    );
+
     return Boolean(domain && clientId && secret);
 }
 

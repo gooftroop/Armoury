@@ -4,13 +4,13 @@ Behavioral rules for LLM agents on this monorepo. For coding conventions, see `d
 
 ## Documentation Map
 
-| Document                      | Contains                                                    | When to Read                                                  |
-| ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
-| `docs/CODING_STANDARDS.md`    | Code style, naming, exports, types, testing, error handling | **Phase 3 only** — before writing or modifying code           |
-| `docs/AGENT_CATEGORIES.md`   | Model selection, operational guidelines, anti-patterns, project structure | When selecting delegation categories, reading structure, or reviewing anti-patterns |
-| `docs/shared/REQUIREMENTS.md` | Data architecture and data flow requirements                | When working on `@armoury/data` or `@armoury/models`          |
-| `docs/tooling.md`             | Shared configs, workspace scripts, adding workspaces        | When modifying tooling configs or adding workspaces           |
-| `docs/services/`              | Lambda service documentation                                | When working on `@armoury/authorizer` or `@armoury/campaigns` |
+| Document                      | Contains                                                                  | When to Read                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `docs/CODING_STANDARDS.md`    | Code style, naming, exports, types, testing, error handling               | **Phase 3 only** — before writing or modifying code                                 |
+| `docs/AGENT_CATEGORIES.md`    | Model selection, operational guidelines, anti-patterns, project structure | When selecting delegation categories, reading structure, or reviewing anti-patterns |
+| `docs/shared/REQUIREMENTS.md` | Data architecture and data flow requirements                              | When working on `@armoury/data` or `@armoury/models`                                |
+| `docs/tooling.md`             | Shared configs, workspace scripts, adding workspaces                      | When modifying tooling configs or adding workspaces                                 |
+| `docs/services/`              | Lambda service documentation                                              | When working on `@armoury/authorizer` or `@armoury/campaigns`                       |
 
 ### Document Loading Strategy
 
@@ -91,12 +91,12 @@ Every task follows phases. The number of phases and gates depends on task risk l
 
 Not all tasks need the same ceremony. Classify risk first, then apply the matching gate pattern:
 
-| Risk Level | Examples | Required Gates |
-|-----------|----------|---------------|
-| **Trivial** | Typo fixes, comment updates, single-line config changes | **No gate** — execute, present result. No approval needed before acting. |
-| **Low** | Doc edits, single-file changes in established patterns, test additions | Combine Phase 1+2 → present plan → Phase 3 → Phase 4 |
-| **Medium** | Feature in established patterns, multi-file edits, refactors within one module | Full Phase 1 → 2 → 3 → 4 with gates at each boundary |
-| **High** | Cross-module refactors, schema changes, new architecture patterns, security-sensitive changes | Full Phase 1 → 2 → 3 → 4 with gates + Oracle review before Phase 3 |
+| Risk Level  | Examples                                                                                      | Required Gates                                                           |
+| ----------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Trivial** | Typo fixes, comment updates, single-line config changes                                       | **No gate** — execute, present result. No approval needed before acting. |
+| **Low**     | Doc edits, single-file changes in established patterns, test additions                        | Combine Phase 1+2 → present plan → Phase 3 → Phase 4                     |
+| **Medium**  | Feature in established patterns, multi-file edits, refactors within one module                | Full Phase 1 → 2 → 3 → 4 with gates at each boundary                     |
+| **High**    | Cross-module refactors, schema changes, new architecture patterns, security-sensitive changes | Full Phase 1 → 2 → 3 → 4 with gates + Oracle review before Phase 3       |
 
 When uncertain about risk level, **default to Medium**. The human can always say "just do it" to skip gates.
 
@@ -145,6 +145,7 @@ If the human expresses forward intent and there are pending tasks in your todo l
 - Only re-ask if you encounter a significant deviation from the approved plan (unexpected error, scope change, new risk discovered).
 
 **Routine operations that never require confirmation** (when part of an approved plan or trivial task):
+
 - Running builds, tests, linting, typechecks
 - `npm install` in worktrees
 - Git commits (but NOT force push)
@@ -152,6 +153,7 @@ If the human expresses forward intent and there are pending tasks in your todo l
 - Running formatters
 
 **Destructive operations that always require confirmation** (even within an approved plan):
+
 - `git push --force`, `git reset --hard`, branch deletion on remote
 - Production deployments, database migrations
 - `rm -rf` on directories outside `.worktrees/`
@@ -208,11 +210,11 @@ If you have attempted a fix twice without success:
 
 Agent spawns consume requests proportional to their complexity. Direct tool calls within a single turn are free. The goal is maximum ROI: quality × success rate / requests consumed.
 
-**Core principle**: Delegate by default (this aligns with Sisyphus's system behavior), but delegate *efficiently*. Optimize by reducing redundancy, scope, and round-trips — not by avoiding delegation.
+**Core principle**: Delegate by default (this aligns with Sisyphus's system behavior), but delegate _efficiently_. Optimize by reducing redundancy, scope, and round-trips — not by avoiding delegation.
 
 **Efficiency guidelines**:
 
-- Use direct tools (grep, glob, LSP, codesearch, context7) to pin down specifics *after* delegation surfaces the broad picture. Don't re-search what you already delegated.
+- Use direct tools (grep, glob, LSP, codesearch, context7) to pin down specifics _after_ delegation surfaces the broad picture. Don't re-search what you already delegated.
 - When explore/librarian results arrive, extract what you need and cancel the agent. Don't let background agents run indefinitely.
 - Prefer 2 targeted agents over 5 broad ones. Scale up to 3-5 only when questions are genuinely independent and each requires multi-step reasoning.
 - One follow-up per question maximum. If a delegated search didn't find it, try a different tool or approach — don't retry the same query.
@@ -235,6 +237,45 @@ One retry with the same parameters is acceptable. A second failure requires a di
 
 When performing research: (1) Define specific questions — research is done when answered. (2) Timebox: Quick 3 min, Focused 5 min, Deep 10 min, Max 15 min. (3) Report findings and let the user decide next steps. Never self-authorize additional research rounds.
 
+## Issue Ownership
+
+**Never assume any failure is "pre-existing" or "not my problem."** If something fails during your session — test, lint, build, typecheck, CI pipeline — you own it. Investigate, fix it, or explicitly justify why it is out of scope with evidence (e.g., the failure is on a service you have no access to). The label "pre-existing" is not a justification; it is an excuse.
+
+This applies to all failure types:
+
+- **Tests**: If a test is in the repo and it fails, either fix it or delete it with a commit message explaining why. Never report "N tests failed but they were pre-existing."
+- **Lint / Format / Typecheck**: If the linter or type checker reports errors on files in your working tree, resolve them. Do not assume someone else left them broken.
+- **Build / CI**: If a CI job fails after your push, investigate the failure logs. Do not assume it is flaky or unrelated without evidence.
+
+## Root Cause Verification
+
+**Never accept your first hypothesis as the root cause.** When diagnosing a failure, actively try to disprove your theory before acting on it. Confirmation bias is the most common source of wasted debugging time.
+
+The falsification protocol:
+
+1. **Form a hypothesis**: "I believe the failure is caused by X."
+2. **Design a disproof**: "If my hypothesis is wrong, then Y should be true." Find a concrete, observable prediction that would contradict your theory.
+3. **Test the disproof**: Run the check. Read the code path. Verify the actual values, not the ones you expect.
+4. **Only act when disproof fails**: If you cannot disprove your hypothesis after a genuine attempt, proceed with the fix. If the disproof succeeds (your hypothesis was wrong), form a new one and repeat.
+
+What this looks like in practice:
+
+- Before fixing a test failure, read the actual DAO/service code that changed — confirm the test's expectation is genuinely stale, not that your understanding of the new behavior is wrong.
+- Before blaming a dependency or environment, reproduce the failure locally with a minimal case.
+- Before concluding "this value is always X," check the code path that produces it and trace the actual runtime flow.
+
+## CI Pipeline Polling
+
+**Never poll or repeatedly check CI/CD pipeline status.** After pushing to a remote branch or PR, do not loop, sleep, or periodically call `gh pr checks`, `gh run watch`, or any equivalent command to wait for CI results. CI pipelines can take minutes to hours — polling wastes context, tokens, and time.
+
+Instead:
+
+- **Report that you pushed** and state which CI jobs are expected to run.
+- **Stop and let the human monitor CI.** They will tell you if something fails.
+- If the human reports a CI failure, investigate the logs at that point — do not preemptively watch for failures.
+
+This applies to all CI/CD systems: GitHub Actions, Vercel deployments, Buildkite, CircleCI, or any other pipeline triggered by a push or PR event.
+
 ## Anti-Patterns
 
 For the full anti-patterns list, see `docs/AGENT_CATEGORIES.md`. Key rules to always keep in mind:
@@ -243,3 +284,6 @@ For the full anti-patterns list, see `docs/AGENT_CATEGORIES.md`. Key rules to al
 - Never expand scope beyond what was requested.
 - Never iterate on a broken fix more than twice without stopping to reassess.
 - Never re-ask for confirmation on routine operations that are part of an already-approved plan.
+- Never dismiss failing tests as "pre-existing" — fix them or delete them.
+- Never assume your first diagnosis is the root cause — try to disprove it first.
+- Never poll CI pipeline status — push, report, and stop.
