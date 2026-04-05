@@ -278,7 +278,16 @@ describe('CoreRulesDAO', () => {
 
             githubClient.fileContents.set(CORE_RULES_FILE, mockXmlContent);
             githubClient.fileShas.set(CORE_RULES_FILE, 'sha123');
-            githubClient.files = [];
+            githubClient.files = [
+                {
+                    name: decodeURIComponent(CORE_RULES_FILE),
+                    path: decodeURIComponent(CORE_RULES_FILE),
+                    sha: 'sha123',
+                    size: 100,
+                    download_url: null,
+                    type: 'file',
+                },
+            ];
 
             vi.mocked(parseGameSystem).mockReturnValue(mockGameSystem);
 
@@ -326,7 +335,16 @@ describe('CoreRulesDAO', () => {
             githubClient.shouldUpdate = true;
             githubClient.fileContents.set(CORE_RULES_FILE, mockXmlContent);
             githubClient.fileShas.set(CORE_RULES_FILE, 'newSha');
-            githubClient.files = [];
+            githubClient.files = [
+                {
+                    name: decodeURIComponent(CORE_RULES_FILE),
+                    path: decodeURIComponent(CORE_RULES_FILE),
+                    sha: 'newSha',
+                    size: 100,
+                    download_url: null,
+                    type: 'file',
+                },
+            ];
 
             vi.mocked(parseGameSystem).mockReturnValue(mockGameSystem);
 

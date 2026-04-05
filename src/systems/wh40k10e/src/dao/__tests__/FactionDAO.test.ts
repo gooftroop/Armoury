@@ -397,7 +397,8 @@ describe('FactionDAO', () => {
             const config = createFactionConfig({ files: ['Necrons.cat'] });
             const dao = new FactionDAO(adapter, githubClient, config);
 
-            githubClient.fileContents.set('Necrons.cat', '<catalogue>necrons</catalogue>');
+            const necronContent = '<catalogue>necrons</catalogue>';
+            githubClient.fileContents.set('Necrons.cat', necronContent);
             githubClient.fileShas.set('Necrons.cat', 'sha-necrons-789');
 
             const fixture = createFactionFixture();
@@ -407,7 +408,8 @@ describe('FactionDAO', () => {
 
             const syncStatus = await adapter.getSyncStatus('factionModel:Necrons.cat');
             expect(syncStatus).not.toBeNull();
-            expect(syncStatus!.sha).toBe('sha-necrons-789');
+            // FactionDAO uses content-length marker instead of SHA for sync tracking
+            expect(syncStatus!.sha).toBe(`content:${necronContent.length}`);
         });
 
         /**
@@ -707,9 +709,11 @@ describe('FactionDAO', () => {
                 files: ['Imperium - Space Marines.cat', 'Imperium - Blood Angels.cat'],
             });
 
-            githubClient.fileContents.set('Imperium%20-%20Space%20Marines.cat', '<catalogue>base</catalogue>');
+            const smContent = '<catalogue>base</catalogue>';
+            const baContent = '<catalogue>chapter</catalogue>';
+            githubClient.fileContents.set('Imperium%20-%20Space%20Marines.cat', smContent);
             githubClient.fileShas.set('Imperium%20-%20Space%20Marines.cat', 'sha-sm');
-            githubClient.fileContents.set('Imperium%20-%20Blood%20Angels.cat', '<catalogue>chapter</catalogue>');
+            githubClient.fileContents.set('Imperium%20-%20Blood%20Angels.cat', baContent);
             githubClient.fileShas.set('Imperium%20-%20Blood%20Angels.cat', 'sha-ba');
 
             const fromCatalogueSpy = vi.mocked(parseFactionData);
@@ -721,12 +725,13 @@ describe('FactionDAO', () => {
             await smDAO.load();
             await baDAO.load();
 
-            const smSync = await adapter.getSyncStatus('factionModel:space-marines');
-            const baSync = await adapter.getSyncStatus('factionModel:blood-angels');
+            // Sync status is now stored per-file with content-length markers
+            const smFileSync = await adapter.getSyncStatus('factionModel:Imperium - Space Marines.cat');
+            const baFileSync = await adapter.getSyncStatus('factionModel:Imperium - Blood Angels.cat');
 
-            expect(smSync).not.toBeNull();
-            expect(baSync).not.toBeNull();
-            expect(smSync!.sha).toBe('sha-sm');
+            expect(smFileSync).not.toBeNull();
+            expect(baFileSync).not.toBeNull();
+            expect(smFileSync!.sha).toBe(`content:${smContent.length}`);
         });
 
         it('BA load returns correct data after SM was already loaded on the same adapter', async () => {
