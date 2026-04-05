@@ -35,8 +35,39 @@ jobs:
               if: steps.playwright-cache.outputs.cache-hit == 'true'
               run: npx playwright install-deps chromium
 
+            - name: Pre-pull Docker images
+              run: |
+                  docker pull localstack/localstack:4.4.0 &
+                  docker pull postgres:16-alpine &
+                  wait
+
+            - name: Ensure clean Docker state
+              run: |
+                  docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
+                  shopt -s nullglob
+                  for f in src/services/*/docker-compose.yml src/shared/*/docker-compose.yml src/shared/*/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
+                  done
+                  shopt -u nullglob
+
+            - name: Start LocalStack
+              run: docker compose -f infra/localstack/docker-compose.yml up -d --wait
+
+            - name: Start per-service databases
+              run: |
+                  shopt -s nullglob
+                  for f in src/services/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" up -d --wait
+                  done
+                  shopt -u nullglob
+
             - name: Build dependencies
               run: npx turbo run build --filter=@armoury/web^...
+
+            - name: Build services and bootstrap LocalStack
+              run: bash infra/localstack/bootstrap.sh
 
             - name: Run e2e tests
               run: npx playwright test --config src/web/e2e/playwright.config.ts
@@ -58,3 +89,14 @@ jobs:
                       playwright-report/
                       test-results/
                   retention-days: 7
+
+            - name: Cleanup Docker containers
+              if: always()
+              run: |
+                  docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
+                  shopt -s nullglob
+                  for f in src/services/*/docker-compose.yml src/shared/*/docker-compose.yml src/shared/*/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
+                  done
+                  shopt -u nullglob

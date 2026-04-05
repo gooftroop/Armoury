@@ -172,6 +172,21 @@ jobs:
                   done
                   shopt -u nullglob
 
+            - name: Start LocalStack
+              run: docker compose -f infra/localstack/docker-compose.yml up -d --wait
+
+            - name: Start per-service databases
+              run: |
+                  shopt -s nullglob
+                  for f in src/services/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" up -d --wait
+                  done
+                  shopt -u nullglob
+
+            - name: Build services and bootstrap LocalStack
+              run: bash infra/localstack/bootstrap.sh
+
             - name: Run e2e tests
               run: npm run test:e2e
 
