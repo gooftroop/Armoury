@@ -5,7 +5,8 @@
  * 1. Must re-export a `test` fixture and `expect` for use in all spec files.
  * 2. Must provide an `appLocale` fixture defaulting to 'en'.
  * 3. Must provide a `gotoWithLocale` helper that navigates with locale prefix when needed.
- * 4. Must intercept GET /auth/profile to return 204 (prevents useUser() hanging in CI).
+ * 4. Must intercept GET /auth/profile: return 200 with user for authenticated projects,
+ *    401 for chromium-public so unauthenticated tests see the real unauthenticated UI.
  * 5. Must provide HAR recording/playback for GitHub proxy requests.
  *    - E2E_HAR_RECORD=true → records live requests; otherwise replays from HAR file.
  * 6. Must provide a `usersApiRequests` fixture that collects PUT /account requests.
@@ -60,13 +61,17 @@ export const test = base.extend<ArmouryFixtures>({
         { auto: true },
     ],
 
-    page: async ({ page, seedDb: _ }, use) => {
+    page: async ({ page, seedDb: _ }, use, testInfo) => {
+        const isPublicProject = testInfo.project.name === 'chromium-public';
+
         await page.route('**/auth/profile', (route) =>
-            route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify(E2E_USER_PROFILE),
-            }),
+            isPublicProject
+                ? route.fulfill({ status: 401, body: '' })
+                : route.fulfill({
+                      status: 200,
+                      contentType: 'application/json',
+                      body: JSON.stringify(E2E_USER_PROFILE),
+                  }),
         );
 
         const isRecording = process.env['E2E_HAR_RECORD'] === 'true';

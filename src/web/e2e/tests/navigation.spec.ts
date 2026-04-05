@@ -38,13 +38,11 @@ test.describe('Navigation', () => {
             const activeLink = forgePage.getActiveSideNavLink();
 
             await expect(activeLink).toBeVisible();
-            await expect(activeLink).toHaveText(/armies/i);
+            await expect(activeLink).toHaveText(/the forge/i);
         });
 
         test('clicking a nav link navigates to the correct route', async ({ page }) => {
-            // The nav items include 'matches', 'campaigns', etc.
-            // Click on a different nav item and verify the URL changes.
-            const matchesLink = forgePage.sideNav.getByRole('link', { name: /matches/i });
+            const matchesLink = forgePage.sideNav.getByRole('link', { name: /war ledger/i });
 
             await matchesLink.click();
 
@@ -86,7 +84,7 @@ test.describe('Navigation', () => {
         });
 
         test('clicking a nav link navigates to the correct route', async ({ page }) => {
-            const matchesLink = forgePage.bottomNav.getByRole('link', { name: /matches/i });
+            const matchesLink = forgePage.bottomNav.getByRole('link', { name: /war ledger/i });
 
             await matchesLink.click();
 
