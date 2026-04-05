@@ -78,6 +78,10 @@ vi.mock('@tanstack/react-query', () => ({
     HydrationBoundary: vi.fn(({ children }: { children: React.ReactNode }) => children),
 }));
 
+vi.mock('next/headers', () => ({
+    cookies: vi.fn(() => Promise.resolve({ get: vi.fn(() => undefined) })),
+}));
+
 /* ---------- helpers ---------- */
 
 const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
