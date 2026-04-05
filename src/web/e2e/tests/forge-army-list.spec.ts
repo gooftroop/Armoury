@@ -96,12 +96,13 @@ test.describe('Forge army list', () => {
         expect(count).toBe(2);
     });
 
-    test.skip('user with zero armies sees empty state with create CTA', async ({ page }) => {
-        const forge = new ForgeListPage(page);
+    test('user with zero armies sees empty state with create CTA', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
 
-        await forge.goto();
+        const forge = new ForgeListPage(page);
         await expect(forge.emptyState).toBeVisible();
-        await expect(forge.createArmyButton).toBeVisible();
+        // Scope to empty state container — page may have a second "Create Army" link in the header
+        await expect(forge.emptyState.getByRole('link', { name: /create|new army/i })).toBeVisible();
     });
 
     test('faction filter narrows list to matching armies only', async ({ page }) => {
