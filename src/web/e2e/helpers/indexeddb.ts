@@ -21,6 +21,27 @@ export async function pgliteDatabaseExists(page: Page): Promise<boolean> {
     }, PGLITE_IDB_NAME);
 }
 
+/**
+ * Deletes the PGlite IndexedDB database to ensure a clean state between tests.
+ * IndexedDB databases are scoped to origin and persist across browser contexts,
+ * so they must be explicitly deleted to avoid stale locks from previous PGlite instances.
+ */
+export async function deletePgliteDatabase(page: Page): Promise<void> {
+    await page.evaluate(async (idbName: string) => {
+        const databases = await indexedDB.databases();
+        const exists = databases.some((db) => db.name === idbName);
+
+        if (exists) {
+            await new Promise<void>((resolve, reject) => {
+                const req = indexedDB.deleteDatabase(idbName);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+                req.onblocked = () => resolve(); // Accept blocked — best effort cleanup
+            });
+        }
+    }, PGLITE_IDB_NAME);
+}
+
 type RawQueryFn = (sql: string) => Promise<{ rows: Record<string, unknown>[] }>;
 
 /**
@@ -65,6 +86,99 @@ export async function getTableRowCount(page: Page, tableName: string): Promise<n
     }
 
     return Number(rows[0]!.count ?? -1);
+}
+
+/**
+ * Inserts a test army into PGlite via raw SQL so e2e tests can exercise
+ * the Forge UI (duplicate / delete) without a create-army page.
+ *
+ * Uses the `__armoury_raw_query` bridge exposed by DataContextProvider in
+ * non-production builds. The app must have completed sync before calling
+ * this function (DataContext status === 'ready').
+ *
+ * @param page - Playwright page with the app loaded and sync complete.
+ * @param ownerId - The owner (user) ID to associate with the army.
+ * @param overrides - Optional partial Army fields to customise the test record.
+ * @returns The army `id` that was inserted.
+ */
+export async function insertTestArmy(
+    page: Page,
+    ownerId: string,
+    overrides?: {
+        id?: string;
+        name?: string;
+        factionId?: string;
+        detachmentId?: string | null;
+        battleSize?: string;
+        pointsLimit?: number;
+    },
+): Promise<string> {
+    return page.evaluate(
+        async ({
+            ownerId: owner,
+            overrides: ov,
+        }: {
+            ownerId: string;
+            overrides?: {
+                id?: string;
+                name?: string;
+                factionId?: string;
+                detachmentId?: string | null;
+                battleSize?: string;
+                pointsLimit?: number;
+            };
+        }) => {
+            const rawQuery = (window as unknown as Record<string, unknown>).__armoury_raw_query as
+                | ((sql: string) => Promise<{ rows: Record<string, unknown>[] }>)
+                | undefined;
+
+            if (!rawQuery) {
+                throw new Error('__armoury_raw_query not available — is the app initialised?');
+            }
+
+            const id = ov?.id ?? crypto.randomUUID();
+            const now = new Date().toISOString();
+
+            // Escape single quotes for SQL string literals.
+            const esc = (s: string): string => s.replace(/'/g, "''");
+
+            const name = ov?.name ?? 'E2E Test Army';
+            const factionId = ov?.factionId ?? 'space-marines';
+            const detachmentId = ov?.detachmentId ?? null;
+            const battleSize = ov?.battleSize ?? 'StrikeForce';
+            const pointsLimit = ov?.pointsLimit ?? 2000;
+
+            const sql = `
+                INSERT INTO armies (
+                    id, owner_id, name, faction_id, detachment_id,
+                    warlord_unit_id, battle_size, points_limit,
+                    units, total_points, notes, versions,
+                    current_version, created_at, updated_at
+                ) VALUES (
+                    '${esc(id)}',
+                    '${esc(owner)}',
+                    '${esc(name)}',
+                    '${esc(factionId)}',
+                    ${detachmentId ? `'${esc(detachmentId)}'` : 'NULL'},
+                    NULL,
+                    '${esc(battleSize)}',
+                    ${pointsLimit},
+                    '[]'::jsonb,
+                    0,
+                    '',
+                    '[]'::jsonb,
+                    0,
+                    '${now}',
+                    '${now}'
+                )
+            `;
+
+            await rawQuery(sql);
+
+            return id;
+        },
+        { ownerId, overrides },
+    );
 }
 
 /** Returns row counts for multiple tables in a single evaluation (-1 if table missing). */

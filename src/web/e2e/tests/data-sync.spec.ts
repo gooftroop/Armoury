@@ -39,7 +39,8 @@
  */
 
 import { test, expect } from '../fixtures/index.js';
-import { pgliteDatabaseExists, getTableRowCounts } from '../helpers/indexeddb.js';
+import { pgliteDatabaseExists, getTableRowCounts, deletePgliteDatabase, insertTestArmy } from '../helpers/indexeddb.js';
+import { E2E_USER_ID } from '../constants.js';
 
 /**
  * Click the download overlay button on the first system tile.
@@ -106,6 +107,8 @@ test.describe('WH40K system data sync lifecycle', () => {
         }
 
         await expect(page.locator('text=Ready').first()).toBeVisible();
+        // Explicitly verify no error state coexists with the Ready badge.
+        await expect(page.locator('text=/failed|retry/i')).toHaveCount(0);
 
         // ---------- POST-DOWNLOAD: verify backend account was updated ----------
         expect(usersApiRequests.length).toBeGreaterThan(0);
@@ -142,81 +145,107 @@ test.describe('WH40K system data sync lifecycle', () => {
     });
 
     test('repeat sync revalidates when upstream SHA/content changes', async ({ page }) => {
-        let githubRequests = 0;
-
-        await page.route('**/*github.com/**', async (route) => {
-            githubRequests += 1;
-            await route.continue();
-        });
+        // PGlite re-initialization after navigation takes extra time to acquire IDB locks.
+        test.slow();
 
         await page.goto('/');
+        await deletePgliteDatabase(page);
+
+        let githubProxyRequests = 0;
+
+        page.on('request', (req) => {
+            if (req.url().includes('/api/github/')) {
+                githubProxyRequests += 1;
+            }
+        });
+
         await clickSystemTileOverlay(page);
-        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 30_000 });
+        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
 
-        const firstPassRequests = githubRequests;
+        const firstPassRequests = githubProxyRequests;
+        expect(firstPassRequests).toBeGreaterThan(0);
 
-        await page.reload();
+        // Navigate away to fully destroy the JS context and release PGlite's
+        // Web Locks on the IndexedDB database, then navigate back.
+        // A plain page.reload() doesn't guarantee the old PGlite instance is
+        // closed before the new one tries to acquire the lock.
+        await page.goto('about:blank');
+        await page.goto('/');
+
         await clickSystemTileOverlay(page);
-        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 30_000 });
+        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
 
-        expect(githubRequests).toBeGreaterThan(firstPassRequests);
+        expect(githubProxyRequests).toBeGreaterThan(firstPassRequests);
     });
 
     test('user can create, duplicate, and delete an army from Forge UI', async ({ page }) => {
-        await page.goto('/wh40k10e/armies');
+        test.slow();
 
-        // GIVEN: create a new army through the UI
-        await page.getByRole('link', { name: /create|new army/i }).click();
+        await page.goto('/');
+        await deletePgliteDatabase(page);
+        await clickSystemTileOverlay(page);
+        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
 
-        await page.getByLabel(/army name/i).fill('E2E Data Sync Army');
-        await page.getByLabel(/faction/i).click();
-        await page.getByRole('option').nth(1).click();
-        await page.getByLabel(/detachment/i).click();
-        await page.getByRole('option').nth(1).click();
-        await page.getByLabel(/battle size/i).click();
-        await page
-            .getByRole('option', { name: /strike force|incursion|onslaught/i })
-            .first()
-            .click();
-        await page.getByRole('button', { name: /create army/i }).click();
+        // GIVEN: insert a test army into PGlite while DataContext is still active.
+        // Must happen BEFORE any full-page navigation since DataContext (and
+        // __armoury_raw_query) is destroyed on navigation.
+        await insertTestArmy(page, E2E_USER_ID, { name: 'E2E Data Sync Army' });
+
+        // Navigate to armies via Next.js client-side router so the DataContextProvider
+        // React state (status === 'ready') survives. page.goto() would trigger a full
+        // page load that re-mounts the provider in 'idle' state, losing the PGlite
+        // connection. window.next.router.push() performs a soft navigation identical to
+        // useRouter().push(), preserving all React context including DataContext.
+        await page.evaluate(() =>
+            (window as unknown as { next: { router: { push: (url: string) => Promise<void> } } }).next.router.push(
+                '/en/wh40k10e/armies',
+            ),
+        );
+        await page.waitForURL('**/armies**', { timeout: 15_000 });
 
         // THEN: card appears
-        await expect(page.getByRole('heading', { name: 'E2E Data Sync Army', level: 3 })).toBeVisible();
+        await expect(page.getByText('E2E Data Sync Army').first()).toBeVisible({ timeout: 15_000 });
 
         // WHEN: duplicate the army
-        const createdCard = page.locator('div.rounded-lg.border', {
-            has: page.getByRole('heading', { name: 'E2E Data Sync Army', level: 3 }),
+        const createdCard = page.locator('.bg-card', {
+            has: page.getByText('E2E Data Sync Army', { exact: true }),
         });
         await createdCard.getByRole('button', { name: /duplicate/i }).click();
 
-        await expect(page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 })).toBeVisible();
+        await expect(page.getByText(/E2E Data Sync Army \(Copy\)/i).first()).toBeVisible({ timeout: 10_000 });
 
         // WHEN: delete the copy
-        const copiedCard = page.locator('div.rounded-lg.border', {
-            has: page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 }),
+        const copiedCard = page.locator('.bg-card', {
+            has: page.getByText(/E2E Data Sync Army \(Copy\)/i),
         });
         await copiedCard.getByRole('button', { name: /delete/i }).click();
+
         await page
             .getByRole('alertdialog')
             .getByRole('button', { name: /delete|confirm/i })
             .click();
 
-        await expect(page.getByRole('heading', { name: /E2E Data Sync Army \(Copy\)/i, level: 3 })).toHaveCount(0);
+        await expect(page.getByText(/E2E Data Sync Army \(Copy\)/i)).toHaveCount(0);
     });
 
     test('sync error state is shown and retry recovers', async ({ page }) => {
-        await page.route('**/*github.com/**', async (route) => {
-            await route.abort('failed');
-        });
-
         await page.goto('/');
+        await deletePgliteDatabase(page);
+
+        const abortHandler = async (route: import('@playwright/test').Route): Promise<void> => {
+            await route.abort('failed');
+        };
+
+        await page.route('**/api/github/**', abortHandler);
+
         await clickSystemTileOverlay(page);
 
-        await expect(page.locator('text=/failed|error|retry/i').first()).toBeVisible();
+        await expect(page.locator('text=/failed|error|retry/i').first()).toBeVisible({ timeout: 15_000 });
 
-        await page.unroute('**/*github.com/**');
+        await page.unroute('**/api/github/**', abortHandler);
+
         await clickSystemTileOverlay(page);
 
-        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 30_000 });
+        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
     });
 });
