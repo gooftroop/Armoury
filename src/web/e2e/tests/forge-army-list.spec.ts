@@ -101,8 +101,7 @@ test.describe('Forge army list', () => {
 
         const forge = new ForgeListPage(page);
         await expect(forge.emptyState).toBeVisible();
-        // Scope to empty state container — page may have a second "Create Army" link in the header
-        await expect(forge.emptyState.getByRole('link', { name: /create|new army/i })).toBeVisible();
+        await expect(forge.createArmyButton).toBeVisible();
     });
 
     test('faction filter narrows list to matching armies only', async ({ page }) => {

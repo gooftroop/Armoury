@@ -9,7 +9,7 @@
  *
  * @requirements
  * 1. Must export ArmyListView component and ArmyListViewProps type.
- * 2. Must render page title, subtitle, and "Create Army" link.
+ * 2. Must render page title, subtitle, and "Create Army" link (hidden when empty).
  * 3. Must render ArmyFilterPanel above the army grid.
  * 4. Must render a responsive grid: 1 col at mobile, 2 at md, 3 at lg.
  * 5. Must show ArmyCardSkeleton placeholders during loading.
@@ -98,9 +98,11 @@ function ArmyListView({
                     <h1 className="text-3xl font-bold text-primary">{t('title')}</h1>
                     <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
                 </div>
-                <Link href="./armies/new">
-                    <Button variant="primary">{t('actions.createArmy')}</Button>
-                </Link>
+                {!isEmpty && (
+                    <Link href="./armies/new">
+                        <Button variant="primary">{t('actions.createArmy')}</Button>
+                    </Link>
+                )}
             </div>
 
             {/* Loading state */}
