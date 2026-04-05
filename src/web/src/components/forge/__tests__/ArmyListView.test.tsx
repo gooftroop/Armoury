@@ -141,6 +141,6 @@ describe('ArmyListView', () => {
         );
 
         expect(screen.getByRole('heading', { name: 'emptyState.title' })).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'emptyState.action' })).toHaveAttribute('href', './armies/new');
+        expect(screen.queryByRole('link', { name: 'emptyState.action' })).not.toBeInTheDocument();
     });
 });
