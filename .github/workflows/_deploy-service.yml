@@ -162,7 +162,21 @@ jobs:
               if: inputs.has-migrations && github.event_name == 'pull_request'
               env:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
-              run: npm run db:push -w ${{ inputs.service-name }}
+              run: |
+                  max_attempts=3
+                  attempt=1
+                  while [ $attempt -le $max_attempts ]; do
+                    echo "[push] Attempt $attempt/$max_attempts"
+                    if npm run db:push -w ${{ inputs.service-name }}; then
+                      echo "[push] Succeeded on attempt $attempt"
+                      exit 0
+                    fi
+                    echo "[push] Failed on attempt $attempt, waiting 5s..."
+                    sleep 5
+                    attempt=$((attempt + 1))
+                  done
+                  echo "[push] All $max_attempts attempts failed"
+                  exit 1
 
             - name: Run migrations (production)
               if: inputs.has-migrations && github.event_name != 'pull_request'

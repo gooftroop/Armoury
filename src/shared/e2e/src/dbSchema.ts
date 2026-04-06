@@ -248,6 +248,38 @@ async function syncProductionData(targetSchema: string, tables: string[]): Promi
     const sandboxConfig = getDsqlConfig();
     const prodConfig: DsqlConfig = { clusterEndpoint: prodEndpoint, region };
 
+    // Wait for tables to be visible on fresh connections (DSQL replication lag
+    // between drizzle-kit push and the sync step).
+    const probeTable = tables[0]!;
+    for (let attempt = 1; attempt <= SCHEMA_VERIFY_MAX_RETRIES; attempt++) {
+        const probeClient = await createDsqlClient(sandboxConfig);
+
+        try {
+            const result = await probeClient.query(
+                `SELECT 1 FROM information_schema.tables WHERE table_schema = $1 AND table_name = $2`,
+                [targetSchema, probeTable],
+            );
+
+            if ((result.rowCount ?? 0) > 0) {
+                console.log(`[db:sync] Table "${targetSchema}"."${probeTable}" verified visible (attempt ${attempt}).`);
+                break;
+            }
+        } finally {
+            await probeClient.end();
+        }
+
+        if (attempt === SCHEMA_VERIFY_MAX_RETRIES) {
+            throw new Error(
+                `Table "${targetSchema}"."${probeTable}" not visible after ${SCHEMA_VERIFY_MAX_RETRIES} retries (${(SCHEMA_VERIFY_MAX_RETRIES * SCHEMA_VERIFY_DELAY_MS) / 1000}s). Aurora DSQL replication lag may be excessive.`,
+            );
+        }
+
+        console.log(
+            `[db:sync] Table "${targetSchema}"."${probeTable}" not yet visible (attempt ${attempt}/${SCHEMA_VERIFY_MAX_RETRIES}), retrying in ${SCHEMA_VERIFY_DELAY_MS}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, SCHEMA_VERIFY_DELAY_MS));
+    }
+
     const sourceClient = await createDsqlClient(prodConfig);
     const targetClient = await createDsqlClient(sandboxConfig);
 
