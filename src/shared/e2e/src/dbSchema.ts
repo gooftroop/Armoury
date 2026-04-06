@@ -219,6 +219,39 @@ async function generateDatabaseUrl(schemaName: string): Promise<void> {
 }
 
 /**
+ * Verifies that expected tables exist in a schema by probing each one.
+ *
+ * Used after `drizzle-kit push` to catch silent failures where push exits 0
+ * but tables were never created (e.g. interactive prompt failure in CI).
+ *
+ * @param schemaName - Target schema to verify (e.g. "pr_42").
+ * @param tables - Table names that should exist.
+ * @throws Error if any table does not exist.
+ */
+async function verifyTablesExist(schemaName: string, tables: string[]): Promise<void> {
+    validateSchemaName(schemaName);
+
+    if (tables.length === 0) {
+        throw new Error('No tables specified for verification.');
+    }
+
+    const config = getDsqlConfig();
+    const client = await createDsqlClient(config);
+
+    try {
+        for (const table of tables) {
+            console.log(`[verify-tables] Probing "${schemaName}"."${table}"...`);
+            await client.query(`SELECT 1 FROM "${schemaName}"."${table}" LIMIT 1`);
+            console.log(`[verify-tables] "${schemaName}"."${table}" exists ✓`);
+        }
+
+        console.log('[verify-tables] All tables verified.');
+    } finally {
+        await client.end();
+    }
+}
+
+/**
  * Syncs table data from production `public` schema to a sandbox PR schema.
  *
  * Reads all rows from each table in the production cluster and writes them
@@ -319,7 +352,7 @@ const command = args[0];
 const schemaName = args[1];
 
 if (!command) {
-    console.error('Usage: node dbSchema.js <create|drop|url|token|sync|verify-sync> ...');
+    console.error('Usage: node dbSchema.js <create|drop|url|token|sync|verify-sync|verify-tables> ...');
     console.error('');
     console.error('Commands:');
     console.error('  create <SCHEMA_NAME>               Create a PR schema');
@@ -328,6 +361,7 @@ if (!command) {
     console.error('  token <REGION> <HOST>              Generate a fresh IAM auth token');
     console.error('  sync <SCHEMA_NAME> <T1> [T2] ...   Sync production tables into a PR schema');
     console.error('  verify-sync <SCHEMA> <T1> [T2]     Verify row counts match after sync');
+    console.error('  verify-tables <SCHEMA> <T1> [T2]   Verify tables exist in schema');
     console.error('');
     console.error('Environment variables:');
     console.error('  DSQL_CLUSTER_ENDPOINT  Sandbox DSQL cluster endpoint (all commands except token)');
@@ -441,7 +475,22 @@ switch (command) {
         break;
     }
 
+    case 'verify-tables': {
+        const vtSchema = args[1];
+        const vtTables = args.slice(2);
+
+        if (!vtSchema || vtTables.length === 0) {
+            console.error('Usage: verify-tables <SCHEMA_NAME> <TABLE1> [TABLE2] ...');
+            process.exit(1);
+        }
+
+        await verifyTablesExist(vtSchema, vtTables);
+        break;
+    }
+
     default:
-        console.error(`Unknown command: ${command}. Use "create", "drop", "url", "token", "sync", or "verify-sync".`);
+        console.error(
+            `Unknown command: ${command}. Use "create", "drop", "url", "token", "sync", "verify-sync", or "verify-tables".`,
+        );
         process.exit(1);
 }

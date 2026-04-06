@@ -152,12 +152,6 @@ jobs:
                   echo "::add-mask::${DSQL_TOKEN}"
                   echo "DSQL_TOKEN=${DSQL_TOKEN}" >> "${GITHUB_ENV}"
 
-            - name: Create PR schema
-              if: inputs.has-migrations && github.event_name == 'pull_request'
-              env:
-                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
-              run: node --import=tsx src/shared/e2e/src/dbSchema.ts create "${DB_SCHEMA}"
-
             - name: Push schema (PR sandboxes)
               if: inputs.has-migrations && github.event_name == 'pull_request'
               env:
@@ -167,16 +161,55 @@ jobs:
                   attempt=1
                   while [ $attempt -le $max_attempts ]; do
                     echo "[push] Attempt $attempt/$max_attempts"
-                    if npm run db:push -w ${{ inputs.service-name }}; then
-                      echo "[push] Succeeded on attempt $attempt"
-                      exit 0
+                    output=$(npm run db:push -w ${{ inputs.service-name }} 2>&1) || true
+                    echo "$output"
+
+                    # drizzle-kit exits 0 even when the interactive rename prompt
+                    # fails in CI (no TTY). Detect this silent failure explicitly.
+                    if echo "$output" | grep -q "Interactive prompts require a TTY"; then
+                      echo "::error::drizzle-kit push failed: interactive prompt triggered in non-TTY environment"
+                      echo "[push] Failed on attempt $attempt (TTY prompt), waiting 5s..."
+                      sleep 5
+                      attempt=$((attempt + 1))
+                      continue
                     fi
-                    echo "[push] Failed on attempt $attempt, waiting 5s..."
-                    sleep 5
-                    attempt=$((attempt + 1))
+
+                    echo "[push] Succeeded on attempt $attempt"
+                    exit 0
                   done
                   echo "[push] All $max_attempts attempts failed"
                   exit 1
+
+            - name: Verify tables created
+              if: inputs.has-migrations && inputs.sync-tables != '' && github.event_name == 'pull_request'
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: |
+                  for table in ${{ inputs.sync-tables }}; do
+                    echo "[verify] Probing ${DB_SCHEMA}.${table}..."
+                    node --import=tsx -e "
+                      import { DsqlSigner } from '@aws-sdk/dsql-signer';
+                      import pg from 'pg';
+                      const signer = new DsqlSigner({
+                        hostname: process.env.DSQL_CLUSTER_ENDPOINT,
+                        region: process.env.DSQL_REGION
+                      });
+                      const token = await signer.getDbConnectAdminAuthToken();
+                      const client = new pg.Client({
+                        host: process.env.DSQL_CLUSTER_ENDPOINT,
+                        port: 5432, user: 'admin', password: token,
+                        database: 'postgres',
+                        ssl: { rejectUnauthorized: false }
+                      });
+                      await client.connect();
+                      await client.query('SELECT 1 FROM \"${DB_SCHEMA}\".\"${table}\" LIMIT 1');
+                      await client.end();
+                      console.log('[verify] ${DB_SCHEMA}.${table} exists ✓');
+                    " || {
+                      echo "::error::Table ${DB_SCHEMA}.${table} does not exist after push — drizzle-kit push likely failed silently"
+                      exit 1
+                    }
+                  done
 
             - name: Run migrations (production)
               if: inputs.has-migrations && github.event_name != 'pull_request'
