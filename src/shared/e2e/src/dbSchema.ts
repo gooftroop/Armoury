@@ -106,7 +106,7 @@ function validateSchemaName(schemaName: string): void {
     }
 }
 
-const SCHEMA_VERIFY_MAX_RETRIES = 10;
+const SCHEMA_VERIFY_MAX_RETRIES = 15;
 const SCHEMA_VERIFY_DELAY_MS = 2000;
 
 /**
@@ -136,10 +136,7 @@ async function createSchema(schemaName: string): Promise<void> {
         const verifyClient = await createDsqlClient(config);
 
         try {
-            const result = await verifyClient.query(
-                `SELECT 1 FROM information_schema.schemata WHERE schema_name = $1`,
-                [schemaName],
-            );
+            const result = await verifyClient.query(`SELECT 1 FROM pg_namespace WHERE nspname = $1`, [schemaName]);
 
             if ((result.rowCount ?? 0) > 0) {
                 console.log(`[db:schema] Schema "${schemaName}" verified visible (attempt ${attempt}).`);
@@ -257,10 +254,10 @@ async function syncProductionData(targetSchema: string, tables: string[]): Promi
         const probeClient = await createDsqlClient(sandboxConfig);
 
         try {
-            const result = await probeClient.query(
-                `SELECT 1 FROM information_schema.tables WHERE table_schema = $1 AND table_name = $2`,
-                [targetSchema, probeTable],
-            );
+            const result = await probeClient.query(`SELECT 1 FROM pg_tables WHERE schemaname = $1 AND tablename = $2`, [
+                targetSchema,
+                probeTable,
+            ]);
 
             if ((result.rowCount ?? 0) > 0) {
                 console.log(`[db:sync] Table "${targetSchema}"."${probeTable}" verified visible (attempt ${attempt}).`);
