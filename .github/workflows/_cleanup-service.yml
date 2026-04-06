@@ -170,26 +170,48 @@ jobs:
                     echo "Lambda log group cleanup complete."
                   fi
 
-            - name: Delete API Gateway access log group
+            - name: Delete HTTP API access log group
               if: inputs.has-rest-api-logs
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_NAME: armoury-${{ inputs.service-short-name }}
               run: |
-                  # API Gateway access log groups follow this naming pattern
-                  LOG_GROUP="/aws/api-gateway/${SERVICE_NAME}-pr-${PR_NUMBER}"
-                  echo "Checking for API Gateway log group: ${LOG_GROUP}"
+                  # Serverless Framework creates HTTP API access logs at /aws/http-api/
+                  LOG_GROUP="/aws/http-api/${SERVICE_NAME}-pr-${PR_NUMBER}"
+                  echo "Checking for HTTP API log group: ${LOG_GROUP}"
                   EXISTS=$(aws logs describe-log-groups \
                     --log-group-name-prefix "${LOG_GROUP}" \
                     --query "logGroups[?logGroupName=='${LOG_GROUP}'].logGroupName" \
                     --output text || true)
 
                   if [ -n "${EXISTS}" ] && [ "${EXISTS}" != "None" ]; then
-                    echo "Deleting API Gateway log group: ${LOG_GROUP}"
+                    echo "Deleting HTTP API log group: ${LOG_GROUP}"
                     aws logs delete-log-group --log-group-name "${LOG_GROUP}" || true
-                    echo "API Gateway log group deleted."
+                    echo "HTTP API log group deleted."
                   else
-                    echo "No API Gateway log group found at ${LOG_GROUP} — skipping."
+                    echo "No HTTP API log group found at ${LOG_GROUP} — skipping."
+                  fi
+
+            - name: Delete WebSocket API log group
+              if: inputs.has-websocket
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  SERVICE_NAME: armoury-${{ inputs.service-short-name }}
+              run: |
+                  # Serverless Framework creates WebSocket logs at /aws/websocket/
+                  LOG_GROUP="/aws/websocket/${SERVICE_NAME}-pr-${PR_NUMBER}"
+                  echo "Checking for WebSocket log group: ${LOG_GROUP}"
+                  EXISTS=$(aws logs describe-log-groups \
+                    --log-group-name-prefix "${LOG_GROUP}" \
+                    --query "logGroups[?logGroupName=='${LOG_GROUP}'].logGroupName" \
+                    --output text || true)
+
+                  if [ -n "${EXISTS}" ] && [ "${EXISTS}" != "None" ]; then
+                    echo "Deleting WebSocket log group: ${LOG_GROUP}"
+                    aws logs delete-log-group --log-group-name "${LOG_GROUP}" || true
+                    echo "WebSocket log group deleted."
+                  else
+                    echo "No WebSocket log group found at ${LOG_GROUP} — skipping."
                   fi
 
             - name: Delete Secrets Manager secret
