@@ -143,6 +143,7 @@ async function createSchema(schemaName: string): Promise<void> {
 
             if ((result.rowCount ?? 0) > 0) {
                 console.log(`[db:schema] Schema "${schemaName}" verified visible (attempt ${attempt}).`);
+
                 return;
             }
         } finally {
@@ -251,6 +252,7 @@ async function syncProductionData(targetSchema: string, tables: string[]): Promi
     // Wait for tables to be visible on fresh connections (DSQL replication lag
     // between drizzle-kit push and the sync step).
     const probeTable = tables[0]!;
+
     for (let attempt = 1; attempt <= SCHEMA_VERIFY_MAX_RETRIES; attempt++) {
         const probeClient = await createDsqlClient(sandboxConfig);
 
