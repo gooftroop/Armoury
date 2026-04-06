@@ -4,12 +4,24 @@
  * - Used exclusively by drizzle-kit for schema introspection and migrations
  * - Must NOT import from the DAO package's `@/` path aliases (drizzle-kit cannot resolve them)
  * - Table definitions must stay in sync with the canonical definitions in the DAO layer
+ * - Tables must be schema-qualified when DB_SCHEMA is set to a non-public schema,
+ *   so that drizzle-kit's schemaFilter includes them in the desired snapshot
  */
 
-import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, index, pgSchema, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import type { PgTableFn } from 'drizzle-orm/pg-core';
+
+/**
+ * Builds a table constructor that targets the correct Postgres schema.
+ * When DB_SCHEMA is a custom schema (e.g. 'pr_33'), tables are created under
+ * that schema via pgSchema().table(). When unset or 'public', plain pgTable()
+ * is used (pgSchema('public') throws in drizzle-orm).
+ */
+const dbSchema = process.env['DB_SCHEMA'];
+const table: PgTableFn = dbSchema && dbSchema !== 'public' ? pgSchema(dbSchema).table : pgTable;
 
 /** Drizzle table mapping for friend relationship entities. */
-export const friendsTable = pgTable(
+export const friendsTable = table(
     'friends',
     {
         id: text('id')
@@ -30,7 +42,7 @@ export const friendsTable = pgTable(
 );
 
 /** Drizzle table mapping for user presence entities. */
-export const userPresenceTable = pgTable('user_presence', {
+export const userPresenceTable = table('user_presence', {
     id: text('user_id').primaryKey(),
     connectionId: text('connection_id'),
     status: text('status').notNull(),
