@@ -106,10 +106,16 @@ function validateSchemaName(schemaName: string): void {
     }
 }
 
+const SCHEMA_VERIFY_MAX_RETRIES = 10;
+const SCHEMA_VERIFY_DELAY_MS = 2000;
+
 /**
- * Creates a PostgreSQL schema if it does not already exist.
+ * Creates a PostgreSQL schema and verifies visibility on a fresh connection.
  *
- * @param schemaName - The schema name to create (e.g., "pr_42").
+ * DSQL schema DDL may not be immediately visible to new connections due to
+ * replication lag. We retry on a fresh connection before returning so that
+ * the subsequent `drizzle-kit push` step (which opens its own connection)
+ * does not fail with `invalid_schema_name` (3F000).
  */
 async function createSchema(schemaName: string): Promise<void> {
     validateSchemaName(schemaName);
@@ -120,10 +126,38 @@ async function createSchema(schemaName: string): Promise<void> {
     try {
         console.log(`[db:schema] Creating schema "${schemaName}" if not exists...`);
         await client.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
-        console.log(`[db:schema] Schema "${schemaName}" ready.`);
+        console.log(`[db:schema] Schema "${schemaName}" created.`);
     } finally {
         await client.end();
     }
+
+    // Verify the schema is visible on a fresh connection (DSQL replication lag).
+    for (let attempt = 1; attempt <= SCHEMA_VERIFY_MAX_RETRIES; attempt++) {
+        const verifyClient = await createDsqlClient(config);
+
+        try {
+            const result = await verifyClient.query(
+                `SELECT 1 FROM information_schema.schemata WHERE schema_name = $1`,
+                [schemaName],
+            );
+
+            if ((result.rowCount ?? 0) > 0) {
+                console.log(`[db:schema] Schema "${schemaName}" verified visible (attempt ${attempt}).`);
+                return;
+            }
+        } finally {
+            await verifyClient.end();
+        }
+
+        console.log(
+            `[db:schema] Schema "${schemaName}" not yet visible (attempt ${attempt}/${SCHEMA_VERIFY_MAX_RETRIES}), retrying in ${SCHEMA_VERIFY_DELAY_MS}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, SCHEMA_VERIFY_DELAY_MS));
+    }
+
+    throw new Error(
+        `Schema "${schemaName}" was created but not visible after ${SCHEMA_VERIFY_MAX_RETRIES} retries (${(SCHEMA_VERIFY_MAX_RETRIES * SCHEMA_VERIFY_DELAY_MS) / 1000}s). Aurora DSQL replication lag may be excessive.`,
+    );
 }
 
 /**

@@ -19,12 +19,13 @@ export const SCHEMA_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
 
 export interface QueryResult {
     rows: Record<string, unknown>[];
+    rowCount?: number | null;
 }
 
 export type PgClient = {
     connect: () => Promise<void>;
     end: () => Promise<void>;
-    query: (text: string) => Promise<QueryResult>;
+    query: (text: string, values?: unknown[]) => Promise<QueryResult>;
 };
 
 export function serializeValue(v: unknown): string {
