@@ -10,12 +10,14 @@
  * 2. Must render overlay with syncing/error/download states.
  * 3. Must render synced badge when synced.
  * 4. Must not own data fetching or side effects.
+ * 5. Must wrap tile in a Link when href is provided (synced tiles navigate to armies page).
  *
  * @module system-tile
  */
 
 import * as React from 'react';
 
+import Link from 'next/link';
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
 import type { GameSystemManifest } from '@armoury/data-dao';
@@ -38,6 +40,8 @@ export interface SystemTileProps {
     showOverlay: boolean;
     /** Text to display on the overlay or synced badge. */
     overlayText: string;
+    /** Navigation href for synced tiles. When provided, the tile becomes a link. */
+    href?: string;
     /** Click handler for the tile overlay. */
     onClick: () => void;
 }
@@ -55,9 +59,10 @@ function SystemTile({
     isError,
     showOverlay,
     overlayText,
+    href,
     onClick,
 }: SystemTileProps): React.ReactElement {
-    return (
+    const card = (
         <div
             className={cn(
                 'group relative flex flex-col overflow-hidden rounded-lg border border-border/40',
@@ -137,6 +142,12 @@ function SystemTile({
             </div>
         </div>
     );
+
+    if (href) {
+        return <Link href={href}>{card}</Link>;
+    }
+
+    return card;
 }
 
 SystemTile.displayName = 'SystemTile';

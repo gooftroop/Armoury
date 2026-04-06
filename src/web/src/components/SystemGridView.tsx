@@ -37,6 +37,8 @@ export interface SystemTileData {
     showOverlay: boolean;
     /** Overlay or badge label text. */
     overlayText: string;
+    /** Navigation href for synced tiles (links to system's armies page). */
+    href?: string;
     /** Tile click callback. */
     onClick: () => void;
 }
@@ -70,6 +72,7 @@ function SystemGridView({ tiles }: SystemGridViewProps): React.ReactElement {
                     isError={tile.isError}
                     showOverlay={tile.showOverlay}
                     overlayText={tile.overlayText}
+                    href={tile.href}
                     onClick={tile.onClick}
                 />
             ))}
