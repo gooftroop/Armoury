@@ -9,8 +9,8 @@ describe('auth middleware', () => {
                     jwt: {
                         claims: {
                             'https://armoury.app/internal_id': 'user-1',
-                            email: 'user@example.com',
-                            name: 'Test User',
+                            'https://armoury.app/email': 'user@example.com',
+                            'https://armoury.app/name': 'Test User',
                         },
                     },
                 },

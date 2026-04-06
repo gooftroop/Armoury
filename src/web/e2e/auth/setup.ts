@@ -15,8 +15,6 @@
  * 3. Must inject the cookie into the browser context with correct attributes.
  * 4. Must save storageState to src/web/e2e/.auth/user.json.
  * 5. Must provide a realistic session shape (user sub, email, tokenSet).
- * 6. Must include INTERNAL_ID_CLAIM in the user object for authenticated landing + account persistence.
- * 7. Must export E2E_USER_ID and E2E_USER_SUB for use by LocalStack seeding and test assertions.
  */
 
 import { test as setup } from '@playwright/test';
@@ -25,19 +23,13 @@ import { mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-/** Path where authenticated session state is persisted between projects.
- *  Must resolve to the same location as storageState in playwright.config.ts. */
-const AUTH_STATE_PATH = resolve(__dirname, '../.auth/user.json');
-
-/** Auth0 session cookie name used by the v4 SDK. */
+// Resolve relative to this file, not CWD, so the path is stable regardless of where Playwright runs.
+const __dir = dirname(fileURLToPath(import.meta.url));
+const AUTH_STATE_PATH = resolve(__dir, '..', '.auth', 'user.json');
 const AUTH0_COOKIE_NAME = '__session';
 
-/** Must match INTERNAL_ID_CLAIM in src/web/src/lib/auth0.ts. */
+const E2E_USER_ID = 'e2e-test-user-00000000-0000-0000-0000-000000000001';
 const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
-
-import { E2E_USER_ID, E2E_USER_SUB } from '../constants.js';
 
 setup('forge authenticated session', async ({ context }) => {
     const secret = process.env['AUTH0_SECRET'] ?? 'e2e-test-secret';
@@ -45,7 +37,7 @@ setup('forge authenticated session', async ({ context }) => {
     const cookieValue = await generateSessionCookie(
         {
             user: {
-                sub: E2E_USER_SUB,
+                sub: 'auth0|e2e-test-user',
                 email: 'e2e@armoury.test',
                 name: 'E2E Test User',
                 email_verified: true,
@@ -53,7 +45,7 @@ setup('forge authenticated session', async ({ context }) => {
             },
             tokenSet: {
                 accessToken: 'e2e-fake-access-token',
-                expiresAt: Math.floor(Date.now() / 1000) + 86_400, // 24 hours from now
+                expiresAt: Math.floor(Date.now() / 1000) + 86_400,
             },
         },
         { secret },
