@@ -15,6 +15,7 @@
  * 3. Must inject the cookie into the browser context with correct attributes.
  * 4. Must save storageState to src/web/e2e/.auth/user.json.
  * 5. Must provide a realistic session shape (user sub, email, tokenSet).
+ * 6. Must include namespaced `https://armoury.app/internal_id` claim so authenticated views resolve the internal user ID.
  */
 
 import { test as setup } from '@playwright/test';
