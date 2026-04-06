@@ -15,6 +15,7 @@
  * 3. Must inject the cookie into the browser context with correct attributes.
  * 4. Must save storageState to src/web/e2e/.auth/user.json.
  * 5. Must provide a realistic session shape (user sub, email, tokenSet).
+ * 6. Must include namespaced `https://armoury.app/internal_id` claim so authenticated views resolve the internal user ID.
  */
 
 import { test as setup } from '@playwright/test';
@@ -38,6 +39,7 @@ setup('forge authenticated session', async ({ context }) => {
                 email: 'e2e@armoury.test',
                 name: 'E2E Test User',
                 email_verified: true,
+                'https://armoury.app/internal_id': 'e2e-test-internal-id',
             },
             tokenSet: {
                 accessToken: 'e2e-fake-access-token',
