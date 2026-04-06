@@ -18,7 +18,7 @@ import type { PgTableFn } from 'drizzle-orm/pg-core';
  * is used (pgSchema('public') throws in drizzle-orm).
  */
 const dbSchema = process.env['DB_SCHEMA'];
-const table: PgTableFn = dbSchema && dbSchema !== 'public' ? pgSchema(dbSchema).table : pgTable;
+const table: PgTableFn<string | undefined> = dbSchema && dbSchema !== 'public' ? pgSchema(dbSchema).table : pgTable;
 
 /** Drizzle table mapping for campaign entities. */
 export const campaignsTable = table(

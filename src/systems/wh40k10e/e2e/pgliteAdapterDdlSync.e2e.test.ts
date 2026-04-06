@@ -39,15 +39,10 @@ const HAS_TOKEN = Boolean(GITHUB_TOKEN);
  * Known DAOs that consistently fail during sync.
  * Each entry maps the DAO name to its expected error message substring.
  *
- * - CrusadeRules: BSData repo does not exist on GitHub
  * - ChapterApproved: Requires Wahapedia client which is not configured in this test
- * - Aeldari / Drukhari: Catalogue XML exceeds the default entity expansion limit
  */
 const KNOWN_FAILING_DAOS: Record<string, string> = {
-    CrusadeRules: 'Not Found',
     ChapterApproved: 'Wahapedia client not configured',
-    Aeldari: 'Entity expansion limit exceeded',
-    Drukhari: 'Entity expansion limit exceeded',
 };
 
 /**
