@@ -14,6 +14,7 @@ export default defineConfig({
     out: './drizzle',
     dbCredentials,
     schemaFilter: schema,
+    tablesFilter: ['users', 'accounts'],
     migrations: {
         schema: 'drizzle_users',
     },

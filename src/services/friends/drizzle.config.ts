@@ -14,6 +14,7 @@ export default defineConfig({
     out: './drizzle',
     dbCredentials,
     schemaFilter: schema,
+    tablesFilter: ['friends', 'user_presence'],
     migrations: {
         schema: 'drizzle_friends',
     },

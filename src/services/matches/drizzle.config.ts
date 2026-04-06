@@ -14,6 +14,7 @@ export default defineConfig({
     out: './drizzle',
     dbCredentials,
     schemaFilter: schema,
+    tablesFilter: ['matches'],
     migrations: {
         schema: 'drizzle_matches',
     },

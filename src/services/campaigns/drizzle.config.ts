@@ -14,6 +14,7 @@ export default defineConfig({
     out: './drizzle',
     dbCredentials,
     schemaFilter: schema,
+    tablesFilter: ['campaigns', 'campaign_participants'],
     migrations: {
         schema: 'drizzle_campaigns',
     },

@@ -287,8 +287,6 @@ export interface GameSystemManifest {
     manifestVersion: string;
 }
 
-export type { IGitHubClient, GitHubFileInfo } from '@armoury/clients-github';
-
 /** Error thrown when database operations fail. */
 export class DatabaseError extends Error {
     readonly operation: string;
