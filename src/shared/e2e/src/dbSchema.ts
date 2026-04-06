@@ -248,34 +248,43 @@ async function syncProductionData(targetSchema: string, tables: string[]): Promi
 
     // Wait for tables to be visible on fresh connections (DSQL replication lag
     // between drizzle-kit push and the sync step).
+    //
+    // Aurora DSQL does not reliably expose table metadata through catalog views
+    // (information_schema.tables, pg_tables). Instead, we probe the table
+    // directly — a successful `SELECT 1 ... LIMIT 1` confirms the relation
+    // exists. A "relation does not exist" (42P01) error means DSQL hasn't
+    // propagated the DDL yet, so we retry.
     const probeTable = tables[0]!;
 
     for (let attempt = 1; attempt <= SCHEMA_VERIFY_MAX_RETRIES; attempt++) {
         const probeClient = await createDsqlClient(sandboxConfig);
 
         try {
-            const result = await probeClient.query(`SELECT 1 FROM pg_tables WHERE schemaname = $1 AND tablename = $2`, [
-                targetSchema,
-                probeTable,
-            ]);
+            await probeClient.query(`SELECT 1 FROM "${targetSchema}"."${probeTable}" LIMIT 1`);
+            console.log(`[db:sync] Table "${targetSchema}"."${probeTable}" verified visible (attempt ${attempt}).`);
+            break;
+        } catch (err: unknown) {
+            const pgCode = (err as { code?: string }).code;
 
-            if ((result.rowCount ?? 0) > 0) {
-                console.log(`[db:sync] Table "${targetSchema}"."${probeTable}" verified visible (attempt ${attempt}).`);
-                break;
+            // 42P01 = undefined_table — table not yet visible, retry
+            if (pgCode === '42P01') {
+                if (attempt === SCHEMA_VERIFY_MAX_RETRIES) {
+                    throw new Error(
+                        `Table "${targetSchema}"."${probeTable}" not visible after ${SCHEMA_VERIFY_MAX_RETRIES} retries (${(SCHEMA_VERIFY_MAX_RETRIES * SCHEMA_VERIFY_DELAY_MS) / 1000}s). Aurora DSQL replication lag may be excessive.`,
+                        { cause: err },
+                    );
+                }
+
+                console.log(
+                    `[db:sync] Table "${targetSchema}"."${probeTable}" not yet visible (attempt ${attempt}/${SCHEMA_VERIFY_MAX_RETRIES}), retrying in ${SCHEMA_VERIFY_DELAY_MS}ms...`,
+                );
+            } else {
+                throw err;
             }
         } finally {
             await probeClient.end();
         }
 
-        if (attempt === SCHEMA_VERIFY_MAX_RETRIES) {
-            throw new Error(
-                `Table "${targetSchema}"."${probeTable}" not visible after ${SCHEMA_VERIFY_MAX_RETRIES} retries (${(SCHEMA_VERIFY_MAX_RETRIES * SCHEMA_VERIFY_DELAY_MS) / 1000}s). Aurora DSQL replication lag may be excessive.`,
-            );
-        }
-
-        console.log(
-            `[db:sync] Table "${targetSchema}"."${probeTable}" not yet visible (attempt ${attempt}/${SCHEMA_VERIFY_MAX_RETRIES}), retrying in ${SCHEMA_VERIFY_DELAY_MS}ms...`,
-        );
         await new Promise((resolve) => setTimeout(resolve, SCHEMA_VERIFY_DELAY_MS));
     }
 
