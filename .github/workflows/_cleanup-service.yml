@@ -86,42 +86,31 @@ jobs:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
               run: serverless remove --stage pr-${{ github.event.pull_request.number }} --param="authorizerArn=arn:aws:lambda:us-east-1:000000000000:function:cleanup-placeholder"
 
-            - name: Delete HTTP API domain mapping
+            - name: Delete HTTP API routing rule
               if: inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  PR_DOMAIN: ${{ format('pr-{0}.api.sandbox.armoury-app.com', github.event.pull_request.number) }}
+                  WILDCARD_DOMAIN: '*.api.sandbox.armoury-app.com'
+                  ROUTING_PRIORITY: ${{ inputs.routing-rule-priority }}
               run: |
-                  # Delete the API mapping for this service on the per-PR domain
-                  MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
-                    --domain-name "${PR_DOMAIN}" \
-                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                  # Find and delete the routing rule for this PR+service on the wildcard domain.
+                  # Rules are identified by matching the effective priority (base + PR * 1000).
+                  EFFECTIVE_PRIORITY=$(( ROUTING_PRIORITY + PR_NUMBER * 1000 ))
+
+                  RULE_ID=$(aws apigatewayv2 list-routing-rules \
+                    --domain-name "${WILDCARD_DOMAIN}" \
+                    --query "Items[?Priority==\`${EFFECTIVE_PRIORITY}\`].RoutingRuleId" \
                     --output text 2>/dev/null || true)
 
-                  if [ -n "${MAPPING_ID}" ] && [ "${MAPPING_ID}" != "None" ]; then
-                    echo "Deleting API mapping ${MAPPING_ID} for ${PR_DOMAIN}/${SERVICE_SHORT_NAME}"
-                    aws apigatewayv2 delete-api-mapping \
-                      --domain-name "${PR_DOMAIN}" \
-                      --api-mapping-id "${MAPPING_ID}"
-                    echo "API mapping deleted."
+                  if [ -n "${RULE_ID}" ] && [ "${RULE_ID}" != "None" ]; then
+                    echo "Deleting routing rule ${RULE_ID} (priority ${EFFECTIVE_PRIORITY}) for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-routing-rule \
+                      --domain-name "${WILDCARD_DOMAIN}" \
+                      --routing-rule-id "${RULE_ID}"
+                    echo "Routing rule deleted."
                   else
-                    echo "No API mapping found for ${PR_DOMAIN}/${SERVICE_SHORT_NAME} — skipping."
-                  fi
-
-                  # If no more API mappings remain on this PR domain, delete the domain itself.
-                  # This cleans up the per-PR domain after the last service is torn down.
-                  REMAINING=$(aws apigatewayv2 get-api-mappings \
-                    --domain-name "${PR_DOMAIN}" \
-                    --query 'Items | length(@)' \
-                    --output text 2>/dev/null || echo "0")
-
-                  if [ "${REMAINING}" = "0" ] || [ "${REMAINING}" = "None" ]; then
-                    echo "No remaining mappings on ${PR_DOMAIN} — deleting domain"
-                    aws apigatewayv2 delete-domain-name --domain-name "${PR_DOMAIN}" 2>/dev/null || true
-                    echo "Domain deleted."
-                  else
-                    echo "${REMAINING} mapping(s) still on ${PR_DOMAIN} — keeping domain."
+                    echo "No routing rule found at priority ${EFFECTIVE_PRIORITY} for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME} — skipping."
                   fi
 
             - name: Delete WS API mapping
