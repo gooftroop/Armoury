@@ -348,7 +348,7 @@ jobs:
                       {
                         \"InvokeApi\": {
                           \"ApiId\": \"${HTTP_API_ID}\",
-                          \"Stage\": \"\\\$default\",
+                          \"Stage\": \"\$default\",
                           \"StripBasePath\": true
                         }
                       }
