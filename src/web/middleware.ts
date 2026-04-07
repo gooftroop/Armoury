@@ -34,11 +34,6 @@ const intlMiddleware = createIntlMiddleware(routing);
 export async function middleware(request: NextRequest): Promise<NextResponse> {
     const { pathname } = request.nextUrl;
 
-    const sessionCookie = request.cookies.get('__session');
-    console.error(
-        `[E2E-DIAG] middleware: path=${pathname}, auth0=${!!auth0}, cookie=${!!sessionCookie?.value}, cookieLen=${sessionCookie?.value?.length ?? 0}`,
-    );
-
     /**
      * Auth0 v4 middleware must process every request for rolling sessions and
      * token refresh. When Auth0 is not configured, skip to intl middleware.
