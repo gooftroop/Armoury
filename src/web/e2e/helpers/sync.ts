@@ -37,7 +37,9 @@ export async function waitForSyncReady(page: Page, maxAttempts = 5): Promise<voi
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const isReady = await readyLocator.isVisible().catch(() => false);
 
-        if (isReady) {return;}
+        if (isReady) {
+            return;
+        }
 
         const downloadVisible = await page
             .locator('button')
@@ -98,7 +100,9 @@ export async function syncAndNavigateToArmies(page: Page, maxAttempts = 5): Prom
             .then(() => true)
             .catch(() => false);
 
-        if (contentLoaded) {return;}
+        if (contentLoaded) {
+            return;
+        }
 
         if (!page.url().includes('/armies')) {
             await page.waitForTimeout(2_000);

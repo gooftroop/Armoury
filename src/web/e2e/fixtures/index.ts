@@ -87,12 +87,16 @@ export const test = base.extend<ArmouryFixtures>({
         // Only intercept for authenticated projects — public tests need the
         // redirect to /auth/login to actually happen (e.g. tile click → login).
         await page.addInitScript((blockAuthRedirects: boolean) => {
-            if (!blockAuthRedirects) {return;}
+            if (!blockAuthRedirects) {
+                return;
+            }
 
             const originalAssign = window.location.assign.bind(window.location);
 
             window.location.assign = (url: string | URL) => {
-                if (String(url).includes('/auth/login')) {return;}
+                if (String(url).includes('/auth/login')) {
+                    return;
+                }
 
                 originalAssign(url);
             };
@@ -100,7 +104,9 @@ export const test = base.extend<ArmouryFixtures>({
             const originalReplace = window.location.replace.bind(window.location);
 
             window.location.replace = (url: string | URL) => {
-                if (String(url).includes('/auth/login')) {return;}
+                if (String(url).includes('/auth/login')) {
+                    return;
+                }
 
                 originalReplace(url);
             };
