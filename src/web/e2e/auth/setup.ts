@@ -33,7 +33,7 @@ const E2E_USER_ID = 'e2e-test-user-00000000-0000-0000-0000-000000000001';
 const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
 
 setup('forge authenticated session', async ({ context }) => {
-    const secret = process.env['AUTH0_SECRET'] ?? 'e2e-test-secret';
+    const secret = process.env['AUTH0_SECRET'] || 'e2e-test-secret';
 
     const cookieValue = await generateSessionCookie(
         {
