@@ -114,7 +114,10 @@ async function activateSystemTile(
                 await mutation.mutationFn();
 
                 setPersistErrors((prev) => {
-                    if (!prev[manifest.id]) return prev;
+                    if (!prev[manifest.id]) {
+                        return prev;
+                    }
+
                     const next = { ...prev };
                     delete next[manifest.id];
 
@@ -208,8 +211,13 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
 
     const tiles = React.useMemo(
         () =>
-            buildTiles(manifests, systemSyncStates, activatingId, persistErrors, t, (manifest) =>
-                void handleTileClick(manifest),
+            buildTiles(
+                manifests,
+                systemSyncStates,
+                activatingId,
+                persistErrors,
+                t,
+                (manifest) => void handleTileClick(manifest),
             ),
         [manifests, systemSyncStates, activatingId, persistErrors, t, handleTileClick],
     );
