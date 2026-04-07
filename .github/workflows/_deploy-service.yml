@@ -273,6 +273,7 @@ jobs:
 
             - name: Create Sentry release and upload source maps
               if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
+              continue-on-error: true
               working-directory: ${{ inputs.working-directory }}
               env:
                   SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
@@ -283,15 +284,19 @@ jobs:
                   npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
                   npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
 
-            - name: Create HTTP API routing rule
+            - name: Create per-PR domain and Route53 DNS record
               if: github.event_name == 'pull_request' && inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  WILDCARD_DOMAIN: '*.api.sandbox.armoury-app.com'
-                  ROUTING_PRIORITY: ${{ inputs.routing-rule-priority }}
+                  PR_DOMAIN_PREFIX: 'pr-'
+                  DOMAIN_SUFFIX: '.api.sandbox.armoury-app.com'
+                  HOSTED_ZONE_ID: 'Z09361641Z6OI455J4GGH'
+                  # Regional hosted zone ID for API Gateway in us-east-1
+                  APIGW_HOSTED_ZONE_ID: 'Z1UJRXOUMOOFQ8'
               run: |
                   STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
+                  PR_DOMAIN="${PR_DOMAIN_PREFIX}${PR_NUMBER}${DOMAIN_SUFFIX}"
 
                   # Get HTTP API ID from CloudFormation output (Serverless Framework exports HttpApiId)
                   HTTP_API_ID=$(aws cloudformation describe-stacks \
@@ -310,51 +315,63 @@ jobs:
 
                   echo "HTTP API ID: ${HTTP_API_ID}"
 
-                  # Create (or update) a routing rule on the wildcard domain.
-                  # The wildcard domain (*.api.sandbox.armoury-app.com) uses ROUTING_RULE_THEN_API_MAPPING mode.
-                  # Each rule matches a Host header (pr-N.api.sandbox.armoury-app.com) and base path
-                  # (service short name), then routes to the PR's HTTP API.
-                  #
-                  # Priority is offset by PR number to avoid collisions between PRs:
-                  #   effective_priority = base_priority + (pr_number * 1000)
-                  # This keeps services for the same PR adjacent while preventing cross-PR conflicts.
-                  EFFECTIVE_PRIORITY=$(( ROUTING_PRIORITY + PR_NUMBER * 1000 ))
+                  # --- Step 1: Create per-PR custom domain (idempotent — ignores ConflictException) ---
+                  echo "Ensuring per-PR domain exists: ${PR_DOMAIN}"
+                  aws apigatewayv2 create-domain-name \
+                    --domain-name "${PR_DOMAIN}" \
+                    --domain-name-configurations "CertificateArn=arn:aws:acm:us-east-1:040663841500:certificate/1bb0db8b-41ab-4d77-9c39-1e83d4ecc055,EndpointType=REGIONAL,SecurityPolicy=TLS_1_2" \
+                    --routing-mode "API_MAPPING_ONLY" 2>&1 || echo "::notice::Domain ${PR_DOMAIN} already exists (expected on re-deploy)"
 
-                  echo "Creating routing rule on ${WILDCARD_DOMAIN} for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME} (priority ${EFFECTIVE_PRIORITY})"
+                  # --- Step 2: Create API mapping on per-PR domain ---
+                  # Delete existing mapping for this service if it exists (idempotent re-deploy)
+                  EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
+                    --output text 2>/dev/null || true)
 
-                  aws apigatewayv2 create-routing-rule \
-                    --domain-name "${WILDCARD_DOMAIN}" \
-                    --priority "${EFFECTIVE_PRIORITY}" \
-                    --conditions "[
-                      {
-                        \"MatchHeaders\": {
-                          \"AnyOf\": [
-                            {
-                              \"Header\": \"Host\",
-                              \"ValueGlob\": \"pr-${PR_NUMBER}.api.sandbox.armoury-app.com\"
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        \"MatchBasePaths\": {
-                          \"AnyOf\": [
-                            \"${SERVICE_SHORT_NAME}\"
-                          ]
-                        }
-                      }
-                    ]" \
-                    --actions "[
-                      {
-                        \"InvokeApi\": {
-                          \"ApiId\": \"${HTTP_API_ID}\",
-                          \"Stage\": \"\$default\",
-                          \"StripBasePath\": true
-                        }
-                      }
-                    ]"
+                  if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
+                    echo "Deleting existing API mapping ${EXISTING_MAPPING_ID} for ${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${PR_DOMAIN}" \
+                      --api-mapping-id "${EXISTING_MAPPING_ID}"
+                  fi
 
-                  echo "Routing rule created: pr-${PR_NUMBER}.api.sandbox.armoury-app.com/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
+                  aws apigatewayv2 create-api-mapping \
+                    --domain-name "${PR_DOMAIN}" \
+                    --api-id "${HTTP_API_ID}" \
+                    --stage "\$default" \
+                    --api-mapping-key "${SERVICE_SHORT_NAME}"
+
+                  echo "Created API mapping: ${PR_DOMAIN}/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
+
+                  # --- Step 3: Create Route53 A-alias record pointing to the per-PR APIGW endpoint ---
+                  # Get the regional domain name (target) for this per-PR custom domain
+                  APIGW_TARGET=$(aws apigatewayv2 get-domain-name \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query 'DomainNameConfigurations[0].ApiGatewayDomainName' \
+                    --output text)
+
+                  echo "APIGW target for ${PR_DOMAIN}: ${APIGW_TARGET}"
+
+                  # Upsert A-alias record in Route53 (idempotent — creates or updates)
+                  aws route53 change-resource-record-sets \
+                    --hosted-zone-id "${HOSTED_ZONE_ID}" \
+                    --change-batch "{
+                      \"Changes\": [{
+                        \"Action\": \"UPSERT\",
+                        \"ResourceRecordSet\": {
+                          \"Name\": \"${PR_DOMAIN}\",
+                          \"Type\": \"A\",
+                          \"AliasTarget\": {
+                            \"HostedZoneId\": \"${APIGW_HOSTED_ZONE_ID}\",
+                            \"DNSName\": \"${APIGW_TARGET}\",
+                            \"EvaluateTargetHealth\": false
+                          }
+                        }
+                      }]
+                    }"
+
+                  echo "Route53 A-alias record upserted: ${PR_DOMAIN} -> ${APIGW_TARGET}"
 
             - name: Create WS domain mapping
               if: github.event_name == 'pull_request' && inputs.has-websocket
@@ -496,6 +513,7 @@ jobs:
 
             - name: Create Sentry release and upload source maps
               if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
+              continue-on-error: true
               working-directory: ${{ inputs.working-directory }}
               env:
                   SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}

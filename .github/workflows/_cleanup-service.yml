@@ -86,31 +86,76 @@ jobs:
                   SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
               run: serverless remove --stage pr-${{ github.event.pull_request.number }} --param="authorizerArn=arn:aws:lambda:us-east-1:000000000000:function:cleanup-placeholder"
 
-            - name: Delete HTTP API routing rule
+            - name: Delete per-PR domain, API mappings, and Route53 DNS record
               if: inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  WILDCARD_DOMAIN: '*.api.sandbox.armoury-app.com'
-                  ROUTING_PRIORITY: ${{ inputs.routing-rule-priority }}
+                  PR_DOMAIN_PREFIX: 'pr-'
+                  DOMAIN_SUFFIX: '.api.sandbox.armoury-app.com'
+                  HOSTED_ZONE_ID: 'Z09361641Z6OI455J4GGH'
+                  APIGW_HOSTED_ZONE_ID: 'Z1UJRXOUMOOFQ8'
               run: |
-                  # Find and delete the routing rule for this PR+service on the wildcard domain.
-                  # Rules are identified by matching the effective priority (base + PR * 1000).
-                  EFFECTIVE_PRIORITY=$(( ROUTING_PRIORITY + PR_NUMBER * 1000 ))
+                  PR_DOMAIN="${PR_DOMAIN_PREFIX}${PR_NUMBER}${DOMAIN_SUFFIX}"
 
-                  RULE_ID=$(aws apigatewayv2 list-routing-rules \
-                    --domain-name "${WILDCARD_DOMAIN}" \
-                    --query "Items[?Priority==\`${EFFECTIVE_PRIORITY}\`].RoutingRuleId" \
+                  echo "Cleaning up per-PR domain: ${PR_DOMAIN}"
+
+                  # --- Step 1: Delete the API mapping for this service ---
+                  MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
                     --output text 2>/dev/null || true)
 
-                  if [ -n "${RULE_ID}" ] && [ "${RULE_ID}" != "None" ]; then
-                    echo "Deleting routing rule ${RULE_ID} (priority ${EFFECTIVE_PRIORITY}) for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME}"
-                    aws apigatewayv2 delete-routing-rule \
-                      --domain-name "${WILDCARD_DOMAIN}" \
-                      --routing-rule-id "${RULE_ID}"
-                    echo "Routing rule deleted."
+                  if [ -n "${MAPPING_ID}" ] && [ "${MAPPING_ID}" != "None" ]; then
+                    echo "Deleting API mapping ${MAPPING_ID} for ${SERVICE_SHORT_NAME}"
+                    aws apigatewayv2 delete-api-mapping \
+                      --domain-name "${PR_DOMAIN}" \
+                      --api-mapping-id "${MAPPING_ID}"
                   else
-                    echo "No routing rule found at priority ${EFFECTIVE_PRIORITY} for pr-${PR_NUMBER}/${SERVICE_SHORT_NAME} — skipping."
+                    echo "No API mapping found for ${SERVICE_SHORT_NAME} — skipping."
+                  fi
+
+                  # --- Step 2: Check if any other API mappings remain on this domain ---
+                  REMAINING=$(aws apigatewayv2 get-api-mappings \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query 'Items | length(@)' \
+                    --output text 2>/dev/null || echo "0")
+
+                  if [ "${REMAINING}" = "0" ] || [ "${REMAINING}" = "None" ]; then
+                    echo "No remaining API mappings on ${PR_DOMAIN} — deleting domain and DNS record."
+
+                    # --- Step 3: Delete Route53 A-alias record ---
+                    APIGW_TARGET=$(aws apigatewayv2 get-domain-name \
+                      --domain-name "${PR_DOMAIN}" \
+                      --query 'DomainNameConfigurations[0].ApiGatewayDomainName' \
+                      --output text 2>/dev/null || true)
+
+                    if [ -n "${APIGW_TARGET}" ] && [ "${APIGW_TARGET}" != "None" ]; then
+                      echo "Deleting Route53 A-alias record for ${PR_DOMAIN} -> ${APIGW_TARGET}"
+                      aws route53 change-resource-record-sets \
+                        --hosted-zone-id "${HOSTED_ZONE_ID}" \
+                        --change-batch "{
+                          \"Changes\": [{
+                            \"Action\": \"DELETE\",
+                            \"ResourceRecordSet\": {
+                              \"Name\": \"${PR_DOMAIN}\",
+                              \"Type\": \"A\",
+                              \"AliasTarget\": {
+                                \"HostedZoneId\": \"${APIGW_HOSTED_ZONE_ID}\",
+                                \"DNSName\": \"${APIGW_TARGET}\",
+                                \"EvaluateTargetHealth\": false
+                              }
+                            }
+                          }]
+                        }" || echo "::warning::Failed to delete Route53 record for ${PR_DOMAIN} (may not exist)"
+                    fi
+
+                    # --- Step 4: Delete the per-PR custom domain ---
+                    echo "Deleting per-PR domain: ${PR_DOMAIN}"
+                    aws apigatewayv2 delete-domain-name \
+                      --domain-name "${PR_DOMAIN}" || echo "::warning::Failed to delete domain ${PR_DOMAIN} (may not exist)"
+                  else
+                    echo "${REMAINING} API mapping(s) still on ${PR_DOMAIN} — keeping domain and DNS record for other services."
                   fi
 
             - name: Delete WS API mapping
