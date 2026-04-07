@@ -85,6 +85,11 @@ export default defineConfig({
         reuseExistingServer: !process.env['CI'],
         timeout: 120_000,
         env: {
+            // Spread process.env so the spawned server inherits PATH, system vars,
+            // and any CI-injected secrets (AUTH0_* from GitHub Actions env block).
+            // Without this, Playwright replaces the entire env — breaking npm/node
+            // resolution and dropping CI secrets.
+            ...process.env,
             // NODE_ENV=test makes Next.js load .env.test instead of .env.development.
             // This ensures the dev server always has the correct Auth0 e2e values
             // (AUTH0_SECRET, domain, client IDs) without requiring manual env setup.
