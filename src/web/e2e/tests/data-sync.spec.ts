@@ -40,25 +40,12 @@
 
 import { test, expect } from '../fixtures/index.js';
 import { pgliteDatabaseExists, getTableRowCounts, deletePgliteDatabase, insertTestArmy } from '../helpers/indexeddb.js';
+import { clickSystemTileOverlay, waitForSyncReady, syncAndNavigateToArmies } from '../helpers/sync.js';
 import { E2E_USER_ID } from '../constants.js';
-
-/**
- * Click the download overlay button on the first system tile.
- * The overlay is a <button> inside the SystemTile with download/loading/error text.
- */
-async function clickSystemTileOverlay(page: import('@playwright/test').Page): Promise<void> {
-    const overlay = page
-        .locator('button')
-        .filter({ hasText: /download|downloading|retry/i })
-        .first();
-    // Hover to reveal the overlay (opacity-0 → opacity-100 on group-hover).
-    const tile = overlay.locator('..');
-    await tile.hover();
-    await overlay.click();
-}
 
 test.describe('WH40K system data sync lifecycle', () => {
     test('first-time download enables Forge and exposes game data in UI', async ({ page, usersApiRequests }) => {
+        test.slow();
         // Collect console errors to verify no sync failures during the test.
         const consoleErrors: string[] = [];
         page.on('console', (msg) => {
@@ -85,26 +72,7 @@ test.describe('WH40K system data sync lifecycle', () => {
 
         // ---------- DOWNLOAD: trigger sync ----------
         await clickSystemTileOverlay(page);
-
-        // Wait for either "Ready" badge or "Download failed" error state.
-        const readyOrError = await Promise.race([
-            page
-                .locator('text=Ready')
-                .first()
-                .waitFor({ state: 'visible', timeout: 60_000 })
-                .then(() => 'ready' as const),
-            page
-                .locator('text=/failed|retry/i')
-                .first()
-                .waitFor({ state: 'visible', timeout: 60_000 })
-                .then(() => 'error' as const),
-        ]);
-
-        // Fail fast with a clear message if sync ended in error state.
-        if (readyOrError === 'error') {
-            const errorText = await page.locator('text=/failed|retry|error/i').first().textContent();
-            throw new Error(`Sync failed with UI state: "${errorText}".`);
-        }
+        await waitForSyncReady(page);
 
         await expect(page.locator('text=Ready').first()).toBeVisible();
         // Explicitly verify no error state coexists with the Ready badge.
@@ -160,7 +128,7 @@ test.describe('WH40K system data sync lifecycle', () => {
         });
 
         await clickSystemTileOverlay(page);
-        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
+        await waitForSyncReady(page);
 
         const firstPassRequests = githubProxyRequests;
         expect(firstPassRequests).toBeGreaterThan(0);
@@ -173,7 +141,7 @@ test.describe('WH40K system data sync lifecycle', () => {
         await page.goto('/');
 
         await clickSystemTileOverlay(page);
-        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
+        await waitForSyncReady(page);
 
         expect(githubProxyRequests).toBeGreaterThan(firstPassRequests);
     });
@@ -184,24 +152,14 @@ test.describe('WH40K system data sync lifecycle', () => {
         await page.goto('/');
         await deletePgliteDatabase(page);
         await clickSystemTileOverlay(page);
-        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
+        await waitForSyncReady(page);
 
         // GIVEN: insert a test army into PGlite while DataContext is still active.
         // Must happen BEFORE any full-page navigation since DataContext (and
         // __armoury_raw_query) is destroyed on navigation.
         await insertTestArmy(page, E2E_USER_ID, { name: 'E2E Data Sync Army' });
 
-        // Navigate to armies via Next.js client-side router so the DataContextProvider
-        // React state (status === 'ready') survives. page.goto() would trigger a full
-        // page load that re-mounts the provider in 'idle' state, losing the PGlite
-        // connection. window.next.router.push() performs a soft navigation identical to
-        // useRouter().push(), preserving all React context including DataContext.
-        await page.evaluate(() =>
-            (window as unknown as { next: { router: { push: (url: string) => Promise<void> } } }).next.router.push(
-                '/en/wh40k10e/armies',
-            ),
-        );
-        await page.waitForURL('**/armies**', { timeout: 15_000 });
+        await syncAndNavigateToArmies(page);
 
         // THEN: card appears
         await expect(page.getByText('E2E Data Sync Army').first()).toBeVisible({ timeout: 15_000 });
@@ -229,6 +187,7 @@ test.describe('WH40K system data sync lifecycle', () => {
     });
 
     test('sync error state is shown and retry recovers', async ({ page }) => {
+        test.slow();
         await page.goto('/');
         await deletePgliteDatabase(page);
 
@@ -246,6 +205,6 @@ test.describe('WH40K system data sync lifecycle', () => {
 
         await clickSystemTileOverlay(page);
 
-        await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
+        await waitForSyncReady(page);
     });
 });

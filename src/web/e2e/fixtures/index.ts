@@ -7,12 +7,16 @@
  * 3. Must provide a `gotoWithLocale` helper that navigates with locale prefix when needed.
  * 4. Must intercept GET /auth/profile: return 200 with user for authenticated projects,
  *    401 for chromium-public so unauthenticated tests see the real unauthenticated UI.
- * 5. Must provide HAR recording/playback for GitHub proxy requests.
+ * 5. Must intercept /auth/access-token, /auth/login, and window.location.assign
+ *    to prevent Auth0 client-side auth flows from navigating away.
+ * 6. Must provide HAR recording/playback for GitHub proxy requests.
  *    - E2E_HAR_RECORD=true → records live requests; otherwise replays from HAR file.
- * 6. Must provide a `usersApiRequests` fixture that collects PUT /account requests.
- * 7. Must seed a test user and account in Postgres before authenticated tests run.
- * 8. Must intercept POST /api/wahapedia with an empty HTML stub so the
+ * 7. Must provide a `usersApiRequests` fixture that collects PUT /account requests.
+ * 8. Must seed a test user and account in Postgres before authenticated tests run.
+ * 9. Must intercept POST /api/wahapedia with an empty HTML stub so the
  *    ChapterApprovedDAO sync succeeds without reaching wahapedia.ru.
+ * 10. Must intercept PUT /account requests so putAccount (routed through
+ *     localhost:3000) returns a 200 instead of triggering auth middleware redirects.
  */
 
 import { test as base, expect } from '@playwright/test';
@@ -73,6 +77,81 @@ export const test = base.extend<ArmouryFixtures>({
                       body: JSON.stringify(E2E_USER_PROFILE),
                   }),
         );
+
+        // Prevent Auth0 client-side flows from navigating to /auth/login.
+        // Three code paths can trigger this:
+        //   1. window.location.assign()  — SilentAuthCheck
+        //   2. window.location.replace() — potential Auth0 SDK path
+        //   3. window.location.href =    — UnauthenticatedLanding click handler
+        //
+        // Only intercept for authenticated projects — public tests need the
+        // redirect to /auth/login to actually happen (e.g. tile click → login).
+        await page.addInitScript((blockAuthRedirects: boolean) => {
+            if (!blockAuthRedirects) {return;}
+
+            const originalAssign = window.location.assign.bind(window.location);
+
+            window.location.assign = (url: string | URL) => {
+                if (String(url).includes('/auth/login')) {return;}
+
+                originalAssign(url);
+            };
+
+            const originalReplace = window.location.replace.bind(window.location);
+
+            window.location.replace = (url: string | URL) => {
+                if (String(url).includes('/auth/login')) {return;}
+
+                originalReplace(url);
+            };
+
+            // Intercept window.location.href = '/auth/login?...' via Navigation API.
+            // Available in Chromium ≥105 (our e2e target).
+            const nav = (window as unknown as Record<string, unknown>).navigation as
+                | { addEventListener(type: string, cb: (e: Event & { destination: { url: string } }) => void): void }
+                | undefined;
+
+            if (nav) {
+                nav.addEventListener('navigate', (e) => {
+                    if (e.destination.url.includes('/auth/login')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        }, !isPublicProject);
+
+        await page.route('**/auth/access-token', (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({ token: 'e2e-fake-token' }),
+            }),
+        );
+
+        // Network-level fallback: intercept /auth/login so fetch-initiated
+        // redirects (e.g. ky following a 302) don't navigate to Auth0.
+        await page.route('**/auth/login*', (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: 'text/html',
+                body: '<!-- e2e: auth/login intercepted -->',
+            }),
+        );
+
+        // Mock the users API account endpoint. putAccount sends PUT to
+        // USERS_BASE_URL/{userId}/account which defaults to localhost:3000,
+        // routing through Next.js middleware and causing auth redirects.
+        await page.route('**/account', (route) => {
+            if (route.request().method() === 'PUT') {
+                return route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ systems: {} }),
+                });
+            }
+
+            return route.fallback();
+        });
 
         const isRecording = process.env['E2E_HAR_RECORD'] === 'true';
 

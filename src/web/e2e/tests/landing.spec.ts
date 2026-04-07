@@ -67,7 +67,7 @@ test.describe('Landing Page (authenticated)', () => {
 
         // Wait for a terminal state — either synced or error.
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
 
         await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 30_000 });
 
@@ -112,7 +112,7 @@ test.describe('Landing Page (authenticated)', () => {
             // Click the tile to retry — spinner should reappear.
             await overlayButton.click();
 
-            const spinner = firstTile.locator('.animate-spin');
+            const spinner = firstTile.locator('.animate-spin').first();
 
             await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
         }

@@ -18,21 +18,8 @@
 import { test, expect } from '../fixtures/index.js';
 import { ForgeListPage } from '../pages/ForgeListPage.js';
 import { deletePgliteDatabase, insertTestArmy } from '../helpers/indexeddb.js';
+import { clickSystemTileOverlay, waitForSyncReady, syncAndNavigateToArmies } from '../helpers/sync.js';
 import { E2E_USER_ID } from '../constants.js';
-
-/**
- * Click the download overlay on the first system tile to trigger data sync.
- * Reused from data-sync.spec.ts — the overlay is a <button> with download text.
- */
-async function clickSystemTileOverlay(page: import('@playwright/test').Page): Promise<void> {
-    const overlay = page
-        .locator('button')
-        .filter({ hasText: /download|downloading|retry/i })
-        .first();
-    const tile = overlay.locator('..');
-    await tile.hover();
-    await overlay.click();
-}
 
 /**
  * Seed PGlite with game data (sync) and insert test armies, then soft-navigate
@@ -58,7 +45,7 @@ async function seedAndNavigateToForge(
 
     // 2. Trigger system data sync (downloads faction/detachment data into PGlite).
     await clickSystemTileOverlay(page);
-    await expect(page.locator('text=Ready').first()).toBeVisible({ timeout: 60_000 });
+    await waitForSyncReady(page);
 
     // 3. Insert test armies while DataContext is still active and __armoury_raw_query
     //    is available. This must happen BEFORE any full-page navigation.
@@ -69,14 +56,13 @@ async function seedAndNavigateToForge(
         ids.push(id);
     }
 
-    // 4. Soft-navigate to the Forge armies page via Next.js client-side router.
-    //    page.goto() would destroy DataContext and remount it in 'idle' state.
-    await page.evaluate(() =>
-        (window as unknown as { next: { router: { push: (url: string) => Promise<void> } } }).next.router.push(
-            '/en/wh40k10e/armies',
-        ),
-    );
-    await page.waitForURL('**/armies**', { timeout: 15_000 });
+    // 4. Navigate to the Forge armies page.
+    //
+    // Next.js dev server HMR can trigger a full page reload after the heavy
+    // dynamic imports (PGlite, drizzle-orm) during sync. This destroys the
+    // DataContext and reverts the tile to "Click to download". The inserted
+    // armies are safe in IndexedDB, but the React state is lost.
+    await syncAndNavigateToArmies(page);
 
     return ids;
 }

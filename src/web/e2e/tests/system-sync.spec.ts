@@ -52,7 +52,7 @@ test.describe('System Sync Flow', () => {
         // If sync is very fast, the spinner might flash and disappear.
         // Use a soft check: either spinner appeared OR we already reached the end state.
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
 
         await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
     });
@@ -68,7 +68,7 @@ test.describe('System Sync Flow', () => {
 
         // Wait for the sync to complete — either synced badge or error indicator.
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
 
         await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 30_000 });
 
@@ -111,7 +111,7 @@ test.describe('System Sync Flow', () => {
         await overlayButton.click();
 
         // Wait for either synced or error.
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
 
         await expect(errorIndicator.or(syncedBadge)).toBeVisible({ timeout: 30_000 });
@@ -126,7 +126,7 @@ test.describe('System Sync Flow', () => {
             await overlayButton.click();
 
             // Should re-enter the syncing state (spinner or progress).
-            const spinner = firstTile.locator('.animate-spin');
+            const spinner = firstTile.locator('.animate-spin').first();
 
             await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
         }

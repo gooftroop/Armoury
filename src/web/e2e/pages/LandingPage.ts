@@ -92,7 +92,9 @@ export class LandingPage {
      * @returns A locator matching all system tile containers.
      */
     getSystemTiles(): Locator {
-        return this.systemGrid.locator('> div');
+        // Synced tiles are wrapped in a <Link> (renders <a>), un-synced tiles
+        // are bare <div>s. Use `> *` to match both direct children.
+        return this.systemGrid.locator('> *');
     }
 
     /**
@@ -102,7 +104,7 @@ export class LandingPage {
      * @returns A locator for the matching tile.
      */
     getSystemTileBySplashText(splashText: string): Locator {
-        return this.systemGrid.locator('> div', { hasText: splashText });
+        return this.systemGrid.locator('> *', { hasText: splashText });
     }
 
     /**

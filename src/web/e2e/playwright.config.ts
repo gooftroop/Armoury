@@ -85,13 +85,10 @@ export default defineConfig({
         reuseExistingServer: !process.env['CI'],
         timeout: 120_000,
         env: {
-            AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] || 'e2e.us.auth0.com',
-            AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] || 'e2e-fake-client-id',
-            AUTH0_CLIENT_SECRET: process.env['AUTH0_CLIENT_SECRET'] || 'e2e-fake-client-secret',
-            AUTH0_SECRET,
-            APP_BASE_URL: 'http://localhost:3000',
-            NEXT_PUBLIC_AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] || 'e2e.us.auth0.com',
-            NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] || 'e2e-fake-client-id',
+            // NODE_ENV=test makes Next.js load .env.test instead of .env.development.
+            // This ensures the dev server always has the correct Auth0 e2e values
+            // (AUTH0_SECRET, domain, client IDs) without requiring manual env setup.
+            NODE_ENV: 'test',
         },
     },
 });
