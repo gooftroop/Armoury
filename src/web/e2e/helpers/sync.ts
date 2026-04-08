@@ -38,11 +38,15 @@ export async function clickSystemTileOverlay(page: Page): Promise<void> {
  */
 export async function waitForSyncReady(page: Page, maxAttempts = 5): Promise<void> {
     const readyLocator = page.locator('text=Ready').first();
+    const log = (msg: string) => process.stderr.write(`[e2e ${new Date().toISOString()}] [sync] ${msg}\n`);
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const isReady = await readyLocator.isVisible().catch(() => false);
+        log(`attempt ${attempt + 1}/${maxAttempts} — isReady=${isReady}`);
 
         if (isReady) {
+            log('Ready badge visible — done');
+
             return;
         }
 
@@ -54,23 +58,24 @@ export async function waitForSyncReady(page: Page, maxAttempts = 5): Promise<voi
             .catch(() => false);
 
         if (downloadVisible) {
+            log('download overlay visible — clicking to trigger sync');
             await clickSystemTileOverlay(page);
+        } else {
+            log('download overlay NOT visible — sync may be in progress');
         }
 
         try {
-            // 60s timeout gives CI headroom — sync takes ~17s locally but CI
-            // runners can be slower under heavy parallelism + HMR churn.
             await expect(readyLocator).toBeVisible({ timeout: 60_000 });
+            log('Ready badge appeared');
 
             return;
         } catch {
-            // HMR reload may close the page context mid-wait. Catch the closed-
-            // context error, wait for the page to re-settle, and retry.
+            log(`attempt ${attempt + 1} timed out waiting for Ready badge`);
+
             try {
                 await page.waitForTimeout(2_000);
             } catch {
-                // "Target page, context or browser has been closed" — the page
-                // is reloading due to HMR. Wait for it to finish loading.
+                log('page context closed (HMR reload?) — waiting for settle');
                 await page.waitForLoadState('domcontentloaded').catch(() => {});
                 await page.waitForTimeout(1_000).catch(() => {});
             }

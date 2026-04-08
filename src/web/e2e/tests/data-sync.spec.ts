@@ -52,11 +52,42 @@ test.describe('WH40K system data sync lifecycle', () => {
     // minutes so the waitForSyncReady retry loop has room to recover.
     test.describe.configure({ timeout: 180_000 });
 
-    // Forward SYNC-DEBUG browser logs to stdout for CI root-cause diagnosis
+    // Forward browser diagnostics to stderr for CI visibility.
+    // Playwright's `github` reporter swallows worker stdout — stderr always appears.
     test.beforeEach(async ({ page }) => {
+        const ts = () => new Date().toISOString();
+
+        // Forward all SYNC-DEBUG messages and console errors to stderr.
         page.on('console', (msg) => {
-            if (msg.text().includes('[SYNC-DEBUG]')) {
-                console.log(`[browser] ${msg.text()}`);
+            const text = msg.text();
+
+            if (text.includes('[SYNC-DEBUG]') || msg.type() === 'error') {
+                process.stderr.write(`[e2e ${ts()}] [browser:${msg.type()}] ${text}\n`);
+            }
+        });
+
+        // Catch uncaught page errors (e.g. WASM compilation failures, unhandled rejections).
+        page.on('pageerror', (err) => {
+            process.stderr.write(`[e2e ${ts()}] [pageerror] ${err.message}\n`);
+        });
+
+        // Track every /api/github/ request and response for HAR playback diagnosis.
+        page.on('request', (req) => {
+            if (req.url().includes('/api/github/')) {
+                process.stderr.write(`[e2e ${ts()}] [req] ${req.method()} ${req.url()}\n`);
+            }
+        });
+
+        page.on('response', (res) => {
+            if (res.url().includes('/api/github/')) {
+                process.stderr.write(`[e2e ${ts()}] [res] ${res.status()} ${res.url()}\n`);
+            }
+        });
+
+        // Detect failed requests (network errors, aborted, etc.).
+        page.on('requestfailed', (req) => {
+            if (req.url().includes('/api/github/')) {
+                process.stderr.write(`[e2e ${ts()}] [reqfail] ${req.url()} — ${req.failure()?.errorText}\n`);
             }
         });
     });
