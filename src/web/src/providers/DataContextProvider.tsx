@@ -121,6 +121,14 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      * @param system - The GameSystem descriptor to enable.
      */
     const enableSystem = React.useCallback(async (system: GameSystem): Promise<void> => {
+        // Diagnostic logging — traces each sync phase with wall-clock timestamps
+        // so CI logs reveal where the flow stalls. Remove once root cause is fixed.
+        const t0 = Date.now();
+        const log = (phase: string) =>
+            console.log(`[SYNC-DEBUG] ${phase} +${Date.now() - t0}ms (wall ${new Date().toISOString()})`);
+
+        log('enableSystem start');
+
         setSystemSyncStates((prev) => ({
             ...prev,
             [system.id]: { status: 'syncing' },
@@ -133,11 +141,13 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
              * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
              */
+            log('dynamic imports start');
             const { DataContextBuilder } = await import('@armoury/data-context');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
             const { createGitHubClient } = await import('@armoury/adapters-github');
             const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
             const { getQueryClient } = await import('@/lib/getQueryClient.js');
+            log('dynamic imports done');
             const queryClient = getQueryClient();
             const proxyBaseUrl = process.env['NEXT_PUBLIC_GITHUB_PROXY_URL'];
             const githubClient = createGitHubClient(
@@ -150,13 +160,16 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                     : undefined,
             );
             const wahapediaAdapter = createWahapediaClient(queryClient);
+            log('creating PGliteAdapter');
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
+            log('PGliteAdapter created, starting build()');
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
                 .build();
+            log('build() returned');
             setDataContext(dc);
 
             // Expose raw query function for e2e test helpers (avoids opening a second PGlite connection).
@@ -208,13 +221,16 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 return;
             }
 
+            log('setting status=ready');
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
                 [system.id]: { status: 'synced' },
             }));
+            log('enableSystem complete');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to initialize DataContext';
+            log(`enableSystem ERROR: ${message}`);
 
             setStatus('error');
             setError(message);

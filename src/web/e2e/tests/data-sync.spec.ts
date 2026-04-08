@@ -52,6 +52,15 @@ test.describe('WH40K system data sync lifecycle', () => {
     // minutes so the waitForSyncReady retry loop has room to recover.
     test.describe.configure({ timeout: 180_000 });
 
+    // Forward SYNC-DEBUG browser logs to stdout for CI root-cause diagnosis
+    test.beforeEach(async ({ page }) => {
+        page.on('console', (msg) => {
+            if (msg.text().includes('[SYNC-DEBUG]')) {
+                console.log(`[browser] ${msg.text()}`);
+            }
+        });
+    });
+
     test('first-time download enables Forge and exposes game data in UI', async ({ page, usersApiRequests }) => {
         const consoleErrors: string[] = [];
         page.on('console', (msg) => {
