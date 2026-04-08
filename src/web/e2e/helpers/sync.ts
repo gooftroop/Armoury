@@ -30,6 +30,11 @@ export async function clickSystemTileOverlay(page: Page): Promise<void> {
  * DataContext mid-sync. Under heavy parallelism the Next.js dev server fires
  * `__webpack_modules__` errors → Fast Refresh full reload → tile reverts to
  * "Click to download". This function detects that and retries the sync.
+ *
+ * CI-specific resilience: HMR reloads can close the browser context mid-wait,
+ * throwing "Target page, context or browser has been closed". When caught, we
+ * wait for the page to settle after reload and continue retrying. IndexedDB
+ * data persists across reloads so partial sync progress is not lost.
  */
 export async function waitForSyncReady(page: Page, maxAttempts = 5): Promise<void> {
     const readyLocator = page.locator('text=Ready').first();
@@ -53,11 +58,22 @@ export async function waitForSyncReady(page: Page, maxAttempts = 5): Promise<voi
         }
 
         try {
-            await expect(readyLocator).toBeVisible({ timeout: 30_000 });
+            // 60s timeout gives CI headroom — sync takes ~17s locally but CI
+            // runners can be slower under heavy parallelism + HMR churn.
+            await expect(readyLocator).toBeVisible({ timeout: 60_000 });
 
             return;
         } catch {
-            await page.waitForTimeout(2_000);
+            // HMR reload may close the page context mid-wait. Catch the closed-
+            // context error, wait for the page to re-settle, and retry.
+            try {
+                await page.waitForTimeout(2_000);
+            } catch {
+                // "Target page, context or browser has been closed" — the page
+                // is reloading due to HMR. Wait for it to finish loading.
+                await page.waitForLoadState('domcontentloaded').catch(() => {});
+                await page.waitForTimeout(1_000).catch(() => {});
+            }
         }
     }
 
@@ -88,12 +104,11 @@ export async function syncAndNavigateToArmies(page: Page, maxAttempts = 5): Prom
             await page.waitForURL('**/armies**', { timeout: 10_000 });
         } catch {
             if (!page.url().includes('/armies')) {
-                await page.waitForTimeout(2_000);
+                await page.waitForTimeout(2_000).catch(() => {});
                 continue;
             }
         }
 
-        // URL reached /armies — confirm page content rendered (not stuck at "Loading...").
         const contentLoaded = await page
             .getByRole('heading', { level: 1 })
             .waitFor({ timeout: 10_000 })
@@ -105,13 +120,12 @@ export async function syncAndNavigateToArmies(page: Page, maxAttempts = 5): Prom
         }
 
         if (!page.url().includes('/armies')) {
-            await page.waitForTimeout(2_000);
+            await page.waitForTimeout(2_000).catch(() => {});
             continue;
         }
 
-        // On /armies but stuck loading — go back to landing and retry.
         await page.goto('/');
-        await page.waitForTimeout(1_000);
+        await page.waitForTimeout(1_000).catch(() => {});
     }
 
     throw new Error(`syncAndNavigateToArmies: failed after ${maxAttempts} attempts`);

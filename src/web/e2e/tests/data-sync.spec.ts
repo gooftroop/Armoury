@@ -46,7 +46,6 @@ import { E2E_USER_ID } from '../constants.js';
 test.describe('WH40K system data sync lifecycle', () => {
     test('first-time download enables Forge and exposes game data in UI', async ({ page, usersApiRequests }) => {
         test.slow();
-        // Collect console errors to verify no sync failures during the test.
         const consoleErrors: string[] = [];
         page.on('console', (msg) => {
             if (msg.type() === 'error') {
