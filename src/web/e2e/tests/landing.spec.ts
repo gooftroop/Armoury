@@ -19,6 +19,12 @@ import { test, expect } from '../fixtures/index.js';
 import { LandingPage } from '../pages/LandingPage.js';
 
 test.describe('Landing Page (authenticated)', () => {
+    // Sync tests (lines 59, 85) trigger PGlite WASM compilation + 40 HAR-served
+    // GitHub API calls. In CI this takes ~38-40s, exceeding the default 30s
+    // test timeout. Match the data-sync suite's timeout to allow sync completion
+    // plus retry headroom for HMR reloads.
+    test.describe.configure({ timeout: 120_000 });
+
     let landingPage: LandingPage;
 
     test.beforeEach(async ({ page }) => {
@@ -69,7 +75,7 @@ test.describe('Landing Page (authenticated)', () => {
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
         const errorIndicator = firstTile.locator('.text-red-400').first();
 
-        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 30_000 });
+        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 90_000 });
 
         // Confirm we stayed on the app, not redirected to Auth0.
         expect(page.url()).toContain('localhost:3000');
@@ -95,7 +101,7 @@ test.describe('Landing Page (authenticated)', () => {
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
         const errorIndicator = firstTile.locator('.text-red-400').first();
 
-        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 30_000 });
+        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 90_000 });
 
         // Confirm we stayed on the app, not redirected to Auth0.
         expect(page.url()).toContain('localhost:3000');
