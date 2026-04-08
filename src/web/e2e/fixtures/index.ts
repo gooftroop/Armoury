@@ -165,7 +165,7 @@ export const test = base.extend<ArmouryFixtures>({
             url: '**/api/github/**',
             update: isRecording,
             updateContent: 'embed',
-            notFound: isRecording ? 'fallback' : 'abort',
+            notFound: 'fallback',
         });
 
         // Stub the Wahapedia proxy so ChapterApprovedDAO doesn't reach wahapedia.ru.

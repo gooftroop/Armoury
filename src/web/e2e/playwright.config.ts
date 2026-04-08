@@ -33,10 +33,12 @@ export default defineConfig({
     testDir: './tests',
     fullyParallel: !process.env['CI'],
     forbidOnly: !!process.env['CI'],
-    retries: process.env['CI'] ? 2 : 0,
+    retries: process.env['CI'] ? 1 : 0,
     workers: process.env['CI'] ? 1 : undefined,
     reporter: process.env['CI'] ? 'github' : 'html',
 
+    /* Cap total suite time to 10 min so CI fails fast instead of burning 59+ min on serial timeouts. */
+    globalTimeout: process.env['CI'] ? 600_000 : 0,
     timeout: 30_000,
     expect: {
         timeout: 10_000,

@@ -26,6 +26,7 @@ const PG_CONFIG = {
     password: 'armoury_local',
     database: 'armoury_users',
     ssl: false,
+    connectionTimeoutMillis: 5_000,
 } as const;
 
 /**
@@ -40,6 +41,7 @@ export async function seedTestUser(): Promise<() => Promise<void>> {
         password: PG_CONFIG.password,
         database: PG_CONFIG.database,
         ssl: PG_CONFIG.ssl ? undefined : false,
+        connectionTimeoutMillis: PG_CONFIG.connectionTimeoutMillis,
     });
 
     await client.connect();
