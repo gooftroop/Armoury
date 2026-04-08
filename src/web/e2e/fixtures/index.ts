@@ -17,6 +17,8 @@
  *    ChapterApprovedDAO sync succeeds without reaching wahapedia.ru.
  * 10. Must intercept PUT /account requests so putAccount (routed through
  *     localhost:3000) returns a 200 instead of triggering auth middleware redirects.
+ * 11. Must mock the friends presence WebSocket (localhost:3005) so the
+ *     PresenceProvider reconnect loop does not block tests when the service is absent.
  */
 
 import { test as base, expect } from '@playwright/test';
@@ -177,6 +179,29 @@ export const test = base.extend<ArmouryFixtures>({
                 body: '<html><body></body></html>',
             }),
         );
+
+        // Mock the friends presence WebSocket so the PresenceProvider's
+        // exponential-backoff reconnect loop doesn't fire against a missing
+        // server (port 3005 is not started in CI).  Responds to "ping"
+        // actions to keep the heartbeat alive and stay silent otherwise.
+        await page.routeWebSocket(/localhost:3005/, (ws) => {
+            ws.onMessage((message) => {
+                try {
+                    const parsed: unknown = JSON.parse(String(message));
+
+                    if (
+                        typeof parsed === 'object' &&
+                        parsed !== null &&
+                        'action' in parsed &&
+                        (parsed as Record<string, unknown>)['action'] === 'ping'
+                    ) {
+                        ws.send(JSON.stringify({ action: 'pong' }));
+                    }
+                } catch {
+                    // Non-JSON or malformed — ignore silently.
+                }
+            });
+        });
 
         await use(page);
     },
