@@ -77,12 +77,14 @@ jobs:
               env:
                   CI: 'true'
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
-                  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
-                  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
-                  AUTH0_SECRET: ${{ secrets.AUTH0_SECRET }}
-                  E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
-                  E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+                  # Auth0 env vars are intentionally NOT set here.
+                  # The Playwright webServer spawns Next.js with NODE_ENV=test,
+                  # which loads src/web/.env.test — providing deterministic
+                  # Auth0 values (AUTH0_SECRET=e2e-test-secret, etc.) that match
+                  # the forged session cookie from e2e/auth/setup.ts.
+                  # Setting secrets.AUTH0_* here would override .env.test with
+                  # empty strings (secrets not configured), breaking cookie
+                  # encryption/decryption and causing 400 errors.
 
             - name: Upload test artifacts
               if: failure()
