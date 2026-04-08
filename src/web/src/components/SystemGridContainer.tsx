@@ -92,14 +92,10 @@ async function activateSystemTile(
             return;
         }
 
-        // TODO(e2e-debug): remove after root cause identified
-        console.log('[activateSystemTile] calling enableSystem for %s', manifest.id);
         await enableSystem(system);
-        console.log('[activateSystemTile] enableSystem resolved for %s', manifest.id);
 
         if (userId) {
             try {
-                console.log('[activateSystemTile] fetching access token');
                 const token = await getAccessToken();
                 const authorization = `Bearer ${token}`;
                 const mutation = mutationUpdateAccount(
@@ -115,9 +111,7 @@ async function activateSystemTile(
                     },
                 );
 
-                console.log('[activateSystemTile] calling putAccount');
                 await mutation.mutationFn();
-                console.log('[activateSystemTile] putAccount succeeded');
 
                 setPersistErrors((prev) => {
                     if (!prev[manifest.id]) {

@@ -37,8 +37,8 @@ export default defineConfig({
     workers: process.env['CI'] ? 1 : undefined,
     reporter: process.env['CI'] ? 'github' : 'html',
 
-    /* Cap total suite time to 10 min so CI fails fast instead of burning 59+ min on serial timeouts. */
-    globalTimeout: process.env['CI'] ? 600_000 : 0,
+    /* Cap total suite time to 15 min so CI fails fast instead of burning 59+ min on serial timeouts. */
+    globalTimeout: process.env['CI'] ? 900_000 : 0,
     timeout: 30_000,
     expect: {
         timeout: 10_000,

@@ -121,8 +121,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      * @param system - The GameSystem descriptor to enable.
      */
     const enableSystem = React.useCallback(async (system: GameSystem): Promise<void> => {
-        // TODO(e2e-debug): remove all [enableSystem] logs after root cause identified
-        console.log('[enableSystem] START system=%s', system.id);
         setSystemSyncStates((prev) => ({
             ...prev,
             [system.id]: { status: 'syncing' },
@@ -135,13 +133,11 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
              * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
              */
-            console.log('[enableSystem] dynamic imports starting');
             const { DataContextBuilder } = await import('@armoury/data-context');
             const { PGliteAdapter } = await import('@armoury/adapters-pglite');
             const { createGitHubClient } = await import('@armoury/adapters-github');
             const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
             const { getQueryClient } = await import('@/lib/getQueryClient.js');
-            console.log('[enableSystem] dynamic imports done');
             const queryClient = getQueryClient();
             const proxyBaseUrl = process.env['NEXT_PUBLIC_GITHUB_PROXY_URL'];
             const githubClient = createGitHubClient(
@@ -154,16 +150,13 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                     : undefined,
             );
             const wahapediaAdapter = createWahapediaClient(queryClient);
-            console.log('[enableSystem] creating PGlite adapter');
             const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
-            console.log('[enableSystem] PGlite adapter created, starting build()');
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
                 .build();
-            console.log('[enableSystem] build() complete, syncResult=%o', dc.syncResult);
             setDataContext(dc);
 
             // Expose raw query function for e2e test helpers (avoids opening a second PGlite connection).
@@ -205,7 +198,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             if (syncResult && !syncResult.success) {
                 const failedDaos = syncResult.failures.map((f: { dao: string }) => f.dao).join(', ');
                 const message = `Partial sync failure: ${syncResult.failures.length}/${syncResult.total} DAOs failed (${failedDaos})`;
-                console.error('[enableSystem] PARTIAL FAILURE: %s', message);
                 setStatus('error');
                 setError(message);
                 setSystemSyncStates((prev) => ({
@@ -216,7 +208,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 return;
             }
 
-            console.log('[enableSystem] SUCCESS — setting status to synced');
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
@@ -224,12 +215,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             }));
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to initialize DataContext';
-            // TODO(e2e-debug): remove after root cause identified
-            console.error('[Armoury enableSystem] caught error:', message);
-
-            if (err instanceof Error && err.stack) {
-                console.error('[Armoury enableSystem] stack:', err.stack);
-            }
 
             setStatus('error');
             setError(message);

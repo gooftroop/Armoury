@@ -44,8 +44,15 @@ import { clickSystemTileOverlay, waitForSyncReady, syncAndNavigateToArmies } fro
 import { E2E_USER_ID } from '../constants.js';
 
 test.describe('WH40K system data sync lifecycle', () => {
+    // Each sync test performs PGlite WASM compilation + 39 GitHub API calls
+    // through the HAR proxy. Under CI resource constraints + Next.js dev-mode
+    // HMR reloads (from __webpack_modules__ errors), a single sync cycle can
+    // take 60–90s. The default 30s × test.slow() = 90s barely fits one attempt;
+    // if HMR forces a retry the test exceeds the timeout. Give these tests 3
+    // minutes so the waitForSyncReady retry loop has room to recover.
+    test.describe.configure({ timeout: 180_000 });
+
     test('first-time download enables Forge and exposes game data in UI', async ({ page, usersApiRequests }) => {
-        test.slow();
         const consoleErrors: string[] = [];
         page.on('console', (msg) => {
             if (msg.type() === 'error') {
@@ -112,9 +119,6 @@ test.describe('WH40K system data sync lifecycle', () => {
     });
 
     test('repeat sync revalidates when upstream SHA/content changes', async ({ page }) => {
-        // PGlite re-initialization after navigation takes extra time to acquire IDB locks.
-        test.slow();
-
         await page.goto('/');
         await deletePgliteDatabase(page);
 
@@ -146,8 +150,6 @@ test.describe('WH40K system data sync lifecycle', () => {
     });
 
     test('user can create, duplicate, and delete an army from Forge UI', async ({ page }) => {
-        test.slow();
-
         await page.goto('/');
         await deletePgliteDatabase(page);
         await clickSystemTileOverlay(page);
@@ -186,7 +188,6 @@ test.describe('WH40K system data sync lifecycle', () => {
     });
 
     test('sync error state is shown and retry recovers', async ({ page }) => {
-        test.slow();
         await page.goto('/');
         await deletePgliteDatabase(page);
 
