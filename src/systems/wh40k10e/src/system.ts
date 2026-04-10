@@ -43,8 +43,10 @@ import {
     abilitiesSqliteTable,
 } from '@/dao/FactionDAO.js';
 import { CampaignDAOImpl as CampaignDAO } from '@armoury/data-dao';
+import type { ContainerModule } from 'inversify';
 
 import { GameData } from '@/dao/GameData.js';
+import { wh40k10eModule } from '@/di.module.js';
 import {
     AeldariDAO,
     DrukhariDAO,
@@ -98,8 +100,9 @@ import {
     validateWarlord,
 } from '@/validation/rules/index.js';
 
-interface Wh40kGameSystem extends Omit<GameSystem, 'createGameContext'> {
+interface Wh40kGameSystem extends GameSystem {
     createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult;
+    getContainerModule?(): ContainerModule;
 }
 
 /**
@@ -508,6 +511,11 @@ class Wh40k10eSystem implements Wh40kGameSystem {
             game,
             sync: () => game.sync(),
         };
+    }
+
+    /** Returns the wh40k10e inversify plugin module. */
+    getContainerModule(): ContainerModule {
+        return wh40k10eModule;
     }
 }
 

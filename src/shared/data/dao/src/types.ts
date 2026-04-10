@@ -244,6 +244,13 @@ export interface GameSystem {
         /** Registered client instances keyed by name (e.g. 'github', 'wahapedia'). */
         clients: Map<string, unknown>,
     ): GameContextResult;
+
+    /**
+     * Returns the inversify ContainerModule for this game system.
+     * When present, composition roots load this module instead of
+     * calling createGameContext() directly.
+     */
+    getContainerModule?(): import('inversify').ContainerModule;
 }
 
 /**
