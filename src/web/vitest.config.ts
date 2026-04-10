@@ -22,15 +22,17 @@ const WEB_ROOT = path.dirname(fileURLToPath(import.meta.url));
 export default mergeConfig(
     baseConfig,
     defineConfig({
+        oxc: {
+            jsx: {
+                runtime: 'automatic',
+                importSource: 'react',
+            },
+        },
         resolve: {
             alias: {
                 '@': path.resolve(WEB_ROOT, 'src'),
                 '#': WEB_ROOT,
             },
-        },
-        esbuild: {
-            jsx: 'automatic',
-            jsxImportSource: 'react',
         },
         test: {
             environment: 'happy-dom',

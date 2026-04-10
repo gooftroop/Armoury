@@ -24,8 +24,15 @@
 
 import * as React from 'react';
 import * as Sentry from '@sentry/nextjs';
+import { createContainerWithModules, coreModule, TOKENS, webModule } from '@armoury/di';
+import type { AdapterFactoryFn, ClientFactoryFn } from '@armoury/di';
 import type { DataContext } from '@armoury/data-context';
-import type { GameSystem } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { IWahapediaClient } from '@armoury/clients-wahapedia';
+import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
+import type { QueryClient } from '@tanstack/react-query';
+import type { ContainerModule } from 'inversify';
+
 /**
  * Possible states for the overall DataContext initialization lifecycle.
  *
@@ -77,20 +84,9 @@ export interface DataContextValue {
     disableSystem: (systemId: string) => Promise<void>;
 }
 /**
- * Default context value before initialization.
- */
-const defaultContextValue: DataContextValue = {
-    dataContext: null,
-    status: 'idle',
-    systemSyncStates: {},
-    enableSystem: async () => {},
-    disableSystem: async () => {},
-};
-
-/**
  * React context for accessing the DataContext and sync state.
  */
-const DataContextReactContext = React.createContext<DataContextValue>(defaultContextValue);
+const DataContextReactContext = React.createContext<DataContextValue | undefined>(undefined);
 /**
  * Props for the DataContextProvider component.
  */
@@ -143,26 +139,35 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              */
             log('dynamic imports start');
             const { DataContextBuilder } = await import('@armoury/data-context');
-            const { PGliteAdapter } = await import('@armoury/adapters-pglite');
-            const { createGitHubClient } = await import('@armoury/adapters-github');
-            const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
             const { getQueryClient } = await import('@/lib/getQueryClient.js');
             log('dynamic imports done');
+
+            const container = createContainerWithModules(coreModule, webModule);
             const queryClient = getQueryClient();
-            const proxyBaseUrl = process.env['NEXT_PUBLIC_GITHUB_PROXY_URL'];
-            const githubClient = createGitHubClient(
-                queryClient,
-                proxyBaseUrl
-                    ? {
-                          apiBaseUrl: `${proxyBaseUrl}/api`,
-                          rawBaseUrl: `${proxyBaseUrl}/raw`,
-                      }
-                    : undefined,
+            container.bind(TOKENS.QueryClient).toConstantValue(queryClient);
+
+            const createAdapter = container.get<AdapterFactoryFn>(TOKENS.AdapterFactory);
+            const adapter = await createAdapter();
+            const createGitHub = container.get<ClientFactoryFn<IGitHubClient, QueryClient>>(TOKENS.GitHubClientFactory);
+            const githubClient = await createGitHub(queryClient);
+            const createWahapedia = container.get<ClientFactoryFn<IWahapediaClient, QueryClient>>(
+                TOKENS.WahapediaClientFactory,
             );
-            const wahapediaAdapter = createWahapediaClient(queryClient);
-            log('creating PGliteAdapter');
-            const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
-            log('PGliteAdapter created, starting build()');
+            const wahapediaAdapter = await createWahapedia(queryClient);
+            const systemWithContainerModule = system as GameSystem & {
+                getContainerModule?: () => unknown;
+            };
+            const systemModule = systemWithContainerModule.getContainerModule?.();
+
+            if (systemModule) {
+                container.load(systemModule as ContainerModule);
+            }
+
+            container.bind(TOKENS.DatabaseAdapter).toConstantValue(adapter);
+            container.bind(TOKENS.GitHubClient).toConstantValue(githubClient);
+            container.bind(TOKENS.WahapediaClient).toConstantValue(wahapediaAdapter);
+
+            log('dependencies resolved, starting build()');
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
@@ -174,8 +179,12 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
 
             // Expose raw query function for e2e test helpers (avoids opening a second PGlite connection).
             if (process.env.NODE_ENV !== 'production') {
+                const rawQueryAdapter = adapter as DatabaseAdapter & {
+                    rawQuery: (sql: string) => Promise<unknown>;
+                };
+
                 (window as unknown as Record<string, unknown>).__armoury_raw_query = (sql: string) =>
-                    adapter.rawQuery(sql);
+                    rawQueryAdapter.rawQuery(sql);
             }
 
             // Report partial sync failures from the builder's sync result

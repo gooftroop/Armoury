@@ -18,5 +18,8 @@ export default mergeConfig(
                 'react-native-auth0': path.resolve(__dirname, '__mocks__/react-native-auth0.ts'),
             },
         },
+        test: {
+            environment: 'happy-dom',
+        },
     }),
 );

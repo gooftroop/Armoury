@@ -22,8 +22,14 @@
 
 import * as React from 'react';
 import * as Sentry from '@sentry/react-native';
+import { createContainerWithModules, coreModule, mobileModule, TOKENS } from '@armoury/di';
+import type { AdapterFactoryFn, ClientFactoryFn } from '@armoury/di';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { IWahapediaClient } from '@armoury/clients-wahapedia';
 import type { DataContext } from '@armoury/data-context';
 import type { GameSystem } from '@armoury/data-dao';
+import type { QueryClient } from '@tanstack/react-query';
+import type { ContainerModule } from 'inversify';
 
 /**
  * Possible states for the overall DataContext initialization lifecycle.
@@ -80,20 +86,9 @@ export interface DataContextValue {
 }
 
 /**
- * Default context value before initialization.
- */
-const defaultContextValue: DataContextValue = {
-    dataContext: null,
-    status: 'idle',
-    systemSyncStates: {},
-    enableSystem: async () => {},
-    disableSystem: async () => {},
-};
-
-/**
  * React context for accessing the DataContext and sync state.
  */
-const DataContextReactContext = React.createContext<DataContextValue>(defaultContextValue);
+const DataContextReactContext = React.createContext<DataContextValue | undefined>(undefined);
 
 /**
  * Props for the DataContextProvider component.
@@ -145,15 +140,32 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * The builder pulls in drizzle-orm and adapter code which are heavy.
              */
             const { DataContextBuilder } = await import('@armoury/data-context');
-            const { openDatabaseAsync } = await import('expo-sqlite');
-            const { SQLiteAdapter } = await import('@armoury/adapters-sqlite');
-            const { createGitHubClient } = await import('@armoury/adapters-github');
-            const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
             const { queryClient } = await import('@/lib/queryClient.js');
-            const githubClient = createGitHubClient(queryClient);
-            const wahapediaAdapter = createWahapediaClient(queryClient);
-            const database = await openDatabaseAsync('armoury');
-            const adapter = new SQLiteAdapter(database);
+            const container = createContainerWithModules(coreModule, mobileModule);
+
+            container.bind(TOKENS.QueryClient).toConstantValue(queryClient);
+
+            const createAdapter = container.get<AdapterFactoryFn>(TOKENS.AdapterFactory);
+            const adapter = await createAdapter();
+            const createGitHub = container.get<ClientFactoryFn<IGitHubClient, QueryClient>>(TOKENS.GitHubClientFactory);
+            const githubClient = await createGitHub(queryClient);
+            const createWahapedia = container.get<ClientFactoryFn<IWahapediaClient, QueryClient>>(
+                TOKENS.WahapediaClientFactory,
+            );
+            const wahapediaAdapter = await createWahapedia(queryClient);
+            const systemWithContainerModule = system as GameSystem & {
+                getContainerModule?: () => unknown;
+            };
+            const systemModule = systemWithContainerModule.getContainerModule?.();
+
+            if (systemModule) {
+                container.load(systemModule as ContainerModule);
+            }
+
+            container.bind(TOKENS.DatabaseAdapter).toConstantValue(adapter);
+            container.bind(TOKENS.GitHubClient).toConstantValue(githubClient);
+            container.bind(TOKENS.WahapediaClient).toConstantValue(wahapediaAdapter);
+
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
@@ -184,6 +196,19 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                         `[Armoury Sync] Summary: ${syncResult.succeeded.length}/${syncResult.total} succeeded`,
                     );
                 }
+            }
+
+            if (syncResult && !syncResult.success) {
+                const failedDaos = syncResult.failures.map((f: { dao: string }) => f.dao).join(', ');
+                const message = `Partial sync failure: ${syncResult.failures.length}/${syncResult.total} DAOs failed (${failedDaos})`;
+                setStatus('error');
+                setError(message);
+                setSystemSyncStates((prev) => ({
+                    ...prev,
+                    [system.id]: { status: 'error', error: message },
+                }));
+
+                return;
             }
 
             dataContextRef.current = dc;
