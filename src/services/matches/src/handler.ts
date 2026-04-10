@@ -1,11 +1,18 @@
 // Side-effect import: initializes Sentry before any handler code runs.
 import './instrument.js';
 import * as Sentry from '@sentry/aws-serverless';
+import { TOKENS, coreModule, createContainerWithModules, createLambdaModule } from '@armoury/di';
 import { extractUserContext } from '@/middleware/auth.js';
 import { formatErrorResponse } from '@/middleware/errorHandler.js';
 import { router } from '@/router.js';
 import type { ApiResponse, DatabaseAdapter } from '@/types.js';
 import { getServiceConfig } from '@/utils/secrets.js';
+
+/**
+ * @requirements
+ * - REQ-DI-060: Lambda handler resolves production DatabaseAdapter via @armoury/di container modules.
+ * - REQ-DI-061: Cold start initializes adapter once; warm invocations reuse cached adapter.
+ */
 
 /**
  * HTTP API v2 event from API Gateway.
@@ -51,15 +58,6 @@ function normalizeEvent(event: HttpApiV2Event): NormalizedEvent {
     };
 }
 
-interface DSQLAdapterConfig {
-    clusterEndpoint: string;
-    region: string;
-}
-
-interface DSQLAdapterConstructor {
-    new (config: DSQLAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
-}
-
 interface LocalAdapterConfig {
     host: string;
     port: number;
@@ -77,6 +75,7 @@ interface LocalAdapterConstructor {
 // LocalDatabaseAdapter (which depends on 'pg') when 'pg' is externalized by esbuild.
 
 let adapterInstance: DatabaseAdapter | null = null;
+let container: ReturnType<typeof createContainerWithModules> | null = null;
 
 async function initializeAdapter(): Promise<DatabaseAdapter> {
     if (adapterInstance) {
@@ -100,13 +99,16 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
             ssl: process.env['LOCAL_DB_SSL'] === 'true',
         });
     } else {
-        const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as {
-            DSQLAdapter: DSQLAdapterConstructor;
+        container = createContainerWithModules(
+            coreModule,
+            createLambdaModule({
+                clusterEndpoint: config.dsqlClusterEndpoint,
+                region: config.dsqlRegion,
+            }),
+        );
+        adapter = container.get<DatabaseAdapter>(TOKENS.DatabaseAdapter) as DatabaseAdapter & {
+            initialize(): Promise<void>;
         };
-        adapter = new DSQLAdapter({
-            clusterEndpoint: config.dsqlClusterEndpoint,
-            region: config.dsqlRegion,
-        });
     }
 
     await adapter.initialize();

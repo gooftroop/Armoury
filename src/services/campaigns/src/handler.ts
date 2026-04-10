@@ -12,12 +12,19 @@ import './instrument.js';
  */
 
 import * as Sentry from '@sentry/aws-serverless';
+import { TOKENS, coreModule, createContainerWithModules, createLambdaModule } from '@armoury/di';
 import { extractUserContext } from '@/middleware/auth.js';
 import { formatErrorResponse } from '@/middleware/errorHandler.js';
 import { router } from '@/router.js';
 import type { DatabaseAdapter } from '@armoury/data-dao';
 import type { ApiResponse } from '@/types.js';
 import { getServiceConfig } from '@/utils/secrets.js';
+
+/**
+ * @requirements
+ * - REQ-DI-060: Lambda handler resolves DatabaseAdapter via @armoury/di container modules.
+ * - REQ-DI-061: Cold start initializes adapter once; warm invocations reuse cached adapter.
+ */
 
 /**
  * HTTP API v2 event from API Gateway.
@@ -64,31 +71,10 @@ function normalizeEvent(event: HttpApiV2Event): NormalizedEvent {
 }
 
 /**
- * Configuration shape for the DSQLAdapter constructor.
- */
-interface DSQLAdapterConfig {
-    /** Aurora DSQL cluster endpoint hostname. */
-    clusterEndpoint: string;
-
-    /** AWS region of the DSQL cluster. */
-    region: string;
-}
-
-interface DSQLAdapterConstructor {
-    /** Creates a new DSQLAdapter instance with the given configuration. */
-    new (config: DSQLAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
-}
-
-/**
- * Resolves the DSQLAdapter class from @armoury/data at runtime using dynamic import.
- * This avoids TypeScript rootDir conflicts while still pulling in the real adapter class.
- */
-const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as { DSQLAdapter: DSQLAdapterConstructor };
-
-/**
  * Singleton database adapter instance reused across warm Lambda invocations.
  * Initialized on first request (cold start) and kept alive for subsequent requests.
  */
+let container: ReturnType<typeof createContainerWithModules> | null = null;
 let adapterInstance: DatabaseAdapter | null = null;
 
 /**
@@ -109,10 +95,16 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
 
     const config = await getServiceConfig();
 
-    const adapter = new DSQLAdapter({
-        clusterEndpoint: config.dsqlClusterEndpoint,
-        region: config.dsqlRegion,
-    });
+    container = createContainerWithModules(
+        coreModule,
+        createLambdaModule({
+            clusterEndpoint: config.dsqlClusterEndpoint,
+            region: config.dsqlRegion,
+        }),
+    );
+    const adapter = container.get<DatabaseAdapter>(TOKENS.DatabaseAdapter) as DatabaseAdapter & {
+        initialize(): Promise<void>;
+    };
 
     await adapter.initialize();
 
