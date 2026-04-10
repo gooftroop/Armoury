@@ -57,7 +57,6 @@ const {
 vi.mock('@armoury/di', () => ({
     createContainerWithModules: createContainerWithModulesMock,
     coreModule: coreModuleMock,
-    mobileModule: mobileModuleMock,
     TOKENS: {
         QueryClient: queryClientToken,
         AdapterFactory: adapterFactoryToken,
@@ -67,6 +66,10 @@ vi.mock('@armoury/di', () => ({
         GitHubClient: githubClientToken,
         WahapediaClient: wahapediaClientToken,
     },
+}));
+
+vi.mock('@armoury/di/mobile', () => ({
+    mobileModule: mobileModuleMock,
 }));
 
 vi.mock('@armoury/data-context', () => ({

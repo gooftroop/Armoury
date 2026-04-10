@@ -1,7 +1,8 @@
 // Side-effect import: initializes Sentry before any handler code runs.
 import './instrument.js';
 import * as Sentry from '@sentry/aws-serverless';
-import { TOKENS, coreModule, createContainerWithModules, createLambdaModule } from '@armoury/di';
+import { TOKENS, coreModule, createContainerWithModules } from '@armoury/di';
+import { createLambdaModule } from '@armoury/di/lambda';
 import { extractUserContext } from '@/middleware/auth.js';
 import { formatErrorResponse } from '@/middleware/errorHandler.js';
 import { router } from '@/router.js';

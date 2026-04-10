@@ -22,7 +22,8 @@
 
 import * as React from 'react';
 import * as Sentry from '@sentry/react-native';
-import { createContainerWithModules, coreModule, mobileModule, TOKENS } from '@armoury/di';
+import { createContainerWithModules, coreModule, TOKENS } from '@armoury/di';
+import { mobileModule } from '@armoury/di/mobile';
 import type { AdapterFactoryFn, ClientFactoryFn } from '@armoury/di';
 import type { IGitHubClient } from '@armoury/clients-github';
 import type { IWahapediaClient } from '@armoury/clients-wahapedia';

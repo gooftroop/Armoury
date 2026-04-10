@@ -10,10 +10,23 @@
             "types": "./dist/index.d.ts",
             "browser": "./dist/browser/index.js",
             "default": "./dist/node/index.js"
+        },
+        "./web": {
+            "types": "./dist/web.d.ts",
+            "browser": "./dist/browser/web.js",
+            "default": "./dist/node/web.js"
+        },
+        "./mobile": {
+            "types": "./dist/mobile.d.ts",
+            "default": "./dist/node/mobile.js"
+        },
+        "./lambda": {
+            "types": "./dist/lambda.d.ts",
+            "default": "./dist/node/lambda.js"
         }
     },
     "scripts": {
-        "build": "node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
+        "build": "ESBUILD_ENTRIES=src/index.ts,src/web.ts,src/mobile.ts,src/lambda.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
         "generate:types": "tsc -p tsconfig.build.json && node --input-type=module -e \"await import('@armoury/typescript/fix-declaration-paths')\"",
         "test": "vitest run",
         "lint": "eslint .",

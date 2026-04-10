@@ -24,7 +24,8 @@
 
 import * as React from 'react';
 import * as Sentry from '@sentry/nextjs';
-import { createContainerWithModules, coreModule, TOKENS, webModule } from '@armoury/di';
+import { createContainerWithModules, coreModule, TOKENS } from '@armoury/di';
+import { webModule } from '@armoury/di/web';
 import type { AdapterFactoryFn, ClientFactoryFn } from '@armoury/di';
 import type { DataContext } from '@armoury/data-context';
 import type { IGitHubClient } from '@armoury/clients-github';

@@ -60,6 +60,11 @@ vi.mock('@armoury/di', () => {
         TOKENS: mocks.TOKENS,
         coreModule: mocks.coreModule,
         createContainerWithModules: mocks.createContainerWithModules,
+    };
+});
+
+vi.mock('@armoury/di/lambda', () => {
+    return {
         createLambdaModule: mocks.createLambdaModule,
     };
 });
