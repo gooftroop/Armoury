@@ -22,3 +22,5 @@ export { webModule } from '@/modules/web.module.js';
 export { mobileModule } from '@/modules/mobile.module.js';
 export { createLambdaModule } from '@/modules/lambda.module.js';
 export { createTestModule } from '@/modules/test.module.js';
+export { createE2EContainer } from '@/e2eContainer.js';
+export type { E2EContainerOptions } from '@/e2eContainer.js';

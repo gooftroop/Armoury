@@ -3,9 +3,9 @@ import type { CreateCampaignRequest, JoinCampaignRequest, UserContext } from '@/
 import type { Campaign, CampaignParticipant } from '@armoury/models';
 import { router } from '@/router.js';
 import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
-import type { PGliteAdapter } from '@armoury/adapters-pglite';
+import type { DatabaseAdapter } from '@armoury/data-dao';
 
-let adapter: PGliteAdapter;
+let adapter: DatabaseAdapter;
 
 const organizer: UserContext = { userId: 'user-org', email: 'org@armoury.dev', name: 'Organizer' };
 const participant: UserContext = { userId: 'user-part', email: 'part@armoury.dev', name: 'Participant' };
