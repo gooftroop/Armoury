@@ -15,7 +15,7 @@ import { StyleSheet } from 'react-native';
 import { H1, Paragraph, ScrollView, YStack } from 'tamagui';
 
 import { SystemTile } from '@/components/SystemTile.js';
-import type { GameSystemManifest } from '@armoury/data-dao';
+import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
 import { ProfileTileContainer } from '@/components/profile/ProfileTileContainer.js';
 
 /**
@@ -30,6 +30,8 @@ export interface LandingTileViewModel {
     isSynced: boolean;
     /** Whether the tile is currently in error state. */
     isError: boolean;
+    /** Live sync progress state, if available. */
+    syncProgress?: SyncProgressState;
     /** Press handler for this tile. */
     onPress: () => void;
 }
@@ -72,6 +74,7 @@ function LandingView({ tiles, scrollViewBg }: LandingViewProps): React.ReactElem
                         isSyncing={tile.isSyncing}
                         isSynced={tile.isSynced}
                         isError={tile.isError}
+                        syncProgress={tile.syncProgress}
                         onPress={tile.onPress}
                     />
                 ))}

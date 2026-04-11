@@ -25,6 +25,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { GameSystemManifest } from '@armoury/data-dao';
+import type { SyncProgressState } from '@armoury/data-dao';
 
 import { getAccessToken } from '@auth0/nextjs-auth0/client';
 import { mutationUpdateAccount } from '@armoury/clients-users';
@@ -33,6 +34,7 @@ import { SystemGridView } from '@/components/SystemGridView.js';
 import type { SystemTileData } from '@/components/SystemGridView.js';
 import { getSyncStatus } from '@/lib/getSyncStatus.js';
 import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
+import { useSyncProgress } from '@/hooks/useSyncProgress.js';
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
 
@@ -149,6 +151,7 @@ function buildTiles(
     syncStates: SyncStateMap,
     activatingId: string | null,
     persistErrors: Record<string, string>,
+    syncProgress: SyncProgressState | null,
     t: ReturnType<typeof useTranslations<'landing'>>,
     handleTileClick: (manifest: GameSystemManifest) => void,
 ): SystemTileData[] {
@@ -175,6 +178,7 @@ function buildTiles(
                     ? t('synced')
                     : t('downloadOverlay'),
             href: isSynced ? `./${manifest.id}/armies` : undefined,
+            syncProgress: isSyncing && syncProgress ? syncProgress : undefined,
             onClick: () => {
                 handleTileClick(manifest);
             },
@@ -190,7 +194,8 @@ function buildTiles(
  */
 function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: SystemGridProps): React.ReactElement {
     const t = useTranslations('landing');
-    const { systemSyncStates, enableSystem } = useDataContext();
+    const { systemSyncStates, syncProgressCollector, enableSystem } = useDataContext();
+    const syncProgress = useSyncProgress(syncProgressCollector);
     const [activatingId, setActivatingId] = React.useState<string | null>(null);
     const [persistErrors, setPersistErrors] = React.useState<Record<string, string>>({});
 
@@ -216,10 +221,11 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
                 systemSyncStates,
                 activatingId,
                 persistErrors,
+                syncProgress.phase !== 'idle' ? syncProgress : null,
                 t,
                 (manifest) => void handleTileClick(manifest),
             ),
-        [manifests, systemSyncStates, activatingId, persistErrors, t, handleTileClick],
+        [manifests, systemSyncStates, activatingId, persistErrors, syncProgress, t, handleTileClick],
     );
 
     return <SystemGridView tiles={tiles} />;
