@@ -41,7 +41,7 @@ type SqliteCoreModule = {
 };
 
 const pgCoreModule = (await import('drizzle-orm/pg-core')) as unknown as PgCoreModule;
-const { pgTable, text } = pgCoreModule;
+const { pgTable, text, jsonb } = pgCoreModule;
 const sl = (await import('drizzle-orm/sqlite-core')) as unknown as SqliteCoreModule;
 
 /** Drizzle table mapping for faction entities. */
@@ -60,6 +60,50 @@ export const factionsSqliteTable = sl.sqliteTable('factions', {
     sourceFile: sl.text('source_file').notNull(),
     sourceSha: sl.text('source_sha').notNull(),
     catalogueFile: sl.text('catalogue_file').notNull(),
+});
+
+/** Drizzle table for storing full parsed faction model data as JSONB. */
+export const factionModelsTable = pgTable('faction_models', {
+    id: text('id').primaryKey(),
+    data: jsonb('data').notNull(),
+});
+
+/** Drizzle SQLite table for storing full parsed faction model data as text. */
+export const factionModelsSqliteTable = sl.sqliteTable('faction_models', {
+    id: sl.text('id').primaryKey(),
+    data: sl.text('data').notNull(),
+});
+
+export const unitsTable = pgTable('units', {
+    id: text('id').primaryKey(),
+    factionId: text('faction_id').notNull(),
+    data: jsonb('data').notNull(),
+});
+
+export const unitsSqliteTable = sl.sqliteTable('units', {
+    id: sl.text('id').primaryKey(),
+    factionId: sl.text('faction_id').notNull(),
+    data: sl.text('data').notNull(),
+});
+
+export const weaponsTable = pgTable('weapons', {
+    id: text('id').primaryKey(),
+    data: jsonb('data').notNull(),
+});
+
+export const weaponsSqliteTable = sl.sqliteTable('weapons', {
+    id: sl.text('id').primaryKey(),
+    data: sl.text('data').notNull(),
+});
+
+export const abilitiesTable = pgTable('abilities', {
+    id: text('id').primaryKey(),
+    data: jsonb('data').notNull(),
+});
+
+export const abilitiesSqliteTable = sl.sqliteTable('abilities', {
+    id: sl.text('id').primaryKey(),
+    data: sl.text('data').notNull(),
 });
 
 /**
@@ -111,8 +155,6 @@ class FactionDAO extends BaseDAO<FactionData> {
     /**
      * Downloads and parses all faction catalogues, merges them, and builds a FactionData.
      * Handles multi-file factions by downloading each catalogue file and merging them.
-     * @returns Merged FactionData with all units, weapons, and abilities
-     * @throws Error if any catalogue file download or parsing fails
      */
     protected override async fetchRemoteData(): Promise<FactionData> {
         const catalogues: BattleScribeCatalogue[] = [];
@@ -122,8 +164,8 @@ class FactionDAO extends BaseDAO<FactionData> {
             const content = await this.githubClient.downloadFile(this.owner, this.repo, encodedFileName);
             const catalogue = parseCatalogue(content);
             catalogues.push(catalogue);
-            const sha = await this.githubClient.getFileSha(this.owner, this.repo, encodedFileName);
-            await this.adapter.setSyncStatus(`factionModel:${fileName}`, sha);
+            // Content-length marker avoids a separate GitHub contents API call for SHA
+            await this.adapter.setSyncStatus(`factionModel:${fileName}`, `content:${content.length}`);
         }
 
         const mergedCatalogue = mergeCatalogues(...catalogues);
@@ -132,6 +174,9 @@ class FactionDAO extends BaseDAO<FactionData> {
 
         return factionModel;
     }
+
+    // Sync status is set per-file in fetchRemoteData(); skip parent's getRemoteSha() call.
+    protected override async onPostFetch(_data: FactionData): Promise<void> {}
 
     /**
      * Uses the primary file for sync status lookup.

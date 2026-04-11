@@ -152,17 +152,64 @@ jobs:
                   echo "::add-mask::${DSQL_TOKEN}"
                   echo "DSQL_TOKEN=${DSQL_TOKEN}" >> "${GITHUB_ENV}"
 
-            - name: Create PR schema
-              if: inputs.has-migrations && github.event_name == 'pull_request'
-              env:
-                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
-              run: node --import=tsx src/shared/e2e/src/dbSchema.ts create "${DB_SCHEMA}"
-
             - name: Push schema (PR sandboxes)
               if: inputs.has-migrations && github.event_name == 'pull_request'
               env:
                   DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
-              run: npm run db:push -w ${{ inputs.service-name }}
+              run: |
+                  max_attempts=3
+                  attempt=1
+                  while [ $attempt -le $max_attempts ]; do
+                    echo "[push] Attempt $attempt/$max_attempts"
+                    output=$(npm run db:push -w ${{ inputs.service-name }} -- --force 2>&1)
+                    exit_code=$?
+                    echo "$output"
+
+                    # drizzle-kit may exit 0 despite errors (e.g. DSQL OC001 concurrency conflict).
+                    # Check both exit code AND output for known error patterns.
+                    if [ $exit_code -eq 0 ] && ! echo "$output" | grep -qE "(OC001|please retry|schema has been updated)"; then
+                      echo "[push] Succeeded on attempt $attempt"
+                      exit 0
+                    fi
+
+                    echo "::warning::drizzle-kit push failed (exit $exit_code) on attempt $attempt"
+                    echo "[push] Failed on attempt $attempt, waiting 10s..."
+                    sleep 10
+                    attempt=$((attempt + 1))
+                  done
+                  echo "::error::drizzle-kit push failed after $max_attempts attempts"
+                  exit 1
+
+            - name: Verify tables created
+              if: inputs.has-migrations && inputs.sync-tables != '' && github.event_name == 'pull_request'
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: |
+                  for table in ${{ inputs.sync-tables }}; do
+                    echo "[verify] Probing ${DB_SCHEMA}.${table}..."
+                    node --import=tsx -e "
+                      import { DsqlSigner } from '@aws-sdk/dsql-signer';
+                      import pg from 'pg';
+                      const signer = new DsqlSigner({
+                        hostname: process.env.DSQL_CLUSTER_ENDPOINT,
+                        region: process.env.DSQL_REGION
+                      });
+                      const token = await signer.getDbConnectAdminAuthToken();
+                      const client = new pg.Client({
+                        host: process.env.DSQL_CLUSTER_ENDPOINT,
+                        port: 5432, user: 'admin', password: token,
+                        database: 'postgres',
+                        ssl: { rejectUnauthorized: false }
+                      });
+                      await client.connect();
+                      await client.query('SELECT 1 FROM \"${DB_SCHEMA}\".\"${table}\" LIMIT 1');
+                      await client.end();
+                      console.log('[verify] ${DB_SCHEMA}.${table} exists ✓');
+                    " || {
+                      echo "::error::Table ${DB_SCHEMA}.${table} does not exist after push — drizzle-kit push likely failed silently"
+                      exit 1
+                    }
+                  done
 
             - name: Run migrations (production)
               if: inputs.has-migrations && github.event_name != 'pull_request'
@@ -226,6 +273,7 @@ jobs:
 
             - name: Create Sentry release and upload source maps
               if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
+              continue-on-error: true
               working-directory: ${{ inputs.working-directory }}
               env:
                   SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
@@ -236,15 +284,19 @@ jobs:
                   npx @sentry/cli sourcemaps upload .serverless/ --release "${{ env.SENTRY_RELEASE }}" --project "${{ inputs.sentry-project }}"
                   npx @sentry/cli releases finalize "${{ env.SENTRY_RELEASE }}"
 
-            - name: Create HTTP API domain mapping
+            - name: Create per-PR domain and Route53 DNS record
               if: github.event_name == 'pull_request' && inputs.service-short-name != ''
               env:
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   SERVICE_SHORT_NAME: ${{ inputs.service-short-name }}
-                  PR_DOMAIN: ${{ format('pr-{0}.api.sandbox.armoury-app.com', github.event.pull_request.number) }}
-                  WILDCARD_CERT_ARN: 'arn:aws:acm:us-east-1:040663841500:certificate/1bb0db8b-41ab-4d77-9c39-1e83d4ecc055'
+                  PR_DOMAIN_PREFIX: 'pr-'
+                  DOMAIN_SUFFIX: '.api.sandbox.armoury-app.com'
+                  HOSTED_ZONE_ID: 'Z09361641Z6OI455J4GGH'
+                  # Regional hosted zone ID for API Gateway in us-east-1
+                  APIGW_HOSTED_ZONE_ID: 'Z1UJRXOUMOOFQ8'
               run: |
                   STACK_NAME="armoury-${SERVICE_SHORT_NAME}-pr-${PR_NUMBER}"
+                  PR_DOMAIN="${PR_DOMAIN_PREFIX}${PR_NUMBER}${DOMAIN_SUFFIX}"
 
                   # Get HTTP API ID from CloudFormation output (Serverless Framework exports HttpApiId)
                   HTTP_API_ID=$(aws cloudformation describe-stacks \
@@ -263,32 +315,27 @@ jobs:
 
                   echo "HTTP API ID: ${HTTP_API_ID}"
 
-                  # Create per-PR concrete domain if it doesn't exist yet.
-                  # The wildcard DNS record (*.api.sandbox.armoury-app.com) and wildcard ACM cert
-                  # already cover this subdomain — no new DNS record needed.
-                  if ! aws apigatewayv2 get-domain-name --domain-name "${PR_DOMAIN}" >/dev/null 2>&1; then
-                    echo "Creating domain: ${PR_DOMAIN}"
-                    aws apigatewayv2 create-domain-name \
-                      --domain-name "${PR_DOMAIN}" \
-                      --domain-name-configurations "CertificateArn=${WILDCARD_CERT_ARN},EndpointType=REGIONAL,SecurityPolicy=TLS_1_2"
-                  else
-                    echo "Domain ${PR_DOMAIN} already exists"
-                  fi
+                  # --- Step 1: Create per-PR custom domain (idempotent — ignores ConflictException) ---
+                  echo "Ensuring per-PR domain exists: ${PR_DOMAIN}"
+                  aws apigatewayv2 create-domain-name \
+                    --domain-name "${PR_DOMAIN}" \
+                    --domain-name-configurations "CertificateArn=arn:aws:acm:us-east-1:040663841500:certificate/1bb0db8b-41ab-4d77-9c39-1e83d4ecc055,EndpointType=REGIONAL,SecurityPolicy=TLS_1_2" \
+                    --routing-mode "API_MAPPING_ONLY" 2>&1 || echo "::notice::Domain ${PR_DOMAIN} already exists (expected on re-deploy)"
 
-                  # Delete existing API mapping for this service if it exists
+                  # --- Step 2: Create API mapping on per-PR domain ---
+                  # Delete existing mapping for this service if it exists (idempotent re-deploy)
                   EXISTING_MAPPING_ID=$(aws apigatewayv2 get-api-mappings \
                     --domain-name "${PR_DOMAIN}" \
                     --query "Items[?ApiMappingKey=='${SERVICE_SHORT_NAME}'].ApiMappingId" \
                     --output text 2>/dev/null || true)
 
                   if [ -n "${EXISTING_MAPPING_ID}" ] && [ "${EXISTING_MAPPING_ID}" != "None" ]; then
-                    echo "Deleting existing API mapping: ${EXISTING_MAPPING_ID}"
+                    echo "Deleting existing API mapping ${EXISTING_MAPPING_ID} for ${SERVICE_SHORT_NAME}"
                     aws apigatewayv2 delete-api-mapping \
                       --domain-name "${PR_DOMAIN}" \
                       --api-mapping-id "${EXISTING_MAPPING_ID}"
                   fi
 
-                  # Create API mapping: pr-N.api.sandbox.armoury-app.com/{service} -> HTTP API
                   aws apigatewayv2 create-api-mapping \
                     --domain-name "${PR_DOMAIN}" \
                     --api-id "${HTTP_API_ID}" \
@@ -296,6 +343,35 @@ jobs:
                     --api-mapping-key "${SERVICE_SHORT_NAME}"
 
                   echo "Created API mapping: ${PR_DOMAIN}/${SERVICE_SHORT_NAME} -> ${HTTP_API_ID}"
+
+                  # --- Step 3: Create Route53 A-alias record pointing to the per-PR APIGW endpoint ---
+                  # Get the regional domain name (target) for this per-PR custom domain
+                  APIGW_TARGET=$(aws apigatewayv2 get-domain-name \
+                    --domain-name "${PR_DOMAIN}" \
+                    --query 'DomainNameConfigurations[0].ApiGatewayDomainName' \
+                    --output text)
+
+                  echo "APIGW target for ${PR_DOMAIN}: ${APIGW_TARGET}"
+
+                  # Upsert A-alias record in Route53 (idempotent — creates or updates)
+                  aws route53 change-resource-record-sets \
+                    --hosted-zone-id "${HOSTED_ZONE_ID}" \
+                    --change-batch "{
+                      \"Changes\": [{
+                        \"Action\": \"UPSERT\",
+                        \"ResourceRecordSet\": {
+                          \"Name\": \"${PR_DOMAIN}\",
+                          \"Type\": \"A\",
+                          \"AliasTarget\": {
+                            \"HostedZoneId\": \"${APIGW_HOSTED_ZONE_ID}\",
+                            \"DNSName\": \"${APIGW_TARGET}\",
+                            \"EvaluateTargetHealth\": false
+                          }
+                        }
+                      }]
+                    }"
+
+                  echo "Route53 A-alias record upserted: ${PR_DOMAIN} -> ${APIGW_TARGET}"
 
             - name: Create WS domain mapping
               if: github.event_name == 'pull_request' && inputs.has-websocket
@@ -437,6 +513,7 @@ jobs:
 
             - name: Create Sentry release and upload source maps
               if: inputs.sentry-project != '' && env.SENTRY_DSN != '' && env.SENTRY_AUTH_TOKEN != ''
+              continue-on-error: true
               working-directory: ${{ inputs.working-directory }}
               env:
                   SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}

@@ -8,7 +8,7 @@ import { extractTokenFromEvent, buildIssuer } from '@/utils/token.js';
 import { generatePolicy, extractHttpMethod } from '@/utils/policy.js';
 import { isJwtPayload, isM2mPayload } from '@/utils/jwt.js';
 import type { AuthorizerContext, AuthorizerEvent, AuthorizerResult } from '@/types.js';
-import { INTERNAL_ID_CLAIM, M2M_PRINCIPAL_ID } from '@/types.js';
+import { INTERNAL_ID_CLAIM, EMAIL_CLAIM, NAME_CLAIM, M2M_PRINCIPAL_ID } from '@/types.js';
 
 /**
  * Default principal identifier used when denying access.
@@ -109,12 +109,12 @@ export const handler = Sentry.wrapHandler(async (event: AuthorizerEvent): Promis
             sub: payload.sub,
         };
 
-        if (payload.email) {
-            context.email = payload.email;
+        if (payload[EMAIL_CLAIM]) {
+            context.email = payload[EMAIL_CLAIM];
         }
 
-        if (payload.name) {
-            context.name = payload.name;
+        if (payload[NAME_CLAIM]) {
+            context.name = payload[NAME_CLAIM];
         }
 
         Sentry.logger.info('[authorizer] ALLOW', { sub: payload.sub, internalId });

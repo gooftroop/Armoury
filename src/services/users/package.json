@@ -26,9 +26,11 @@
     },
     "dependencies": {
         "@armoury/adapters-dsql": "*",
+        "@armoury/di": "*",
         "@armoury/models": "*",
         "@aws-sdk/client-ssm": "^3.0.0",
-        "@sentry/aws-serverless": "^10.38.0"
+        "@sentry/aws-serverless": "^10.38.0",
+        "inversify": "^8.1.0"
     },
     "@armoury/e2e": "*",
     "devDependencies": {

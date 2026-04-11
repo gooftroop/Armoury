@@ -72,9 +72,14 @@ export function createConfig(tsconfigPath = './tsconfig.json', tsconfigRootDir =
                                     "src/shared is not a workspace. Import from the appropriate @armoury/* package barrel instead (e.g., '@armoury/data-dao', '@armoury/models').",
                             },
                             {
-                                group: ['@armoury/*/*'],
+                                group: [
+                                    '@armoury/*/*',
+                                    '!@armoury/di/web',
+                                    '!@armoury/di/mobile',
+                                    '!@armoury/di/lambda',
+                                ],
                                 message:
-                                    "Only import from barrel files using '@armoury/<package>' — never from subpaths like '@armoury/<package>/subpath'.",
+                                    "Only import from barrel files using '@armoury/<package>' — never from subpaths like '@armoury/<package>/subpath'. Exception: @armoury/di platform subpaths (web, mobile, lambda) are allowed.",
                             },
                         ],
                     },
@@ -82,10 +87,9 @@ export function createConfig(tsconfigPath = './tsconfig.json', tsconfigRootDir =
                 'no-restricted-syntax': [
                     'error',
                     {
-                        selector:
-                            'ImportDeclaration[source.value=/\\.tsx?$/]',
+                        selector: 'ImportDeclaration[source.value=/\\.tsx?$/]',
                         message:
-                            "Do not use .ts or .tsx extensions in import paths. Use .js or .jsx extensions instead.",
+                            'Do not use .ts or .tsx extensions in import paths. Use .js or .jsx extensions instead.',
                     },
                 ],
             },

@@ -14,6 +14,8 @@
  * 5. Must not render tile layout directly.
  * 6. Must export SystemGrid alias for backwards compatibility.
  * 7. Must NOT use boolean flag props to control auth-gated behavior.
+ * 8. Must surface account persistence failures as error state on the tile so the user can retry.
+ * 9. Must provide navigation href for synced tiles pointing to the system's armies page.
  *
  * @module system-grid-container
  */
@@ -58,6 +60,7 @@ export interface SystemGridProps {
  * @param enableSystem - DataContext system enable action.
  * @param userId - Optional authenticated user ID for account persistence.
  * @param setActivatingId - Local setter for optimistic syncing state.
+ * @param setPersistErrors - Setter for account persistence error tracking.
  */
 async function activateSystemTile(
     manifest: GameSystemManifest,
@@ -66,6 +69,7 @@ async function activateSystemTile(
     enableSystem: ReturnType<typeof useDataContext>['enableSystem'],
     userId: string | undefined,
     setActivatingId: React.Dispatch<React.SetStateAction<string | null>>,
+    setPersistErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>,
 ): Promise<void> {
     if (onUnauthenticatedClick) {
         onUnauthenticatedClick();
@@ -108,8 +112,20 @@ async function activateSystemTile(
                 );
 
                 await mutation.mutationFn();
-            } catch {
-                // Best-effort account persistence; sync completion remains successful.
+
+                setPersistErrors((prev) => {
+                    if (!prev[manifest.id]) {
+                        return prev;
+                    }
+
+                    const next = { ...prev };
+                    delete next[manifest.id];
+
+                    return next;
+                });
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to save to account';
+                setPersistErrors((prev) => ({ ...prev, [manifest.id]: message }));
             }
         }
     } finally {
@@ -123,6 +139,7 @@ async function activateSystemTile(
  * @param manifests - Game system manifests.
  * @param syncStates - Current per-system sync states.
  * @param activatingId - Locally activating system ID.
+ * @param persistErrors - Per-system account persistence error messages.
  * @param t - Landing translator function.
  * @param handleTileClick - Tile click callback.
  * @returns Tile descriptors for SystemGridView.
@@ -131,14 +148,16 @@ function buildTiles(
     manifests: GameSystemManifest[],
     syncStates: SyncStateMap,
     activatingId: string | null,
+    persistErrors: Record<string, string>,
     t: ReturnType<typeof useTranslations<'landing'>>,
     handleTileClick: (manifest: GameSystemManifest) => void,
 ): SystemTileData[] {
     return manifests.map((manifest) => {
         const status = getSyncStatus(manifest.id, syncStates);
         const isSyncing = status === 'syncing' || activatingId === manifest.id;
-        const isSynced = status === 'synced';
-        const isError = status === 'error';
+        const hasPersistError = Boolean(persistErrors[manifest.id]);
+        const isSynced = status === 'synced' && !hasPersistError;
+        const isError = status === 'error' || hasPersistError;
         const showOverlay = !isSynced;
 
         return {
@@ -155,6 +174,7 @@ function buildTiles(
                   : isSynced
                     ? t('synced')
                     : t('downloadOverlay'),
+            href: isSynced ? `./${manifest.id}/armies` : undefined,
             onClick: () => {
                 handleTileClick(manifest);
             },
@@ -172,6 +192,7 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
     const t = useTranslations('landing');
     const { systemSyncStates, enableSystem } = useDataContext();
     const [activatingId, setActivatingId] = React.useState<string | null>(null);
+    const [persistErrors, setPersistErrors] = React.useState<Record<string, string>>({});
 
     const handleTileClick = React.useCallback(
         async (manifest: GameSystemManifest) => {
@@ -182,14 +203,23 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
                 enableSystem,
                 userId,
                 setActivatingId,
+                setPersistErrors,
             );
         },
         [onUnauthenticatedClick, systemSyncStates, enableSystem, userId],
     );
 
     const tiles = React.useMemo(
-        () => buildTiles(manifests, systemSyncStates, activatingId, t, (manifest) => void handleTileClick(manifest)),
-        [manifests, systemSyncStates, activatingId, t, handleTileClick],
+        () =>
+            buildTiles(
+                manifests,
+                systemSyncStates,
+                activatingId,
+                persistErrors,
+                t,
+                (manifest) => void handleTileClick(manifest),
+            ),
+        [manifests, systemSyncStates, activatingId, persistErrors, t, handleTileClick],
     );
 
     return <SystemGridView tiles={tiles} />;

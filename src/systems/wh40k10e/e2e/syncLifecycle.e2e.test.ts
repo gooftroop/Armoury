@@ -208,12 +208,31 @@ describe('Sync lifecycle', () => {
 
         githubClient.fileContents.set(CORE_RULES_FILE, '<gameSystem>test</gameSystem>');
         githubClient.fileShas.set(CORE_RULES_FILE, 'sha-1');
-        githubClient.files = [];
+        githubClient.files = [
+            {
+                name: 'Warhammer 40,000.gst',
+                sha: 'sha-1',
+                type: 'file',
+                path: CORE_RULES_FILE,
+                size: 100,
+                download_url: null,
+            },
+        ];
         vi.mocked(parseGameSystem).mockReturnValue(createMockGameSystem());
 
         await dao.load();
 
         githubClient.fileShas.set(CORE_RULES_FILE, 'sha-2');
+        githubClient.files = [
+            {
+                name: 'Warhammer 40,000.gst',
+                sha: 'sha-2',
+                type: 'file',
+                path: CORE_RULES_FILE,
+                size: 100,
+                download_url: null,
+            },
+        ];
         await dao.refresh();
 
         const status = await adapter.getSyncStatus(CORE_RULES_SYNC_KEY);

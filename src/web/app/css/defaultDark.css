@@ -34,6 +34,10 @@
             --color-primary-muted: oklch(0.72 0.12 235 / 18%);
             --color-primary-foreground: oklch(0.15 0.01 260);
 
+            /* --- Accent Primary --- */
+            --color-accent-primary: oklch(0.72 0.12 235);
+            --color-accent-primary-muted: oklch(0.72 0.12 235 / 18%);
+
             /* --- Secondary: Amber Gold --- */
             --color-secondary: oklch(0.75 0.12 70);
             --color-secondary-hover: oklch(0.8 0.13 70);

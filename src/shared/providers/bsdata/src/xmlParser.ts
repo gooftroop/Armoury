@@ -30,6 +30,14 @@ const parser = new XMLParser({
     parseTagValue: true,
     trimValues: true,
     isArray: (name) => ALWAYS_ARRAY_ELEMENTS.includes(name),
+    // BattleScribe catalogues contain thousands of HTML entity references
+    // (&amp;, &lt;, etc.) in ability/weapon descriptions that exceed the
+    // default limit of 1000 expansions. Raise to 50 000 to accommodate
+    // the largest known catalogues (Aeldari, Drukhari).
+    processEntities: {
+        enabled: true,
+        maxTotalExpansions: 50_000,
+    },
 });
 
 /**

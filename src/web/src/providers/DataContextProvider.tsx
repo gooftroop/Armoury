@@ -24,8 +24,16 @@
 
 import * as React from 'react';
 import * as Sentry from '@sentry/nextjs';
+import { createContainerWithModules, coreModule, TOKENS } from '@armoury/di';
+import { webModule } from '@armoury/di/web';
+import type { AdapterFactoryFn, ClientFactoryFn } from '@armoury/di';
 import type { DataContext } from '@armoury/data-context';
-import type { GameSystem } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { IWahapediaClient } from '@armoury/clients-wahapedia';
+import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
+import type { QueryClient } from '@tanstack/react-query';
+import type { ContainerModule } from 'inversify';
+
 /**
  * Possible states for the overall DataContext initialization lifecycle.
  *
@@ -77,20 +85,9 @@ export interface DataContextValue {
     disableSystem: (systemId: string) => Promise<void>;
 }
 /**
- * Default context value before initialization.
- */
-const defaultContextValue: DataContextValue = {
-    dataContext: null,
-    status: 'idle',
-    systemSyncStates: {},
-    enableSystem: async () => {},
-    disableSystem: async () => {},
-};
-
-/**
  * React context for accessing the DataContext and sync state.
  */
-const DataContextReactContext = React.createContext<DataContextValue>(defaultContextValue);
+const DataContextReactContext = React.createContext<DataContextValue | undefined>(undefined);
 /**
  * Props for the DataContextProvider component.
  */
@@ -121,6 +118,14 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      * @param system - The GameSystem descriptor to enable.
      */
     const enableSystem = React.useCallback(async (system: GameSystem): Promise<void> => {
+        // Diagnostic logging — traces each sync phase with wall-clock timestamps
+        // so CI logs reveal where the flow stalls. Remove once root cause is fixed.
+        const t0 = Date.now();
+        const log = (phase: string) =>
+            console.log(`[SYNC-DEBUG] ${phase} +${Date.now() - t0}ms (wall ${new Date().toISOString()})`);
+
+        log('enableSystem start');
+
         setSystemSyncStates((prev) => ({
             ...prev,
             [system.id]: { status: 'syncing' },
@@ -133,31 +138,55 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
              * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
              */
+            log('dynamic imports start');
             const { DataContextBuilder } = await import('@armoury/data-context');
-            const { PGliteAdapter } = await import('@armoury/adapters-pglite');
-            const { createGitHubClient } = await import('@armoury/adapters-github');
-            const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
             const { getQueryClient } = await import('@/lib/getQueryClient.js');
+            log('dynamic imports done');
+
+            const container = createContainerWithModules(coreModule, webModule);
             const queryClient = getQueryClient();
-            const proxyBaseUrl = process.env['NEXT_PUBLIC_GITHUB_PROXY_URL'];
-            const githubClient = createGitHubClient(
-                queryClient,
-                proxyBaseUrl
-                    ? {
-                          apiBaseUrl: `${proxyBaseUrl}/api`,
-                          rawBaseUrl: `${proxyBaseUrl}/raw`,
-                      }
-                    : undefined,
+            container.bind(TOKENS.QueryClient).toConstantValue(queryClient);
+
+            const createAdapter = container.get<AdapterFactoryFn>(TOKENS.AdapterFactory);
+            const adapter = await createAdapter();
+            const createGitHub = container.get<ClientFactoryFn<IGitHubClient, QueryClient>>(TOKENS.GitHubClientFactory);
+            const githubClient = await createGitHub(queryClient);
+            const createWahapedia = container.get<ClientFactoryFn<IWahapediaClient, QueryClient>>(
+                TOKENS.WahapediaClientFactory,
             );
-            const wahapediaAdapter = createWahapediaClient(queryClient);
-            const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
+            const wahapediaAdapter = await createWahapedia(queryClient);
+            const systemWithContainerModule = system as GameSystem & {
+                getContainerModule?: () => unknown;
+            };
+            const systemModule = systemWithContainerModule.getContainerModule?.();
+
+            if (systemModule) {
+                container.load(systemModule as ContainerModule);
+            }
+
+            container.bind(TOKENS.DatabaseAdapter).toConstantValue(adapter);
+            container.bind(TOKENS.GitHubClient).toConstantValue(githubClient);
+            container.bind(TOKENS.WahapediaClient).toConstantValue(wahapediaAdapter);
+
+            log('dependencies resolved, starting build()');
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
                 .build();
+            log('build() returned');
             setDataContext(dc);
+
+            // Expose raw query function for e2e test helpers (avoids opening a second PGlite connection).
+            if (process.env.NODE_ENV !== 'production') {
+                const rawQueryAdapter = adapter as DatabaseAdapter & {
+                    rawQuery: (sql: string) => Promise<unknown>;
+                };
+
+                (window as unknown as Record<string, unknown>).__armoury_raw_query = (sql: string) =>
+                    rawQueryAdapter.rawQuery(sql);
+            }
 
             // Report partial sync failures from the builder's sync result
             const syncResult = dc.syncResult;
@@ -202,13 +231,17 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 return;
             }
 
+            log('setting status=ready');
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
                 [system.id]: { status: 'synced' },
             }));
+            log('enableSystem complete');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to initialize DataContext';
+            log(`enableSystem ERROR: ${message}`);
+
             setStatus('error');
             setError(message);
             setSystemSyncStates((prev) => ({

@@ -18,29 +18,27 @@ import { defineConfig, devices } from '@playwright/test';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const CONFIG_DIR = dirname(fileURLToPath(import.meta.url));
+
 /** Absolute path to the monorepo root (three levels up from src/web/e2e/). */
-const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const ROOT_DIR = resolve(CONFIG_DIR, '../../..');
 
-/** Directory where authenticated session state is persisted. */
-const AUTH_STATE_DIR = './.auth';
+/** Absolute path to the authenticated user's storage state file. */
+const AUTH_STATE_PATH = resolve(CONFIG_DIR, '.auth', 'user.json');
 
-/** Path to the authenticated user's storage state file. */
-const AUTH_STATE_PATH = `${AUTH_STATE_DIR}/user.json`;
-
-/**
- * Whether AUTH0_SECRET is available (controls authenticated test inclusion).
- * The forged-cookie approach only needs the secret — no real Auth0 credentials required.
- */
-const hasAuth0 = Boolean(process.env['AUTH0_SECRET']);
+const AUTH0_SECRET = process.env['AUTH0_SECRET'] || 'e2e-test-secret';
+const hasAuth0 = Boolean(AUTH0_SECRET);
 
 export default defineConfig({
     testDir: './tests',
     fullyParallel: !process.env['CI'],
     forbidOnly: !!process.env['CI'],
-    retries: process.env['CI'] ? 2 : 0,
+    retries: process.env['CI'] ? 1 : 0,
     workers: process.env['CI'] ? 1 : undefined,
     reporter: process.env['CI'] ? 'github' : 'html',
 
+    /* Cap total suite time to 15 min so CI fails fast instead of burning 59+ min on serial timeouts. */
+    globalTimeout: process.env['CI'] ? 900_000 : 0,
     timeout: 30_000,
     expect: {
         timeout: 10_000,
@@ -89,13 +87,15 @@ export default defineConfig({
         reuseExistingServer: !process.env['CI'],
         timeout: 120_000,
         env: {
-            AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] ?? '',
-            AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] ?? '',
-            AUTH0_CLIENT_SECRET: process.env['AUTH0_CLIENT_SECRET'] ?? '',
-            AUTH0_SECRET: process.env['AUTH0_SECRET'] ?? 'e2e-test-secret',
-            APP_BASE_URL: 'http://localhost:3000',
-            NEXT_PUBLIC_AUTH0_DOMAIN: process.env['AUTH0_DOMAIN'] ?? '',
-            NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env['AUTH0_CLIENT_ID'] ?? '',
+            // Spread process.env so the spawned server inherits PATH, system vars,
+            // and any CI-injected secrets (AUTH0_* from GitHub Actions env block).
+            // Without this, Playwright replaces the entire env — breaking npm/node
+            // resolution and dropping CI secrets.
+            ...process.env,
+            // NODE_ENV=test makes Next.js load .env.test instead of .env.development.
+            // This ensures the dev server always has the correct Auth0 e2e values
+            // (AUTH0_SECRET, domain, client IDs) without requiring manual env setup.
+            NODE_ENV: 'test',
         },
     },
 });

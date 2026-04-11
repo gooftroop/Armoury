@@ -126,6 +126,23 @@ export interface AuthorizerResult {
 export const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id' as const;
 
 /**
+ * Custom claim namespace for the user's email address.
+ *
+ * Auth0 access tokens with an API audience cannot use bare OIDC claim names
+ * (e.g. `email`) as custom claims — doing so triggers a `platform_error`.
+ * All profile claims must be namespaced under a URI the tenant controls.
+ */
+export const EMAIL_CLAIM = 'https://armoury.app/email' as const;
+
+/**
+ * Custom claim namespace for the user's display name.
+ *
+ * Same restriction as EMAIL_CLAIM — bare `name` on access tokens with an
+ * Auth0 API audience triggers `platform_error`.
+ */
+export const NAME_CLAIM = 'https://armoury.app/name' as const;
+
+/**
  * OAuth 2.0 grant type for machine-to-machine (client credentials) tokens.
  *
  * Auth0 M2M tokens include a `gty` claim with this value. The authorizer
@@ -157,14 +174,14 @@ export interface JwtPayload {
     'https://armoury.app/internal_id': string;
 
     /**
-     * The email address for the token subject.
+     * The email address for the token subject (namespaced claim).
      */
-    email?: string;
+    'https://armoury.app/email'?: string;
 
     /**
-     * The display name for the token subject.
+     * The display name for the token subject (namespaced claim).
      */
-    name?: string;
+    'https://armoury.app/name'?: string;
 
     /**
      * The intended audience for the token.

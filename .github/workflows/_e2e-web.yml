@@ -35,19 +35,56 @@ jobs:
               if: steps.playwright-cache.outputs.cache-hit == 'true'
               run: npx playwright install-deps chromium
 
+            - name: Pre-pull Docker images
+              run: |
+                  docker pull localstack/localstack:4.4.0 &
+                  docker pull postgres:16-alpine &
+                  wait
+
+            - name: Ensure clean Docker state
+              run: |
+                  docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
+                  shopt -s nullglob
+                  for f in src/services/*/docker-compose.yml src/shared/*/docker-compose.yml src/shared/*/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
+                  done
+                  shopt -u nullglob
+
+            - name: Start LocalStack
+              run: docker compose -f infra/localstack/docker-compose.yml up -d --wait
+
+            - name: Start per-service databases
+              run: |
+                  shopt -s nullglob
+                  for f in src/services/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" up -d --wait
+                  done
+                  shopt -u nullglob
+
             - name: Build dependencies
               run: npx turbo run build --filter=@armoury/web^...
+
+            - name: Install awslocal CLI
+              run: pip install awscli-local
+
+            - name: Build services and bootstrap LocalStack
+              run: bash infra/localstack/bootstrap.sh
 
             - name: Run e2e tests
               run: npx playwright test --config src/web/e2e/playwright.config.ts
               env:
                   CI: 'true'
-                  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
-                  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
-                  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
-                  AUTH0_SECRET: ${{ secrets.AUTH0_SECRET }}
-                  E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
-                  E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # Auth0 env vars are intentionally NOT set here.
+                  # The Playwright webServer spawns Next.js with NODE_ENV=test,
+                  # which loads src/web/.env.test — providing deterministic
+                  # Auth0 values (AUTH0_SECRET=e2e-test-secret, etc.) that match
+                  # the forged session cookie from e2e/auth/setup.ts.
+                  # Setting secrets.AUTH0_* here would override .env.test with
+                  # empty strings (secrets not configured), breaking cookie
+                  # encryption/decryption and causing 400 errors.
 
             - name: Upload test artifacts
               if: failure()
@@ -58,3 +95,14 @@ jobs:
                       playwright-report/
                       test-results/
                   retention-days: 7
+
+            - name: Cleanup Docker containers
+              if: always()
+              run: |
+                  docker compose -f infra/localstack/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
+                  shopt -s nullglob
+                  for f in src/services/*/docker-compose.yml src/shared/*/docker-compose.yml src/shared/*/*/docker-compose.yml; do
+                      dir=$(dirname "$f")
+                      docker compose -f "$f" --project-directory "$dir" down -v --remove-orphans 2>/dev/null || true
+                  done
+                  shopt -u nullglob

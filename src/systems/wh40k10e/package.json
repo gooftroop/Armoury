@@ -16,10 +16,15 @@
             "browser": "./dist/browser/system.js",
             "default": "./dist/node/system.js"
         },
+        "./di.module": {
+            "types": "./dist/di.module.d.ts",
+            "browser": "./dist/browser/di.module.js",
+            "default": "./dist/node/di.module.js"
+        },
         "./__mocks__/*": "./src/__mocks__/*.ts"
     },
     "scripts": {
-        "build": "ESBUILD_ENTRIES=src/index.ts,src/system.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
+        "build": "ESBUILD_ENTRIES=src/index.ts,src/system.ts,src/di.module.ts node --import=tsx --input-type=module -e \"import '@armoury/esbuild/library'\"",
         "test": "vitest run",
         "test:integration": "vitest run --config vitest.integration.config.ts",
         "test:e2e": "vitest run --config vitest.e2e.config.ts",
@@ -32,13 +37,15 @@
     "dependencies": {
         "@armoury/clients-github": "*",
         "@armoury/clients-wahapedia": "*",
+        "@armoury/di": "*",
         "@armoury/data-dao": "*",
         "@armoury/data-context": "*",
         "@armoury/models": "*",
         "@armoury/providers-bsdata": "*",
         "@armoury/validation": "*",
         "cheerio": "^1.2.0",
-        "drizzle-orm": "^0.45.1"
+        "drizzle-orm": "^0.45.1",
+        "inversify": "^8.1.0"
     },
     "devDependencies": {
         "@armoury/esbuild": "*",

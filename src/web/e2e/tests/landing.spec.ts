@@ -19,6 +19,12 @@ import { test, expect } from '../fixtures/index.js';
 import { LandingPage } from '../pages/LandingPage.js';
 
 test.describe('Landing Page (authenticated)', () => {
+    // Sync tests (lines 59, 85) trigger PGlite WASM compilation + 40 HAR-served
+    // GitHub API calls. In CI this takes ~38-40s, exceeding the default 30s
+    // test timeout. Match the data-sync suite's timeout to allow sync completion
+    // plus retry headroom for HMR reloads.
+    test.describe.configure({ timeout: 120_000 });
+
     let landingPage: LandingPage;
 
     test.beforeEach(async ({ page }) => {
@@ -46,7 +52,7 @@ test.describe('Landing Page (authenticated)', () => {
 
         // Settings gear icon should link to the profile page.
         await expect(landingPage.userSettingsLink).toBeVisible();
-        await expect(landingPage.userSettingsLink).toHaveAttribute('href', /profile/);
+        await expect(landingPage.userSettingsLink).toHaveAttribute('href', /account/);
     });
 
     test('renders system tiles', async () => {
@@ -67,9 +73,9 @@ test.describe('Landing Page (authenticated)', () => {
 
         // Wait for a terminal state — either synced or error.
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
 
-        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 30_000 });
+        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 90_000 });
 
         // Confirm we stayed on the app, not redirected to Auth0.
         expect(page.url()).toContain('localhost:3000');
@@ -95,7 +101,7 @@ test.describe('Landing Page (authenticated)', () => {
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
         const errorIndicator = firstTile.locator('.text-red-400').first();
 
-        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 30_000 });
+        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 90_000 });
 
         // Confirm we stayed on the app, not redirected to Auth0.
         expect(page.url()).toContain('localhost:3000');
@@ -112,7 +118,7 @@ test.describe('Landing Page (authenticated)', () => {
             // Click the tile to retry — spinner should reappear.
             await overlayButton.click();
 
-            const spinner = firstTile.locator('.animate-spin');
+            const spinner = firstTile.locator('.animate-spin').first();
 
             await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
         }

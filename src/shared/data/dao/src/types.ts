@@ -244,6 +244,13 @@ export interface GameSystem {
         /** Registered client instances keyed by name (e.g. 'github', 'wahapedia'). */
         clients: Map<string, unknown>,
     ): GameContextResult;
+
+    /**
+     * Returns the inversify ContainerModule for this game system.
+     * When present, composition roots load this module instead of
+     * calling createGameContext() directly.
+     */
+    getContainerModule?(): import('inversify').ContainerModule;
 }
 
 /**
@@ -286,8 +293,6 @@ export interface GameSystemManifest {
     /** Semantic version of the manifest format. */
     manifestVersion: string;
 }
-
-export type { IGitHubClient, GitHubFileInfo } from '@armoury/clients-github';
 
 /** Error thrown when database operations fail. */
 export class DatabaseError extends Error {

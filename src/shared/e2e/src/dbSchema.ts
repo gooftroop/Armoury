@@ -106,10 +106,16 @@ function validateSchemaName(schemaName: string): void {
     }
 }
 
+const SCHEMA_VERIFY_MAX_RETRIES = 15;
+const SCHEMA_VERIFY_DELAY_MS = 2000;
+
 /**
- * Creates a PostgreSQL schema if it does not already exist.
+ * Creates a PostgreSQL schema and verifies visibility on a fresh connection.
  *
- * @param schemaName - The schema name to create (e.g., "pr_42").
+ * DSQL schema DDL may not be immediately visible to new connections due to
+ * replication lag. We retry on a fresh connection before returning so that
+ * the subsequent `drizzle-kit push` step (which opens its own connection)
+ * does not fail with `invalid_schema_name` (3F000).
  */
 async function createSchema(schemaName: string): Promise<void> {
     validateSchemaName(schemaName);
@@ -120,10 +126,36 @@ async function createSchema(schemaName: string): Promise<void> {
     try {
         console.log(`[db:schema] Creating schema "${schemaName}" if not exists...`);
         await client.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
-        console.log(`[db:schema] Schema "${schemaName}" ready.`);
+        console.log(`[db:schema] Schema "${schemaName}" created.`);
     } finally {
         await client.end();
     }
+
+    // Verify the schema is visible on a fresh connection (DSQL replication lag).
+    for (let attempt = 1; attempt <= SCHEMA_VERIFY_MAX_RETRIES; attempt++) {
+        const verifyClient = await createDsqlClient(config);
+
+        try {
+            const result = await verifyClient.query(`SELECT 1 FROM pg_namespace WHERE nspname = $1`, [schemaName]);
+
+            if ((result.rowCount ?? 0) > 0) {
+                console.log(`[db:schema] Schema "${schemaName}" verified visible (attempt ${attempt}).`);
+
+                return;
+            }
+        } finally {
+            await verifyClient.end();
+        }
+
+        console.log(
+            `[db:schema] Schema "${schemaName}" not yet visible (attempt ${attempt}/${SCHEMA_VERIFY_MAX_RETRIES}), retrying in ${SCHEMA_VERIFY_DELAY_MS}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, SCHEMA_VERIFY_DELAY_MS));
+    }
+
+    throw new Error(
+        `Schema "${schemaName}" was created but not visible after ${SCHEMA_VERIFY_MAX_RETRIES} retries (${(SCHEMA_VERIFY_MAX_RETRIES * SCHEMA_VERIFY_DELAY_MS) / 1000}s). Aurora DSQL replication lag may be excessive.`,
+    );
 }
 
 /**
@@ -187,6 +219,39 @@ async function generateDatabaseUrl(schemaName: string): Promise<void> {
 }
 
 /**
+ * Verifies that expected tables exist in a schema by probing each one.
+ *
+ * Used after `drizzle-kit push` to catch silent failures where push exits 0
+ * but tables were never created (e.g. interactive prompt failure in CI).
+ *
+ * @param schemaName - Target schema to verify (e.g. "pr_42").
+ * @param tables - Table names that should exist.
+ * @throws Error if any table does not exist.
+ */
+async function verifyTablesExist(schemaName: string, tables: string[]): Promise<void> {
+    validateSchemaName(schemaName);
+
+    if (tables.length === 0) {
+        throw new Error('No tables specified for verification.');
+    }
+
+    const config = getDsqlConfig();
+    const client = await createDsqlClient(config);
+
+    try {
+        for (const table of tables) {
+            console.log(`[verify-tables] Probing "${schemaName}"."${table}"...`);
+            await client.query(`SELECT 1 FROM "${schemaName}"."${table}" LIMIT 1`);
+            console.log(`[verify-tables] "${schemaName}"."${table}" exists ✓`);
+        }
+
+        console.log('[verify-tables] All tables verified.');
+    } finally {
+        await client.end();
+    }
+}
+
+/**
  * Syncs table data from production `public` schema to a sandbox PR schema.
  *
  * Reads all rows from each table in the production cluster and writes them
@@ -213,6 +278,48 @@ async function syncProductionData(targetSchema: string, tables: string[]): Promi
 
     const sandboxConfig = getDsqlConfig();
     const prodConfig: DsqlConfig = { clusterEndpoint: prodEndpoint, region };
+
+    // Wait for tables to be visible on fresh connections (DSQL replication lag
+    // between drizzle-kit push and the sync step).
+    //
+    // Aurora DSQL does not reliably expose table metadata through catalog views
+    // (information_schema.tables, pg_tables). Instead, we probe the table
+    // directly — a successful `SELECT 1 ... LIMIT 1` confirms the relation
+    // exists. A "relation does not exist" (42P01) error means DSQL hasn't
+    // propagated the DDL yet, so we retry.
+    const probeTable = tables[0]!;
+
+    for (let attempt = 1; attempt <= SCHEMA_VERIFY_MAX_RETRIES; attempt++) {
+        const probeClient = await createDsqlClient(sandboxConfig);
+
+        try {
+            await probeClient.query(`SELECT 1 FROM "${targetSchema}"."${probeTable}" LIMIT 1`);
+            console.log(`[db:sync] Table "${targetSchema}"."${probeTable}" verified visible (attempt ${attempt}).`);
+            break;
+        } catch (err: unknown) {
+            const pgCode = (err as { code?: string }).code;
+
+            // 42P01 = undefined_table — table not yet visible, retry
+            if (pgCode === '42P01') {
+                if (attempt === SCHEMA_VERIFY_MAX_RETRIES) {
+                    throw new Error(
+                        `Table "${targetSchema}"."${probeTable}" not visible after ${SCHEMA_VERIFY_MAX_RETRIES} retries (${(SCHEMA_VERIFY_MAX_RETRIES * SCHEMA_VERIFY_DELAY_MS) / 1000}s). Aurora DSQL replication lag may be excessive.`,
+                        { cause: err },
+                    );
+                }
+
+                console.log(
+                    `[db:sync] Table "${targetSchema}"."${probeTable}" not yet visible (attempt ${attempt}/${SCHEMA_VERIFY_MAX_RETRIES}), retrying in ${SCHEMA_VERIFY_DELAY_MS}ms...`,
+                );
+            } else {
+                throw err;
+            }
+        } finally {
+            await probeClient.end();
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, SCHEMA_VERIFY_DELAY_MS));
+    }
 
     const sourceClient = await createDsqlClient(prodConfig);
     const targetClient = await createDsqlClient(sandboxConfig);
@@ -245,7 +352,7 @@ const command = args[0];
 const schemaName = args[1];
 
 if (!command) {
-    console.error('Usage: node dbSchema.js <create|drop|url|token|sync|verify-sync> ...');
+    console.error('Usage: node dbSchema.js <create|drop|url|token|sync|verify-sync|verify-tables> ...');
     console.error('');
     console.error('Commands:');
     console.error('  create <SCHEMA_NAME>               Create a PR schema');
@@ -254,6 +361,7 @@ if (!command) {
     console.error('  token <REGION> <HOST>              Generate a fresh IAM auth token');
     console.error('  sync <SCHEMA_NAME> <T1> [T2] ...   Sync production tables into a PR schema');
     console.error('  verify-sync <SCHEMA> <T1> [T2]     Verify row counts match after sync');
+    console.error('  verify-tables <SCHEMA> <T1> [T2]   Verify tables exist in schema');
     console.error('');
     console.error('Environment variables:');
     console.error('  DSQL_CLUSTER_ENDPOINT  Sandbox DSQL cluster endpoint (all commands except token)');
@@ -367,7 +475,22 @@ switch (command) {
         break;
     }
 
+    case 'verify-tables': {
+        const vtSchema = args[1];
+        const vtTables = args.slice(2);
+
+        if (!vtSchema || vtTables.length === 0) {
+            console.error('Usage: verify-tables <SCHEMA_NAME> <TABLE1> [TABLE2] ...');
+            process.exit(1);
+        }
+
+        await verifyTablesExist(vtSchema, vtTables);
+        break;
+    }
+
     default:
-        console.error(`Unknown command: ${command}. Use "create", "drop", "url", "token", "sync", or "verify-sync".`);
+        console.error(
+            `Unknown command: ${command}. Use "create", "drop", "url", "token", "sync", "verify-sync", or "verify-tables".`,
+        );
         process.exit(1);
 }

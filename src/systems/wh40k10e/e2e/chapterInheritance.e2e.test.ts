@@ -88,8 +88,8 @@ describe.skipIf(!HAS_TOKEN)('chapter DAO inheritance (Blood Angels)', { timeout:
     });
 
     it('SM and BA have distinct sync status keys on the same adapter', async () => {
-        const smSync = await sharedAdapter.getSyncStatus('factionModel:space-marines');
-        const baSync = await sharedAdapter.getSyncStatus('factionModel:blood-angels');
+        const smSync = await sharedAdapter.getSyncStatus(`factionModel:${SPACE_MARINES_FILE}`);
+        const baSync = await sharedAdapter.getSyncStatus(`factionModel:${BLOOD_ANGELS_FILE}`);
 
         expect(smSync).not.toBeNull();
         expect(baSync).not.toBeNull();

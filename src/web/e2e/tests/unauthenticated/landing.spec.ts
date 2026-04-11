@@ -65,10 +65,12 @@ test.describe('Landing Page (unauthenticated)', () => {
         await firstTile.hover();
 
         const overlayButton = firstTile.getByRole('button');
-        await overlayButton.click();
 
-        // Should redirect to /auth/login (which then redirects to Auth0).
-        await page.waitForURL(/\/auth\/login|auth0\.com/, { timeout: 10_000 });
+        // Listen for the auth redirect request BEFORE clicking so the
+        // promise captures the navigation regardless of dev-server latency.
+        const authRedirect = page.waitForRequest(/\/auth\/login/);
+        await overlayButton.click();
+        await authRedirect;
     });
 
     test('displays legal disclaimer text', async () => {

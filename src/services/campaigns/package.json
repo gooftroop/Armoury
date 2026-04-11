@@ -26,11 +26,13 @@
     },
     "dependencies": {
         "@armoury/adapters-pglite": "*",
+        "@armoury/di": "*",
         "@armoury/models": "*",
         "@aws-sdk/client-ssm": "^3.0.0",
         "@sentry/aws-serverless": "^10.38.0",
         "@armoury/data-dao": "*",
-        "@armoury/adapters-dsql": "*"
+        "@armoury/adapters-dsql": "*",
+        "inversify": "^8.1.0"
     },
     "@armoury/e2e": "*",
     "devDependencies": {

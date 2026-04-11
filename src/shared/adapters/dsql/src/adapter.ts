@@ -230,6 +230,7 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                     region: this.config.region,
                 });
                 const token = await signer.getDbConnectAdminAuthToken();
+                const dbSchema = process.env['DB_SCHEMA'];
                 client = new Client({
                     host: this.config.clusterEndpoint,
                     user: 'admin',
@@ -237,8 +238,10 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                     database: 'postgres',
                     port: this.config.port ?? 5432,
                     ssl: this.config.ssl ?? true,
+                    ...(dbSchema ? { options: `-c search_path=${dbSchema}` } : {}),
                 });
             } else {
+                const dbSchema = process.env['DB_SCHEMA'];
                 client = new Client({
                     host: this.config.host,
                     user: this.config.user,
@@ -246,6 +249,7 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                     database: this.config.database,
                     port: this.config.port,
                     ssl: this.config.ssl ?? false,
+                    ...(dbSchema ? { options: `-c search_path=${dbSchema}` } : {}),
                 });
             }
 

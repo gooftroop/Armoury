@@ -16,6 +16,12 @@ import { test, expect } from '../fixtures/index.js';
 import { LandingPage } from '../pages/LandingPage.js';
 
 test.describe('System Sync Flow', () => {
+    // Sync tests trigger PGlite WASM compilation + 40 HAR-served GitHub API
+    // calls. In CI this takes ~38-40s, exceeding the default 30s test timeout.
+    // Match the data-sync suite's timeout to allow sync completion plus retry
+    // headroom for HMR reloads.
+    test.describe.configure({ timeout: 120_000 });
+
     let landingPage: LandingPage;
 
     test.beforeEach(async ({ page }) => {
@@ -52,7 +58,7 @@ test.describe('System Sync Flow', () => {
         // If sync is very fast, the spinner might flash and disappear.
         // Use a soft check: either spinner appeared OR we already reached the end state.
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
 
         await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
     });
@@ -68,9 +74,9 @@ test.describe('System Sync Flow', () => {
 
         // Wait for the sync to complete — either synced badge or error indicator.
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
 
-        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 30_000 });
+        await expect(syncedBadge.or(errorIndicator)).toBeVisible({ timeout: 90_000 });
 
         // Verify we're in one of the two terminal states.
         const isSynced = await syncedBadge.isVisible().catch(() => false);
@@ -93,7 +99,7 @@ test.describe('System Sync Flow', () => {
 
         // Only proceed with this assertion if sync succeeds.
         // If it errors, this test is effectively skipped (test.fixme-like behavior).
-        const isSynced = await syncedBadge.isVisible({ timeout: 30_000 }).catch(() => false);
+        const isSynced = await syncedBadge.isVisible({ timeout: 90_000 }).catch(() => false);
 
         if (isSynced) {
             // The overlay button should no longer be present (showOverlay = false when synced).
@@ -111,10 +117,10 @@ test.describe('System Sync Flow', () => {
         await overlayButton.click();
 
         // Wait for either synced or error.
-        const errorIndicator = firstTile.locator('.text-red-400');
+        const errorIndicator = firstTile.locator('.text-red-400').first();
         const syncedBadge = firstTile.locator('[class*="bg-green-900"]');
 
-        await expect(errorIndicator.or(syncedBadge)).toBeVisible({ timeout: 30_000 });
+        await expect(errorIndicator.or(syncedBadge)).toBeVisible({ timeout: 90_000 });
 
         const isError = await errorIndicator.isVisible().catch(() => false);
 
@@ -126,7 +132,7 @@ test.describe('System Sync Flow', () => {
             await overlayButton.click();
 
             // Should re-enter the syncing state (spinner or progress).
-            const spinner = firstTile.locator('.animate-spin');
+            const spinner = firstTile.locator('.animate-spin').first();
 
             await expect(spinner.or(syncedBadge).or(errorIndicator)).toBeVisible({ timeout: 15_000 });
         }

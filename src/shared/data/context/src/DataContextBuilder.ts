@@ -46,14 +46,21 @@ export class DataContextBuilder<TGameData = unknown> {
             throw new Error('An adapter must be provided to build a DataContext.');
         }
 
+        const t0 = Date.now();
+        const log = (phase: string) => console.log(`[SYNC-DEBUG] build: ${phase} +${Date.now() - t0}ms`);
+
         const gameSystem = this.gameSystem as GameSystem & {
             createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult<TGameData>;
         };
 
+        log('register start');
         await gameSystem.register();
+        log('register done, adapter.initialize start');
         await this.adapterInstance.initialize();
+        log('adapter.initialize done, createGameContext start');
 
         const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
+        log('createGameContext done');
 
         const dc = new DataContext(this.adapterInstance, gameSystem, this.clients, {
             armies: gameContext.armies,
@@ -62,7 +69,11 @@ export class DataContextBuilder<TGameData = unknown> {
         });
 
         if (gameContext.sync && this.clients.has('github')) {
+            log('sync start');
             const syncResult = await gameContext.sync();
+            log(
+                `sync done — succeeded: ${syncResult.succeeded.length}, failed: ${syncResult.failures.length}, total: ${syncResult.total}`,
+            );
 
             if (syncResult.succeeded.length === 0 && syncResult.failures.length > 0) {
                 throw new Error(
@@ -73,6 +84,8 @@ export class DataContextBuilder<TGameData = unknown> {
 
             dc.syncResult = syncResult;
         }
+
+        log('build complete');
 
         return dc;
     }

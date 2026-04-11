@@ -79,6 +79,8 @@ const CORE_RULES_FILE = 'Warhammer%2040%2C000.gst';
  * Fetches the core rules GST file from BSData, parses it, and discovers faction catalogues.
  */
 class CoreRulesDAO extends BaseDAO<CoreRules> {
+    private gstSha: string | null = null;
+
     /**
      * Creates a core rules DAO.
      * @param adapter - Database adapter instance
@@ -121,12 +123,17 @@ class CoreRulesDAO extends BaseDAO<CoreRules> {
 
     /**
      * Discovers faction catalogue files from the BSData repository.
+     * Also captures the GST file SHA from the directory listing for sync tracking.
      */
     private async discoverFactions(): Promise<void> {
         const files = await this.githubClient.listFiles(this.owner, this.repo, '');
         const factions: Faction[] = [];
 
         for (const file of files) {
+            if (file.name === decodeURIComponent(CORE_RULES_FILE) && file.type === 'file') {
+                this.gstSha = file.sha;
+            }
+
             if (file.name.endsWith('.cat') && file.type === 'file') {
                 const name = file.name
                     .replace('.cat', '')
@@ -148,6 +155,11 @@ class CoreRulesDAO extends BaseDAO<CoreRules> {
             await this.adapter.deleteAll('faction');
             await this.adapter.putMany('faction', factions);
         });
+    }
+
+    protected override async onPostFetch(_data: CoreRules): Promise<void> {
+        const sha = this.gstSha ?? 'unknown';
+        await this.adapter.setSyncStatus(this.getSyncFileKey(), sha);
     }
 }
 
