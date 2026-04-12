@@ -4,10 +4,11 @@
  * @requirements
  * - REQ-CONTAINER-01: Wires query data and loading state into ArmyListView.
  * - REQ-CONTAINER-02: Handles deploy, duplicate, and delete confirmation flows.
+ * - REQ-CONTAINER-03: Auto-enables game system when DataContext is idle.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ForgeContainer } from '../ForgeContainer.js';
@@ -19,6 +20,21 @@ const mockDuplicateMutate = vi.fn();
 const mockDeleteMutate = vi.fn();
 const useQueryMock = vi.fn();
 const useMutationMock = vi.fn();
+const mockEnableSystem = vi.fn();
+const mockResolveGameSystem = vi.fn();
+
+let mockDataContextValue = {
+    status: 'ready' as string,
+    dataContext: {
+        armies: {
+            listByOwner: vi.fn(),
+            get: vi.fn(),
+            save: vi.fn(),
+            delete: vi.fn(),
+        },
+    },
+    enableSystem: mockEnableSystem,
+};
 
 vi.mock('next/navigation', () => ({
     useRouter: () => ({
@@ -31,17 +47,11 @@ vi.mock('next-intl', () => ({
 }));
 
 vi.mock('@/providers/DataContextProvider.js', () => ({
-    useDataContext: () => ({
-        status: 'ready',
-        dataContext: {
-            armies: {
-                listByOwner: vi.fn(),
-                get: vi.fn(),
-                save: vi.fn(),
-                delete: vi.fn(),
-            },
-        },
-    }),
+    useDataContext: () => mockDataContextValue,
+}));
+
+vi.mock('@/lib/resolveGameSystem.js', () => ({
+    resolveGameSystem: (...args: unknown[]) => mockResolveGameSystem(...args),
 }));
 
 vi.mock('@tanstack/react-query', () => ({
@@ -119,6 +129,19 @@ describe('ForgeContainer', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
+        mockDataContextValue = {
+            status: 'ready',
+            dataContext: {
+                armies: {
+                    listByOwner: vi.fn(),
+                    get: vi.fn(),
+                    save: vi.fn(),
+                    delete: vi.fn(),
+                },
+            },
+            enableSystem: mockEnableSystem,
+        };
+
         useQueryMock.mockReturnValue({
             data: [makeArmy({ id: 'a-1', name: 'Alpha' })],
             isLoading: false,
@@ -132,6 +155,8 @@ describe('ForgeContainer', () => {
 
             return { mutate: isDeleteMutation ? mockDeleteMutate : mockDuplicateMutate };
         });
+
+        mockResolveGameSystem.mockResolvedValue(null);
     });
 
     it('passes query data to list view and supports deploy navigation', async () => {
@@ -169,5 +194,46 @@ describe('ForgeContainer', () => {
         await user.click(screen.getByRole('button', { name: 'confirm-delete' }));
 
         expect(mockDeleteMutate).toHaveBeenCalledWith('a-1');
+    });
+
+    describe('auto-enable game system', () => {
+        it('calls enableSystem when DataContext status is idle', async () => {
+            const fakeSystem = { id: 'wh40k10e' };
+
+            mockResolveGameSystem.mockResolvedValue(fakeSystem);
+            mockDataContextValue.status = 'idle';
+
+            render(<ForgeContainer userId="user-1" />);
+
+            await waitFor(() => {
+                expect(mockResolveGameSystem).toHaveBeenCalledWith('wh40k10e');
+            });
+
+            await waitFor(() => {
+                expect(mockEnableSystem).toHaveBeenCalledWith(fakeSystem);
+            });
+        });
+
+        it('does not call enableSystem when DataContext status is ready', () => {
+            mockDataContextValue.status = 'ready';
+
+            render(<ForgeContainer userId="user-1" />);
+
+            expect(mockResolveGameSystem).not.toHaveBeenCalled();
+            expect(mockEnableSystem).not.toHaveBeenCalled();
+        });
+
+        it('does not call enableSystem when resolveGameSystem returns null', async () => {
+            mockResolveGameSystem.mockResolvedValue(null);
+            mockDataContextValue.status = 'idle';
+
+            render(<ForgeContainer userId="user-1" />);
+
+            await waitFor(() => {
+                expect(mockResolveGameSystem).toHaveBeenCalledWith('wh40k10e');
+            });
+
+            expect(mockEnableSystem).not.toHaveBeenCalled();
+        });
     });
 });
