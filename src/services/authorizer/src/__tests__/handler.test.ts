@@ -133,8 +133,8 @@ describe('handler', () => {
             payload: {
                 sub: 'auth0|user-123',
                 'https://armoury.app/internal_id': 'internal-uuid-123',
-                email: 'user@example.com',
-                name: 'Test User',
+                'https://armoury.app/email': 'user@example.com',
+                'https://armoury.app/name': 'Test User',
                 aud: 'https://api.armoury.com',
                 iss: 'https://test.auth0.com/',
             },
@@ -265,8 +265,8 @@ describe('handler - REQUEST events (WebSocket)', () => {
             payload: {
                 sub: 'auth0|user-123',
                 'https://armoury.app/internal_id': 'internal-uuid-123',
-                email: 'user@example.com',
-                name: 'Test User',
+                'https://armoury.app/email': 'user@example.com',
+                'https://armoury.app/name': 'Test User',
                 aud: 'https://api.armoury.com',
                 iss: 'https://test.auth0.com/',
             },
@@ -342,8 +342,8 @@ describe('handler - OPTIONS preflight bypass', () => {
             payload: {
                 sub: 'auth0|user-123',
                 'https://armoury.app/internal_id': 'internal-uuid-123',
-                email: 'user@example.com',
-                name: 'Test User',
+                'https://armoury.app/email': 'user@example.com',
+                'https://armoury.app/name': 'Test User',
                 aud: 'https://api.armoury.com',
                 iss: 'https://test.auth0.com/',
             },

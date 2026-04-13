@@ -61,12 +61,13 @@ export class LandingPage {
         this.systemGrid = page.locator('[style*="grid-template-columns"]');
 
         // Logged-in user tile locators — accessible selectors (no data-testid).
-        this.userTile = page.getByRole('status', { name: /signed in|welcome/i });
-        this.userAvatar = this.userTile
-            .locator('span')
-            .filter({ has: page.locator('img') })
-            .first();
-        this.userWelcomeText = this.userTile.locator('span.text-foreground');
+        // AuthenticatedProfile renders role="status" on the welcome <span>, not on
+        // the Card container. We scope to the Card that contains the status span.
+        this.userTile = page.locator('[class*="border-border"]', {
+            has: page.getByRole('status', { name: /signed in|welcome/i }),
+        });
+        this.userAvatar = this.userTile.locator('img').first();
+        this.userWelcomeText = this.userTile.getByRole('status', { name: /signed in|welcome/i });
         this.userSettingsLink = this.userTile.getByRole('link', { name: /edit.*profile/i });
     }
 
@@ -91,7 +92,9 @@ export class LandingPage {
      * @returns A locator matching all system tile containers.
      */
     getSystemTiles(): Locator {
-        return this.systemGrid.locator('> div');
+        // Synced tiles are wrapped in a <Link> (renders <a>), un-synced tiles
+        // are bare <div>s. Use `> *` to match both direct children.
+        return this.systemGrid.locator('> *');
     }
 
     /**
@@ -101,7 +104,7 @@ export class LandingPage {
      * @returns A locator for the matching tile.
      */
     getSystemTileBySplashText(splashText: string): Locator {
-        return this.systemGrid.locator('> div', { hasText: splashText });
+        return this.systemGrid.locator('> *', { hasText: splashText });
     }
 
     /**

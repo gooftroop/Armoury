@@ -15,7 +15,7 @@
  */
 
 import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
@@ -42,7 +42,7 @@ const badgeVariants = cva(
 /**
  * Props for the Badge component.
  */
-export type BadgeProps = React.ComponentPropsWithRef<'div'> & VariantProps<typeof badgeVariants>;
+export type BadgeProps = ComponentPropsWithRef<'div'> & VariantProps<typeof badgeVariants>;
 
 /**
  * Badge component - displays a small label for status or counts.
@@ -50,7 +50,7 @@ export type BadgeProps = React.ComponentPropsWithRef<'div'> & VariantProps<typeo
  * @param props - Component props including variant and standard div attributes.
  * @returns The rendered Badge component.
  */
-function Badge({ className, variant, ref, ...props }: BadgeProps): React.ReactElement {
+function Badge({ className, variant, ref, ...props }: BadgeProps): ReactElement {
     return <div className={cn(badgeVariants({ variant }), className)} ref={ref} {...props} />;
 }
 

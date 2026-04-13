@@ -14,7 +14,7 @@
  * @module account-settings-view
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import type { useTranslations } from 'next-intl';
 import type { UserPreferences } from '@armoury/clients-users';
@@ -80,7 +80,7 @@ function AccountSettingsView({
     onNotificationsChange,
     onSavePreferences,
     onDeleteAccount,
-}: AccountSettingsViewProps): React.ReactElement {
+}: AccountSettingsViewProps): ReactElement {
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
             <h1 className="text-3xl font-bold text-primary">{t('title')}</h1>
@@ -110,7 +110,7 @@ AccountSettingsView.displayName = 'AccountSettingsView';
  *
  * @returns Skeleton page placeholders.
  */
-function AccountSettingsLoading(): React.ReactElement {
+function AccountSettingsLoading(): ReactElement {
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
             <Skeleton className="h-9 w-64" />

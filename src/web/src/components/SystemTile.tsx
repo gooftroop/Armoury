@@ -10,16 +10,19 @@
  * 2. Must render overlay with syncing/error/download states.
  * 3. Must render synced badge when synced.
  * 4. Must not own data fetching or side effects.
+ * 5. Must wrap tile in a Link when href is provided (synced tiles navigate to armies page).
  *
  * @module system-tile
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
+import Link from 'next/link';
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
-import type { GameSystemManifest } from '@armoury/data-dao';
+import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
 
+import { ProgressBar } from '@/components/ProgressBar.js';
 import { cn } from '@/lib/utils.js';
 
 /**
@@ -38,6 +41,10 @@ export interface SystemTileProps {
     showOverlay: boolean;
     /** Text to display on the overlay or synced badge. */
     overlayText: string;
+    /** Real-time sync progress data. When provided during syncing, replaces the spinner with a progress bar. */
+    syncProgress?: SyncProgressState;
+    /** Navigation href for synced tiles. When provided, the tile becomes a link. */
+    href?: string;
     /** Click handler for the tile overlay. */
     onClick: () => void;
 }
@@ -55,9 +62,11 @@ function SystemTile({
     isError,
     showOverlay,
     overlayText,
+    syncProgress,
+    href,
     onClick,
-}: SystemTileProps): React.ReactElement {
-    return (
+}: SystemTileProps): ReactElement {
+    const card = (
         <div
             className={cn(
                 'group relative flex flex-col overflow-hidden rounded-lg border border-border/40',
@@ -100,7 +109,16 @@ function SystemTile({
                         disabled={isSyncing}
                     >
                         {isSyncing ? (
-                            <Loader2 className="h-6 w-6 animate-spin text-white/90" />
+                            syncProgress && syncProgress.phase === 'syncing' ? (
+                                <ProgressBar
+                                    phase={syncProgress.message}
+                                    completed={syncProgress.completed}
+                                    total={syncProgress.total}
+                                    failures={syncProgress.failures}
+                                />
+                            ) : (
+                                <Loader2 className="h-6 w-6 animate-spin text-white/90" />
+                            )
                         ) : isError ? (
                             <AlertCircle className="h-6 w-6 text-red-400" />
                         ) : (
@@ -137,6 +155,12 @@ function SystemTile({
             </div>
         </div>
     );
+
+    if (href) {
+        return <Link href={href}>{card}</Link>;
+    }
+
+    return card;
 }
 
 SystemTile.displayName = 'SystemTile';

@@ -21,6 +21,7 @@ import type { NecronDAO } from '@/dao/factions/NecronDAO.js';
 import type { AeldariDAO } from '@/dao/factions/AeldariDAO.js';
 import type { DrukhariDAO } from '@/dao/factions/DrukhariDAO.js';
 import type { SyncResult } from '@armoury/data-dao';
+import type { SyncProgressCollector } from '@armoury/data-dao';
 import type { ChaosSpaceMarinesDAO } from '@/dao/factions/ChaosSpaceMarinesDAO.js';
 import type { ChaosDaemonsDAO } from '@/dao/factions/ChaosDaemonsDAO.js';
 import type { ChaosKnightsDAO } from '@/dao/factions/ChaosKnightsDAO.js';
@@ -113,7 +114,9 @@ export class GameData {
      *
      * @returns SyncResult with succeeded/failed DAO details.
      */
-    async sync(): Promise<SyncResult> {
+    async sync(collector?: SyncProgressCollector): Promise<SyncResult> {
+        collector?.setPhase('loading');
+
         const daoEntries: Array<[string, Promise<unknown>]> = [
             ['ChapterApproved', this.deps.chapterApprovedDAO.load()],
             ['CoreRules', this.deps.coreRulesDAO.load()],
@@ -157,6 +160,8 @@ export class GameData {
             ['UnalignedForces', this.deps.unalignedForcesDAO.load()],
         ];
 
+        collector?.setPhase('syncing');
+
         const results = await Promise.allSettled(daoEntries.map(([, promise]) => promise));
 
         const succeeded: string[] = [];
@@ -168,14 +173,19 @@ export class GameData {
 
             if (result.status === 'fulfilled') {
                 succeeded.push(name);
+                collector?.reportCompletion(name);
             } else {
                 const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
                 failures.push({ dao: name, error: reason });
+                collector?.reportFailure(name, result.reason instanceof Error ? result.reason : new Error(reason));
             }
         }
 
+        const hasFailures = failures.length > 0;
+        collector?.setPhase(failures.length === results.length ? 'error' : 'complete');
+
         return {
-            success: failures.length === 0,
+            success: !hasFailures,
             total: results.length,
             succeeded,
             failures,

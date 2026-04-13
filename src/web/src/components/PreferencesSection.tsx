@@ -17,7 +17,7 @@
  * @module preferences-section
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import type { useTranslations } from 'next-intl';
 import type { UserPreferences } from '@armoury/clients-users';
@@ -69,7 +69,7 @@ function PreferencesSection({
     t,
     onNotificationsChange,
     onSavePreferences,
-}: PreferencesSectionProps): React.ReactElement {
+}: PreferencesSectionProps): ReactElement {
     return (
         <Card>
             <CardHeader>

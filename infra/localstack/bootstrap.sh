@@ -114,7 +114,7 @@ jq -c '.services[] | select(.hasLambda == true)' "$SERVICES_FILE" | while IFS= r
             --zip-file "fileb://${ZIP_FILE}" \
             --region "$REGION" \
             --timeout 30 \
-            --environment "Variables={IS_LOCAL=true,AWS_ENDPOINT_URL=${LOCALSTACK_ENDPOINT},SECRET_NAME=armoury/${name}/config}"
+            --environment "Variables={IS_OFFLINE=true,AWS_ENDPOINT_URL=${LOCALSTACK_ENDPOINT},SECRET_NAME=armoury/${name}/config,LOCAL_DB_HOST=host.docker.internal,LOCAL_DB_PORT=5432,LOCAL_DB_USER=armoury,LOCAL_DB_PASSWORD=armoury_local,LOCAL_DB_NAME=armoury_users,LOCAL_DB_SSL=false}"
     fi
 
     echo "[bootstrap] Lambda deployed: ${name}"

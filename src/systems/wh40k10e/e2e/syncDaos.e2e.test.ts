@@ -86,7 +86,9 @@ describe.skipIf(!HAS_TOKEN)('wh40k10e sync DAOs (real BSData)', () => {
         });
 
         it('fetches from GitHub on first load and parses catalogue', async () => {
-            const syncKey = `factionModel:${FACTION_MAP['space-marines'].id}`;
+            // FactionDAO writes sync status per-file, not per-faction-ID
+            const primaryFile = FACTION_MAP['space-marines'].files[0];
+            const syncKey = `factionModel:${primaryFile}`;
             const syncStatus = await smAdapter.getSyncStatus(syncKey);
 
             expect(syncStatus).not.toBeNull();

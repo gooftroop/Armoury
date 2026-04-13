@@ -17,39 +17,39 @@
 
 import { Dialog } from 'radix-ui';
 import { X } from 'lucide-react';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithoutRef, HTMLAttributes } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the DialogOverlay component.
  */
-export type DialogOverlayProps = React.ComponentPropsWithoutRef<typeof Dialog.Overlay>;
+export type DialogOverlayProps = ComponentPropsWithoutRef<typeof Dialog.Overlay>;
 
 /**
  * Props for the DialogContent component.
  */
-export type DialogContentProps = React.ComponentPropsWithoutRef<typeof Dialog.Content>;
+export type DialogContentProps = ComponentPropsWithoutRef<typeof Dialog.Content>;
 
 /**
  * Props for the DialogHeader component.
  */
-export type DialogHeaderProps = React.HTMLAttributes<HTMLDivElement>;
+export type DialogHeaderProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * Props for the DialogFooter component.
  */
-export type DialogFooterProps = React.HTMLAttributes<HTMLDivElement>;
+export type DialogFooterProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * Props for the DialogTitle component.
  */
-export type DialogTitleProps = React.ComponentPropsWithoutRef<typeof Dialog.Title>;
+export type DialogTitleProps = ComponentPropsWithoutRef<typeof Dialog.Title>;
 
 /**
  * Props for the DialogDescription component.
  */
-export type DialogDescriptionProps = React.ComponentPropsWithoutRef<typeof Dialog.Description>;
+export type DialogDescriptionProps = ComponentPropsWithoutRef<typeof Dialog.Description>;
 
 /**
  * Dialog component - the root dialog component.
@@ -77,7 +77,7 @@ const DialogClose = Dialog.Close;
  * @param props - Component props including className and standard Dialog.Overlay attributes.
  * @returns The rendered DialogOverlay component.
  */
-function DialogOverlay({ className, ...props }: DialogOverlayProps): React.ReactElement {
+function DialogOverlay({ className, ...props }: DialogOverlayProps): ReactElement {
     return (
         <Dialog.Overlay
             className={cn(
@@ -97,7 +97,7 @@ DialogOverlay.displayName = 'DialogOverlay';
  * @param props - Component props including className and standard Dialog.Content attributes.
  * @returns The rendered DialogContent component.
  */
-function DialogContent({ className, children, ...props }: DialogContentProps): React.ReactElement {
+function DialogContent({ className, children, ...props }: DialogContentProps): ReactElement {
     return (
         <DialogPortal>
             <DialogOverlay />
@@ -126,7 +126,7 @@ DialogContent.displayName = 'DialogContent';
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered DialogHeader component.
  */
-function DialogHeader({ className, ...props }: DialogHeaderProps): React.ReactElement {
+function DialogHeader({ className, ...props }: DialogHeaderProps): ReactElement {
     return <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />;
 }
 
@@ -138,7 +138,7 @@ DialogHeader.displayName = 'DialogHeader';
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered DialogFooter component.
  */
-function DialogFooter({ className, ...props }: DialogFooterProps): React.ReactElement {
+function DialogFooter({ className, ...props }: DialogFooterProps): ReactElement {
     return (
         <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
     );
@@ -152,7 +152,7 @@ DialogFooter.displayName = 'DialogFooter';
  * @param props - Component props including className and standard Dialog.Title attributes.
  * @returns The rendered DialogTitle component.
  */
-function DialogTitle({ className, ...props }: DialogTitleProps): React.ReactElement {
+function DialogTitle({ className, ...props }: DialogTitleProps): ReactElement {
     return <Dialog.Title className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />;
 }
 
@@ -164,7 +164,7 @@ DialogTitle.displayName = 'DialogTitle';
  * @param props - Component props including className and standard Dialog.Description attributes.
  * @returns The rendered DialogDescription component.
  */
-function DialogDescription({ className, ...props }: DialogDescriptionProps): React.ReactElement {
+function DialogDescription({ className, ...props }: DialogDescriptionProps): ReactElement {
     return <Dialog.Description className={cn('text-sm text-muted-foreground', className)} {...props} />;
 }
 

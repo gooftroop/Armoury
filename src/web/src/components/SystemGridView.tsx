@@ -13,9 +13,9 @@
  * @module system-grid-view
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
-import type { GameSystemManifest } from '@armoury/data-dao';
+import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
 
 import { SystemTile } from '@/components/SystemTile.js';
 
@@ -37,6 +37,10 @@ export interface SystemTileData {
     showOverlay: boolean;
     /** Overlay or badge label text. */
     overlayText: string;
+    /** Navigation href for synced tiles (links to system's armies page). */
+    href?: string;
+    /** Real-time sync progress data passed through to SystemTile. */
+    syncProgress?: SyncProgressState;
     /** Tile click callback. */
     onClick: () => void;
 }
@@ -55,7 +59,7 @@ export interface SystemGridViewProps {
  * @param props - Grid view props.
  * @returns The rendered system grid.
  */
-function SystemGridView({ tiles }: SystemGridViewProps): React.ReactElement {
+function SystemGridView({ tiles }: SystemGridViewProps): ReactElement {
     return (
         <div
             className="mb-10 grid w-full max-w-[1120px] gap-6"
@@ -70,6 +74,8 @@ function SystemGridView({ tiles }: SystemGridViewProps): React.ReactElement {
                     isError={tile.isError}
                     showOverlay={tile.showOverlay}
                     overlayText={tile.overlayText}
+                    syncProgress={tile.syncProgress}
+                    href={tile.href}
                     onClick={tile.onClick}
                 />
             ))}

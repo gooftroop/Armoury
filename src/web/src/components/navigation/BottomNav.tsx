@@ -12,10 +12,10 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Swords, BookOpen, Flag, Users, Library } from 'lucide-react';
 import { cn } from '@/lib/utils.js';
+import { useGameSystem } from '@/hooks/useGameSystem.js';
 
 export interface BottomNavProps {
     locale: string;
-    gameSystem: string;
 }
 
 const NAV_ITEMS = [
@@ -32,10 +32,11 @@ const NAV_ITEMS = [
  * @param props - Component props
  * @returns The BottomNav component
  */
-export function BottomNav({ locale, gameSystem }: BottomNavProps) {
+export function BottomNav({ locale: _locale }: BottomNavProps) {
     const t = useTranslations('nav');
     const pathname = usePathname();
-    const basePath = `/${locale}/${gameSystem}`;
+    const gameSystem = useGameSystem();
+    const basePath = `/${gameSystem}`;
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 border-t border-border-subtle bg-surface pb-safe md:hidden">
@@ -49,6 +50,7 @@ export function BottomNav({ locale, gameSystem }: BottomNavProps) {
                         <Link
                             key={item.id}
                             href={href}
+                            aria-current={isActive ? 'page' : undefined}
                             className={cn(
                                 'flex h-full min-w-16 flex-col items-center justify-center gap-1 px-1 transition-colors',
                                 isActive ? 'text-accent-primary' : 'text-secondary hover:text-primary',

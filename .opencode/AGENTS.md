@@ -264,6 +264,19 @@ What this looks like in practice:
 - Before blaming a dependency or environment, reproduce the failure locally with a minimal case.
 - Before concluding "this value is always X," check the code path that produces it and trace the actual runtime flow.
 
+## CI Pipeline Polling
+
+**Never poll or repeatedly check CI/CD pipeline status.** After pushing to a remote branch or PR, do not loop, sleep, or periodically call `gh pr checks`, `gh run watch`, or any equivalent command to wait for CI results. CI pipelines can take minutes to hours — polling wastes context, tokens, and time.
+
+Instead:
+
+- **Report that you pushed** and state which CI jobs are expected to run.
+- **Stop and let the human monitor CI.** They will tell you if something fails.
+- If the human reports a CI failure, investigate the logs at that point — do not preemptively watch for failures.
+
+This applies to all CI/CD systems: GitHub Actions, Vercel deployments, Buildkite, CircleCI, or any other pipeline triggered by a push or PR event.
+
+
 ## Anti-Patterns
 
 For the full anti-patterns list, see `docs/AGENT_CATEGORIES.md`. Key rules to always keep in mind:
@@ -274,3 +287,4 @@ For the full anti-patterns list, see `docs/AGENT_CATEGORIES.md`. Key rules to al
 - Never re-ask for confirmation on routine operations that are part of an already-approved plan.
 - Never dismiss failing tests as "pre-existing" — fix them or delete them.
 - Never assume your first diagnosis is the root cause — try to disprove it first.
+- Never poll CI pipeline status — push, report, and stop.

@@ -9,7 +9,7 @@
  * @module AuthenticatedProfile
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 import { LogOut, Settings } from 'lucide-react';
 
 import {
@@ -69,7 +69,7 @@ export function AuthenticatedProfile({
     settingsHref,
     signOutLabel,
     signOutHref,
-}: AuthenticatedProfileProps): React.ReactElement {
+}: AuthenticatedProfileProps): ReactElement {
     return (
         <Card className="border-border/40 bg-surface/60">
             <CardContent className="flex items-center gap-4 px-4 py-2">

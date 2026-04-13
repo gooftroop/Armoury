@@ -13,11 +13,19 @@ import './instrument.js';
  */
 
 import * as Sentry from '@sentry/aws-serverless';
+import { TOKENS, coreModule, createContainerWithModules } from '@armoury/di';
+import { createLambdaModule } from '@armoury/di/lambda';
 import { extractUserContext } from '@/middleware/auth.js';
 import { formatErrorResponse } from '@/middleware/errorHandler.js';
 import { router } from '@/router.js';
 import type { ApiResponse, DatabaseAdapter } from '@/types.js';
 import { getServiceConfig } from '@/utils/secrets.js';
+
+/**
+ * @requirements
+ * - REQ-DI-060: Lambda handler resolves production DatabaseAdapter via @armoury/di container modules.
+ * - REQ-DI-061: Cold start initializes adapter once; warm invocations reuse cached adapter.
+ */
 
 /**
  * HTTP API v2 event from API Gateway.
@@ -72,26 +80,6 @@ function normalizeEvent(event: HttpApiV2Event): NormalizedEvent {
 }
 
 /**
- * Configuration shape for the DSQLAdapter constructor.
- */
-interface DSQLAdapterConfig {
-    /** Aurora DSQL cluster endpoint hostname. */
-    clusterEndpoint: string;
-
-    /** AWS region of the DSQL cluster. */
-    region: string;
-}
-
-/**
- * DSQLAdapter constructor type resolved at runtime via dynamic import.
- * The adapter implements the DatabaseAdapter interface from the users types.
- */
-interface DSQLAdapterConstructor {
-    /** Creates a new DSQLAdapter instance with the given configuration. */
-    new (config: DSQLAdapterConfig): DatabaseAdapter & { initialize(): Promise<void> };
-}
-
-/**
  * Local adapter configuration payload.
  */
 interface LocalAdapterConfig {
@@ -134,6 +122,7 @@ interface LocalAdapterConstructor {
  * Initialized on first request (cold start) and kept alive for subsequent requests.
  */
 let adapterInstance: DatabaseAdapter | null = null;
+let container: ReturnType<typeof createContainerWithModules> | null = null;
 
 /**
  * Initializes the Aurora DSQL adapter on cold start.
@@ -168,13 +157,16 @@ async function initializeAdapter(): Promise<DatabaseAdapter> {
             ssl: process.env['LOCAL_DB_SSL'] === 'true',
         });
     } else {
-        const { DSQLAdapter } = (await import('@armoury/adapters-dsql')) as unknown as {
-            DSQLAdapter: DSQLAdapterConstructor;
+        container = createContainerWithModules(
+            coreModule,
+            createLambdaModule({
+                clusterEndpoint: config.dsqlClusterEndpoint,
+                region: config.dsqlRegion,
+            }),
+        );
+        adapter = container.get<DatabaseAdapter>(TOKENS.DatabaseAdapter) as DatabaseAdapter & {
+            initialize(): Promise<void>;
         };
-        adapter = new DSQLAdapter({
-            clusterEndpoint: config.dsqlClusterEndpoint,
-            region: config.dsqlRegion,
-        });
     }
 
     await adapter.initialize();

@@ -7,7 +7,7 @@
  * @requirements
  * - REQ-LANDING-01: Renders AuthenticatedLanding wrapped in HydrationBoundary when session exists with userId.
  * - REQ-LANDING-02: Prefetches account data via queryAccount when authenticated.
- * - REQ-LANDING-03: Renders meta refresh redirect to /auth/logout when session exists but internal_id is missing.
+ * - REQ-LANDING-03: Renders meta refresh redirect to /auth/login when session exists but internal_id is missing.
  * - REQ-LANDING-04: Renders SilentAuthCheck + UnauthenticatedLanding when no session.
  * - REQ-LANDING-05: Calls setRequestLocale with the resolved locale param.
  * - REQ-LANDING-06: Calls discoverSystemManifests and passes manifests to landing components.
@@ -18,7 +18,7 @@
  * |-------------------|---------------------------------------------------------------------------|
  * | REQ-LANDING-01    | authenticated user → HydrationBoundary + AuthenticatedLanding             |
  * | REQ-LANDING-02    | authenticated user → prefetchQuery called with queryAccount               |
- * | REQ-LANDING-03    | authenticated user without internal_id → meta refresh to /auth/logout     |
+ * | REQ-LANDING-03    | authenticated user without internal_id → meta refresh to /auth/login      |
  * | REQ-LANDING-04    | no session → SilentAuthCheck + UnauthenticatedLanding                     |
  * | REQ-LANDING-05    | locale param is forwarded to setRequestLocale                             |
  * | REQ-LANDING-06    | manifests are passed through to landing components                        |
@@ -76,6 +76,10 @@ vi.mock('@/components/landing/UnauthenticatedLanding.js', () => ({
 vi.mock('@tanstack/react-query', () => ({
     dehydrate: vi.fn(() => ({ queries: [], mutations: [] })),
     HydrationBoundary: vi.fn(({ children }: { children: React.ReactNode }) => children),
+}));
+
+vi.mock('next/headers', () => ({
+    cookies: vi.fn(() => Promise.resolve({ get: vi.fn(() => undefined) })),
 }));
 
 /* ---------- helpers ---------- */
@@ -259,7 +263,7 @@ describe('LandingContent', () => {
 
         expect(result.type).toBe('meta');
         expect(result.props.httpEquiv).toBe('refresh');
-        expect(result.props.content).toBe('0;url=/auth/logout');
+        expect(result.props.content).toBe('0;url=/auth/login');
     });
 
     it('renders UnauthenticatedLanding when session has no tokenSet', async () => {

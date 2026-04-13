@@ -15,7 +15,7 @@
  * 6. Must display displayName in React DevTools.
  */
 
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card.js';
 import { Skeleton } from '@/components/ui/skeleton.js';
@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils.js';
 /**
  * Props for the ArmyCardSkeleton component.
  */
-export type ArmyCardSkeletonProps = React.ComponentPropsWithRef<'div'>;
+export type ArmyCardSkeletonProps = ComponentPropsWithRef<'div'>;
 
 /**
  * ArmyCardSkeleton component — a loading placeholder for army cards.
@@ -35,7 +35,7 @@ export type ArmyCardSkeletonProps = React.ComponentPropsWithRef<'div'>;
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered ArmyCardSkeleton component.
  */
-function ArmyCardSkeleton({ className, ref, ...props }: ArmyCardSkeletonProps): React.ReactElement {
+function ArmyCardSkeleton({ className, ref, ...props }: ArmyCardSkeletonProps): ReactElement {
     return (
         <Card className={cn('overflow-hidden', className)} ref={ref} {...props}>
             {/* Faction splash image placeholder */}

@@ -16,7 +16,8 @@
  * @module account-settings-container
  */
 
-import * as React from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { ReactElement } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -86,7 +87,7 @@ function extractSystemKeys(account: Account | undefined): string[] {
  * @param props - Account settings props.
  * @returns Loading skeleton or account settings view.
  */
-function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): React.ReactElement {
+function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): ReactElement {
     const t = useTranslations('account');
     const tProfile = useTranslations('profile');
 
@@ -95,14 +96,14 @@ function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): 
 
     const accountQuery = useQuery<Account, Error>(queryAccount(authorization, params));
 
-    const [localPreferences, setLocalPreferences] = React.useState<UserPreferences>({
+    const [localPreferences, setLocalPreferences] = useState<UserPreferences>({
         theme: 'dark',
         language: 'en',
         notificationsEnabled: false,
     });
-    const [saveState, setSaveState] = React.useState<SaveState>('idle');
+    const [saveState, setSaveState] = useState<SaveState>('idle');
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (accountQuery.data?.preferences) {
             setLocalPreferences(accountQuery.data.preferences);
         }
@@ -129,20 +130,20 @@ function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): 
 
     const deleteMutation = useMutation(mutationDeleteAccount(authorization, params));
 
-    const handleSavePreferences = React.useCallback(() => {
+    const handleSavePreferences = useCallback(() => {
         updateMutation.mutate(localPreferences);
     }, [updateMutation, localPreferences]);
 
-    const handleNotificationsChange = React.useCallback((checked: boolean) => {
+    const handleNotificationsChange = useCallback((checked: boolean) => {
         setLocalPreferences((prev: UserPreferences) => ({ ...prev, notificationsEnabled: checked }));
     }, []);
 
-    const handleDeleteAccount = React.useCallback(() => {
+    const handleDeleteAccount = useCallback(() => {
         deleteMutation.mutate();
     }, [deleteMutation]);
 
-    const saveButtonLabel = React.useMemo(() => getSaveButtonLabel(saveState, t), [saveState, t]);
-    const systemKeys = React.useMemo(() => extractSystemKeys(accountQuery.data), [accountQuery.data]);
+    const saveButtonLabel = useMemo(() => getSaveButtonLabel(saveState, t), [saveState, t]);
+    const systemKeys = useMemo(() => extractSystemKeys(accountQuery.data), [accountQuery.data]);
 
     if (accountQuery.isLoading) {
         return <AccountSettingsLoading />;

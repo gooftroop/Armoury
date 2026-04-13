@@ -48,8 +48,8 @@ export function createApiGatewayEvent(options: {
                 jwt: {
                     claims: {
                         'https://armoury.app/internal_id': userContext.userId,
-                        email: userContext.email,
-                        name: userContext.name,
+                        'https://armoury.app/email': userContext.email,
+                        'https://armoury.app/name': userContext.name,
                     },
                 },
             },

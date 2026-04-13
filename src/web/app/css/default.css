@@ -34,6 +34,10 @@
     --color-primary-muted: oklch(0.52 0.15 235 / 12%);
     --color-primary-foreground: oklch(0.98 0.005 260);
 
+    /* --- Accent Primary: Active navigation indicator (derived from primary) --- */
+    --color-accent-primary: oklch(0.52 0.15 235);
+    --color-accent-primary-muted: oklch(0.52 0.15 235 / 12%);
+
     /* --- Secondary: Amber Gold --- */
     --color-secondary: oklch(0.52 0.14 70);
     --color-secondary-hover: oklch(0.46 0.15 70);

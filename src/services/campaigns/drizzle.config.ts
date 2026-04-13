@@ -10,10 +10,11 @@ const dbCredentials = process.env['DSQL_TOKEN']
 
 export default defineConfig({
     dialect: 'postgresql',
-    schema: ['../../shared/data/src/dao/CampaignDAO.ts', '../../shared/data/src/dao/CampaignParticipantDAO.ts'],
+    schema: ['./schema.ts'],
     out: './drizzle',
     dbCredentials,
     schemaFilter: schema,
+    tablesFilter: ['campaigns', 'campaign_participants'],
     migrations: {
         schema: 'drizzle_campaigns',
     },

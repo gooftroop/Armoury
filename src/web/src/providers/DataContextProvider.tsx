@@ -22,10 +22,20 @@
  * @module DataContextProvider
  */
 
-import * as React from 'react';
+import { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import * as Sentry from '@sentry/nextjs';
+import { createContainerWithModules, coreModule, TOKENS } from '@armoury/di';
+import { webModule } from '@armoury/di/web';
+import type { AdapterFactoryFn, ClientFactoryFn } from '@armoury/di';
 import type { DataContext } from '@armoury/data-context';
-import type { GameSystem } from '@armoury/data-dao';
+import type { IGitHubClient } from '@armoury/clients-github';
+import type { IWahapediaClient } from '@armoury/clients-wahapedia';
+import { SyncProgressCollector } from '@armoury/data-dao';
+import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
+import type { QueryClient } from '@tanstack/react-query';
+import type { ContainerModule } from 'inversify';
+
 /**
  * Possible states for the overall DataContext initialization lifecycle.
  *
@@ -65,6 +75,8 @@ export interface DataContextValue {
     error?: string;
     /** Per-system sync state keyed by system ID. */
     systemSyncStates: Record<string, SystemSyncState>;
+    /** Progress collector for the active sync operation, or null when idle. */
+    syncProgressCollector: SyncProgressCollector | null;
     /**
      * Enables a game system: builds the DataContext for that system and starts sync.
      * @param system - The GameSystem to enable.
@@ -77,26 +89,15 @@ export interface DataContextValue {
     disableSystem: (systemId: string) => Promise<void>;
 }
 /**
- * Default context value before initialization.
- */
-const defaultContextValue: DataContextValue = {
-    dataContext: null,
-    status: 'idle',
-    systemSyncStates: {},
-    enableSystem: async () => {},
-    disableSystem: async () => {},
-};
-
-/**
  * React context for accessing the DataContext and sync state.
  */
-const DataContextReactContext = React.createContext<DataContextValue>(defaultContextValue);
+const DataContextReactContext = createContext<DataContextValue | undefined>(undefined);
 /**
  * Props for the DataContextProvider component.
  */
 export interface DataContextProviderProps {
     /** Child components that can access the DataContext via useDataContext(). */
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
 /**
@@ -109,18 +110,27 @@ export interface DataContextProviderProps {
  * @param props - Component props.
  * @returns The provider-wrapped React tree.
  */
-export function DataContextProvider({ children }: DataContextProviderProps): React.ReactElement {
-    const [dataContext, setDataContext] = React.useState<DataContext | null>(null);
-    const [status, setStatus] = React.useState<DataContextStatus>('idle');
-    const [error, setError] = React.useState<string | undefined>();
-    const [systemSyncStates, setSystemSyncStates] = React.useState<Record<string, SystemSyncState>>({});
+export function DataContextProvider({ children }: DataContextProviderProps): ReactElement {
+    const [dataContext, setDataContext] = useState<DataContext | null>(null);
+    const [status, setStatus] = useState<DataContextStatus>('idle');
+    const [error, setError] = useState<string | undefined>();
+    const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>({});
+    const [syncProgressCollector, setSyncProgressCollector] = useState<SyncProgressCollector | null>(null);
 
     /**
      * Enables a game system by building a DataContext and syncing its data.
      *
      * @param system - The GameSystem descriptor to enable.
      */
-    const enableSystem = React.useCallback(async (system: GameSystem): Promise<void> => {
+    const enableSystem = useCallback(async (system: GameSystem): Promise<void> => {
+        // Diagnostic logging — traces each sync phase with wall-clock timestamps
+        // so CI logs reveal where the flow stalls. Remove once root cause is fixed.
+        const t0 = Date.now();
+        const log = (phase: string) =>
+            console.log(`[SYNC-DEBUG] ${phase} +${Date.now() - t0}ms (wall ${new Date().toISOString()})`);
+
+        log('enableSystem start');
+
         setSystemSyncStates((prev) => ({
             ...prev,
             [system.id]: { status: 'syncing' },
@@ -133,31 +143,59 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
              * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
              * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
              */
+            log('dynamic imports start');
             const { DataContextBuilder } = await import('@armoury/data-context');
-            const { PGliteAdapter } = await import('@armoury/adapters-pglite');
-            const { createGitHubClient } = await import('@armoury/adapters-github');
-            const { createWahapediaClient } = await import('@armoury/adapters-wahapedia');
             const { getQueryClient } = await import('@/lib/getQueryClient.js');
+            log('dynamic imports done');
+
+            const container = createContainerWithModules(coreModule, webModule);
             const queryClient = getQueryClient();
-            const proxyBaseUrl = process.env['NEXT_PUBLIC_GITHUB_PROXY_URL'];
-            const githubClient = createGitHubClient(
-                queryClient,
-                proxyBaseUrl
-                    ? {
-                          apiBaseUrl: `${proxyBaseUrl}/api`,
-                          rawBaseUrl: `${proxyBaseUrl}/raw`,
-                      }
-                    : undefined,
+            container.bind(TOKENS.QueryClient).toConstantValue(queryClient);
+
+            const collector = new SyncProgressCollector(40);
+            setSyncProgressCollector(collector);
+
+            const createAdapter = container.get<AdapterFactoryFn>(TOKENS.AdapterFactory);
+            const adapter = await createAdapter();
+            const createGitHub = container.get<ClientFactoryFn<IGitHubClient, QueryClient>>(TOKENS.GitHubClientFactory);
+            const githubClient = await createGitHub(queryClient);
+            const createWahapedia = container.get<ClientFactoryFn<IWahapediaClient, QueryClient>>(
+                TOKENS.WahapediaClientFactory,
             );
-            const wahapediaAdapter = createWahapediaClient(queryClient);
-            const adapter = new PGliteAdapter({ dataDir: 'idb://armoury' });
+            const wahapediaAdapter = await createWahapedia(queryClient);
+            const systemWithContainerModule = system as GameSystem & {
+                getContainerModule?: () => unknown;
+            };
+            const systemModule = systemWithContainerModule.getContainerModule?.();
+
+            if (systemModule) {
+                container.load(systemModule as ContainerModule);
+            }
+
+            container.bind(TOKENS.DatabaseAdapter).toConstantValue(adapter);
+            container.bind(TOKENS.GitHubClient).toConstantValue(githubClient);
+            container.bind(TOKENS.WahapediaClient).toConstantValue(wahapediaAdapter);
+
+            log('dependencies resolved, starting build()');
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
+                .register('syncProgress', collector)
                 .build();
+            log('build() returned');
             setDataContext(dc);
+
+            // Expose raw query function for e2e test helpers (avoids opening a second PGlite connection).
+            if (process.env.NODE_ENV !== 'production') {
+                const rawQueryAdapter = adapter as DatabaseAdapter & {
+                    rawQuery: (sql: string) => Promise<unknown>;
+                };
+
+                (window as unknown as Record<string, unknown>).__armoury_raw_query = (sql: string) =>
+                    rawQueryAdapter.rawQuery(sql);
+            }
 
             // Report partial sync failures from the builder's sync result
             const syncResult = dc.syncResult;
@@ -202,13 +240,17 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 return;
             }
 
+            log('setting status=ready');
             setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
                 [system.id]: { status: 'synced' },
             }));
+            log('enableSystem complete');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to initialize DataContext';
+            log(`enableSystem ERROR: ${message}`);
+
             setStatus('error');
             setError(message);
             setSystemSyncStates((prev) => ({
@@ -222,7 +264,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      *
      * @param systemId - The ID of the system to disable.
      */
-    const disableSystem = React.useCallback(
+    const disableSystem = useCallback(
         async (systemId: string): Promise<void> => {
             if (dataContext) {
                 await dataContext.close();
@@ -231,6 +273,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             setDataContext(null);
             setStatus('idle');
             setError(undefined);
+            setSyncProgressCollector(null);
             setSystemSyncStates((prev) => {
                 const next = { ...prev };
                 delete next[systemId];
@@ -243,23 +286,24 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     /**
      * Cleanup on unmount: close the DataContext to release PGlite connections.
      */
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             if (dataContext) {
                 void dataContext.close();
             }
         };
     }, [dataContext]);
-    const value = React.useMemo<DataContextValue>(
+    const value = useMemo<DataContextValue>(
         () => ({
             dataContext,
             status,
             error,
             systemSyncStates,
+            syncProgressCollector,
             enableSystem,
             disableSystem,
         }),
-        [dataContext, status, error, systemSyncStates, enableSystem, disableSystem],
+        [dataContext, status, error, systemSyncStates, syncProgressCollector, enableSystem, disableSystem],
     );
 
     return <DataContextReactContext.Provider value={value}>{children}</DataContextReactContext.Provider>;
@@ -272,7 +316,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
  * @throws Error if used outside of a DataContextProvider.
  */
 export function useDataContext(): DataContextValue {
-    const context = React.useContext(DataContextReactContext);
+    const context = useContext(DataContextReactContext);
 
     if (context === undefined) {
         throw new Error('useDataContext must be used within a DataContextProvider');

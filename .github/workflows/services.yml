@@ -76,10 +76,59 @@ jobs:
                   echo "Resolved Authorizer ARN: ${AUTHORIZER_ARN}"
                   echo "authorizer-arn=${AUTHORIZER_ARN}" >> "${GITHUB_OUTPUT}"
 
+    # ── Sandbox: reset PR schema before parallel deploys ───────────
+    #
+    # All 4 services share the same PR schema (e.g. pr_33). Dropping and
+    # recreating it once before the parallel pushes guarantees drizzle-kit
+    # sees an empty schema — avoiding the interactive rename prompt that
+    # silently fails in CI (no TTY, exit 0, tables never created).
+
+    reset-pr-schema:
+        name: Reset PR Schema
+        needs: resolve-authorizer-sandbox
+        if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        environment: sandbox
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
+
+            - run: npm ci
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+            - name: Fetch DSQL config and generate token
+              run: |
+                  # Use the users service endpoint (all services share the same DSQL cluster)
+                  DSQL_CLUSTER_ENDPOINT=$(aws ssm get-parameter \
+                    --name "/armoury/sandbox/users/dsql-cluster-endpoint" \
+                    --query 'Parameter.Value' --output text)
+                  DSQL_REGION="${{ vars.AWS_REGION || 'us-east-1' }}"
+                  echo "DSQL_CLUSTER_ENDPOINT=${DSQL_CLUSTER_ENDPOINT}" >> "${GITHUB_ENV}"
+                  echo "DSQL_REGION=${DSQL_REGION}" >> "${GITHUB_ENV}"
+
+            - name: Drop and recreate PR schema
+              env:
+                  DB_SCHEMA: ${{ format('pr_{0}', github.event.pull_request.number) }}
+              run: |
+                  echo "[schema] Dropping stale PR schema '${DB_SCHEMA}' (if exists)..."
+                  node --import=tsx src/shared/e2e/src/dbSchema.ts drop "${DB_SCHEMA}" || true
+                  echo "[schema] Creating fresh PR schema '${DB_SCHEMA}'..."
+                  node --import=tsx src/shared/e2e/src/dbSchema.ts create "${DB_SCHEMA}"
+
     # ── Sandbox: deploy downstream services (parallel) ──────────────
 
     deploy-campaigns-sandbox:
-        needs: resolve-authorizer-sandbox
+        needs: [resolve-authorizer-sandbox, reset-pr-schema]
         if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
         uses: ./.github/workflows/_deploy-service.yml
         with:
@@ -95,7 +144,7 @@ jobs:
         secrets: inherit
 
     deploy-matches-sandbox:
-        needs: resolve-authorizer-sandbox
+        needs: [resolve-authorizer-sandbox, reset-pr-schema]
         if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
         uses: ./.github/workflows/_deploy-service.yml
         with:
@@ -112,7 +161,7 @@ jobs:
         secrets: inherit
 
     deploy-friends-sandbox:
-        needs: resolve-authorizer-sandbox
+        needs: [resolve-authorizer-sandbox, reset-pr-schema]
         if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
         uses: ./.github/workflows/_deploy-service.yml
         with:
@@ -129,7 +178,7 @@ jobs:
         secrets: inherit
 
     deploy-users-sandbox:
-        needs: resolve-authorizer-sandbox
+        needs: [resolve-authorizer-sandbox, reset-pr-schema]
         if: vars.DEPLOY_ENABLED == 'true' && github.event_name == 'pull_request'
         uses: ./.github/workflows/_deploy-service.yml
         with:

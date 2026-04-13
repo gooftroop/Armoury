@@ -14,24 +14,24 @@
  */
 
 import { Tabs as TabsPrimitive } from 'radix-ui';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the TabsList component.
  */
-export type TabsListProps = React.ComponentPropsWithRef<typeof TabsPrimitive.List>;
+export type TabsListProps = ComponentPropsWithRef<typeof TabsPrimitive.List>;
 
 /**
  * Props for the TabsTrigger component.
  */
-export type TabsTriggerProps = React.ComponentPropsWithRef<typeof TabsPrimitive.Trigger>;
+export type TabsTriggerProps = ComponentPropsWithRef<typeof TabsPrimitive.Trigger>;
 
 /**
  * Props for the TabsContent component.
  */
-export type TabsContentProps = React.ComponentPropsWithRef<typeof TabsPrimitive.Content>;
+export type TabsContentProps = ComponentPropsWithRef<typeof TabsPrimitive.Content>;
 
 /**
  * Tabs component - the root tabs component.
@@ -45,7 +45,7 @@ const Tabs = TabsPrimitive.Root;
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered TabsList component.
  */
-function TabsList({ className, ref, ...props }: TabsListProps): React.ReactElement {
+function TabsList({ className, ref, ...props }: TabsListProps): ReactElement {
     return (
         <TabsPrimitive.List
             className={cn(
@@ -67,7 +67,7 @@ TabsList.displayName = 'TabsList';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered TabsTrigger component.
  */
-function TabsTrigger({ className, ref, ...props }: TabsTriggerProps): React.ReactElement {
+function TabsTrigger({ className, ref, ...props }: TabsTriggerProps): ReactElement {
     return (
         <TabsPrimitive.Trigger
             className={cn(
@@ -89,7 +89,7 @@ TabsTrigger.displayName = 'TabsTrigger';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered TabsContent component.
  */
-function TabsContent({ className, ref, ...props }: TabsContentProps): React.ReactElement {
+function TabsContent({ className, ref, ...props }: TabsContentProps): ReactElement {
     return (
         <TabsPrimitive.Content
             className={cn(

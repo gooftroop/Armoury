@@ -6,7 +6,7 @@
  * - REQ-BTN-02: Forwards refs to button element.
  */
 
-import * as React from 'react';
+import { createRef } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -35,7 +35,7 @@ describe('Button', () => {
     });
 
     it('supports disabled and ref forwarding', () => {
-        const ref = React.createRef<HTMLButtonElement>();
+        const ref = createRef<HTMLButtonElement>();
 
         render(
             <Button disabled={true} ref={ref}>
