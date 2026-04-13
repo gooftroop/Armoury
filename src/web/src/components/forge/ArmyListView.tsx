@@ -20,7 +20,7 @@
  * 10. Must not use default exports.
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -87,7 +87,7 @@ function ArmyListView({
     onDeploy,
     onDuplicate,
     onDelete,
-}: ArmyListViewProps): React.ReactElement {
+}: ArmyListViewProps): ReactElement {
     const t = useTranslations('forge');
 
     return (

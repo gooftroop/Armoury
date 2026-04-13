@@ -119,11 +119,11 @@ When side effects are necessary (I/O, database, etc.), isolate them and document
 
 Available alias conventions (see each workspace's `tsconfig.json` for exact mappings):
 
-| Alias | Purpose | Available In |
-|-------|---------|--------------|
-| `@/*` | Within-workspace self-reference (`./src/*`) | All workspaces |
-| `#/*` | Workspace root | All workspaces |
-| `@armoury/<package>` | Cross-workspace barrel import | All workspaces |
+| Alias                | Purpose                                     | Available In   |
+| -------------------- | ------------------------------------------- | -------------- |
+| `@/*`                | Within-workspace self-reference (`./src/*`) | All workspaces |
+| `#/*`                | Workspace root                              | All workspaces |
+| `@armoury/<package>` | Cross-workspace barrel import               | All workspaces |
 
 Order imports as follows:
 
@@ -145,6 +145,21 @@ import { FactionDataModel } from './FactionDataModel.js';
 // Bad — .ts extension
 import type { Unit } from '@/models/UnitModel.ts';
 ```
+
+### React Imports
+
+**Use named imports from `react`, never namespace imports.** Import only the hooks, types, and utilities you need.
+
+```typescript
+// Good — named imports
+import { useState, useEffect, useCallback } from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
+
+// Bad — namespace import
+import * as React from 'react';
+```
+
+This keeps the dependency surface explicit and consistent with how all other packages are imported.
 
 ### File Extensions
 
@@ -364,6 +379,7 @@ interface SystemGridProps {
 - `isOpen` / `isExpanded` — toggle visibility of content within a single component
 
 The test: if removing the boolean would split the component into two, it should be two components composed by the parent.
+
 ### Barrel Files (`index.ts`)
 
 Use barrel files at module boundaries to define the public API. Use named re-exports. Separate type-only exports from value exports.
@@ -498,12 +514,12 @@ This is enforced by ESLint via `@typescript-eslint/no-unused-vars` with `argsIgn
 
 Instead, use **accessible selectors** that reflect how real users and assistive technologies interact with the UI:
 
-| Approach | Selector | When to Use |
-|---|---|---|
-| Role + name | `getByRole('button', { name: /submit/i })` | Interactive elements (buttons, links, inputs) |
-| Label | `getByLabelText('Email address')` | Form controls with visible labels |
-| Text | `getByText('Sign In')` | Static text content |
-| Semantic structure | `page.locator('nav').getByRole('link')` | Structural queries (e.g. links inside a nav) |
+| Approach           | Selector                                   | When to Use                                   |
+| ------------------ | ------------------------------------------ | --------------------------------------------- |
+| Role + name        | `getByRole('button', { name: /submit/i })` | Interactive elements (buttons, links, inputs) |
+| Label              | `getByLabelText('Email address')`          | Form controls with visible labels             |
+| Text               | `getByText('Sign In')`                     | Static text content                           |
+| Semantic structure | `page.locator('nav').getByRole('link')`    | Structural queries (e.g. links inside a nav)  |
 
 ```typescript
 // Good — accessible selectors
@@ -516,6 +532,7 @@ const submitButton = page.locator('[data-testid="submit-button"]');
 ```
 
 This rule applies to **all** testing layers: unit tests (Testing Library), E2E tests (Playwright), and component tests.
+
 ### Fixture Factories
 
 Create `make*` functions in `__fixtures__/` that accept `Partial<T>` overrides and return a complete object with sensible defaults. Export them from an `__fixtures__/index.ts` barrel file.
@@ -670,7 +687,9 @@ import { sql } from 'drizzle-orm';
 
 // Good — auto-generated text UUID (requires SQLite UUID extension or application trigger)
 export const units = sqliteTable('units', {
-    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
     name: text('name').notNull(),
 });
 

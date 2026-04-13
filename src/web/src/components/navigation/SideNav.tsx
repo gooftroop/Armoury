@@ -7,11 +7,12 @@
  * 3. Must be collapsible.
  */
 
-import * as React from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Swords, BookOpen, Flag, Users, Library, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Toggle } from 'radix-ui';
 import { cn } from '@/lib/utils.js';
 import { SideNavUserTile } from '@/components/navigation/SideNavUserTile.js';
 
@@ -41,7 +42,7 @@ const NAV_ITEMS = [
 export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _userPicture }: SideNavProps) {
     const t = useTranslations('nav');
     const pathname = usePathname();
-    const [collapsed, setCollapsed] = React.useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
     const basePath = `/${gameSystem}`;
 
@@ -72,14 +73,14 @@ export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _u
                         A
                     </Link>
                 )}
-                <button
-                    type="button"
-                    onClick={() => setCollapsed(!collapsed)}
+                <Toggle.Root
+                    pressed={collapsed}
+                    onPressedChange={setCollapsed}
                     className="flex h-8 w-8 items-center justify-center rounded-md text-secondary hover:bg-hover hover:text-primary"
-                    title={collapsed ? t('expand') : t('collapse')}
+                    aria-label={collapsed ? t('expand') : t('collapse')}
                 >
                     {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-                </button>
+                </Toggle.Root>
             </div>
 
             <nav className="flex flex-1 flex-col gap-1 px-2 py-4">

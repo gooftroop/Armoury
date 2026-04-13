@@ -14,14 +14,14 @@
  * 5. Must display displayName in React DevTools.
  */
 
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the Input component.
  */
-export interface InputProps extends React.ComponentPropsWithRef<'input'> {
+export interface InputProps extends ComponentPropsWithRef<'input'> {
     /**
      * Whether the input has an error state.
      */
@@ -34,7 +34,7 @@ export interface InputProps extends React.ComponentPropsWithRef<'input'> {
  * @param props - Component props including error, className, and standard input attributes.
  * @returns The rendered Input component.
  */
-function Input({ className, type = 'text', error, ref, ...props }: InputProps): React.ReactElement {
+function Input({ className, type = 'text', error, ref, ...props }: InputProps): ReactElement {
     return (
         <input
             className={cn(

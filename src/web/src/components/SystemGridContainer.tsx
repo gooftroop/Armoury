@@ -20,7 +20,8 @@
  * @module system-grid-container
  */
 
-import * as React from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import type { ReactElement, Dispatch, SetStateAction } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -68,8 +69,8 @@ async function activateSystemTile(
     syncStates: SyncStateMap,
     enableSystem: ReturnType<typeof useDataContext>['enableSystem'],
     userId: string | undefined,
-    setActivatingId: React.Dispatch<React.SetStateAction<string | null>>,
-    setPersistErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>,
+    setActivatingId: Dispatch<SetStateAction<string | null>>,
+    setPersistErrors: Dispatch<SetStateAction<Record<string, string>>>,
 ): Promise<void> {
     if (onUnauthenticatedClick) {
         onUnauthenticatedClick();
@@ -188,13 +189,13 @@ function buildTiles(
  * @param props - Component props.
  * @returns The rendered system grid view.
  */
-function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: SystemGridProps): React.ReactElement {
+function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: SystemGridProps): ReactElement {
     const t = useTranslations('landing');
     const { systemSyncStates, enableSystem } = useDataContext();
-    const [activatingId, setActivatingId] = React.useState<string | null>(null);
-    const [persistErrors, setPersistErrors] = React.useState<Record<string, string>>({});
+    const [activatingId, setActivatingId] = useState<string | null>(null);
+    const [persistErrors, setPersistErrors] = useState<Record<string, string>>({});
 
-    const handleTileClick = React.useCallback(
+    const handleTileClick = useCallback(
         async (manifest: GameSystemManifest) => {
             await activateSystemTile(
                 manifest,
@@ -209,7 +210,7 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
         [onUnauthenticatedClick, systemSyncStates, enableSystem, userId],
     );
 
-    const tiles = React.useMemo(
+    const tiles = useMemo(
         () =>
             buildTiles(
                 manifests,

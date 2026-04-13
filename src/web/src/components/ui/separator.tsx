@@ -15,14 +15,14 @@
  */
 
 import { Separator as SeparatorPrimitive } from 'radix-ui';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the Separator component.
  */
-export type SeparatorProps = React.ComponentPropsWithRef<typeof SeparatorPrimitive.Root>;
+export type SeparatorProps = ComponentPropsWithRef<typeof SeparatorPrimitive.Root>;
 
 /**
  * Separator component - a visual divider between sections.
@@ -37,7 +37,7 @@ function Separator({
     decorative = true,
     ref,
     ...props
-}: SeparatorProps): React.ReactElement {
+}: SeparatorProps): ReactElement {
     return (
         <SeparatorPrimitive.Root
             className={cn(

@@ -14,39 +14,39 @@
  * 5. Must display displayName for each component in React DevTools.
  */
 
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the Card component.
  */
-export type CardProps = React.ComponentPropsWithRef<'div'>;
+export type CardProps = ComponentPropsWithRef<'div'>;
 
 /**
  * Props for the CardHeader component.
  */
-export type CardHeaderProps = React.ComponentPropsWithRef<'div'>;
+export type CardHeaderProps = ComponentPropsWithRef<'div'>;
 
 /**
  * Props for the CardTitle component.
  */
-export type CardTitleProps = React.ComponentPropsWithRef<'h3'>;
+export type CardTitleProps = ComponentPropsWithRef<'h3'>;
 
 /**
  * Props for the CardDescription component.
  */
-export type CardDescriptionProps = React.ComponentPropsWithRef<'p'>;
+export type CardDescriptionProps = ComponentPropsWithRef<'p'>;
 
 /**
  * Props for the CardContent component.
  */
-export type CardContentProps = React.ComponentPropsWithRef<'div'>;
+export type CardContentProps = ComponentPropsWithRef<'div'>;
 
 /**
  * Props for the CardFooter component.
  */
-export type CardFooterProps = React.ComponentPropsWithRef<'div'>;
+export type CardFooterProps = ComponentPropsWithRef<'div'>;
 
 /**
  * Card component - the main container for card content.
@@ -54,7 +54,7 @@ export type CardFooterProps = React.ComponentPropsWithRef<'div'>;
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered Card component.
  */
-function Card({ className, ref, ...props }: CardProps): React.ReactElement {
+function Card({ className, ref, ...props }: CardProps): ReactElement {
     return (
         <div
             className={cn('rounded-lg border border-border bg-card text-card-foreground shadow-sm', className)}
@@ -72,7 +72,7 @@ Card.displayName = 'Card';
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered CardHeader component.
  */
-function CardHeader({ className, ref, ...props }: CardHeaderProps): React.ReactElement {
+function CardHeader({ className, ref, ...props }: CardHeaderProps): ReactElement {
     return <div className={cn('flex flex-col space-y-1.5 p-6', className)} ref={ref} {...props} />;
 }
 
@@ -84,7 +84,7 @@ CardHeader.displayName = 'CardHeader';
  * @param props - Component props including className and standard heading attributes.
  * @returns The rendered CardTitle component.
  */
-function CardTitle({ className, ref, ...props }: CardTitleProps): React.ReactElement {
+function CardTitle({ className, ref, ...props }: CardTitleProps): ReactElement {
     return <h3 className={cn('font-semibold leading-none tracking-tight', className)} ref={ref} {...props} />;
 }
 
@@ -96,7 +96,7 @@ CardTitle.displayName = 'CardTitle';
  * @param props - Component props including className and standard paragraph attributes.
  * @returns The rendered CardDescription component.
  */
-function CardDescription({ className, ref, ...props }: CardDescriptionProps): React.ReactElement {
+function CardDescription({ className, ref, ...props }: CardDescriptionProps): ReactElement {
     return <p className={cn('text-sm text-muted-foreground', className)} ref={ref} {...props} />;
 }
 
@@ -108,7 +108,7 @@ CardDescription.displayName = 'CardDescription';
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered CardContent component.
  */
-function CardContent({ className, ref, ...props }: CardContentProps): React.ReactElement {
+function CardContent({ className, ref, ...props }: CardContentProps): ReactElement {
     return <div className={cn('p-6 pt-0', className)} ref={ref} {...props} />;
 }
 
@@ -120,7 +120,7 @@ CardContent.displayName = 'CardContent';
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered CardFooter component.
  */
-function CardFooter({ className, ref, ...props }: CardFooterProps): React.ReactElement {
+function CardFooter({ className, ref, ...props }: CardFooterProps): ReactElement {
     return <div className={cn('flex items-center p-6 pt-0', className)} ref={ref} {...props} />;
 }
 

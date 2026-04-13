@@ -15,14 +15,14 @@
  */
 
 import { Switch as SwitchPrimitive } from 'radix-ui';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the Switch component.
  */
-export type SwitchProps = React.ComponentPropsWithRef<typeof SwitchPrimitive.Root>;
+export type SwitchProps = ComponentPropsWithRef<typeof SwitchPrimitive.Root>;
 
 /**
  * Switch component - a toggle control for on/off state.
@@ -31,7 +31,7 @@ export type SwitchProps = React.ComponentPropsWithRef<typeof SwitchPrimitive.Roo
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered Switch component.
  */
-function Switch({ className, ref, ...props }: SwitchProps): React.ReactElement {
+function Switch({ className, ref, ...props }: SwitchProps): ReactElement {
     return (
         <SwitchPrimitive.Root
             className={cn(

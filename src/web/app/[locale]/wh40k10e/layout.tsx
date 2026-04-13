@@ -5,7 +5,7 @@
  * 3. Must hardcode the wh40k10e game system for navigation components.
  */
 
-import * as React from 'react';
+import type { ReactNode } from 'react';
 
 import { SideNav } from '@/components/navigation/SideNav.js';
 import { BottomNav } from '@/components/navigation/BottomNav.js';
@@ -13,7 +13,7 @@ import { SystemAutoRestore } from '@/components/SystemAutoRestore.js';
 import { auth0 } from '@/lib/auth0.js';
 
 export interface AppLayoutProps {
-    children: React.ReactNode;
+    children: ReactNode;
     params: Promise<{
         locale: string;
     }>;

@@ -21,7 +21,8 @@
  * 11. Must not create query factories — uses direct DAO access.
  */
 
-import * as React from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import type { ReactElement } from 'react';
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -95,17 +96,17 @@ function extractFactionIds(armies: Army[]): string[] {
  * @param props - Component props containing the authenticated user's ID.
  * @returns The rendered Forge page.
  */
-function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
+function ForgeContainer({ userId }: ForgeContainerProps): ReactElement {
     const t = useTranslations('forge');
     const router = useRouter();
     const queryClient = useQueryClient();
     const { dataContext, status: dcStatus } = useDataContext();
 
     // --- Filter state ---
-    const [filters, setFilters] = React.useState<ForgeFilters>(DEFAULT_FORGE_FILTERS);
+    const [filters, setFilters] = useState<ForgeFilters>(DEFAULT_FORGE_FILTERS);
 
     // --- Delete confirmation state ---
-    const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
     // --- Armies query ---
     const armiesQuery = useQuery<Army[]>({
@@ -115,8 +116,8 @@ function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
     });
 
     const allArmies = armiesQuery.data ?? [];
-    const filteredArmies = React.useMemo(() => applyFilters(allArmies, filters), [allArmies, filters]);
-    const factionIds = React.useMemo(() => extractFactionIds(allArmies), [allArmies]);
+    const filteredArmies = useMemo(() => applyFilters(allArmies, filters), [allArmies, filters]);
+    const factionIds = useMemo(() => extractFactionIds(allArmies), [allArmies]);
 
     // --- Duplicate mutation ---
     const duplicateMutation = useMutation({
@@ -153,21 +154,21 @@ function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
     });
 
     // --- Handlers ---
-    const handleDeploy = React.useCallback(
+    const handleDeploy = useCallback(
         (armyId: string) => {
             router.push(`./armies/${armyId}`);
         },
         [router],
     );
 
-    const handleDuplicate = React.useCallback(
+    const handleDuplicate = useCallback(
         (armyId: string) => {
             duplicateMutation.mutate(armyId);
         },
         [duplicateMutation],
     );
 
-    const handleDeleteRequest = React.useCallback(
+    const handleDeleteRequest = useCallback(
         (armyId: string) => {
             const army = allArmies.find((a) => a.id === armyId);
             setDeleteTarget(army ? { id: army.id, name: army.name } : null);
@@ -175,7 +176,7 @@ function ForgeContainer({ userId }: ForgeContainerProps): React.ReactElement {
         [allArmies],
     );
 
-    const handleDeleteConfirm = React.useCallback(() => {
+    const handleDeleteConfirm = useCallback(() => {
         if (deleteTarget) {
             deleteMutation.mutate(deleteTarget.id);
             setDeleteTarget(null);

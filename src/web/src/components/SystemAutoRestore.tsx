@@ -8,7 +8,7 @@
  * 4. Must not use default exports.
  */
 
-import * as React from 'react';
+import { useEffect } from 'react';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
@@ -17,16 +17,21 @@ export interface SystemAutoRestoreProps {
     systemId: string;
 }
 
+/**
+ * Side-effect-only component that restores the DataContext for a game system.
+ *
+ * The `status !== 'idle'` guard is sufficient to prevent duplicate calls because
+ * `enableSystem()` synchronously transitions `status` from `'idle'` to
+ * `'initializing'` before the next render, so subsequent effect runs see a
+ * non-idle status and bail out.
+ */
 function SystemAutoRestore({ systemId }: SystemAutoRestoreProps): null {
     const { status, enableSystem } = useDataContext();
-    const attemptedRef = React.useRef(false);
 
-    React.useEffect(() => {
-        if (status !== 'idle' || attemptedRef.current) {
+    useEffect(() => {
+        if (status !== 'idle') {
             return;
         }
-
-        attemptedRef.current = true;
 
         void resolveGameSystem(systemId).then((system) => {
             if (system) {

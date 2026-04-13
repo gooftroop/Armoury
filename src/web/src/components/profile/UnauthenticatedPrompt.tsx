@@ -10,7 +10,7 @@
  * @module UnauthenticatedPrompt
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 import { Button, Card, CardContent } from '@/components/ui/index.js';
 
 /**
@@ -48,7 +48,7 @@ export function UnauthenticatedPrompt({
     signInLabel,
     createAccountPrefix,
     createAccountLabel,
-}: UnauthenticatedPromptProps): React.ReactElement {
+}: UnauthenticatedPromptProps): ReactElement {
     return (
         <Card className="w-full max-w-xs border-border/40 bg-surface/60">
             <CardContent className="flex flex-col items-center gap-4 px-6 py-5">

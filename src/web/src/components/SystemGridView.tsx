@@ -13,7 +13,7 @@
  * @module system-grid-view
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import type { GameSystemManifest } from '@armoury/data-dao';
 
@@ -57,7 +57,7 @@ export interface SystemGridViewProps {
  * @param props - Grid view props.
  * @returns The rendered system grid.
  */
-function SystemGridView({ tiles }: SystemGridViewProps): React.ReactElement {
+function SystemGridView({ tiles }: SystemGridViewProps): ReactElement {
     return (
         <div
             className="mb-10 grid w-full max-w-[1120px] gap-6"

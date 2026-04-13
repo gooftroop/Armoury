@@ -6,7 +6,7 @@
  * - REQ-CARD-UI-02: Forwards refs on root component.
  */
 
-import * as React from 'react';
+import { createRef } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
@@ -36,7 +36,7 @@ describe('Card', () => {
     });
 
     it('forwards ref to card root', () => {
-        const ref = React.createRef<HTMLDivElement>();
+        const ref = createRef<HTMLDivElement>();
         render(<Card ref={ref}>content</Card>);
         expect(ref.current?.tagName).toBe('DIV');
     });

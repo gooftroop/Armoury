@@ -21,6 +21,7 @@
  */
 
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
+import * as Sentry from '@sentry/nextjs';
 
 /**
  * Custom claim namespace for the internal user identifier.
@@ -57,7 +58,12 @@ function extractClaimFromJwt(idToken: string, claim: string): string | undefined
         const value = (payload as Record<string, unknown>)[claim];
 
         return typeof value === 'string' ? value : undefined;
-    } catch {
+    } catch (error) {
+        Sentry.captureException(error, {
+            tags: { component: 'auth0', operation: 'extractClaimFromJwt' },
+            extra: { claim },
+        });
+
         return undefined;
     }
 }

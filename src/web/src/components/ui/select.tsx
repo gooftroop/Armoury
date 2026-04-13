@@ -17,44 +17,44 @@
 
 import { Select } from 'radix-ui';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the SelectTrigger component.
  */
-export type SelectTriggerProps = React.ComponentPropsWithRef<typeof Select.Trigger>;
+export type SelectTriggerProps = ComponentPropsWithRef<typeof Select.Trigger>;
 
 /**
  * Props for the SelectContent component.
  */
-export type SelectContentProps = React.ComponentPropsWithRef<typeof Select.Content>;
+export type SelectContentProps = ComponentPropsWithRef<typeof Select.Content>;
 
 /**
  * Props for the SelectLabel component.
  */
-export type SelectLabelProps = React.ComponentPropsWithRef<typeof Select.Label>;
+export type SelectLabelProps = ComponentPropsWithRef<typeof Select.Label>;
 
 /**
  * Props for the SelectItem component.
  */
-export type SelectItemProps = React.ComponentPropsWithRef<typeof Select.Item>;
+export type SelectItemProps = ComponentPropsWithRef<typeof Select.Item>;
 
 /**
  * Props for the SelectSeparator component.
  */
-export type SelectSeparatorProps = React.ComponentPropsWithRef<typeof Select.Separator>;
+export type SelectSeparatorProps = ComponentPropsWithRef<typeof Select.Separator>;
 
 /**
  * Props for the SelectScrollUpButton component.
  */
-export type SelectScrollUpButtonProps = React.ComponentPropsWithRef<typeof Select.ScrollUpButton>;
+export type SelectScrollUpButtonProps = ComponentPropsWithRef<typeof Select.ScrollUpButton>;
 
 /**
  * Props for the SelectScrollDownButton component.
  */
-export type SelectScrollDownButtonProps = React.ComponentPropsWithRef<typeof Select.ScrollDownButton>;
+export type SelectScrollDownButtonProps = ComponentPropsWithRef<typeof Select.ScrollDownButton>;
 
 /**
  * Select component - the root select component.
@@ -77,7 +77,7 @@ const SelectValue = Select.Value;
  * @param props - Component props including className and standard Select.Trigger attributes.
  * @returns The rendered SelectTrigger component.
  */
-function SelectTrigger({ className, children, ref, ...props }: SelectTriggerProps): React.ReactElement {
+function SelectTrigger({ className, children, ref, ...props }: SelectTriggerProps): ReactElement {
     return (
         <Select.Trigger
             className={cn(
@@ -103,7 +103,7 @@ SelectTrigger.displayName = 'SelectTrigger';
  * @param props - Component props including standard Select.ScrollUpButton attributes.
  * @returns The rendered SelectScrollUpButton component.
  */
-function SelectScrollUpButton({ className, ref, ...props }: SelectScrollUpButtonProps): React.ReactElement {
+function SelectScrollUpButton({ className, ref, ...props }: SelectScrollUpButtonProps): ReactElement {
     return (
         <Select.ScrollUpButton
             className={cn('flex cursor-default items-center justify-center py-1', className)}
@@ -123,7 +123,7 @@ SelectScrollUpButton.displayName = 'SelectScrollUpButton';
  * @param props - Component props including standard Select.ScrollDownButton attributes.
  * @returns The rendered SelectScrollDownButton component.
  */
-function SelectScrollDownButton({ className, ref, ...props }: SelectScrollDownButtonProps): React.ReactElement {
+function SelectScrollDownButton({ className, ref, ...props }: SelectScrollDownButtonProps): ReactElement {
     return (
         <Select.ScrollDownButton
             className={cn('flex cursor-default items-center justify-center py-1', className)}
@@ -143,13 +143,7 @@ SelectScrollDownButton.displayName = 'SelectScrollDownButton';
  * @param props - Component props including className, position, and standard Select.Content attributes.
  * @returns The rendered SelectContent component.
  */
-function SelectContent({
-    className,
-    children,
-    position = 'popper',
-    ref,
-    ...props
-}: SelectContentProps): React.ReactElement {
+function SelectContent({ className, children, position = 'popper', ref, ...props }: SelectContentProps): ReactElement {
     return (
         <Select.Portal>
             <Select.Content
@@ -187,7 +181,7 @@ SelectContent.displayName = 'SelectContent';
  * @param props - Component props including className and standard Select.Label attributes.
  * @returns The rendered SelectLabel component.
  */
-function SelectLabel({ className, ref, ...props }: SelectLabelProps): React.ReactElement {
+function SelectLabel({ className, ref, ...props }: SelectLabelProps): ReactElement {
     return <Select.Label className={cn('px-2 py-1.5 text-sm font-semibold', className)} ref={ref} {...props} />;
 }
 
@@ -199,7 +193,7 @@ SelectLabel.displayName = 'SelectLabel';
  * @param props - Component props including className and standard Select.Item attributes.
  * @returns The rendered SelectItem component.
  */
-function SelectItem({ className, children, ref, ...props }: SelectItemProps): React.ReactElement {
+function SelectItem({ className, children, ref, ...props }: SelectItemProps): ReactElement {
     return (
         <Select.Item
             className={cn(
@@ -227,7 +221,7 @@ SelectItem.displayName = 'SelectItem';
  * @param props - Component props including className and standard Select.Separator attributes.
  * @returns The rendered SelectSeparator component.
  */
-function SelectSeparator({ className, ref, ...props }: SelectSeparatorProps): React.ReactElement {
+function SelectSeparator({ className, ref, ...props }: SelectSeparatorProps): ReactElement {
     return <Select.Separator className={cn('-mx-1 my-1 h-px bg-muted', className)} ref={ref} {...props} />;
 }
 

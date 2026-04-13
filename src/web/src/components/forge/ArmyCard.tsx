@@ -17,7 +17,7 @@
  * 7. Must not use default exports.
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -61,7 +61,7 @@ function formatDate(isoDate: string): string {
  * @param props - Component props including army data and action callbacks.
  * @returns The rendered army card.
  */
-function ArmyCard({ army, onDeploy, onDuplicate, onDelete }: ArmyCardProps): React.ReactElement {
+function ArmyCard({ army, onDeploy, onDuplicate, onDelete }: ArmyCardProps): ReactElement {
     const t = useTranslations('forge.card');
 
     return (

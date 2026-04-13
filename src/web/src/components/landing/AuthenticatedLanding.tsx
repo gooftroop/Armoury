@@ -16,7 +16,7 @@
  * @module authenticated-landing
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 import type { GameSystemManifest } from '@armoury/data-dao';
 
 import { SystemGrid } from '@/components/SystemGridContainer.js';
@@ -38,7 +38,7 @@ export interface AuthenticatedLandingProps {
  * @param props - Component props.
  * @returns The rendered authenticated landing experience.
  */
-export function AuthenticatedLanding({ userId, manifests, locale }: AuthenticatedLandingProps): React.ReactElement {
+export function AuthenticatedLanding({ userId, manifests, locale }: AuthenticatedLandingProps): ReactElement {
     return (
         <>
             {/* Positioned in upper-right on md+ screens, normal flow on small screens */}

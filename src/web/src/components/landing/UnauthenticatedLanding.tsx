@@ -15,7 +15,8 @@
  * @module unauthenticated-landing
  */
 
-import * as React from 'react';
+import { useCallback } from 'react';
+import type { ReactElement } from 'react';
 import type { GameSystemManifest } from '@armoury/data-dao';
 
 import { SystemGrid } from '@/components/SystemGridContainer.js';
@@ -35,8 +36,8 @@ export interface UnauthenticatedLandingProps {
  * @param props - Component props.
  * @returns The rendered unauthenticated landing experience.
  */
-export function UnauthenticatedLanding({ manifests, locale }: UnauthenticatedLandingProps): React.ReactElement {
-    const handleUnauthenticatedClick = React.useCallback(() => {
+export function UnauthenticatedLanding({ manifests, locale }: UnauthenticatedLandingProps): ReactElement {
+    const handleUnauthenticatedClick = useCallback(() => {
         const returnTo = window.location.pathname + window.location.search + window.location.hash;
         window.location.href = `/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
     }, []);

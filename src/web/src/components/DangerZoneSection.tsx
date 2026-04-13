@@ -17,7 +17,7 @@
  * @module danger-zone-section
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import type { useTranslations } from 'next-intl';
 
@@ -52,7 +52,7 @@ export interface DangerZoneSectionProps {
  * @param props - Component props.
  * @returns The rendered danger zone card.
  */
-function DangerZoneSection({ t, onDeleteAccount }: DangerZoneSectionProps): React.ReactElement {
+function DangerZoneSection({ t, onDeleteAccount }: DangerZoneSectionProps): ReactElement {
     return (
         <Card className="border-red-900/50">
             <CardHeader>
