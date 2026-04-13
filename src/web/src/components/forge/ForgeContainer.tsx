@@ -23,7 +23,7 @@
  *     is idle to prevent permanent loading states after back-navigation from unmatched routes.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ReactElement } from 'react';
 
 import { useRouter } from 'next/navigation';
@@ -113,7 +113,7 @@ function ForgeContainer({ userId }: ForgeContainerProps): ReactElement {
     // This prevents a permanent loading state when the user navigates away
     // (e.g. to a 404) and returns via the browser back button, which can
     // cause the DataContext to lose its 'ready' state.
-    React.useEffect(() => {
+    useEffect(() => {
         if (dcStatus !== 'idle') {
             return;
         }

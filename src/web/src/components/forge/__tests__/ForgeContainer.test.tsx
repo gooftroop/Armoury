@@ -40,7 +40,7 @@ vi.mock('next/navigation', () => ({
     useRouter: () => ({
         push: mockPush,
     }),
-    usePathname: () => '/en/wh40k10e/armies',
+    usePathname: () => '/wh40k10e/armies',
 }));
 
 vi.mock('next-intl', () => ({
