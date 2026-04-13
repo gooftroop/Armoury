@@ -4,6 +4,7 @@ import type {
     PluginValidationRule,
     EntityHydrator,
     GameSystem,
+    SyncProgressCollector,
 } from '@armoury/data-dao';
 import type { SchemaExtension } from '@armoury/data-dao';
 import type { DatabaseAdapter } from '@armoury/data-dao';
@@ -505,11 +506,13 @@ class Wh40k10eSystem implements Wh40kGameSystem {
             unalignedForcesDAO,
         });
 
+        const progressCollector = clients.get('syncProgress') as SyncProgressCollector | undefined;
+
         return {
             armies: new ArmyDAO(adapter),
             campaigns: new CampaignDAO(adapter),
             game,
-            sync: () => game.sync(),
+            sync: () => game.sync(progressCollector),
         };
     }
 

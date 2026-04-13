@@ -26,6 +26,8 @@ export type {
     ValidationRuleResult,
     EntityHydrator,
 } from '@/types.js';
+export type { SyncPhase, SyncProgressState, OnProgressCallback } from '@/types/sync-progress.js';
+export { SyncProgressCollector } from '@/services/SyncProgressCollector.js';
 export { PluginRegistry } from '@/pluginRegistry.js';
 
 export { BaseDAO } from '@/dao/BaseDAO.js';

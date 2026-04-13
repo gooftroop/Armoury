@@ -15,7 +15,7 @@
 
 import * as React from 'react';
 
-import type { GameSystemManifest } from '@armoury/data-dao';
+import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
 
 import { SystemTile } from '@/components/SystemTile.js';
 
@@ -39,6 +39,8 @@ export interface SystemTileData {
     overlayText: string;
     /** Navigation href for synced tiles (links to system's armies page). */
     href?: string;
+    /** Real-time sync progress data passed through to SystemTile. */
+    syncProgress?: SyncProgressState;
     /** Tile click callback. */
     onClick: () => void;
 }
@@ -72,6 +74,7 @@ function SystemGridView({ tiles }: SystemGridViewProps): React.ReactElement {
                     isError={tile.isError}
                     showOverlay={tile.showOverlay}
                     overlayText={tile.overlayText}
+                    syncProgress={tile.syncProgress}
                     href={tile.href}
                     onClick={tile.onClick}
                 />

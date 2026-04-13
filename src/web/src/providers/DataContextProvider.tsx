@@ -30,6 +30,7 @@ import type { AdapterFactoryFn, ClientFactoryFn } from '@armoury/di';
 import type { DataContext } from '@armoury/data-context';
 import type { IGitHubClient } from '@armoury/clients-github';
 import type { IWahapediaClient } from '@armoury/clients-wahapedia';
+import { SyncProgressCollector } from '@armoury/data-dao';
 import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ContainerModule } from 'inversify';
@@ -73,6 +74,8 @@ export interface DataContextValue {
     error?: string;
     /** Per-system sync state keyed by system ID. */
     systemSyncStates: Record<string, SystemSyncState>;
+    /** Progress collector for the active sync operation, or null when idle. */
+    syncProgressCollector: SyncProgressCollector | null;
     /**
      * Enables a game system: builds the DataContext for that system and starts sync.
      * @param system - The GameSystem to enable.
@@ -111,6 +114,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const [status, setStatus] = React.useState<DataContextStatus>('idle');
     const [error, setError] = React.useState<string | undefined>();
     const [systemSyncStates, setSystemSyncStates] = React.useState<Record<string, SystemSyncState>>({});
+    const [syncProgressCollector, setSyncProgressCollector] = React.useState<SyncProgressCollector | null>(null);
 
     /**
      * Enables a game system by building a DataContext and syncing its data.
@@ -147,6 +151,9 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const queryClient = getQueryClient();
             container.bind(TOKENS.QueryClient).toConstantValue(queryClient);
 
+            const collector = new SyncProgressCollector(40);
+            setSyncProgressCollector(collector);
+
             const createAdapter = container.get<AdapterFactoryFn>(TOKENS.AdapterFactory);
             const adapter = await createAdapter();
             const createGitHub = container.get<ClientFactoryFn<IGitHubClient, QueryClient>>(TOKENS.GitHubClientFactory);
@@ -174,6 +181,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 .adapter(adapter)
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
+                .register('syncProgress', collector)
                 .build();
             log('build() returned');
             setDataContext(dc);
@@ -264,6 +272,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             setDataContext(null);
             setStatus('idle');
             setError(undefined);
+            setSyncProgressCollector(null);
             setSystemSyncStates((prev) => {
                 const next = { ...prev };
                 delete next[systemId];
@@ -289,10 +298,11 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             status,
             error,
             systemSyncStates,
+            syncProgressCollector,
             enableSystem,
             disableSystem,
         }),
-        [dataContext, status, error, systemSyncStates, enableSystem, disableSystem],
+        [dataContext, status, error, systemSyncStates, syncProgressCollector, enableSystem, disableSystem],
     );
 
     return <DataContextReactContext.Provider value={value}>{children}</DataContextReactContext.Provider>;
