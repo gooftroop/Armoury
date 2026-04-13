@@ -36,10 +36,7 @@ export default async function AppLayout({ children, params }: AppLayoutProps) {
 
             {/* Desktop Side Navigation */}
             <div className="hidden shrink-0 md:block">
-                <SideNav
-                    locale={locale}
-                    userName={(session?.user?.name as string | undefined) ?? undefined}
-                />
+                <SideNav locale={locale} userName={(session?.user?.name as string | undefined) ?? undefined} />
             </div>
 
             {/* Main Content Area */}
