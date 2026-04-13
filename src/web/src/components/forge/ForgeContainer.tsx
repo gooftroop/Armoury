@@ -19,8 +19,8 @@
  * 9. Must display displayName in React DevTools.
  * 10. Must not use default exports.
  * 11. Must not create query factories — uses direct DAO access.
- * 12. Must auto-enable the wh40k10e game system when DataContext is idle to
- *     prevent permanent loading states after back-navigation from unmatched routes.
+ * 12. Must auto-enable the current game system (derived from the URL) when DataContext
+ *     is idle to prevent permanent loading states after back-navigation from unmatched routes.
  */
 
 import { useState, useCallback, useMemo } from 'react';
@@ -32,14 +32,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
+import { useGameSystem } from '@/hooks/useGameSystem.js';
 import { ConfirmDialog } from '@/components/shared/index.js';
 import { ArmyListView } from '@/components/forge/ArmyListView.js';
 import { DEFAULT_FORGE_FILTERS } from '@/components/forge/ArmyFilterPanel.js';
 import type { ForgeFilters } from '@/components/forge/ArmyFilterPanel.js';
 import type { Army } from '@armoury/wh40k10e';
-
-/** The game system ID this page is scoped to. */
-const GAME_SYSTEM_ID = 'wh40k10e';
 
 /**
  * Props for the ForgeContainer component.
@@ -109,8 +107,9 @@ function ForgeContainer({ userId }: ForgeContainerProps): ReactElement {
     const router = useRouter();
     const queryClient = useQueryClient();
     const { dataContext, status: dcStatus, enableSystem } = useDataContext();
+    const gameSystemId = useGameSystem();
 
-    // Auto-enable the wh40k10e game system when DataContext is idle.
+    // Auto-enable the game system when DataContext is idle.
     // This prevents a permanent loading state when the user navigates away
     // (e.g. to a 404) and returns via the browser back button, which can
     // cause the DataContext to lose its 'ready' state.
@@ -121,7 +120,7 @@ function ForgeContainer({ userId }: ForgeContainerProps): ReactElement {
 
         let cancelled = false;
 
-        void resolveGameSystem(GAME_SYSTEM_ID).then((system) => {
+        void resolveGameSystem(gameSystemId).then((system) => {
             if (!cancelled && system) {
                 void enableSystem(system);
             }
@@ -130,7 +129,7 @@ function ForgeContainer({ userId }: ForgeContainerProps): ReactElement {
         return () => {
             cancelled = true;
         };
-    }, [dcStatus, enableSystem]);
+    }, [dcStatus, enableSystem, gameSystemId]);
 
     // --- Filter state ---
     const [filters, setFilters] = useState<ForgeFilters>(DEFAULT_FORGE_FILTERS);

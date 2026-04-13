@@ -15,10 +15,10 @@ import { Swords, BookOpen, Flag, Users, Library, ChevronLeft, ChevronRight, Arro
 import { Toggle } from 'radix-ui';
 import { cn } from '@/lib/utils.js';
 import { SideNavUserTile } from '@/components/navigation/SideNavUserTile.js';
+import { useGameSystem } from '@/hooks/useGameSystem.js';
 
 export interface SideNavProps {
     locale: string;
-    gameSystem: string;
     /** User display name — shown in the avatar area. */
     userName?: string;
     /** URL to the user's profile picture. */
@@ -39,9 +39,10 @@ const NAV_ITEMS = [
  * @param props - Component props
  * @returns The SideNav component
  */
-export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _userPicture }: SideNavProps) {
+export function SideNav({ locale: _locale, userName, userPicture: _userPicture }: SideNavProps) {
     const t = useTranslations('nav');
     const pathname = usePathname();
+    const gameSystem = useGameSystem();
     const [collapsed, setCollapsed] = useState(false);
 
     const basePath = `/${gameSystem}`;
