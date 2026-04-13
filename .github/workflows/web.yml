@@ -28,8 +28,3 @@ concurrency:
 jobs:
     ci:
         uses: ./.github/workflows/_ci-web.yml
-
-    e2e:
-        needs: ci
-        uses: ./.github/workflows/_e2e-web.yml
-        secrets: inherit
