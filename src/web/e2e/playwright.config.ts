@@ -8,7 +8,7 @@
  * 1. Must define a "setup" project that forges an Auth0 session via generateSessionCookie.
  * 2. Must define a "chromium-authenticated" project that depends on setup.
  * 3. Must define a "chromium-public" project for unauthenticated tests (no storageState).
- * 4. Must configure webServer to start the Next.js dev server.
+ * 4. Must configure webServer to start the Next.js production server in CI, dev server locally.
  * 5. Must use Chromium only in CI for speed.
  * 6. Must set sensible timeouts and retry policies.
  * 7. Must conditionally include authenticated projects only when AUTH0_SECRET is set.
@@ -29,13 +29,16 @@ const AUTH_STATE_PATH = resolve(CONFIG_DIR, '.auth', 'user.json');
 const AUTH0_SECRET = process.env['AUTH0_SECRET'] || 'e2e-test-secret';
 const hasAuth0 = Boolean(AUTH0_SECRET);
 
+/** Whether we are running in a CI environment. */
+const isCI = Boolean(process.env['CI']);
+
 export default defineConfig({
     testDir: './tests',
-    fullyParallel: !process.env['CI'],
-    forbidOnly: !!process.env['CI'],
-    retries: process.env['CI'] ? 1 : 0,
-    workers: process.env['CI'] ? 1 : undefined,
-    reporter: process.env['CI'] ? 'github' : 'html',
+    fullyParallel: true,
+    forbidOnly: isCI,
+    retries: isCI ? 1 : 0,
+    workers: isCI ? 2 : undefined,
+    reporter: isCI ? 'github' : 'html',
 
     /* Cap total suite time to 15 min so CI fails fast instead of burning 59+ min on serial timeouts. */
     globalTimeout: process.env['CI'] ? 900_000 : 0,
@@ -81,11 +84,11 @@ export default defineConfig({
     ],
 
     webServer: {
-        command: 'npm run dev -w @armoury/web',
+        command: isCI ? 'npm run start -w @armoury/web' : 'npm run dev -w @armoury/web',
         cwd: ROOT_DIR,
         url: 'http://localhost:3000',
-        reuseExistingServer: !process.env['CI'],
-        timeout: 120_000,
+        reuseExistingServer: !isCI,
+        timeout: isCI ? 30_000 : 120_000,
         env: {
             // Spread process.env so the spawned server inherits PATH, system vars,
             // and any CI-injected secrets (AUTH0_* from GitHub Actions env block).

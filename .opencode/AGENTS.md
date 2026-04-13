@@ -276,6 +276,7 @@ Instead:
 
 This applies to all CI/CD systems: GitHub Actions, Vercel deployments, Buildkite, CircleCI, or any other pipeline triggered by a push or PR event.
 
+
 ## Anti-Patterns
 
 For the full anti-patterns list, see `docs/AGENT_CATEGORIES.md`. Key rules to always keep in mind:
