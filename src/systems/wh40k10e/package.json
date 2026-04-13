@@ -44,7 +44,7 @@
         "@armoury/providers-bsdata": "*",
         "@armoury/validation": "*",
         "cheerio": "^1.2.0",
-        "drizzle-orm": "^0.45.1",
+        "drizzle-orm": "^0.45.2",
         "inversify": "^8.1.0"
     },
     "devDependencies": {

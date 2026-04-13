@@ -30,7 +30,7 @@
     "dependencies": {
         "@armoury/models": "*",
         "@armoury/clients-github": "*",
-        "drizzle-orm": "^0.45.1"
+        "drizzle-orm": "^0.45.2"
     },
     "devDependencies": {
         "@armoury/e2e": "*",
