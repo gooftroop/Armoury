@@ -20,8 +20,9 @@ import type { ReactElement } from 'react';
 import Link from 'next/link';
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
 
-import type { GameSystemManifest } from '@armoury/data-dao';
+import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
 
+import { ProgressBar } from '@/components/ProgressBar.js';
 import { cn } from '@/lib/utils.js';
 
 /**
@@ -40,6 +41,8 @@ export interface SystemTileProps {
     showOverlay: boolean;
     /** Text to display on the overlay or synced badge. */
     overlayText: string;
+    /** Real-time sync progress data. When provided during syncing, replaces the spinner with a progress bar. */
+    syncProgress?: SyncProgressState;
     /** Navigation href for synced tiles. When provided, the tile becomes a link. */
     href?: string;
     /** Click handler for the tile overlay. */
@@ -59,6 +62,7 @@ function SystemTile({
     isError,
     showOverlay,
     overlayText,
+    syncProgress,
     href,
     onClick,
 }: SystemTileProps): ReactElement {
@@ -105,7 +109,16 @@ function SystemTile({
                         disabled={isSyncing}
                     >
                         {isSyncing ? (
-                            <Loader2 className="h-6 w-6 animate-spin text-white/90" />
+                            syncProgress && syncProgress.phase === 'syncing' ? (
+                                <ProgressBar
+                                    phase={syncProgress.message}
+                                    completed={syncProgress.completed}
+                                    total={syncProgress.total}
+                                    failures={syncProgress.failures}
+                                />
+                            ) : (
+                                <Loader2 className="h-6 w-6 animate-spin text-white/90" />
+                            )
                         ) : isError ? (
                             <AlertCircle className="h-6 w-6 text-red-400" />
                         ) : (

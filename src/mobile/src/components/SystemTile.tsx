@@ -13,7 +13,9 @@
 import * as React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Paragraph, useTheme } from 'tamagui';
-import type { GameSystemManifest } from '@armoury/data-dao';
+import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
+
+import { ProgressBar } from '@/components/ProgressBar.js';
 
 /**
  * Props for the SystemTile component.
@@ -27,6 +29,8 @@ export interface SystemTileProps {
     isSynced: boolean;
     /** Whether the last sync attempt failed. */
     isError: boolean;
+    /** Live sync progress state, if available. */
+    syncProgress?: SyncProgressState;
     /** Press handler for activating the game system. */
     onPress: () => void;
 }
@@ -37,11 +41,19 @@ export interface SystemTileProps {
  * @param props - Tile props.
  * @returns The rendered system tile.
  */
-function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemTileProps): React.ReactElement {
+function SystemTile({
+    manifest,
+    isSyncing,
+    isSynced,
+    isError,
+    syncProgress,
+    onPress,
+}: SystemTileProps): React.ReactElement {
     const theme = useTheme();
     const tileBorderColor = theme.borderColor?.val ?? 'rgba(255, 255, 255, 0.08)';
     const tileCardBg = theme.card?.val ?? '#1b1d20';
     const accentColor = manifest.accent === 'gold' ? '#b87333' : 'rgba(255, 255, 255, 0.12)';
+    const showProgressBar = isSyncing && syncProgress?.phase === 'syncing';
     const overlayLabel = isError
         ? 'Retry Download'
         : isSyncing
@@ -72,21 +84,32 @@ function SystemTile({ manifest, isSyncing, isSynced, isError, onPress }: SystemT
 
                 {!isSynced && (
                     <View style={styles.overlay}>
-                        {isSyncing ? <ActivityIndicator size="small" color="#ffffff" /> : null}
-                        {!isSyncing && (
-                            <Paragraph color={isError ? '$destructive' : '$color'} fontWeight="700" size="$4">
-                                {isError ? '⚠' : '⬇'}
-                            </Paragraph>
+                        {showProgressBar && syncProgress ? (
+                            <ProgressBar
+                                phase={syncProgress.message}
+                                completed={syncProgress.completed}
+                                total={syncProgress.total}
+                                failures={syncProgress.failures}
+                            />
+                        ) : (
+                            <>
+                                {isSyncing ? <ActivityIndicator size="small" color="#ffffff" /> : null}
+                                {!isSyncing && (
+                                    <Paragraph color={isError ? '$destructive' : '$color'} fontWeight="700" size="$4">
+                                        {isError ? '⚠' : '⬇'}
+                                    </Paragraph>
+                                )}
+                                <Paragraph
+                                    color={isError ? '$destructive' : '$color'}
+                                    fontWeight="600"
+                                    size="$2"
+                                    textTransform="uppercase"
+                                    letterSpacing={1}
+                                >
+                                    {overlayLabel}
+                                </Paragraph>
+                            </>
                         )}
-                        <Paragraph
-                            color={isError ? '$destructive' : '$color'}
-                            fontWeight="600"
-                            size="$2"
-                            textTransform="uppercase"
-                            letterSpacing={1}
-                        >
-                            {overlayLabel}
-                        </Paragraph>
                     </View>
                 )}
 

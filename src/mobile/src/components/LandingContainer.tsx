@@ -21,6 +21,7 @@ import type { LandingTileViewModel } from '@/components/LandingView.js';
 import { systemManifests } from '@/lib/discoverSystems.js';
 import { getSyncStatus } from '@/lib/getSyncStatus.js';
 import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
+import { useSyncProgress } from '@/hooks/useSyncProgress.js';
 import { useDataContext } from '@/providers/DataContextProvider.js';
 
 /**
@@ -31,8 +32,9 @@ import { useDataContext } from '@/providers/DataContextProvider.js';
 function LandingContainer(): React.ReactElement {
     const router = useRouter();
     const { authorize, user } = useAuth0();
-    const { systemSyncStates, enableSystem } = useDataContext();
+    const { systemSyncStates, enableSystem, syncProgressCollector } = useDataContext();
     const [activatingId, setActivatingId] = React.useState<string | null>(null);
+    const syncProgress = useSyncProgress(syncProgressCollector);
     const theme = useTheme();
     const isAuthenticated = user !== null && user !== undefined;
     const scrollViewBg = theme.background?.val ?? '#121416';
@@ -70,12 +72,14 @@ function LandingContainer(): React.ReactElement {
 
     const tiles: LandingTileViewModel[] = systemManifests.map((manifest) => {
         const status = getSyncStatus(manifest.id, systemSyncStates);
+        const isSyncing = status === 'syncing' || activatingId === manifest.id;
 
         return {
             manifest,
-            isSyncing: status === 'syncing' || activatingId === manifest.id,
+            isSyncing,
             isSynced: status === 'synced',
             isError: status === 'error',
+            syncProgress: isSyncing ? syncProgress : undefined,
             onPress: () => {
                 void handleTilePress(manifest);
             },
