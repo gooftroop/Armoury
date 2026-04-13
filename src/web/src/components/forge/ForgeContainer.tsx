@@ -19,9 +19,11 @@
  * 9. Must display displayName in React DevTools.
  * 10. Must not use default exports.
  * 11. Must not create query factories — uses direct DAO access.
+ * 12. Must auto-enable the current game system (derived from the URL) when DataContext
+ *     is idle to prevent permanent loading states after back-navigation from unmatched routes.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ReactElement } from 'react';
 
 import { useRouter } from 'next/navigation';
@@ -29,6 +31,8 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
+import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
+import { useGameSystem } from '@/hooks/useGameSystem.js';
 import { ConfirmDialog } from '@/components/shared/index.js';
 import { ArmyListView } from '@/components/forge/ArmyListView.js';
 import { DEFAULT_FORGE_FILTERS } from '@/components/forge/ArmyFilterPanel.js';
@@ -73,6 +77,8 @@ function applyFilters(armies: Army[], filters: ForgeFilters): Army[] {
                     return a.name.localeCompare(b.name);
                 case 'points':
                     return b.totalPoints - a.totalPoints;
+                default:
+                    return 0;
             }
         });
 }
@@ -100,7 +106,30 @@ function ForgeContainer({ userId }: ForgeContainerProps): ReactElement {
     const t = useTranslations('forge');
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { dataContext, status: dcStatus } = useDataContext();
+    const { dataContext, status: dcStatus, enableSystem } = useDataContext();
+    const gameSystemId = useGameSystem();
+
+    // Auto-enable the game system when DataContext is idle.
+    // This prevents a permanent loading state when the user navigates away
+    // (e.g. to a 404) and returns via the browser back button, which can
+    // cause the DataContext to lose its 'ready' state.
+    useEffect(() => {
+        if (dcStatus !== 'idle') {
+            return;
+        }
+
+        let cancelled = false;
+
+        void resolveGameSystem(gameSystemId).then((system) => {
+            if (!cancelled && system) {
+                void enableSystem(system);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [dcStatus, enableSystem, gameSystemId]);
 
     // --- Filter state ---
     const [filters, setFilters] = useState<ForgeFilters>(DEFAULT_FORGE_FILTERS);

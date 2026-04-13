@@ -2,7 +2,7 @@
  * @requirements
  * 1. Must export a layout that wraps the game system application shell.
  * 2. Must render the SideNav (desktop) and BottomNav (mobile).
- * 3. Must hardcode the wh40k10e game system for navigation components.
+ * 3. Navigation components derive the game system from the URL via useGameSystem().
  */
 
 import type { ReactNode } from 'react';
@@ -36,11 +36,7 @@ export default async function AppLayout({ children, params }: AppLayoutProps) {
 
             {/* Desktop Side Navigation */}
             <div className="hidden shrink-0 md:block">
-                <SideNav
-                    locale={locale}
-                    gameSystem="wh40k10e"
-                    userName={(session?.user?.name as string | undefined) ?? undefined}
-                />
+                <SideNav locale={locale} userName={(session?.user?.name as string | undefined) ?? undefined} />
             </div>
 
             {/* Main Content Area */}
@@ -48,7 +44,7 @@ export default async function AppLayout({ children, params }: AppLayoutProps) {
 
             {/* Mobile Bottom Navigation */}
             <div className="md:hidden">
-                <BottomNav locale={locale} gameSystem="wh40k10e" />
+                <BottomNav locale={locale} />
             </div>
         </div>
     );
