@@ -12,7 +12,8 @@
  * - REQ-WEB-DCP-08: Partial sync failures set error state.
  */
 
-import * as React from 'react';
+import { useEffect } from 'react';
+import type { ReactElement } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DataContext } from '@armoury/data-context';
@@ -95,11 +96,11 @@ interface HarnessProps {
     readonly controls: HarnessControls;
 }
 
-function Harness({ system, controls }: HarnessProps): React.ReactElement {
+function Harness({ system, controls }: HarnessProps): ReactElement {
     const ctx = useDataContext();
     const gameSystem = system as unknown as GameSystem;
 
-    React.useEffect(() => {
+    useEffect(() => {
         controls.statuses.push(ctx.status);
     }, [ctx.status, controls.statuses]);
 
@@ -119,7 +120,7 @@ function Harness({ system, controls }: HarnessProps): React.ReactElement {
     );
 }
 
-function OutsideHookConsumer(): React.ReactElement {
+function OutsideHookConsumer(): ReactElement {
     useDataContext();
 
     return <div>outside</div>;

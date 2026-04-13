@@ -15,7 +15,7 @@
  * @module systems-section
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import type { useTranslations } from 'next-intl';
 
@@ -35,7 +35,7 @@ export interface SystemsSectionProps {
  * @param props - Component props.
  * @returns The rendered systems card.
  */
-function SystemsSection({ systemKeys, t }: SystemsSectionProps): React.ReactElement {
+function SystemsSection({ systemKeys, t }: SystemsSectionProps): ReactElement {
     return (
         <Card>
             <CardHeader>

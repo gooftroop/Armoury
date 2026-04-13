@@ -15,7 +15,7 @@
  * 6. Must display displayName in React DevTools.
  */
 
-import * as React from 'react';
+import type { ReactNode } from 'react';
 
 import {
     AlertDialog,
@@ -58,7 +58,7 @@ export interface ConfirmDialogProps {
     variant?: 'destructive' | 'primary';
 
     /** Optional children rendered inside the dialog body, below the description. */
-    children?: React.ReactNode;
+    children?: ReactNode;
 }
 
 /**

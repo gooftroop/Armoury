@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 /**
  * Props for the ProgressBar presentational component.
@@ -14,7 +14,7 @@ export interface ProgressBarProps {
     failures: number;
 }
 
-function ProgressBar({ phase, completed, total, failures }: ProgressBarProps): React.ReactElement {
+function ProgressBar({ phase, completed, total, failures }: ProgressBarProps): ReactElement {
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return (

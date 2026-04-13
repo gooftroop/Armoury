@@ -16,7 +16,7 @@
  * @module profile-section
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import {
     Card,
@@ -50,7 +50,7 @@ export interface ProfileSectionProps {
  * @param props - Component props.
  * @returns The rendered profile card.
  */
-function ProfileSection({ user, title }: ProfileSectionProps): React.ReactElement {
+function ProfileSection({ user, title }: ProfileSectionProps): ReactElement {
     return (
         <Card>
             <CardHeader>

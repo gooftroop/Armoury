@@ -17,7 +17,7 @@
  */
 
 import { AlertDialog } from 'radix-ui';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 import { buttonVariants } from '@/components/ui/button.js';
@@ -25,42 +25,42 @@ import { buttonVariants } from '@/components/ui/button.js';
 /**
  * Props for the AlertDialogOverlay component.
  */
-export type AlertDialogOverlayProps = React.ComponentPropsWithRef<typeof AlertDialog.Overlay>;
+export type AlertDialogOverlayProps = ComponentPropsWithRef<typeof AlertDialog.Overlay>;
 
 /**
  * Props for the AlertDialogContent component.
  */
-export type AlertDialogContentProps = React.ComponentPropsWithRef<typeof AlertDialog.Content>;
+export type AlertDialogContentProps = ComponentPropsWithRef<typeof AlertDialog.Content>;
 
 /**
  * Props for the AlertDialogHeader component.
  */
-export type AlertDialogHeaderProps = React.ComponentPropsWithRef<'div'>;
+export type AlertDialogHeaderProps = ComponentPropsWithRef<'div'>;
 
 /**
  * Props for the AlertDialogFooter component.
  */
-export type AlertDialogFooterProps = React.ComponentPropsWithRef<'div'>;
+export type AlertDialogFooterProps = ComponentPropsWithRef<'div'>;
 
 /**
  * Props for the AlertDialogTitle component.
  */
-export type AlertDialogTitleProps = React.ComponentPropsWithRef<typeof AlertDialog.Title>;
+export type AlertDialogTitleProps = ComponentPropsWithRef<typeof AlertDialog.Title>;
 
 /**
  * Props for the AlertDialogDescription component.
  */
-export type AlertDialogDescriptionProps = React.ComponentPropsWithRef<typeof AlertDialog.Description>;
+export type AlertDialogDescriptionProps = ComponentPropsWithRef<typeof AlertDialog.Description>;
 
 /**
  * Props for the AlertDialogAction component.
  */
-export type AlertDialogActionProps = React.ComponentPropsWithRef<typeof AlertDialog.Action>;
+export type AlertDialogActionProps = ComponentPropsWithRef<typeof AlertDialog.Action>;
 
 /**
  * Props for the AlertDialogCancel component.
  */
-export type AlertDialogCancelProps = React.ComponentPropsWithRef<typeof AlertDialog.Cancel>;
+export type AlertDialogCancelProps = ComponentPropsWithRef<typeof AlertDialog.Cancel>;
 
 /**
  * AlertDialog component - the root alert dialog component.
@@ -83,7 +83,7 @@ const AlertDialogPortal = AlertDialog.Portal;
  * @param props - Component props including className and standard AlertDialog.Overlay attributes.
  * @returns The rendered AlertDialogOverlay component.
  */
-function AlertDialogOverlay({ className, ref, ...props }: AlertDialogOverlayProps): React.ReactElement {
+function AlertDialogOverlay({ className, ref, ...props }: AlertDialogOverlayProps): ReactElement {
     return (
         <AlertDialog.Overlay
             className={cn(
@@ -104,7 +104,7 @@ AlertDialogOverlay.displayName = 'AlertDialogOverlay';
  * @param props - Component props including className and standard AlertDialog.Content attributes.
  * @returns The rendered AlertDialogContent component.
  */
-function AlertDialogContent({ className, ref, ...props }: AlertDialogContentProps): React.ReactElement {
+function AlertDialogContent({ className, ref, ...props }: AlertDialogContentProps): ReactElement {
     return (
         <AlertDialogPortal>
             <AlertDialogOverlay />
@@ -128,7 +128,7 @@ AlertDialogContent.displayName = 'AlertDialogContent';
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered AlertDialogHeader component.
  */
-function AlertDialogHeader({ className, ref, ...props }: AlertDialogHeaderProps): React.ReactElement {
+function AlertDialogHeader({ className, ref, ...props }: AlertDialogHeaderProps): ReactElement {
     return <div className={cn('flex flex-col space-y-2 text-center sm:text-left', className)} ref={ref} {...props} />;
 }
 
@@ -140,7 +140,7 @@ AlertDialogHeader.displayName = 'AlertDialogHeader';
  * @param props - Component props including className and standard div attributes.
  * @returns The rendered AlertDialogFooter component.
  */
-function AlertDialogFooter({ className, ref, ...props }: AlertDialogFooterProps): React.ReactElement {
+function AlertDialogFooter({ className, ref, ...props }: AlertDialogFooterProps): ReactElement {
     return (
         <div
             className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
@@ -158,7 +158,7 @@ AlertDialogFooter.displayName = 'AlertDialogFooter';
  * @param props - Component props including className and standard AlertDialog.Title attributes.
  * @returns The rendered AlertDialogTitle component.
  */
-function AlertDialogTitle({ className, ref, ...props }: AlertDialogTitleProps): React.ReactElement {
+function AlertDialogTitle({ className, ref, ...props }: AlertDialogTitleProps): ReactElement {
     return <AlertDialog.Title className={cn('text-lg font-semibold', className)} ref={ref} {...props} />;
 }
 
@@ -170,7 +170,7 @@ AlertDialogTitle.displayName = 'AlertDialogTitle';
  * @param props - Component props including className and standard AlertDialog.Description attributes.
  * @returns The rendered AlertDialogDescription component.
  */
-function AlertDialogDescription({ className, ref, ...props }: AlertDialogDescriptionProps): React.ReactElement {
+function AlertDialogDescription({ className, ref, ...props }: AlertDialogDescriptionProps): ReactElement {
     return <AlertDialog.Description className={cn('text-sm text-muted-foreground', className)} ref={ref} {...props} />;
 }
 
@@ -182,7 +182,7 @@ AlertDialogDescription.displayName = 'AlertDialogDescription';
  * @param props - Component props including className and standard AlertDialog.Action attributes.
  * @returns The rendered AlertDialogAction component.
  */
-function AlertDialogAction({ className, ref, ...props }: AlertDialogActionProps): React.ReactElement {
+function AlertDialogAction({ className, ref, ...props }: AlertDialogActionProps): ReactElement {
     return <AlertDialog.Action className={cn(buttonVariants(), className)} ref={ref} {...props} />;
 }
 
@@ -194,7 +194,7 @@ AlertDialogAction.displayName = 'AlertDialogAction';
  * @param props - Component props including className and standard AlertDialog.Cancel attributes.
  * @returns The rendered AlertDialogCancel component.
  */
-function AlertDialogCancel({ className, ref, ...props }: AlertDialogCancelProps): React.ReactElement {
+function AlertDialogCancel({ className, ref, ...props }: AlertDialogCancelProps): ReactElement {
     return (
         <AlertDialog.Cancel
             className={cn(buttonVariants({ variant: 'outline' }), 'mt-2 sm:mt-0', className)}

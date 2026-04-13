@@ -7,11 +7,12 @@
  * 3. Must be collapsible.
  */
 
-import * as React from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Swords, BookOpen, Flag, Users, Library, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Swords, BookOpen, Flag, Users, Library, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Toggle } from 'radix-ui';
 import { cn } from '@/lib/utils.js';
 import { SideNavUserTile } from '@/components/navigation/SideNavUserTile.js';
 
@@ -22,8 +23,6 @@ export interface SideNavProps {
     userName?: string;
     /** URL to the user's profile picture. */
     userPicture?: string;
-    /** User plan label (e.g. "Free Plan", "Pro"). Defaults to empty string when absent. */
-    userPlan?: string;
 }
 
 const NAV_ITEMS = [
@@ -40,10 +39,10 @@ const NAV_ITEMS = [
  * @param props - Component props
  * @returns The SideNav component
  */
-export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _userPicture, userPlan }: SideNavProps) {
+export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _userPicture }: SideNavProps) {
     const t = useTranslations('nav');
     const pathname = usePathname();
-    const [collapsed, setCollapsed] = React.useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
     const basePath = `/${gameSystem}`;
 
@@ -58,21 +57,30 @@ export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _u
                 {!collapsed && (
                     <Link
                         href="/"
-                        className="font-display text-lg font-bold tracking-wider text-primary truncate"
+                        className="flex items-center gap-2 font-display text-lg font-bold tracking-wider text-primary truncate"
                         title={t('switchSystem')}
                     >
+                        <ArrowLeft className="h-4 w-4 shrink-0" />
                         ARMOURY
                     </Link>
                 )}
                 {collapsed && (
                     <Link
                         href="/"
-                        className="mx-auto font-display text-lg font-bold tracking-wider text-primary"
+                        className="font-display text-lg font-bold tracking-wider text-primary"
                         title={t('switchSystem')}
                     >
                         A
                     </Link>
                 )}
+                <Toggle.Root
+                    pressed={collapsed}
+                    onPressedChange={setCollapsed}
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-secondary hover:bg-hover hover:text-primary"
+                    aria-label={collapsed ? t('expand') : t('collapse')}
+                >
+                    {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+                </Toggle.Root>
             </div>
 
             <nav className="flex flex-1 flex-col gap-1 px-2 py-4">
@@ -115,15 +123,7 @@ export function SideNav({ locale: _locale, gameSystem, userName, userPicture: _u
             </nav>
 
             <div className="flex flex-col gap-2 p-2">
-                <button
-                    type="button"
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="flex h-10 w-full items-center justify-center rounded-md text-secondary hover:bg-hover hover:text-primary"
-                    title={collapsed ? t('expand') : t('collapse')}
-                >
-                    {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-                </button>
-                <SideNavUserTile userName={userName ?? ''} userPlan={userPlan ?? ''} collapsed={collapsed} />
+                <SideNavUserTile userName={userName ?? ''} collapsed={collapsed} />
             </div>
         </aside>
     );

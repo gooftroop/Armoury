@@ -15,7 +15,7 @@
  * @module system-tile
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import Link from 'next/link';
 import { Download, Loader2, AlertCircle, Check } from 'lucide-react';
@@ -65,7 +65,7 @@ function SystemTile({
     syncProgress,
     href,
     onClick,
-}: SystemTileProps): React.ReactElement {
+}: SystemTileProps): ReactElement {
     const card = (
         <div
             className={cn(

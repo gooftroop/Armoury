@@ -17,7 +17,8 @@
  * 8. Must not use default exports.
  */
 
-import * as React from 'react';
+import { useState, useCallback } from 'react';
+import type { ReactElement } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
@@ -75,12 +76,12 @@ const ALL_VALUE = '__all__';
  * @param props - Component props including current filters, onChange callback, and available faction IDs.
  * @returns The rendered filter panel.
  */
-function ArmyFilterPanel({ filters, onChange, factionIds }: ArmyFilterPanelProps): React.ReactElement {
+function ArmyFilterPanel({ filters, onChange, factionIds }: ArmyFilterPanelProps): ReactElement {
     const t = useTranslations('forge.filters');
-    const [expanded, setExpanded] = React.useState(false);
+    const [expanded, setExpanded] = useState(false);
 
     /** Updates a single filter key while preserving the rest. */
-    const updateFilter = React.useCallback(
+    const updateFilter = useCallback(
         <K extends keyof ForgeFilters>(key: K, value: ForgeFilters[K]) => {
             onChange({ ...filters, [key]: value });
         },
@@ -88,7 +89,7 @@ function ArmyFilterPanel({ filters, onChange, factionIds }: ArmyFilterPanelProps
     );
 
     /** Resets all filters to defaults. */
-    const handleClear = React.useCallback(() => {
+    const handleClear = useCallback(() => {
         onChange(DEFAULT_FORGE_FILTERS);
     }, [onChange]);
 

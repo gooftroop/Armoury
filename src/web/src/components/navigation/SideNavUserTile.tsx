@@ -20,8 +20,6 @@ import { cn } from '@/lib/utils.js';
 export interface SideNavUserTileProps {
     /** User display name — shown next to the avatar when expanded. */
     userName: string;
-    /** Subscription tier label (e.g. "Free Plan", "Pro"). */
-    userPlan: string;
     /** Whether the sidebar is in its collapsed (icon-only) state. */
     collapsed: boolean;
 }
@@ -32,7 +30,7 @@ export interface SideNavUserTileProps {
  * @param props - User identity display props.
  * @returns The user tile element.
  */
-export function SideNavUserTile({ userName, userPlan, collapsed }: SideNavUserTileProps): React.ReactElement {
+export function SideNavUserTile({ userName, collapsed }: SideNavUserTileProps): React.ReactElement {
     return (
         <div
             className={cn('flex items-center rounded-md p-2', collapsed ? 'justify-center' : 'gap-3 px-3')}
@@ -42,12 +40,7 @@ export function SideNavUserTile({ userName, userPlan, collapsed }: SideNavUserTi
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-border">
                 <span className="text-xs font-medium">{getInitials(userName)}</span>
             </div>
-            {!collapsed && (
-                <div className="flex flex-col overflow-hidden">
-                    <span className="truncate text-sm font-medium leading-tight text-primary">{userName}</span>
-                    <span className="truncate text-xs text-tertiary">{userPlan}</span>
-                </div>
-            )}
+            {!collapsed && <span className="truncate text-sm font-medium leading-tight text-primary">{userName}</span>}
         </div>
     );
 }

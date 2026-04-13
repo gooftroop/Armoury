@@ -15,7 +15,7 @@
  * 6. Must not use default exports.
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { Swords, Copy, Trash2 } from 'lucide-react';
@@ -45,7 +45,7 @@ export interface ArmyCardActionsProps {
  * @param props - Component props including onDeploy, onDuplicate, and onDelete callbacks.
  * @returns The rendered action buttons.
  */
-function ArmyCardActions({ onDeploy, onDuplicate, onDelete }: ArmyCardActionsProps): React.ReactElement {
+function ArmyCardActions({ onDeploy, onDuplicate, onDelete }: ArmyCardActionsProps): ReactElement {
     const t = useTranslations('forge.actions');
 
     return (

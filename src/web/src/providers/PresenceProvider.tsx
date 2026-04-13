@@ -1,6 +1,7 @@
 'use client';
 
-import * as React from 'react';
+import { useState, useEffect, useMemo, createContext, useContext } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { getAccessToken } from '@auth0/nextjs-auth0/client';
 import * as Sentry from '@sentry/nextjs';
 import type { ConnectionState, WebSocketErrorEvent } from '@armoury/clients-friends';
@@ -56,7 +57,7 @@ export interface PresenceContextValue {
  */
 export interface PresenceProviderProps {
     /** Provider children. */
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
 /**
@@ -72,7 +73,7 @@ const defaultPresenceContextValue: PresenceContextValue = {
 /**
  * React context for presence streams and connection state.
  */
-const PresenceContext = React.createContext<PresenceContextValue | undefined>(undefined);
+const PresenceContext = createContext<PresenceContextValue | undefined>(undefined);
 
 /**
  * Presence provider that binds the WebSocket lifecycle to client auth availability.
@@ -80,13 +81,11 @@ const PresenceContext = React.createContext<PresenceContextValue | undefined>(un
  * @param props - Component props.
  * @returns Provider-wrapped children.
  */
-export function PresenceProvider({ children }: PresenceProviderProps): React.ReactElement {
-    const [connectionState, setConnectionState] = React.useState<ConnectionState>('disconnected');
-    const [onlineFriends$, setOnlineFriends$] = React.useState<Observable<ReadonlyMap<string, OnlineFriend>> | null>(
-        null,
-    );
-    const [onlineCount$, setOnlineCount$] = React.useState<Observable<number> | null>(null);
-    const [isOnline$, setIsOnline$] = React.useState<((userId: string) => Observable<boolean>) | null>(null);
+export function PresenceProvider({ children }: PresenceProviderProps): ReactElement {
+    const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected');
+    const [onlineFriends$, setOnlineFriends$] = useState<Observable<ReadonlyMap<string, OnlineFriend>> | null>(null);
+    const [onlineCount$, setOnlineCount$] = useState<Observable<number> | null>(null);
+    const [isOnline$, setIsOnline$] = useState<((userId: string) => Observable<boolean>) | null>(null);
 
     /**
      * Initialize the presence WebSocket on mount.
@@ -97,7 +96,7 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
      * authenticated session without needing `user` in the dependency array.
      * Adding reactive auth state here would cause unnecessary reconnections.
      */
-    React.useEffect(() => {
+    useEffect(() => {
         let isMounted = true;
         let connectionStateSubscription: Subscription | null = null;
         let errorsSubscription: Subscription | null = null;
@@ -162,7 +161,7 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
         };
     }, []);
 
-    const value = React.useMemo<PresenceContextValue>(
+    const value = useMemo<PresenceContextValue>(
         () => ({
             ...defaultPresenceContextValue,
             connectionState,
@@ -182,7 +181,7 @@ export function PresenceProvider({ children }: PresenceProviderProps): React.Rea
  * @returns Presence connection and observable stream handles.
  */
 export function usePresence(): PresenceContextValue {
-    const context = React.useContext(PresenceContext);
+    const context = useContext(PresenceContext);
 
     if (context === undefined) {
         throw new Error('usePresence must be used within a PresenceProvider');

@@ -18,7 +18,7 @@
 import { Toast as ToastPrimitive } from 'radix-ui';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithoutRef, Ref } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
@@ -44,27 +44,27 @@ const toastVariants = cva(
  * Props for the Toast component.
  */
 export interface ToastProps
-    extends React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root>, VariantProps<typeof toastVariants> {}
+    extends ComponentPropsWithoutRef<typeof ToastPrimitive.Root>, VariantProps<typeof toastVariants> {}
 
 /**
  * Props for the ToastAction component.
  */
-export type ToastActionProps = React.ComponentPropsWithoutRef<typeof ToastPrimitive.Action>;
+export type ToastActionProps = ComponentPropsWithoutRef<typeof ToastPrimitive.Action>;
 
 /**
  * Props for the ToastClose component.
  */
-export type ToastCloseProps = React.ComponentPropsWithoutRef<typeof ToastPrimitive.Close>;
+export type ToastCloseProps = ComponentPropsWithoutRef<typeof ToastPrimitive.Close>;
 
 /**
  * Props for the ToastTitle component.
  */
-export type ToastTitleProps = React.ComponentPropsWithoutRef<typeof ToastPrimitive.Title>;
+export type ToastTitleProps = ComponentPropsWithoutRef<typeof ToastPrimitive.Title>;
 
 /**
  * Props for the ToastDescription component.
  */
-export type ToastDescriptionProps = React.ComponentPropsWithoutRef<typeof ToastPrimitive.Description>;
+export type ToastDescriptionProps = ComponentPropsWithoutRef<typeof ToastPrimitive.Description>;
 
 /**
  * ToastProvider component - provides toast context.
@@ -82,9 +82,9 @@ function ToastViewport({
     className,
     ref,
     ...props
-}: React.ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport> & {
-    ref?: React.Ref<HTMLOListElement>;
-}): React.ReactElement {
+}: ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport> & {
+    ref?: Ref<HTMLOListElement>;
+}): ReactElement {
     return (
         <ToastPrimitive.Viewport
             className={cn(
@@ -106,12 +106,7 @@ ToastViewport.displayName = 'ToastViewport';
  * @param ref - Forwarded ref to the li element.
  * @returns The rendered Toast component.
  */
-function Toast({
-    className,
-    variant,
-    ref,
-    ...props
-}: ToastProps & { ref?: React.Ref<HTMLLIElement> }): React.ReactElement {
+function Toast({ className, variant, ref, ...props }: ToastProps & { ref?: Ref<HTMLLIElement> }): ReactElement {
     return <ToastPrimitive.Root className={cn(toastVariants({ variant }), className)} ref={ref} {...props} />;
 }
 
@@ -124,11 +119,7 @@ Toast.displayName = 'Toast';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered ToastAction component.
  */
-function ToastAction({
-    className,
-    ref,
-    ...props
-}: ToastActionProps & { ref?: React.Ref<HTMLButtonElement> }): React.ReactElement {
+function ToastAction({ className, ref, ...props }: ToastActionProps & { ref?: Ref<HTMLButtonElement> }): ReactElement {
     return (
         <ToastPrimitive.Action
             className={cn(
@@ -150,11 +141,7 @@ ToastAction.displayName = 'ToastAction';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered ToastClose component.
  */
-function ToastClose({
-    className,
-    ref,
-    ...props
-}: ToastCloseProps & { ref?: React.Ref<HTMLButtonElement> }): React.ReactElement {
+function ToastClose({ className, ref, ...props }: ToastCloseProps & { ref?: Ref<HTMLButtonElement> }): ReactElement {
     return (
         <ToastPrimitive.Close
             className={cn(
@@ -179,11 +166,7 @@ ToastClose.displayName = 'ToastClose';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered ToastTitle component.
  */
-function ToastTitle({
-    className,
-    ref,
-    ...props
-}: ToastTitleProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+function ToastTitle({ className, ref, ...props }: ToastTitleProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <ToastPrimitive.Title className={cn('text-sm font-semibold [&+div]:text-xs', className)} ref={ref} {...props} />
     );
@@ -202,7 +185,7 @@ function ToastDescription({
     className,
     ref,
     ...props
-}: ToastDescriptionProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: ToastDescriptionProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return <ToastPrimitive.Description className={cn('text-sm opacity-90', className)} ref={ref} {...props} />;
 }
 

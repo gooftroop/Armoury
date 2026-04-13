@@ -10,7 +10,7 @@
  * @module ProfileTileSkeleton
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import { Card, CardContent } from '@/components/ui/index.js';
 import { Skeleton } from '@/components/ui/skeleton.js';
@@ -31,7 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton.js';
  *
  * @returns The rendered skeleton card element.
  */
-export function ProfileTileSkeleton(): React.ReactElement {
+export function ProfileTileSkeleton(): ReactElement {
     return (
         <Card className="border-border/40 bg-surface/60" aria-label="Loading profile" role="status">
             <CardContent className="flex items-center gap-4 px-4 py-2">

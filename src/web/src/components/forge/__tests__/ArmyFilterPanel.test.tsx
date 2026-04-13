@@ -9,7 +9,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as React from 'react';
+import { createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
 
 import { ArmyFilterPanel, DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.js';
 
@@ -19,26 +20,22 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/components/ui/index.js', () => ({
     ...(() => {
-        const SelectContext = React.createContext<(value: string) => void>(() => {});
+        const SelectContext = createContext<(value: string) => void>(() => {});
 
         return {
-            Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
+            Button: ({ children, onClick }: { children: ReactNode; onClick?: () => void }) => (
                 <button onClick={onClick} type="button">
                     {children}
                 </button>
             ),
-            Select: ({
-                children,
-                onValueChange,
-            }: {
-                children: React.ReactNode;
-                onValueChange?: (value: string) => void;
-            }) => <SelectContext.Provider value={onValueChange ?? (() => {})}>{children}</SelectContext.Provider>,
-            SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+            Select: ({ children, onValueChange }: { children: ReactNode; onValueChange?: (value: string) => void }) => (
+                <SelectContext.Provider value={onValueChange ?? (() => {})}>{children}</SelectContext.Provider>
+            ),
+            SelectTrigger: ({ children }: { children: ReactNode }) => <div>{children}</div>,
             SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
-            SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-            SelectItem: ({ value, children }: { value: string; children: React.ReactNode }) => {
-                const onValueChange = React.useContext(SelectContext);
+            SelectContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+            SelectItem: ({ value, children }: { value: string; children: ReactNode }) => {
+                const onValueChange = useContext(SelectContext);
 
                 return (
                     <button data-value={value} onClick={() => onValueChange(value)} type="button">

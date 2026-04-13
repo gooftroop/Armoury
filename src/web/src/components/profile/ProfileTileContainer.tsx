@@ -17,7 +17,7 @@
 
 import { useUser } from '@auth0/nextjs-auth0';
 import { useTranslations } from 'next-intl';
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import { AuthenticatedProfile } from '@/components/profile/AuthenticatedProfile.js';
 import { ProfileTileSkeleton } from '@/components/profile/ProfileTileSkeleton.js';
@@ -51,7 +51,7 @@ export interface ProfileTileContainerProps {
  * @param props - Container props with locale.
  * @returns The rendered profile tile (skeleton, authenticated, or unauthenticated).
  */
-export function ProfileTileContainer({ locale }: ProfileTileContainerProps): React.ReactElement {
+export function ProfileTileContainer({ locale }: ProfileTileContainerProps): ReactElement {
     const { user, error, isLoading } = useUser();
     const t = useTranslations('landing');
 

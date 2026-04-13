@@ -19,65 +19,65 @@
 
 import { DropdownMenu } from 'radix-ui';
 import { Check, ChevronRight, Circle } from 'lucide-react';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithoutRef, HTMLAttributes, Ref } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the DropdownMenuTrigger component.
  */
-export type DropdownMenuTriggerProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.Trigger>;
+export type DropdownMenuTriggerProps = ComponentPropsWithoutRef<typeof DropdownMenu.Trigger>;
 
 /**
  * Props for the DropdownMenuContent component.
  */
-export type DropdownMenuContentProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.Content>;
+export type DropdownMenuContentProps = ComponentPropsWithoutRef<typeof DropdownMenu.Content>;
 
 /**
  * Props for the DropdownMenuItem component.
  */
-export type DropdownMenuItemProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.Item> & {
+export type DropdownMenuItemProps = ComponentPropsWithoutRef<typeof DropdownMenu.Item> & {
     inset?: boolean;
 };
 
 /**
  * Props for the DropdownMenuCheckboxItem component.
  */
-export type DropdownMenuCheckboxItemProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.CheckboxItem>;
+export type DropdownMenuCheckboxItemProps = ComponentPropsWithoutRef<typeof DropdownMenu.CheckboxItem>;
 
 /**
  * Props for the DropdownMenuRadioItem component.
  */
-export type DropdownMenuRadioItemProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.RadioItem>;
+export type DropdownMenuRadioItemProps = ComponentPropsWithoutRef<typeof DropdownMenu.RadioItem>;
 
 /**
  * Props for the DropdownMenuLabel component.
  */
-export type DropdownMenuLabelProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.Label> & {
+export type DropdownMenuLabelProps = ComponentPropsWithoutRef<typeof DropdownMenu.Label> & {
     inset?: boolean;
 };
 
 /**
  * Props for the DropdownMenuSeparator component.
  */
-export type DropdownMenuSeparatorProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.Separator>;
+export type DropdownMenuSeparatorProps = ComponentPropsWithoutRef<typeof DropdownMenu.Separator>;
 
 /**
  * Props for the DropdownMenuShortcut component.
  */
-export type DropdownMenuShortcutProps = React.HTMLAttributes<HTMLSpanElement>;
+export type DropdownMenuShortcutProps = HTMLAttributes<HTMLSpanElement>;
 
 /**
  * Props for the DropdownMenuSubTrigger component.
  */
-export type DropdownMenuSubTriggerProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & {
+export type DropdownMenuSubTriggerProps = ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & {
     inset?: boolean;
 };
 
 /**
  * Props for the DropdownMenuSubContent component.
  */
-export type DropdownMenuSubContentProps = React.ComponentPropsWithoutRef<typeof DropdownMenu.SubContent>;
+export type DropdownMenuSubContentProps = ComponentPropsWithoutRef<typeof DropdownMenu.SubContent>;
 
 /**
  * DropdownMenu component - the root dropdown menu component.
@@ -122,7 +122,7 @@ function DropdownMenuSubTrigger({
     children,
     ref,
     ...props
-}: DropdownMenuSubTriggerProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuSubTriggerProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <DropdownMenu.SubTrigger
             className={cn(
@@ -152,7 +152,7 @@ function DropdownMenuSubContent({
     className,
     ref,
     ...props
-}: DropdownMenuSubContentProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuSubContentProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <DropdownMenu.Portal>
             <DropdownMenu.SubContent
@@ -181,7 +181,7 @@ function DropdownMenuContent({
     sideOffset = 4,
     ref,
     ...props
-}: DropdownMenuContentProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuContentProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <DropdownMenu.Portal>
             <DropdownMenu.Content
@@ -211,7 +211,7 @@ function DropdownMenuItem({
     inset,
     ref,
     ...props
-}: DropdownMenuItemProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuItemProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <DropdownMenu.Item
             className={cn(
@@ -240,7 +240,7 @@ function DropdownMenuCheckboxItem({
     checked,
     ref,
     ...props
-}: DropdownMenuCheckboxItemProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuCheckboxItemProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <DropdownMenu.CheckboxItem
             checked={checked}
@@ -275,7 +275,7 @@ function DropdownMenuRadioItem({
     children,
     ref,
     ...props
-}: DropdownMenuRadioItemProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuRadioItemProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <DropdownMenu.RadioItem
             className={cn(
@@ -309,7 +309,7 @@ function DropdownMenuLabel({
     inset,
     ref,
     ...props
-}: DropdownMenuLabelProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuLabelProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return (
         <DropdownMenu.Label
             className={cn('px-2 py-1.5 text-sm font-semibold', inset && 'pl-8', className)}
@@ -332,7 +332,7 @@ function DropdownMenuSeparator({
     className,
     ref,
     ...props
-}: DropdownMenuSeparatorProps & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement {
+}: DropdownMenuSeparatorProps & { ref?: Ref<HTMLDivElement> }): ReactElement {
     return <DropdownMenu.Separator className={cn('-mx-1 my-1 h-px bg-muted', className)} ref={ref} {...props} />;
 }
 
@@ -349,7 +349,7 @@ function DropdownMenuShortcut({
     className,
     ref,
     ...props
-}: DropdownMenuShortcutProps & { ref?: React.Ref<HTMLSpanElement> }): React.ReactElement {
+}: DropdownMenuShortcutProps & { ref?: Ref<HTMLSpanElement> }): ReactElement {
     return <span className={cn('ml-auto text-xs tracking-widest opacity-60', className)} ref={ref} {...props} />;
 }
 

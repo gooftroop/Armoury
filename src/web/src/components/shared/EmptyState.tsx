@@ -14,16 +14,16 @@
  * 5. Must display displayName in React DevTools.
  */
 
-import * as React from 'react';
+import type { ReactElement, ReactNode, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the EmptyState component.
  */
-export interface EmptyStateProps extends React.ComponentPropsWithRef<'div'> {
+export interface EmptyStateProps extends ComponentPropsWithRef<'div'> {
     /** Optional icon element rendered above the title. */
-    icon?: React.ReactNode;
+    icon?: ReactNode;
 
     /** Title text displayed prominently in the empty state. */
     title: string;
@@ -32,7 +32,7 @@ export interface EmptyStateProps extends React.ComponentPropsWithRef<'div'> {
     description?: string;
 
     /** Optional action element (typically a Button) rendered below the description. */
-    action?: React.ReactNode;
+    action?: ReactNode;
 }
 
 /**
@@ -44,15 +44,7 @@ export interface EmptyStateProps extends React.ComponentPropsWithRef<'div'> {
  * @param props - Component props including icon, title, description, action, className, and standard div attributes.
  * @returns The rendered EmptyState component.
  */
-function EmptyState({
-    className,
-    icon,
-    title,
-    description,
-    action,
-    ref,
-    ...props
-}: EmptyStateProps): React.ReactElement {
+function EmptyState({ className, icon, title, description, action, ref, ...props }: EmptyStateProps): ReactElement {
     return (
         <div
             className={cn(

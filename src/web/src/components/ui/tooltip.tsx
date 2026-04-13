@@ -15,19 +15,19 @@
  */
 
 import { Tooltip as TooltipPrimitive } from 'radix-ui';
-import * as React from 'react';
+import type { ReactElement, ComponentPropsWithRef } from 'react';
 
 import { cn } from '@/lib/utils.js';
 
 /**
  * Props for the TooltipTrigger component.
  */
-export type TooltipTriggerProps = React.ComponentPropsWithRef<typeof TooltipPrimitive.Trigger>;
+export type TooltipTriggerProps = ComponentPropsWithRef<typeof TooltipPrimitive.Trigger>;
 
 /**
  * Props for the TooltipContent component.
  */
-export interface TooltipContentProps extends React.ComponentPropsWithRef<typeof TooltipPrimitive.Content> {
+export interface TooltipContentProps extends ComponentPropsWithRef<typeof TooltipPrimitive.Content> {
     /**
      * The preferred side of the trigger to render against.
      */
@@ -51,7 +51,7 @@ const Tooltip = TooltipPrimitive.Root;
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered TooltipTrigger component.
  */
-function TooltipTrigger({ ref, ...props }: TooltipTriggerProps): React.ReactElement {
+function TooltipTrigger({ ref, ...props }: TooltipTriggerProps): ReactElement {
     return <TooltipPrimitive.Trigger ref={ref} {...props} />;
 }
 
@@ -64,7 +64,7 @@ TooltipTrigger.displayName = 'TooltipTrigger';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered TooltipContent component.
  */
-function TooltipContent({ className, sideOffset = 4, ref, ...props }: TooltipContentProps): React.ReactElement {
+function TooltipContent({ className, sideOffset = 4, ref, ...props }: TooltipContentProps): ReactElement {
     return (
         <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content

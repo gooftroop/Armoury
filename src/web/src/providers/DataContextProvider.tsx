@@ -22,7 +22,8 @@
  * @module DataContextProvider
  */
 
-import * as React from 'react';
+import { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import { createContainerWithModules, coreModule, TOKENS } from '@armoury/di';
 import { webModule } from '@armoury/di/web';
@@ -90,13 +91,13 @@ export interface DataContextValue {
 /**
  * React context for accessing the DataContext and sync state.
  */
-const DataContextReactContext = React.createContext<DataContextValue | undefined>(undefined);
+const DataContextReactContext = createContext<DataContextValue | undefined>(undefined);
 /**
  * Props for the DataContextProvider component.
  */
 export interface DataContextProviderProps {
     /** Child components that can access the DataContext via useDataContext(). */
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
 /**
@@ -109,19 +110,19 @@ export interface DataContextProviderProps {
  * @param props - Component props.
  * @returns The provider-wrapped React tree.
  */
-export function DataContextProvider({ children }: DataContextProviderProps): React.ReactElement {
-    const [dataContext, setDataContext] = React.useState<DataContext | null>(null);
-    const [status, setStatus] = React.useState<DataContextStatus>('idle');
-    const [error, setError] = React.useState<string | undefined>();
-    const [systemSyncStates, setSystemSyncStates] = React.useState<Record<string, SystemSyncState>>({});
-    const [syncProgressCollector, setSyncProgressCollector] = React.useState<SyncProgressCollector | null>(null);
+export function DataContextProvider({ children }: DataContextProviderProps): ReactElement {
+    const [dataContext, setDataContext] = useState<DataContext | null>(null);
+    const [status, setStatus] = useState<DataContextStatus>('idle');
+    const [error, setError] = useState<string | undefined>();
+    const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>({});
+    const [syncProgressCollector, setSyncProgressCollector] = useState<SyncProgressCollector | null>(null);
 
     /**
      * Enables a game system by building a DataContext and syncing its data.
      *
      * @param system - The GameSystem descriptor to enable.
      */
-    const enableSystem = React.useCallback(async (system: GameSystem): Promise<void> => {
+    const enableSystem = useCallback(async (system: GameSystem): Promise<void> => {
         // Diagnostic logging — traces each sync phase with wall-clock timestamps
         // so CI logs reveal where the flow stalls. Remove once root cause is fixed.
         const t0 = Date.now();
@@ -263,7 +264,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
      *
      * @param systemId - The ID of the system to disable.
      */
-    const disableSystem = React.useCallback(
+    const disableSystem = useCallback(
         async (systemId: string): Promise<void> => {
             if (dataContext) {
                 await dataContext.close();
@@ -285,14 +286,14 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     /**
      * Cleanup on unmount: close the DataContext to release PGlite connections.
      */
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             if (dataContext) {
                 void dataContext.close();
             }
         };
     }, [dataContext]);
-    const value = React.useMemo<DataContextValue>(
+    const value = useMemo<DataContextValue>(
         () => ({
             dataContext,
             status,
@@ -315,7 +316,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
  * @throws Error if used outside of a DataContextProvider.
  */
 export function useDataContext(): DataContextValue {
-    const context = React.useContext(DataContextReactContext);
+    const context = useContext(DataContextReactContext);
 
     if (context === undefined) {
         throw new Error('useDataContext must be used within a DataContextProvider');

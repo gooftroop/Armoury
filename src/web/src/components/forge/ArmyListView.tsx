@@ -20,11 +20,11 @@
  * 10. Must not use default exports.
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Shield } from 'lucide-react';
+import { Shield, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/index.js';
 import { EmptyState, ArmyCardSkeleton } from '@/components/shared/index.js';
@@ -87,7 +87,7 @@ function ArmyListView({
     onDeploy,
     onDuplicate,
     onDelete,
-}: ArmyListViewProps): React.ReactElement {
+}: ArmyListViewProps): ReactElement {
     const t = useTranslations('forge');
 
     return (
@@ -99,7 +99,10 @@ function ArmyListView({
                     <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
                 </div>
                 <Link href="./armies/new">
-                    <Button variant="primary">{t('actions.createArmy')}</Button>
+                    <Button variant="primary">
+                        <Plus />
+                        {t('actions.createArmy')}
+                    </Button>
                 </Link>
             </div>
 
