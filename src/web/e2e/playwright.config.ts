@@ -26,8 +26,15 @@ const ROOT_DIR = resolve(CONFIG_DIR, '../../..');
 /** Absolute path to the authenticated user's storage state file. */
 const AUTH_STATE_PATH = resolve(CONFIG_DIR, '.auth', 'user.json');
 
-const AUTH0_SECRET = process.env['AUTH0_SECRET'] || 'e2e-test-secret';
-const hasAuth0 = Boolean(AUTH0_SECRET);
+/**
+ * hasAuth0 checks raw env vars (no fallback) — when any are missing (CI without
+ * configured secrets), authenticated Playwright projects are skipped to avoid
+ * AggregateError from Auth0 handshake failures.
+ */
+const hasAuth0 =
+    Boolean(process.env['AUTH0_SECRET']) &&
+    Boolean(process.env['AUTH0_CLIENT_ID']) &&
+    Boolean(process.env['AUTH0_CLIENT_SECRET']);
 
 /** Whether we are running in a CI environment. */
 const isCI = Boolean(process.env['CI']);
