@@ -36,82 +36,69 @@ import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ContainerModule } from 'inversify';
 
-const SYNCED_SYSTEMS_KEY = 'armoury:synced-systems';
+/**
+ * Known file_key prefixes mapped to their owning game system ID.
+ *
+ * The sync_status table stores file-level keys (e.g. 'core:wh40k-10e.gst',
+ * 'factionModel:Adeptus Astartes'). This map lets us derive which system a
+ * file belongs to without the full DataContext.
+ *
+ * @see BSDataBaseDAO.getSyncFileKey for how DAOs build file keys.
+ */
+const FILE_KEY_TO_SYSTEM: Record<string, string> = {
+    'core:wh40k-10e': 'wh40k-10e',
+    'factionModel:': 'wh40k-10e',
+};
 
 /**
- * Reads the set of previously synced system IDs from localStorage.
- * Returns an empty array if localStorage is unavailable or the value is corrupt.
+ * Derives system IDs from sync_status file_key values.
+ *
+ * @param fileKeys - Array of file_key strings from the sync_status table.
+ * @returns Unique set of system IDs that have at least one synced file.
  */
-function readSyncedSystems(): string[] {
+function deriveSystemIds(fileKeys: string[]): string[] {
+    const systemIds = new Set<string>();
+
+    for (const key of fileKeys) {
+        for (const [prefix, systemId] of Object.entries(FILE_KEY_TO_SYSTEM)) {
+            if (key.startsWith(prefix)) {
+                systemIds.add(systemId);
+                break;
+            }
+        }
+    }
+
+    return [...systemIds];
+}
+
+/**
+ * Probes the PGlite IndexedDB database to discover which game systems
+ * have previously synced data. Opens a lightweight connection, queries
+ * the sync_status table, then closes immediately.
+ *
+ * Runs in a useEffect (after first render) so it does NOT block rendering.
+ * Returns an empty array if the database doesn't exist yet or the query fails.
+ *
+ * @returns Array of system IDs that have synced data in IndexedDB.
+ */
+async function probeSyncedSystems(): Promise<string[]> {
     try {
-        const raw = localStorage.getItem(SYNCED_SYSTEMS_KEY);
+        const { PGliteAdapter } = await import('@armoury/adapters-pglite');
+        const probe = new PGliteAdapter({ dataDir: 'idb://armoury' });
+        await probe.initialize();
 
-        if (!raw) {
-            return [];
+        try {
+            const result = await probe.rawQuery<{ file_key: string }>('SELECT DISTINCT file_key FROM sync_status');
+            const fileKeys = result.rows.map((r) => r.file_key);
+
+            return deriveSystemIds(fileKeys);
+        } finally {
+            await probe.close();
         }
-
-        const parsed: unknown = JSON.parse(raw);
-
-        if (!Array.isArray(parsed)) {
-            return [];
-        }
-
-        return parsed.filter((v): v is string => typeof v === 'string');
     } catch {
+        // Database doesn't exist yet or query failed — no synced systems
         return [];
     }
-}
-
-/**
- * Persists a system ID as synced in localStorage.
- * Silently swallows errors (e.g. quota exceeded, SSR).
- */
-function persistSyncedSystem(systemId: string): void {
-    try {
-        const current = readSyncedSystems();
-
-        if (!current.includes(systemId)) {
-            current.push(systemId);
-        }
-
-        localStorage.setItem(SYNCED_SYSTEMS_KEY, JSON.stringify(current));
-    } catch {
-        // localStorage unavailable or full — non-critical
-    }
-}
-
-/**
- * Removes a system ID from the synced set in localStorage.
- * Silently swallows errors.
- */
-function removeSyncedSystem(systemId: string): void {
-    try {
-        const current = readSyncedSystems().filter((id) => id !== systemId);
-
-        if (current.length === 0) {
-            localStorage.removeItem(SYNCED_SYSTEMS_KEY);
-        } else {
-            localStorage.setItem(SYNCED_SYSTEMS_KEY, JSON.stringify(current));
-        }
-    } catch {
-        // localStorage unavailable — non-critical
-    }
-}
-
-/**
- * Builds the initial systemSyncStates from localStorage.
- * Systems that were previously synced start as 'synced' so the landing
- * page tiles show the correct state without re-downloading.
- */
-function buildInitialSyncStates(): Record<string, SystemSyncState> {
-    const systemIds = readSyncedSystems();
-    const states: Record<string, SystemSyncState> = {};
-
-    for (const id of systemIds) {
-        states[id] = { status: 'synced' };
-    }
-
-    return states;
 }
 
 /**
@@ -192,8 +179,32 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const [dataContext, setDataContext] = useState<DataContext | null>(null);
     const [status, setStatus] = useState<DataContextStatus>('idle');
     const [error, setError] = useState<string | undefined>();
-    const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>(buildInitialSyncStates);
+    const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>({});
     const [syncProgressCollector, setSyncProgressCollector] = useState<SyncProgressCollector | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        void probeSyncedSystems().then((systemIds) => {
+            if (cancelled) {
+                return;
+            }
+
+            if (systemIds.length > 0) {
+                const restored: Record<string, SystemSyncState> = {};
+
+                for (const id of systemIds) {
+                    restored[id] = { status: 'synced' };
+                }
+
+                setSystemSyncStates(restored);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     /**
      * Enables a game system by building a DataContext and syncing its data.
@@ -324,7 +335,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 ...prev,
                 [system.id]: { status: 'synced' },
             }));
-            persistSyncedSystem(system.id);
             log('enableSystem complete');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to initialize DataContext';
@@ -359,7 +369,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
 
                 return next;
             });
-            removeSyncedSystem(systemId);
         },
         [dataContext],
     );
