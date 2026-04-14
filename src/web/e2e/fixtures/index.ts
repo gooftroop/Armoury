@@ -59,7 +59,16 @@ export const test = base.extend<ArmouryFixtures>({
     appLocale: ['en', { option: true }],
 
     seedDb: [
-        async ({ appLocale: _ }, use) => {
+        async ({ appLocale: _ }, use, testInfo) => {
+            // Only seed Postgres for authenticated projects that need real DB data.
+            // chromium-public runs unauthenticated tests — no DB required, and
+            // CI has no Postgres instance running.
+            if (testInfo.project.name === 'chromium-public') {
+                await use();
+
+                return;
+            }
+
             const teardown = await seedTestUser();
             await use();
             await teardown();
