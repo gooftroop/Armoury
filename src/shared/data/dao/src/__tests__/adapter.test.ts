@@ -202,6 +202,10 @@ class MockDatabaseAdapter extends BaseDatabaseAdapter {
         return this.syncStore.get(fileKey) ?? null;
     }
 
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        return Array.from(this.syncStore.values());
+    }
+
     async setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void> {
         this.syncStore.set(fileKey, {
             fileKey,

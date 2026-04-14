@@ -14,6 +14,7 @@ function createTestPlugin(id: string, name: string = `Test Plugin ${id}`): GameS
         getSchemaExtension: () => ({}),
         register: () => {},
         createGameContext: () => ({ gameData: {} }),
+        getSyncFileKeyPrefixes: () => [],
     } as GameSystem;
 }
 

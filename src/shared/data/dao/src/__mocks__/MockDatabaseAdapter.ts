@@ -192,6 +192,10 @@ class MockDatabaseAdapter implements DatabaseAdapter {
         return this.syncStore.get(fileKey) ?? null;
     }
 
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        return Array.from(this.syncStore.values());
+    }
+
     /**
      * Set the sync status for a file.
      * @param fileKey - The file key

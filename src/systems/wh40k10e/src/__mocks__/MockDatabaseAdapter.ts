@@ -193,6 +193,14 @@ class MockDatabaseAdapter implements DatabaseAdapter {
     }
 
     /**
+     * Retrieve all sync statuses.
+     * @returns Array of all file sync statuses
+     */
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        return Array.from(this.syncStore.values());
+    }
+
+    /**
      * Set the sync status for a file.
      * @param fileKey - The file key
      * @param sha - The file SHA hash

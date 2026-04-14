@@ -411,6 +411,19 @@ class Wh40k10eSystem implements Wh40kGameSystem {
     }
 
     /**
+     * File-key prefixes written by this system's DAOs to the sync_status table.
+     *
+     * Covers: CoreRulesDAO ('core:'), FactionDAO ('factionModel:'),
+     * CrusadeRulesDAO ('crusadeRules:'), ChapterApprovedDAO ('wahapedia:').
+     */
+    private static readonly SYNC_FILE_KEY_PREFIXES = ['core:', 'factionModel:', 'crusadeRules:', 'wahapedia:'] as const;
+
+    /** @inheritdoc */
+    getSyncFileKeyPrefixes(): string[] {
+        return [...Wh40k10eSystem.SYNC_FILE_KEY_PREFIXES];
+    }
+
+    /**
      * Creates all wh40k10e-specific DAOs and the game data context.
      * Instantiates 40 faction DAOs, core rules, crusade rules, and chapter approved DAOs,
      * then wraps them in a GameData instance for unified access.

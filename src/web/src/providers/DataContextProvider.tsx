@@ -18,6 +18,8 @@
  * 5. Must call dataContext.close() on unmount to release database connections.
  * 6. Must not block rendering — no full-screen loader
  * 7. Must provide the DataContext instance and sync state via React context.
+ * 8. Must restore sync state from the database adapter (getAllSyncStatuses), not localStorage.
+ * 9. Must derive system ownership via GameSystem.getSyncFileKeyPrefixes(), not hardcoded maps.
  *
  * @module DataContextProvider
  */
@@ -37,61 +39,58 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { ContainerModule } from 'inversify';
 
 /**
- * Known file_key prefixes mapped to their owning game system ID.
- *
- * The sync_status table stores file-level keys (e.g. 'core:wh40k-10e.gst',
- * 'factionModel:Adeptus Astartes'). This map lets us derive which system a
- * file belongs to without the full DataContext.
- *
- * @see BSDataBaseDAO.getSyncFileKey for how DAOs build file keys.
- */
-const FILE_KEY_TO_SYSTEM: Record<string, string> = {
-    'core:wh40k-10e': 'wh40k-10e',
-    'factionModel:': 'wh40k-10e',
-};
-
-/**
- * Derives system IDs from sync_status file_key values.
- *
- * @param fileKeys - Array of file_key strings from the sync_status table.
- * @returns Unique set of system IDs that have at least one synced file.
- */
-function deriveSystemIds(fileKeys: string[]): string[] {
-    const systemIds = new Set<string>();
-
-    for (const key of fileKeys) {
-        for (const [prefix, systemId] of Object.entries(FILE_KEY_TO_SYSTEM)) {
-            if (key.startsWith(prefix)) {
-                systemIds.add(systemId);
-                break;
-            }
-        }
-    }
-
-    return [...systemIds];
-}
-
-/**
  * Probes the PGlite IndexedDB database to discover which game systems
- * have previously synced data. Opens a lightweight connection, queries
- * the sync_status table, then closes immediately.
+ * have previously synced data. Opens a lightweight adapter connection,
+ * queries all sync status records via the data layer, then resolves each
+ * known system to match file keys against declared prefixes.
  *
  * Runs in a useEffect (after first render) so it does NOT block rendering.
- * Returns an empty array if the database doesn't exist yet or the query fails.
+ * Returns an empty array if the database doesn't exist yet, the query fails,
+ * or the signal is aborted before completion.
  *
+ * @param signal - AbortSignal to cancel the probe when the component unmounts.
  * @returns Array of system IDs that have synced data in IndexedDB.
  */
-async function probeSyncedSystems(): Promise<string[]> {
+async function probeSyncedSystems(signal: AbortSignal): Promise<string[]> {
     try {
         const { PGliteAdapter } = await import('@armoury/adapters-pglite');
         const probe = new PGliteAdapter({ dataDir: 'idb://armoury' });
         await probe.initialize();
 
         try {
-            const result = await probe.rawQuery<{ file_key: string }>('SELECT DISTINCT file_key FROM sync_status');
-            const fileKeys = result.rows.map((r) => r.file_key);
+            const statuses = await probe.getAllSyncStatuses();
 
-            return deriveSystemIds(fileKeys);
+            if (signal.aborted || statuses.length === 0) {
+                return [];
+            }
+
+            const fileKeys = statuses.map((s) => s.fileKey);
+
+            // Resolve each known system and check if any of its declared
+            // file-key prefixes match stored sync records.
+            const { resolveGameSystem, getKnownSystemIds } = await import('@/lib/resolveGameSystem.js');
+            const systemIds: string[] = [];
+
+            for (const id of getKnownSystemIds()) {
+                if (signal.aborted) {
+                    break;
+                }
+
+                const system = await resolveGameSystem(id);
+
+                if (!system) {
+                    continue;
+                }
+
+                const prefixes = system.getSyncFileKeyPrefixes();
+                const hasData = fileKeys.some((key) => prefixes.some((prefix) => key.startsWith(prefix)));
+
+                if (hasData) {
+                    systemIds.push(id);
+                }
+            }
+
+            return systemIds;
         } finally {
             await probe.close();
         }
@@ -183,10 +182,10 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const [syncProgressCollector, setSyncProgressCollector] = useState<SyncProgressCollector | null>(null);
 
     useEffect(() => {
-        let cancelled = false;
+        const controller = new AbortController();
 
-        void probeSyncedSystems().then((systemIds) => {
-            if (cancelled) {
+        void probeSyncedSystems(controller.signal).then((systemIds) => {
+            if (controller.signal.aborted) {
                 return;
             }
 
@@ -202,7 +201,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
         });
 
         return () => {
-            cancelled = true;
+            controller.abort();
         };
     }, []);
 

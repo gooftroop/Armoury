@@ -556,6 +556,29 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
     }
 
     /**
+     * Retrieves all sync statuses for all BattleScribe data files
+     */
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        const db = this.getDatabase();
+
+        try {
+            const results = await db.select().from(syncStatusTable);
+
+            return results.map((record) => ({
+                fileKey: String(record.fileKey),
+                sha: String(record.sha),
+                lastSynced: new Date(String(record.lastSynced)),
+                etag: record.etag ? String(record.etag) : undefined,
+            }));
+        } catch (error) {
+            throw new DatabaseError(
+                `Failed to getAllSyncStatuses: ${error instanceof Error ? error.message : String(error)}`,
+                'SELECT',
+            );
+        }
+    }
+
+    /**
      * Returns the active database context (transaction or main connection)
      */
     private getDatabase(): DsqlDatabase {

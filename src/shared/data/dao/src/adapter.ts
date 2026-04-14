@@ -179,6 +179,16 @@ export abstract class BaseDatabaseAdapter implements DatabaseAdapter {
     abstract getSyncStatus(fileKey: string): Promise<FileSyncStatus | null>;
 
     /**
+     * Retrieves all sync status records from the database.
+     * Used by the provider layer to discover which game systems have previously
+     * synced data, without hardcoding file-key-to-system mappings.
+     *
+     * @returns All stored sync status records, or an empty array if none exist.
+     * @throws DatabaseError if the query fails.
+     */
+    abstract getAllSyncStatuses(): Promise<FileSyncStatus[]>;
+
+    /**
      * Stores or updates the sync status metadata for a file.
      * @param fileKey Unique identifier for the file (e.g., 'core:wh40k-10e.gst', 'faction:Adeptus Astartes.cat').
      * @param sha The Git SHA hash of the file.

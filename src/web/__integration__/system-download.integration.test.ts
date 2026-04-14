@@ -127,6 +127,10 @@ class MockDatabaseAdapter implements DatabaseAdapter {
     async deleteSyncStatus(fileKey: string): Promise<void> {
         this.syncStore.delete(fileKey);
     }
+
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        return Array.from(this.syncStore.values());
+    }
 }
 
 /**
@@ -211,6 +215,7 @@ function createStubGameSystem(syncFn?: () => Promise<SyncResult>): {
         getSchemaExtension: vi.fn(() => ({})),
         register: vi.fn(),
         createGameContext: vi.fn(() => gameContext),
+        getSyncFileKeyPrefixes: vi.fn(() => []),
     };
 
     return { system, gameContext };
@@ -320,6 +325,7 @@ describe('System Download Chain Integration', () => {
                 getSchemaExtension: vi.fn(() => ({})),
                 register: vi.fn(),
                 createGameContext: vi.fn(() => gameContext),
+                getSyncFileKeyPrefixes: vi.fn(() => []),
             };
 
             const dc = await new DataContextBuilder().system(system).adapter(mockAdapter).build();

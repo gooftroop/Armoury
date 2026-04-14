@@ -428,6 +428,36 @@ export class SQLiteAdapter extends BaseDatabaseAdapter {
     }
 
     /**
+     * Retrieves all sync statuses for BattleScribe data files.
+     * @returns Array of all FileSyncStatus objects
+     * @throws {DatabaseError} If the query fails
+     */
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        const db = this.getDatabase();
+        const syncStatusTable = this.syncStatusTable;
+
+        if (!syncStatusTable) {
+            throw new DatabaseError('Sync status table not registered', 'SELECT');
+        }
+
+        try {
+            const results = await db.select().from(syncStatusTable);
+
+            return results.map((record) => ({
+                fileKey: String(record.fileKey),
+                sha: String(record.sha),
+                lastSynced: new Date(String(record.lastSynced)),
+                etag: record.etag ? String(record.etag) : undefined,
+            }));
+        } catch (error) {
+            throw new DatabaseError(
+                `Failed to getAllSyncStatuses: ${error instanceof Error ? error.message : String(error)}`,
+                'SELECT',
+            );
+        }
+    }
+
+    /**
      * Updates the sync status for a BattleScribe data file.
      * Records the current timestamp and SHA hash, optionally storing an ETag for conditional requests.
      * @param fileKey - The unique identifier for the BattleScribe data file
