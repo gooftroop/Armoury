@@ -39,7 +39,9 @@ export const AlertDialog = Object.assign(
         open?: boolean;
         onOpenChange?: (open: boolean) => void;
     }) {
-        if (!open) {return null;}
+        if (!open) {
+            return null;
+        }
 
         return React.createElement('div', { 'data-testid': 'AlertDialog' }, children);
     },
