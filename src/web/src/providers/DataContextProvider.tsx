@@ -36,6 +36,84 @@ import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ContainerModule } from 'inversify';
 
+const SYNCED_SYSTEMS_KEY = 'armoury:synced-systems';
+
+/**
+ * Reads the set of previously synced system IDs from localStorage.
+ * Returns an empty array if localStorage is unavailable or the value is corrupt.
+ */
+function readSyncedSystems(): string[] {
+    try {
+        const raw = localStorage.getItem(SYNCED_SYSTEMS_KEY);
+
+        if (!raw) {
+            return [];
+        }
+
+        const parsed: unknown = JSON.parse(raw);
+
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return parsed.filter((v): v is string => typeof v === 'string');
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Persists a system ID as synced in localStorage.
+ * Silently swallows errors (e.g. quota exceeded, SSR).
+ */
+function persistSyncedSystem(systemId: string): void {
+    try {
+        const current = readSyncedSystems();
+
+        if (!current.includes(systemId)) {
+            current.push(systemId);
+        }
+
+        localStorage.setItem(SYNCED_SYSTEMS_KEY, JSON.stringify(current));
+    } catch {
+        // localStorage unavailable or full — non-critical
+    }
+}
+
+/**
+ * Removes a system ID from the synced set in localStorage.
+ * Silently swallows errors.
+ */
+function removeSyncedSystem(systemId: string): void {
+    try {
+        const current = readSyncedSystems().filter((id) => id !== systemId);
+
+        if (current.length === 0) {
+            localStorage.removeItem(SYNCED_SYSTEMS_KEY);
+        } else {
+            localStorage.setItem(SYNCED_SYSTEMS_KEY, JSON.stringify(current));
+        }
+    } catch {
+        // localStorage unavailable — non-critical
+    }
+}
+
+/**
+ * Builds the initial systemSyncStates from localStorage.
+ * Systems that were previously synced start as 'synced' so the landing
+ * page tiles show the correct state without re-downloading.
+ */
+function buildInitialSyncStates(): Record<string, SystemSyncState> {
+    const systemIds = readSyncedSystems();
+    const states: Record<string, SystemSyncState> = {};
+
+    for (const id of systemIds) {
+        states[id] = { status: 'synced' };
+    }
+
+    return states;
+}
+
 /**
  * Possible states for the overall DataContext initialization lifecycle.
  *
@@ -114,7 +192,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const [dataContext, setDataContext] = useState<DataContext | null>(null);
     const [status, setStatus] = useState<DataContextStatus>('idle');
     const [error, setError] = useState<string | undefined>();
-    const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>({});
+    const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>(buildInitialSyncStates);
     const [syncProgressCollector, setSyncProgressCollector] = useState<SyncProgressCollector | null>(null);
 
     /**
@@ -246,6 +324,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 ...prev,
                 [system.id]: { status: 'synced' },
             }));
+            persistSyncedSystem(system.id);
             log('enableSystem complete');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to initialize DataContext';
@@ -280,6 +359,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
 
                 return next;
             });
+            removeSyncedSystem(systemId);
         },
         [dataContext],
     );
