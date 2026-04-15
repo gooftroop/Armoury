@@ -28,6 +28,11 @@ export interface DataContextShape<TGameData = unknown> {
     readonly syncResult?: SyncResult;
     /** Closes the underlying adapter connection. */
     close(): Promise<void>;
+    /**
+     * Triggers a staleness check and selective re-download of changed data.
+     * Returns null if no sync function was provided (e.g. no GitHub client configured).
+     */
+    sync(): Promise<SyncResult | null>;
 }
 
 /**
@@ -45,8 +50,8 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
 
     private readonly adapter: DatabaseAdapter;
     private readonly gameSystem: GameSystem;
-    /** Registered client instances keyed by name. */
     private readonly clients: Map<string, unknown>;
+    private readonly syncFn: (() => Promise<SyncResult>) | null;
 
     /**
      * Creates a DataContext implementation bound to a database adapter.
@@ -64,6 +69,7 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
         this.adapter = adapter;
         this.gameSystem = gameSystem;
         this.clients = clients;
+        this.syncFn = gameContext?.sync && clients.has('github') ? gameContext.sync : null;
         this.accounts = new AccountDAO(adapter);
         this.social = new FriendDAO(adapter);
         this.users = new UserDAO(adapter);
@@ -73,11 +79,26 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
         this.game = gameContext?.game ?? this.createNotImplementedGameData();
     }
 
-    /**
-     * Closes the database adapter connection.
-     */
+    /** Closes the database adapter connection. */
     public async close(): Promise<void> {
         await this.adapter.close();
+    }
+
+    /**
+     * Triggers a staleness check and selective re-download of changed data.
+     * Each DAO checks its SHA against GitHub (via ETag-cached requests) and only
+     * re-downloads files that have actually changed.
+     * @returns The sync result, or null if no sync function is available.
+     */
+    public async sync(): Promise<SyncResult | null> {
+        if (!this.syncFn) {
+            return null;
+        }
+
+        const result = await this.syncFn();
+        this.syncResult = result;
+
+        return result;
     }
 
     /**
