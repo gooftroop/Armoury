@@ -322,6 +322,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             if (syncResult && !syncResult.success) {
                 const failedDaos = syncResult.failures.map((f: { dao: string }) => f.dao).join(', ');
                 const message = `Partial sync failure: ${syncResult.failures.length}/${syncResult.total} DAOs failed (${failedDaos})`;
+                setStatus('error');
                 setError(message);
                 setSystemSyncStates((prev) => ({
                     ...prev,

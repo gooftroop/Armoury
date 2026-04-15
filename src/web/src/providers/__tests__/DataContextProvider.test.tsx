@@ -173,17 +173,17 @@ describe('DataContextProvider (web)', () => {
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
-            build: vi.fn(
+            buildFromCache: vi.fn(
                 async () =>
                     ({
                         close: closeMock,
-                        syncResult: {
+                        sync: vi.fn(async () => ({
                             success: true,
                             total: 2,
                             succeeded: ['dao-a', 'dao-b'],
                             failures: [],
                             timestamp: '2026-01-01T00:00:00.000Z',
-                        },
+                        })),
                     }) as unknown as DataContext,
             ),
         });
@@ -329,11 +329,11 @@ describe('DataContextProvider (web)', () => {
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
-            build: vi.fn(
+            buildFromCache: vi.fn(
                 async () =>
                     ({
                         close: closeMock,
-                        syncResult: partialFailure,
+                        sync: vi.fn(async () => partialFailure),
                     }) as unknown as DataContext,
             ),
         });
