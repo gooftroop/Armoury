@@ -18,6 +18,10 @@ class MockGitHubClient implements IGitHubClient {
     downloadedPaths: string[] = [];
     /** Paths that were requested via getFileSha() */
     shaRequestedPaths: string[] = [];
+    /** Map of file paths to the last commit date ISO timestamps. */
+    fileLastCommitDates: Map<string, string> = new Map();
+    /** Paths that were requested via getFileLastCommitDate() */
+    lastCommitDateRequestedPaths: string[] = [];
 
     /**
      * List files in a GitHub repository path.
@@ -62,6 +66,19 @@ class MockGitHubClient implements IGitHubClient {
      */
     async checkForUpdates(): Promise<boolean> {
         return this.shouldUpdate;
+    }
+
+    /**
+     * Get the most recent commit date for a file in a GitHub repository.
+     * @param _owner - Repository owner (unused in mock)
+     * @param _repo - Repository name (unused in mock)
+     * @param path - File path to get last commit date for
+     * @returns The date from fileLastCommitDates map, or a generated default
+     */
+    async getFileLastCommitDate(_owner: string, _repo: string, path: string): Promise<string> {
+        this.lastCommitDateRequestedPaths.push(path);
+
+        return this.fileLastCommitDates.get(path) ?? new Date(0).toISOString();
     }
 }
 

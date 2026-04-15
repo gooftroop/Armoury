@@ -71,6 +71,20 @@ export interface IGitHubClient {
      * @returns Promise resolving to true if the file has been updated, false otherwise
      */
     checkForUpdates(owner: string, repo: string, path: string, knownSha: string): Promise<boolean>;
+
+    /**
+     * Retrieves the date of the most recent commit that modified a file.
+     * Used for date-based staleness checks instead of SHA comparison.
+     *
+     * @param owner - Repository owner username or organization name
+     * @param repo - Repository name
+     * @param path - Path to the file within the repository
+     * @returns Promise resolving to the ISO 8601 date string of the last commit
+     * @throws GitHubApiError if the API returns an error or no commits found
+     * @throws RateLimitError if GitHub API rate limit is exceeded
+     * @throws NetworkError if the request fails after all retries
+     */
+    getFileLastCommitDate(owner: string, repo: string, path: string): Promise<string>;
 }
 
 /**

@@ -1,5 +1,6 @@
 import type { UseQueryOptions } from '@tanstack/react-query';
 import { fetchWahapediaPageRaw } from '@/api/fetchWahapediaPageRaw.js';
+import type { WahapediaFetchResult } from '@/api/fetchWahapediaPageRaw.js';
 
 /**
  * @requirements
@@ -26,8 +27,8 @@ export function buildQueryWahapediaRawKey(url: string) {
  */
 export function queryWahapediaRaw(
     url: string,
-    options?: Omit<UseQueryOptions<string, Error>, 'queryKey' | 'queryFn'>,
-): UseQueryOptions<string, Error> {
+    options?: Omit<UseQueryOptions<WahapediaFetchResult, Error>, 'queryKey' | 'queryFn'>,
+): UseQueryOptions<WahapediaFetchResult, Error> {
     return {
         queryKey: buildQueryWahapediaRawKey(url),
         queryFn: () => fetchWahapediaPageRaw(url),

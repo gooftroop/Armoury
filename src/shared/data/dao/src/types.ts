@@ -31,6 +31,8 @@ export interface FileSyncStatus {
     lastSynced: Date;
     /** Optional ETag from GitHub for efficient cache validation */
     etag?: string;
+    /** ISO 8601 timestamp of the remote file's last modification. Absent for sources without date metadata. */
+    lastModified?: string;
 }
 
 /**
@@ -133,7 +135,7 @@ export interface DatabaseAdapter {
      * @throws DatabaseError if the query fails.
      */
     getAllSyncStatuses(): Promise<FileSyncStatus[]>;
-    setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void>;
+    setSyncStatus(fileKey: string, sha: string, etag?: string, lastModified?: string): Promise<void>;
     deleteSyncStatus(fileKey: string): Promise<void>;
 }
 

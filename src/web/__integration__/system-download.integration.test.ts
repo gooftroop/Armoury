@@ -120,8 +120,8 @@ class MockDatabaseAdapter implements DatabaseAdapter {
         return this.syncStore.get(fileKey) ?? null;
     }
 
-    async setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void> {
-        this.syncStore.set(fileKey, { fileKey, sha, lastSynced: new Date(), etag });
+    async setSyncStatus(fileKey: string, sha: string, etag?: string, lastModified?: string): Promise<void> {
+        this.syncStore.set(fileKey, { fileKey, sha, lastSynced: new Date(), etag, lastModified });
     }
 
     async deleteSyncStatus(fileKey: string): Promise<void> {

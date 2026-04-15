@@ -21,6 +21,17 @@ const BASE_DELAY_MS = 1000;
 const USER_AGENT = 'Armoury/1.0 (Community Tool)';
 
 /**
+ * Result of a raw Wahapedia page fetch.
+ * Contains the HTML content and optional Last-Modified date from the server.
+ */
+export interface WahapediaFetchResult {
+    /** Raw HTML content of the fetched page. */
+    content: string;
+    /** ISO 8601 timestamp from the HTTP Last-Modified header, if present. */
+    lastModified?: string;
+}
+
+/**
  * Delays execution for a given number of milliseconds.
  *
  * @param ms - Duration of the delay in milliseconds.
@@ -105,11 +116,14 @@ async function fetchWithRetry(url: string, customFetch?: typeof fetch): Promise<
  *
  * @param url - The Wahapedia URL to fetch.
  * @param customFetch - Optional fetch implementation for tests.
- * @returns Promise resolving to the raw HTML response body.
+ * @returns Promise resolving to the raw HTML response body and optional last modified timestamp.
  * @throws Error if the request fails after retries.
  */
-export async function fetchWahapediaPageRaw(url: string, customFetch?: typeof fetch): Promise<string> {
+export async function fetchWahapediaPageRaw(url: string, customFetch?: typeof fetch): Promise<WahapediaFetchResult> {
     const response = await fetchWithRetry(url, customFetch);
+    const content = await response.text();
+    const lastModifiedHeader = response.headers.get('Last-Modified');
+    const lastModified = lastModifiedHeader ? new Date(lastModifiedHeader).toISOString() : undefined;
 
-    return response.text();
+    return { content, lastModified };
 }

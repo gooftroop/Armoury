@@ -499,6 +499,7 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                 sha: String(record.sha),
                 lastSynced: new Date(String(record.lastSynced)),
                 etag: record.etag ? String(record.etag) : undefined,
+                lastModified: record.lastModified ? String(record.lastModified) : undefined,
             };
         } catch (error) {
             throw new DatabaseError(
@@ -511,7 +512,7 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
     /**
      * Updates the sync status for a BattleScribe data file
      */
-    async setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void> {
+    async setSyncStatus(fileKey: string, sha: string, etag?: string, lastModified?: string): Promise<void> {
         const db = this.getDatabase();
 
         try {
@@ -522,6 +523,7 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                     sha,
                     lastSynced: new Date().toISOString(),
                     etag,
+                    lastModified,
                 })
                 .onConflictDoUpdate({
                     target: syncStatusTable.fileKey,
@@ -529,6 +531,7 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                         sha,
                         lastSynced: new Date().toISOString(),
                         etag,
+                        lastModified,
                     },
                 });
         } catch (error) {
@@ -569,6 +572,7 @@ export class DSQLAdapter extends BaseDatabaseAdapter {
                 sha: String(record.sha),
                 lastSynced: new Date(String(record.lastSynced)),
                 etag: record.etag ? String(record.etag) : undefined,
+                lastModified: record.lastModified ? String(record.lastModified) : undefined,
             }));
         } catch (error) {
             throw new DatabaseError(

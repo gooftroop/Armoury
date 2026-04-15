@@ -20,6 +20,7 @@ class CountingGitHubClient implements IGitHubClient {
     listFilesCalls = 0;
     getFileShaCalls = 0;
     checkForUpdatesCalls = 0;
+    getFileLastCommitDateCalls = 0;
 
     constructor(token?: string) {
         this.client = new GitHubClient({ token });
@@ -47,6 +48,12 @@ class CountingGitHubClient implements IGitHubClient {
         this.checkForUpdatesCalls += 1;
 
         return this.client.checkForUpdates(owner, repo, path, knownSha);
+    }
+
+    async getFileLastCommitDate(owner: string, repo: string, path: string): Promise<string> {
+        this.getFileLastCommitDateCalls += 1;
+
+        return this.client.getFileLastCommitDate(owner, repo, path);
     }
 }
 

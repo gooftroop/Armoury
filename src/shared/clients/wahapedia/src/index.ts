@@ -7,6 +7,7 @@
 
 // === Types ===
 export type { IWahapediaClient, IWahapediaParser } from '@/types.js';
+export type { WahapediaFetchResult } from '@/api/fetchWahapediaPageRaw.js';
 
 // === API Functions ===
 export { fetchWahapediaPage } from '@/api/fetchWahapediaPage.js';

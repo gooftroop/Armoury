@@ -206,12 +206,13 @@ class MockDatabaseAdapter implements DatabaseAdapter {
      * @param sha - The file SHA hash
      * @param etag - Optional ETag for HTTP caching
      */
-    async setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void> {
+    async setSyncStatus(fileKey: string, sha: string, etag?: string, lastModified?: string): Promise<void> {
         this.syncStore.set(fileKey, {
             fileKey,
             sha,
             lastSynced: new Date(),
             etag,
+            lastModified,
         });
     }
 

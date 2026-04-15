@@ -10,6 +10,7 @@ export const syncStatusTable = pgTable('sync_status', {
     sha: text('sha').notNull(),
     lastSynced: timestamp('last_synced', { mode: 'string' }).notNull(),
     etag: text('etag'),
+    lastModified: text('last_modified'),
 });
 
 /** Drizzle SQLite table mapping for file sync status tracking. */
@@ -18,4 +19,5 @@ export const syncStatusSqliteTable = sl.sqliteTable('sync_status', {
     sha: sl.text('sha').notNull(),
     lastSynced: sl.text('last_synced').notNull(),
     etag: sl.text('etag'),
+    lastModified: sl.text('last_modified'),
 });

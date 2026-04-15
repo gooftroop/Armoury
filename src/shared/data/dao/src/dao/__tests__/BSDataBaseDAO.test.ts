@@ -53,6 +53,7 @@ function createMockGitHubClient(): IGitHubClient {
         getFileSha: vi.fn(),
         downloadFile: vi.fn(),
         checkForUpdates: vi.fn(),
+        getFileLastCommitDate: vi.fn(),
     };
 }
 

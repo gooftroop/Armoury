@@ -27,3 +27,8 @@ export function buildQueryGitHubFileKey(owner: string, repo: string, path: strin
 export function buildQueryGitHubUpdateCheckKey(owner: string, repo: string, path: string, knownSha: string) {
     return ['github', 'updateCheck', owner, repo, path, knownSha] as const;
 }
+
+/** Builds query key for getting a file's most recent commit date. */
+export function buildQueryGitHubFileLastCommitDateKey(owner: string, repo: string, path: string) {
+    return ['github', 'fileLastCommitDate', owner, repo, path] as const;
+}

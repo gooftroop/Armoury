@@ -194,6 +194,31 @@ export class GitHubClient implements IGitHubClient {
         }
     }
 
+    /**
+     * Retrieves the date of the most recent commit that modified a file.
+     * Uses the GitHub Commits API with path filter to get only commits affecting the specified file.
+     * Returns the committer date of the most recent commit as an ISO 8601 string.
+     *
+     * @param owner - Repository owner username or organization name
+     * @param repo - Repository name
+     * @param path - Path to the file within the repository
+     * @returns Promise resolving to the ISO 8601 date string of the last commit that modified this file
+     * @throws GitHubApiError if the API returns an error or no commits are found for the path
+     * @throws RateLimitError if GitHub API rate limit is exceeded
+     * @throws NetworkError if the request fails after all retries
+     */
+    async getFileLastCommitDate(owner: string, repo: string, path: string): Promise<string> {
+        const url = `${this.apiBaseUrl}/repos/${owner}/${repo}/commits?path=${encodeURIComponent(path)}&per_page=1`;
+        const response = await this.fetchWithRetry(url);
+        const data = (await response.json()) as Array<{ commit: { committer: { date: string } } }>;
+
+        if (!Array.isArray(data) || data.length === 0) {
+            throw new GitHubApiError('No commits found for path', 200, url);
+        }
+
+        return data[0].commit.committer.date;
+    }
+
     private async fetchWithRetry(url: string, isApi = true): Promise<Response> {
         let lastError: Error | undefined;
 

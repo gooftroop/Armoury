@@ -28,6 +28,7 @@ describe('GitHubAdapter', () => {
         expect(typeof adapter.getFileSha).toBe('function');
         expect(typeof adapter.downloadFile).toBe('function');
         expect(typeof adapter.checkForUpdates).toBe('function');
+        expect(typeof adapter.getFileLastCommitDate).toBe('function');
     });
 
     it('listFiles delegates to queryClient.fetchQuery with correct query options', async () => {
