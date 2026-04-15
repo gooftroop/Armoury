@@ -231,6 +231,7 @@ function createMissingGitHubClient(): IGitHubClient {
     return {
         listFiles: throwMissing,
         getFileSha: throwMissing,
+        getFileLastCommitDate: throwMissing,
         downloadFile: throwMissing,
         checkForUpdates: noUpdates,
     };

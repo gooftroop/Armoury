@@ -11,6 +11,7 @@
  * 3. Must render synced badge when synced.
  * 4. Must not own data fetching or side effects.
  * 5. Must wrap tile in a Link when href is provided (synced tiles navigate to armies page).
+ * 6. Must render queued badge when system is pending in sync queue.
  *
  * @module system-tile
  */
@@ -35,6 +36,8 @@ export interface SystemTileProps {
     isSyncing: boolean;
     /** Whether the system has finished syncing. */
     isSynced: boolean;
+    /** Whether the system is currently queued in the sync queue. */
+    isQueued?: boolean;
     /** Whether the last sync attempt failed. */
     isError: boolean;
     /** Whether to show the overlay (true when not synced). */
@@ -59,6 +62,7 @@ function SystemTile({
     manifest,
     isSyncing,
     isSynced,
+    isQueued,
     isError,
     showOverlay,
     overlayText,
@@ -139,6 +143,13 @@ function SystemTile({
                     <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-green-900/60 px-2.5 py-1 text-xs font-medium text-green-300">
                         <Check className="h-3 w-3" />
                         <span>{overlayText}</span>
+                    </div>
+                )}
+
+                {isQueued && !isSyncing && !isSynced && (
+                    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-blue-900/60 px-2.5 py-1 text-xs font-medium text-blue-300">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <span>Queued</span>
                     </div>
                 )}
             </div>

@@ -387,10 +387,7 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
         }
 
         try {
-            const rows = await db
-                .select()
-                .from(syncStatusTable)
-                .where(eq(syncStatusTable.fileKey, syncStatusTable.fileKey));
+            const rows = await db.select().from(syncStatusTable);
 
             return rows.map((row) => ({
                 fileKey: String(row.fileKey),

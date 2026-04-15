@@ -27,6 +27,10 @@ const {
     dataContextBuilderMock,
     getQueryClientMock,
     captureExceptionMock,
+    pgliteAdapterMock,
+    PGliteAdapterConstructorMock,
+    resolveGameSystemMock,
+    getKnownSystemIdsMock,
     queryClientToken,
     adapterFactoryToken,
     githubFactoryToken,
@@ -42,6 +46,14 @@ const {
         dataContextBuilderMock: { builder: vi.fn() },
         getQueryClientMock: vi.fn(),
         captureExceptionMock: vi.fn(),
+        pgliteAdapterMock: {
+            initialize: vi.fn().mockResolvedValue(undefined),
+            getAllSyncStatuses: vi.fn().mockResolvedValue([]),
+            close: vi.fn().mockResolvedValue(undefined),
+        },
+        PGliteAdapterConstructorMock: vi.fn(),
+        resolveGameSystemMock: vi.fn(),
+        getKnownSystemIdsMock: vi.fn().mockReturnValue(['wh40k10e']),
         queryClientToken: Symbol.for('QueryClient'),
         adapterFactoryToken: Symbol.for('AdapterFactory'),
         githubFactoryToken: Symbol.for('GitHubClientFactory'),
@@ -82,6 +94,15 @@ vi.mock('@/lib/getQueryClient.js', () => ({
 
 vi.mock('@sentry/nextjs', () => ({
     captureException: captureExceptionMock,
+}));
+
+vi.mock('@armoury/adapters-pglite', () => ({
+    PGliteAdapter: PGliteAdapterConstructorMock,
+}));
+
+vi.mock('@/lib/resolveGameSystem.js', () => ({
+    resolveGameSystem: resolveGameSystemMock,
+    getKnownSystemIds: getKnownSystemIdsMock,
 }));
 
 interface HarnessControls {
@@ -187,6 +208,14 @@ describe('DataContextProvider (web)', () => {
                     }) as unknown as DataContext,
             ),
         });
+        PGliteAdapterConstructorMock.mockImplementation(function PGliteAdapterMockImpl() {
+            return pgliteAdapterMock;
+        });
+        pgliteAdapterMock.initialize.mockResolvedValue(undefined);
+        pgliteAdapterMock.getAllSyncStatuses.mockResolvedValue([]);
+        pgliteAdapterMock.close.mockResolvedValue(undefined);
+        getKnownSystemIdsMock.mockReturnValue(['wh40k10e']);
+        resolveGameSystemMock.mockResolvedValue(null);
     });
 
     it('renders children without crashing', () => {
@@ -355,5 +384,86 @@ describe('DataContextProvider (web)', () => {
         expect(screen.getByText('Sync: error')).toBeInTheDocument();
         expect(screen.getByText(/Partial sync failure: 1\/2 DAOs failed/)).toBeInTheDocument();
         expect(captureExceptionMock).toHaveBeenCalledTimes(1);
+    });
+
+    describe('probeSyncedSystems persistence probe', () => {
+        it('restores sync state for systems with matching file keys on mount', async () => {
+            pgliteAdapterMock.getAllSyncStatuses.mockResolvedValueOnce([
+                {
+                    fileKey: 'core:wh40k-10e.gst',
+                    sha: 'abc',
+                    lastSynced: new Date('2026-01-01T00:00:00.000Z'),
+                },
+            ]);
+            resolveGameSystemMock.mockResolvedValueOnce({
+                getSyncFileKeyPrefixes: () => ['core:', 'factionModel:', 'crusadeRules:', 'wahapedia:'],
+            });
+
+            const controls: HarnessControls = { statuses: [] };
+
+            render(
+                <DataContextProvider>
+                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                </DataContextProvider>,
+            );
+
+            await waitFor(() => {
+                expect(screen.getByText('Sync: synced')).toBeInTheDocument();
+            });
+        });
+
+        it('does not restore sync state when no synced data exists', async () => {
+            pgliteAdapterMock.getAllSyncStatuses.mockResolvedValueOnce([]);
+
+            const controls: HarnessControls = { statuses: [] };
+
+            render(
+                <DataContextProvider>
+                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                </DataContextProvider>,
+            );
+
+            await waitFor(() => {
+                expect(pgliteAdapterMock.getAllSyncStatuses).toHaveBeenCalledTimes(1);
+            });
+
+            expect(screen.getByText('Sync: none')).toBeInTheDocument();
+        });
+
+        it('aborts probe on unmount', async () => {
+            const deferredStatuses: {
+                resolve: (statuses: Array<{ fileKey: string; sha: string; lastSynced: Date }>) => void;
+            } = {
+                resolve: () => undefined,
+            };
+            const pendingStatuses = new Promise<Array<{ fileKey: string; sha: string; lastSynced: Date }>>(
+                (resolve) => {
+                    deferredStatuses.resolve = resolve;
+                },
+            );
+            pgliteAdapterMock.getAllSyncStatuses.mockReturnValueOnce(pendingStatuses);
+
+            const controls: HarnessControls = { statuses: [] };
+            const rendered = render(
+                <DataContextProvider>
+                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                </DataContextProvider>,
+            );
+
+            rendered.unmount();
+            deferredStatuses.resolve([
+                {
+                    fileKey: 'core:wh40k-10e.gst',
+                    sha: 'abc',
+                    lastSynced: new Date('2026-01-01T00:00:00.000Z'),
+                },
+            ]);
+
+            await waitFor(() => {
+                expect(pgliteAdapterMock.close).toHaveBeenCalledTimes(1);
+            });
+
+            expect(resolveGameSystemMock).not.toHaveBeenCalled();
+        });
     });
 });

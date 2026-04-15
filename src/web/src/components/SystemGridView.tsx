@@ -31,6 +31,8 @@ export interface SystemTileData {
     isSyncing: boolean;
     /** Whether the system has finished syncing successfully. */
     isSynced: boolean;
+    /** Whether this system is currently queued for sync. */
+    isQueued: boolean;
     /** Whether the last sync attempt failed. */
     isError: boolean;
     /** Whether overlay UI is shown for this tile. */
@@ -71,6 +73,7 @@ function SystemGridView({ tiles }: SystemGridViewProps): ReactElement {
                     manifest={tile.manifest}
                     isSyncing={tile.isSyncing}
                     isSynced={tile.isSynced}
+                    isQueued={tile.isQueued}
                     isError={tile.isError}
                     showOverlay={tile.showOverlay}
                     overlayText={tile.overlayText}

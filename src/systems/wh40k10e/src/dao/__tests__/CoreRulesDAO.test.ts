@@ -303,15 +303,15 @@ describe('CoreRulesDAO', () => {
         });
 
         /**
-         * Test: load() uses cached adapter data when SHA matches.
+         * Test: load() uses cached adapter data when remote date is not newer.
          */
-        it('uses cached adapter data when SHA matches (checkForUpdates returns false)', async () => {
+        it('uses cached adapter data when remote date is not newer', async () => {
             const fixture = createFixture();
 
-            await adapter.setSyncStatus(CORE_RULES_SYNC_KEY, 'sha123');
+            await adapter.setSyncStatus(CORE_RULES_SYNC_KEY, 'sha123', undefined, '2025-01-15T12:00:00Z');
             await adapter.put('coreRules', fixture);
 
-            githubClient.shouldUpdate = false;
+            githubClient.fileLastCommitDates.set(CORE_RULES_FILE, '2025-01-10T12:00:00Z');
 
             const result = await dao.load();
 
@@ -322,17 +322,17 @@ describe('CoreRulesDAO', () => {
         });
 
         /**
-         * Test: load() re-fetches when SHA differs (checkForUpdates returns true).
+         * Test: load() re-fetches when remote commit date is newer than local lastModified.
          */
-        it('re-fetches remote data when SHA differs (checkForUpdates returns true)', async () => {
+        it('re-fetches remote data when remote commit date is newer', async () => {
             const oldFixture = createFixture();
             const mockGameSystem = createMockGameSystem();
             const mockXmlContent = '<gameSystem>test</gameSystem>';
 
-            await adapter.setSyncStatus(CORE_RULES_SYNC_KEY, 'oldSha');
+            await adapter.setSyncStatus(CORE_RULES_SYNC_KEY, 'oldSha', undefined, '2025-01-10T12:00:00Z');
             await adapter.put('coreRules', oldFixture);
 
-            githubClient.shouldUpdate = true;
+            githubClient.fileLastCommitDates.set(CORE_RULES_FILE, '2025-01-20T12:00:00Z');
             githubClient.fileContents.set(CORE_RULES_FILE, mockXmlContent);
             githubClient.fileShas.set(CORE_RULES_FILE, 'newSha');
             githubClient.files = [
@@ -356,6 +356,7 @@ describe('CoreRulesDAO', () => {
 
             const syncStatus = await adapter.getSyncStatus(CORE_RULES_SYNC_KEY);
             expect(syncStatus!.sha).toBe('newSha');
+            expect(syncStatus!.lastModified).toBe('2025-01-20T12:00:00Z');
         });
 
         /**

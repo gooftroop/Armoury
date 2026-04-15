@@ -218,4 +218,29 @@ describe('wh40k10eSystem', () => {
             }
         });
     });
+
+    /**
+     * getSyncFileKeyPrefixes() method tests.
+     */
+    describe('getSyncFileKeyPrefixes()', () => {
+        /**
+         * Test: returns the expected file key prefixes.
+         */
+        it('returns the expected file key prefixes', () => {
+            const prefixes = wh40k10eSystem.getSyncFileKeyPrefixes();
+
+            expect(prefixes).toEqual(['core:', 'factionModel:', 'crusadeRules:', 'wahapedia:']);
+        });
+
+        /**
+         * Test: returns a new array copy each call (no shared mutation).
+         */
+        it('returns a new array copy each call (no shared mutation)', () => {
+            const call1 = wh40k10eSystem.getSyncFileKeyPrefixes();
+            const call2 = wh40k10eSystem.getSyncFileKeyPrefixes();
+
+            expect(call1).toEqual(call2);
+            expect(call1).not.toBe(call2);
+        });
+    });
 });

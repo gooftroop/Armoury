@@ -32,6 +32,10 @@ const PG_CONFIG = {
 /**
  * Seeds the test user and account into Postgres using UPSERT.
  * Returns a teardown function that closes the pg connection.
+ *
+ * When Postgres is unavailable (e.g. no docker-compose running), the seed
+ * is skipped with a warning. Tests that only exercise browser-side persistence
+ * (PGlite / IndexedDB) do not need server-side Postgres and can proceed.
  */
 export async function seedTestUser(): Promise<() => Promise<void>> {
     const client = new pg.Client({
@@ -44,7 +48,18 @@ export async function seedTestUser(): Promise<() => Promise<void>> {
         connectionTimeoutMillis: PG_CONFIG.connectionTimeoutMillis,
     });
 
-    await client.connect();
+    try {
+        await client.connect();
+    } catch (error) {
+        // Postgres is not running — skip seeding gracefully so tests that
+        // only rely on browser-side PGlite persistence are not blocked.
+        console.warn(
+            `[seedTestUser] Postgres unavailable at ${PG_CONFIG.host}:${PG_CONFIG.port} — skipping seed. ` +
+                `Tests requiring server-side data will fail. Error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+
+        return async () => {};
+    }
 
     const now = new Date().toISOString();
 
