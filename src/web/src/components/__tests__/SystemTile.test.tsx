@@ -42,8 +42,7 @@ describe('SystemTile', () => {
     it('renders spinner when syncing without progress data', () => {
         render(<SystemTile {...baseProps} isSyncing showOverlay overlayText="Downloading..." />);
 
-        const svg = document.querySelector('.animate-spin');
-        expect(svg).toBeInTheDocument();
+        expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
@@ -66,8 +65,7 @@ describe('SystemTile', () => {
             />,
         );
 
-        const svg = document.querySelector('.animate-spin');
-        expect(svg).toBeInTheDocument();
+        expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
@@ -93,7 +91,7 @@ describe('SystemTile', () => {
         expect(screen.getByRole('progressbar')).toBeInTheDocument();
         expect(screen.getByText('15/40')).toBeInTheDocument();
         expect(screen.getByText('Syncing 15/40')).toBeInTheDocument();
-        expect(document.querySelector('.animate-spin')).not.toBeInTheDocument();
+        expect(screen.queryByRole('status', { name: 'Loading' })).not.toBeInTheDocument();
     });
 
     it('renders ProgressBar with failures visible', () => {
@@ -137,8 +135,8 @@ describe('SystemTile', () => {
             <SystemTile {...baseProps} isSynced showOverlay={false} overlayText="Synced" href="./wh40k10e/armies" />,
         );
 
-        const link = document.querySelector('a[href="./wh40k10e/armies"]');
-        expect(link).toBeInTheDocument();
+        const link = screen.getByRole('link');
+        expect(link).toHaveAttribute('href', './wh40k10e/armies');
     });
 
     it('calls onClick when overlay is clicked', async () => {
@@ -152,7 +150,7 @@ describe('SystemTile', () => {
     it('disables overlay button when syncing', () => {
         render(<SystemTile {...baseProps} isSyncing showOverlay overlayText="Downloading..." />);
 
-        const button = document.querySelector('button');
+        const button = screen.getByRole('button');
         expect(button).toBeDisabled();
     });
 
