@@ -14,7 +14,7 @@
 
 import { useEffect } from 'react';
 import type { ReactElement } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DataContext } from '@armoury/data-context';
 import type { GameSystem } from '@armoury/data-dao';
@@ -258,7 +258,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
@@ -280,7 +280,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(createContainerWithModulesMock).toHaveBeenCalledWith(coreModuleMock, webModuleMock);
@@ -307,13 +307,13 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
         });
 
-        screen.getByRole('button', { name: 'Disable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: idle')).toBeInTheDocument();
@@ -332,7 +332,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
@@ -375,7 +375,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: error')).toBeInTheDocument();
@@ -395,7 +395,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Disable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: idle')).toBeInTheDocument();
@@ -418,7 +418,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: error')).toBeInTheDocument();
@@ -508,8 +508,8 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable A' }).click();
-        screen.getByRole('button', { name: 'Enable B' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable A' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable B' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
