@@ -38,6 +38,7 @@ function makeGameSystem(overrides: Partial<GameSystem> = {}): GameSystem {
         validationRules: [],
         getHydrators: vi.fn(() => new Map()),
         getSchemaExtension: vi.fn(() => ({})),
+        getSyncFileKeyPrefixes: vi.fn(() => []),
         register: vi.fn(),
         createGameContext: vi.fn(() => ({})),
     };

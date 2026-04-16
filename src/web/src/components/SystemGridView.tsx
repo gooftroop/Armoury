@@ -31,6 +31,8 @@ export interface SystemTileData {
     isSyncing: boolean;
     /** Whether the system has finished syncing successfully. */
     isSynced: boolean;
+    /** Whether this system is currently queued for sync. */
+    isQueued: boolean;
     /** Whether the last sync attempt failed. */
     isError: boolean;
     /** Whether overlay UI is shown for this tile. */
@@ -61,25 +63,28 @@ export interface SystemGridViewProps {
  */
 function SystemGridView({ tiles }: SystemGridViewProps): ReactElement {
     return (
-        <div
-            className="mb-10 grid w-full max-w-[1120px] gap-6"
+        <ul
+            aria-label="Game systems"
+            className="mb-10 grid w-full max-w-[1120px] list-none gap-6 p-0"
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))' }}
         >
             {tiles.map((tile) => (
-                <SystemTile
-                    key={tile.id}
-                    manifest={tile.manifest}
-                    isSyncing={tile.isSyncing}
-                    isSynced={tile.isSynced}
-                    isError={tile.isError}
-                    showOverlay={tile.showOverlay}
-                    overlayText={tile.overlayText}
-                    syncProgress={tile.syncProgress}
-                    href={tile.href}
-                    onClick={tile.onClick}
-                />
+                <li key={tile.id}>
+                    <SystemTile
+                        manifest={tile.manifest}
+                        isSyncing={tile.isSyncing}
+                        isSynced={tile.isSynced}
+                        isQueued={tile.isQueued}
+                        isError={tile.isError}
+                        showOverlay={tile.showOverlay}
+                        overlayText={tile.overlayText}
+                        syncProgress={tile.syncProgress}
+                        href={tile.href}
+                        onClick={tile.onClick}
+                    />
+                </li>
             ))}
-        </div>
+        </ul>
     );
 }
 

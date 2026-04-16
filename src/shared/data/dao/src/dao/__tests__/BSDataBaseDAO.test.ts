@@ -53,6 +53,7 @@ function createMockGitHubClient(): IGitHubClient {
         getFileSha: vi.fn(),
         downloadFile: vi.fn(),
         checkForUpdates: vi.fn(),
+        getFileLastCommitDate: vi.fn(),
     };
 }
 
@@ -73,6 +74,7 @@ describe('BSDataBaseDAO', () => {
 
             dao.fetchRemoteDataFn.mockResolvedValue(testData);
             vi.mocked(githubClient.getFileSha).mockResolvedValue('sha123');
+            vi.mocked(githubClient.getFileLastCommitDate).mockResolvedValue('2025-01-15T12:00:00Z');
 
             const result = await dao.load();
 
@@ -82,32 +84,33 @@ describe('BSDataBaseDAO', () => {
             await expect(adapter.getSyncStatus('test:file.gst')).resolves.toMatchObject({
                 fileKey: 'test:file.gst',
                 sha: 'sha123',
+                lastModified: '2025-01-15T12:00:00Z',
             });
         });
 
-        it('load() uses cached adapter data when SHA matches (checkForUpdates returns false)', async () => {
+        it('load() uses cached adapter data when remote commit date is not newer (no sync needed)', async () => {
             const cachedData = new TestModel({ id: 'test:file.gst', name: 'Cached' });
 
-            await adapter.setSyncStatus('test:file.gst', 'sha123');
+            await adapter.setSyncStatus('test:file.gst', 'sha123', undefined, '2025-01-15T12:00:00Z');
             await adapter.put('testEntity', cachedData);
 
-            vi.mocked(githubClient.checkForUpdates).mockResolvedValue(false);
+            vi.mocked(githubClient.getFileLastCommitDate).mockResolvedValue('2025-01-10T12:00:00Z');
 
             const result = await dao.load();
 
             expect(result).toEqual(cachedData);
             expect(dao.fetchRemoteDataFn).not.toHaveBeenCalled();
-            expect(githubClient.checkForUpdates).toHaveBeenCalledWith('owner', 'repo', 'test:file.gst', 'sha123');
+            expect(githubClient.getFileLastCommitDate).toHaveBeenCalledWith('owner', 'repo', 'test:file.gst');
         });
 
-        it('load() re-fetches remote data when SHA differs (checkForUpdates returns true)', async () => {
+        it('load() re-fetches remote data when remote commit date is newer (sync needed)', async () => {
             const oldData = new TestModel({ id: 'test:file.gst', name: 'Old' });
             const newData = new TestModel({ id: 'test:file.gst', name: 'New' });
 
-            await adapter.setSyncStatus('test:file.gst', 'oldSha');
+            await adapter.setSyncStatus('test:file.gst', 'oldSha', undefined, '2025-01-10T12:00:00Z');
             await adapter.put('testEntity', oldData);
 
-            vi.mocked(githubClient.checkForUpdates).mockResolvedValue(true);
+            vi.mocked(githubClient.getFileLastCommitDate).mockResolvedValue('2025-01-20T12:00:00Z');
             dao.fetchRemoteDataFn.mockResolvedValue(newData);
             vi.mocked(githubClient.getFileSha).mockResolvedValue('newSha');
 
@@ -121,14 +124,15 @@ describe('BSDataBaseDAO', () => {
             });
         });
 
-        it('load() re-fetches remote data when checkForUpdates throws (defaults to true)', async () => {
+        it('load() re-fetches remote data when getFileLastCommitDate throws (defaults to true)', async () => {
             const newData = new TestModel({ id: 'test:file.gst', name: 'Fallback' });
 
-            await adapter.setSyncStatus('test:file.gst', 'sha123');
+            await adapter.setSyncStatus('test:file.gst', 'sha123', undefined, '2025-01-10T12:00:00Z');
 
-            vi.mocked(githubClient.checkForUpdates).mockRejectedValue(new Error('Network error'));
+            vi.mocked(githubClient.getFileLastCommitDate).mockRejectedValueOnce(new Error('Network error'));
             dao.fetchRemoteDataFn.mockResolvedValue(newData);
             vi.mocked(githubClient.getFileSha).mockResolvedValue('newSha');
+            vi.mocked(githubClient.getFileLastCommitDate).mockResolvedValueOnce('2025-01-20T12:00:00Z');
 
             const result = await dao.load();
 
@@ -173,11 +177,12 @@ describe('BSDataBaseDAO', () => {
             expect(dao.fetchRemoteDataFn).toHaveBeenCalledTimes(2);
         });
 
-        it('load() calls updateSyncStatus with new SHA after successful fetch', async () => {
+        it('load() calls updateSyncStatus with new SHA and lastModified after successful fetch', async () => {
             const testData = new TestModel({ id: 'test:file.gst', name: 'Test' });
 
             dao.fetchRemoteDataFn.mockResolvedValue(testData);
             vi.mocked(githubClient.getFileSha).mockResolvedValue('newSha456');
+            vi.mocked(githubClient.getFileLastCommitDate).mockResolvedValue('2025-01-20T12:00:00Z');
 
             await dao.load();
 
@@ -185,6 +190,7 @@ describe('BSDataBaseDAO', () => {
 
             expect(syncStatus).not.toBeNull();
             expect(syncStatus!.sha).toBe('newSha456');
+            expect(syncStatus!.lastModified).toBe('2025-01-20T12:00:00Z');
         });
     });
 
@@ -193,19 +199,20 @@ describe('BSDataBaseDAO', () => {
             const cachedData = new TestModel({ id: 'test:file.gst', name: 'Cached' });
             const refreshedData = new TestModel({ id: 'test:file.gst', name: 'Refreshed' });
 
-            await adapter.setSyncStatus('test:file.gst', 'sha123');
+            await adapter.setSyncStatus('test:file.gst', 'sha123', undefined, '2025-01-15T12:00:00Z');
             await adapter.put('testEntity', cachedData);
 
-            vi.mocked(githubClient.checkForUpdates).mockResolvedValue(false);
+            vi.mocked(githubClient.getFileLastCommitDate).mockResolvedValue('2025-01-10T12:00:00Z');
             dao.fetchRemoteDataFn.mockResolvedValue(cachedData);
             vi.mocked(githubClient.getFileSha).mockResolvedValue('sha123');
 
             await dao.load();
-            // load() returns cached data without fetching (checkForUpdates returned false)
+            // load() returns cached data without fetching (remote date is older)
             expect(dao.fetchRemoteDataFn).toHaveBeenCalledTimes(0);
 
             dao.fetchRemoteDataFn.mockResolvedValue(refreshedData);
             vi.mocked(githubClient.getFileSha).mockResolvedValue('newSha');
+            vi.mocked(githubClient.getFileLastCommitDate).mockResolvedValue('2025-01-20T12:00:00Z');
 
             const result = await dao.refresh();
 

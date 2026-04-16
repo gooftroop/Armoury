@@ -231,6 +231,7 @@ function createMissingGitHubClient(): IGitHubClient {
     return {
         listFiles: throwMissing,
         getFileSha: throwMissing,
+        getFileLastCommitDate: throwMissing,
         downloadFile: throwMissing,
         checkForUpdates: noUpdates,
     };
@@ -408,6 +409,19 @@ class Wh40k10eSystem implements Wh40kGameSystem {
         });
 
         registerSchemaExtension(this.getSchemaExtension());
+    }
+
+    /**
+     * File-key prefixes written by this system's DAOs to the sync_status table.
+     *
+     * Covers: CoreRulesDAO ('core:'), FactionDAO ('factionModel:'),
+     * CrusadeRulesDAO ('crusadeRules:'), ChapterApprovedDAO ('wahapedia:').
+     */
+    private static readonly SYNC_FILE_KEY_PREFIXES = ['core:', 'factionModel:', 'crusadeRules:', 'wahapedia:'] as const;
+
+    /** @inheritdoc */
+    getSyncFileKeyPrefixes(): string[] {
+        return [...Wh40k10eSystem.SYNC_FILE_KEY_PREFIXES];
     }
 
     /**

@@ -159,7 +159,9 @@ class CoreRulesDAO extends BaseDAO<CoreRules> {
 
     protected override async onPostFetch(_data: CoreRules): Promise<void> {
         const sha = this.gstSha ?? 'unknown';
-        await this.adapter.setSyncStatus(this.getSyncFileKey(), sha);
+        const lastModified = await this.getRemoteLastCommitDate();
+
+        await this.adapter.setSyncStatus(this.getSyncFileKey(), sha, undefined, lastModified);
     }
 }
 

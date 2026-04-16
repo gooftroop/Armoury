@@ -127,7 +127,11 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const dataContextRef = React.useRef<DataContext | null>(null);
 
     /**
-     * Enables a game system by building a DataContext and syncing its data.
+     * Enables a game system using a two-phase flow:
+     * Phase 1 — Restore from cache: builds DataContext from local data only (no network),
+     *           sets status to 'ready' so the UI renders immediately with cached data.
+     * Phase 2 — Staleness check: triggers `dc.sync()` which checks each DAO's SHA against
+     *           GitHub via ETag-cached requests and only re-downloads changed files.
      *
      * @param system - The GameSystem descriptor to enable.
      */
@@ -140,10 +144,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
         setError(undefined);
 
         try {
-            /**
-             * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
-             * The builder pulls in drizzle-orm and adapter code which are heavy.
-             */
             const { DataContextBuilder } = await import('@armoury/data-context');
             const { queryClient } = await import('@/lib/queryClient.js');
             const container = createContainerWithModules(coreModule, mobileModule);
@@ -174,15 +174,25 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             const collector = new SyncProgressCollector(40);
             setSyncProgressCollector(collector);
 
+            // Phase 1: Build from cache — no network, UI renders immediately
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
                 .register('syncProgress', collector)
-                .build();
+                .buildFromCache();
 
-            const syncResult = dc.syncResult;
+            dataContextRef.current = dc;
+            setDataContext(dc);
+            setStatus('ready');
+            setSystemSyncStates((prev) => ({
+                ...prev,
+                [system.id]: { status: 'syncing' },
+            }));
+
+            // Phase 2: Staleness check — each DAO checks SHA via ETag, re-downloads only changed files
+            const syncResult = await dc.sync();
 
             if (syncResult && syncResult.failures.length > 0) {
                 for (const failure of syncResult.failures) {
@@ -220,9 +230,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 return;
             }
 
-            dataContextRef.current = dc;
-            setDataContext(dc);
-            setStatus('ready');
             setSystemSyncStates((prev) => ({
                 ...prev,
                 [system.id]: { status: 'synced' },

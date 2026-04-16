@@ -28,6 +28,8 @@ export interface LandingTileViewModel {
     isSyncing: boolean;
     /** Whether the tile has completed sync. */
     isSynced: boolean;
+    /** Whether this system is currently queued for sync. */
+    isQueued?: boolean;
     /** Whether the tile is currently in error state. */
     isError: boolean;
     /** Live sync progress state, if available. */
@@ -73,6 +75,7 @@ function LandingView({ tiles, scrollViewBg }: LandingViewProps): React.ReactElem
                         manifest={tile.manifest}
                         isSyncing={tile.isSyncing}
                         isSynced={tile.isSynced}
+                        isQueued={tile.isQueued}
                         isError={tile.isError}
                         syncProgress={tile.syncProgress}
                         onPress={tile.onPress}

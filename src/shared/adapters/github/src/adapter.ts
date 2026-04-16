@@ -4,6 +4,7 @@ import {
     GitHubClient,
     queryGitHubFile,
     queryGitHubFileSha,
+    queryGitHubFileLastCommitDate,
     queryGitHubUpdateCheck,
     queryGitHubFiles,
 } from '@armoury/clients-github';
@@ -72,6 +73,15 @@ export class GitHubAdapter implements IGitHubClient {
      */
     async checkForUpdates(owner: string, repo: string, path: string, knownSha: string): Promise<boolean> {
         return this.queryClient.fetchQuery(queryGitHubUpdateCheck(this.client, owner, repo, path, knownSha));
+    }
+
+    /**
+     * Retrieves the date of the most recent commit that modified a file.
+     *
+     * Uses React Query's `fetchQuery` for request deduplication and caching.
+     */
+    async getFileLastCommitDate(owner: string, repo: string, path: string): Promise<string> {
+        return this.queryClient.fetchQuery(queryGitHubFileLastCommitDate(this.client, owner, repo, path));
     }
 }
 

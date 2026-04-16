@@ -37,9 +37,28 @@ describe('fetchWahapediaPageRaw', () => {
 
         const result = await fetchWahapediaPageRaw('https://wahapedia.ru/wh40k10ed/the-rules/chapter-approved/');
 
-        expect(result).toBe(html);
+        expect(result).toEqual({ content: html, lastModified: undefined });
         expect(fetchCalls).toHaveLength(1);
         expect(fetchCalls[0][0]).toBe('https://wahapedia.ru/wh40k10ed/the-rules/chapter-approved/');
+    });
+
+    it('returns ISO lastModified when Last-Modified header is present', async () => {
+        const html = '<html><body>dated</body></html>';
+        setFetchResponse(
+            new Response(html, {
+                status: 200,
+                headers: {
+                    'Last-Modified': 'Wed, 21 Oct 2015 07:28:00 GMT',
+                },
+            }),
+        );
+
+        const result = await fetchWahapediaPageRaw('https://wahapedia.ru/wh40k10ed/dated');
+
+        expect(result).toEqual({
+            content: html,
+            lastModified: '2015-10-21T07:28:00.000Z',
+        });
     });
 
     it('includes User-Agent header', async () => {
@@ -82,7 +101,7 @@ describe('fetchWahapediaPageRaw', () => {
 
         const result = await fetchWahapediaPageRaw('https://wahapedia.ru/test', customFetch as typeof fetch);
 
-        expect(result).toBe(html);
+        expect(result).toEqual({ content: html, lastModified: undefined });
         expect(customFetch).toHaveBeenCalledOnce();
         // Global fetch should NOT have been called
         expect(fetchCalls).toHaveLength(0);

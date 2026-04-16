@@ -177,6 +177,51 @@ describe('GitHubClient', () => {
         });
     });
 
+    describe('getFileLastCommitDate', () => {
+        it('returns commit date from valid response', async () => {
+            const commits = [{ commit: { committer: { date: '2024-06-01T12:00:00Z' } } }];
+            setFetchResponse(new Response(JSON.stringify(commits), { status: 200 }));
+
+            const client = new GitHubClient();
+            const result = await client.getFileLastCommitDate('BSData', 'wh40k-10e', 'data/test.cat');
+
+            expect(result).toBe('2024-06-01T12:00:00Z');
+            expect(fetchCalls[0][0]).toBe(
+                `${GITHUB_API_BASE_URL}/repos/BSData/wh40k-10e/commits?path=data%2Ftest.cat&per_page=1`,
+            );
+        });
+
+        it('constructs correct URL with encoded path', async () => {
+            const commits = [{ commit: { committer: { date: '2024-06-01T12:00:00Z' } } }];
+            setFetchResponse(new Response(JSON.stringify(commits), { status: 200 }));
+
+            const client = new GitHubClient();
+            await client.getFileLastCommitDate('BSData', 'wh40k-10e', 'data/test.cat');
+
+            expect(fetchCalls[0][0]).toBe(
+                `${GITHUB_API_BASE_URL}/repos/BSData/wh40k-10e/commits?path=data%2Ftest.cat&per_page=1`,
+            );
+        });
+
+        it('throws GitHubApiError on empty array', async () => {
+            setFetchResponse(new Response(JSON.stringify([]), { status: 200 }));
+
+            const client = new GitHubClient();
+            await expect(client.getFileLastCommitDate('BSData', 'wh40k-10e', 'data/test.cat')).rejects.toThrow(
+                GitHubApiError,
+            );
+        });
+
+        it('throws GitHubApiError on non-array response', async () => {
+            setFetchResponse(new Response(JSON.stringify({}), { status: 200 }));
+
+            const client = new GitHubClient();
+            await expect(client.getFileLastCommitDate('BSData', 'wh40k-10e', 'data/test.cat')).rejects.toThrow(
+                GitHubApiError,
+            );
+        });
+    });
+
     describe('rate limit handling', () => {
         it('throws RateLimitError on 429 after retries', async () => {
             vi.spyOn(globalThis, 'setTimeout').mockImplementation((handler: TimerHandler) => {

@@ -69,13 +69,23 @@ export class MockDatabaseAdapter implements DatabaseAdapter {
                 collection.delete(id);
             }
         }
-
-        return;
     }
 
     public async transaction<R>(fn: () => Promise<R>): Promise<R> {
         return fn();
     }
+
+    public async getSyncStatus(): Promise<null> {
+        return null;
+    }
+
+    public async getAllSyncStatuses(): Promise<unknown[]> {
+        return [];
+    }
+
+    public async setSyncStatus(): Promise<void> {}
+
+    public async deleteSyncStatus(): Promise<void> {}
 
     private ensureStore<T extends EntityType>(store: T): Map<string, EntityMap[T]> {
         const existing = this.stores.get(store) as Map<string, EntityMap[T]> | undefined;

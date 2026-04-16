@@ -14,7 +14,7 @@
 
 import { useEffect } from 'react';
 import type { ReactElement } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DataContext } from '@armoury/data-context';
 import type { GameSystem } from '@armoury/data-dao';
@@ -27,6 +27,10 @@ const {
     dataContextBuilderMock,
     getQueryClientMock,
     captureExceptionMock,
+    pgliteAdapterMock,
+    PGliteAdapterConstructorMock,
+    resolveGameSystemMock,
+    getKnownSystemIdsMock,
     queryClientToken,
     adapterFactoryToken,
     githubFactoryToken,
@@ -42,6 +46,14 @@ const {
         dataContextBuilderMock: { builder: vi.fn() },
         getQueryClientMock: vi.fn(),
         captureExceptionMock: vi.fn(),
+        pgliteAdapterMock: {
+            initialize: vi.fn().mockResolvedValue(undefined),
+            getAllSyncStatuses: vi.fn().mockResolvedValue([]),
+            close: vi.fn().mockResolvedValue(undefined),
+        },
+        PGliteAdapterConstructorMock: vi.fn(),
+        resolveGameSystemMock: vi.fn(),
+        getKnownSystemIdsMock: vi.fn().mockReturnValue(['wh40k10e']),
         queryClientToken: Symbol.for('QueryClient'),
         adapterFactoryToken: Symbol.for('AdapterFactory'),
         githubFactoryToken: Symbol.for('GitHubClientFactory'),
@@ -82,6 +94,15 @@ vi.mock('@/lib/getQueryClient.js', () => ({
 
 vi.mock('@sentry/nextjs', () => ({
     captureException: captureExceptionMock,
+}));
+
+vi.mock('@armoury/adapters-pglite', () => ({
+    PGliteAdapter: PGliteAdapterConstructorMock,
+}));
+
+vi.mock('@/lib/resolveGameSystem.js', () => ({
+    resolveGameSystem: resolveGameSystemMock,
+    getKnownSystemIds: getKnownSystemIdsMock,
 }));
 
 interface HarnessControls {
@@ -127,7 +148,7 @@ function OutsideHookConsumer(): ReactElement {
 }
 
 describe('DataContextProvider (web)', () => {
-    const adapter = { rawQuery: vi.fn(), initialize: vi.fn() };
+    const adapter = { rawQuery: vi.fn(), initialize: vi.fn(), close: vi.fn().mockResolvedValue(undefined) };
     const githubClient = { name: 'github-client' };
     const wahapediaClient = { name: 'wahapedia-client' };
     const queryClient = { id: 'query-client' } as unknown as QueryClient;
@@ -173,20 +194,28 @@ describe('DataContextProvider (web)', () => {
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
-            build: vi.fn(
+            buildFromCache: vi.fn(
                 async () =>
                     ({
                         close: closeMock,
-                        syncResult: {
+                        sync: vi.fn(async () => ({
                             success: true,
                             total: 2,
                             succeeded: ['dao-a', 'dao-b'],
                             failures: [],
                             timestamp: '2026-01-01T00:00:00.000Z',
-                        },
+                        })),
                     }) as unknown as DataContext,
             ),
         });
+        PGliteAdapterConstructorMock.mockImplementation(function PGliteAdapterMockImpl() {
+            return pgliteAdapterMock;
+        });
+        pgliteAdapterMock.initialize.mockResolvedValue(undefined);
+        pgliteAdapterMock.getAllSyncStatuses.mockResolvedValue([]);
+        pgliteAdapterMock.close.mockResolvedValue(undefined);
+        getKnownSystemIdsMock.mockReturnValue(['wh40k10e']);
+        resolveGameSystemMock.mockResolvedValue(null);
     });
 
     it('renders children without crashing', () => {
@@ -229,7 +258,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
@@ -251,7 +280,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(createContainerWithModulesMock).toHaveBeenCalledWith(coreModuleMock, webModuleMock);
@@ -278,13 +307,13 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
         });
 
-        screen.getByRole('button', { name: 'Disable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: idle')).toBeInTheDocument();
@@ -303,7 +332,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
@@ -329,11 +358,11 @@ describe('DataContextProvider (web)', () => {
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
-            build: vi.fn(
+            buildFromCache: vi.fn(
                 async () =>
                     ({
                         close: closeMock,
-                        syncResult: partialFailure,
+                        sync: vi.fn(async () => partialFailure),
                     }) as unknown as DataContext,
             ),
         });
@@ -346,7 +375,7 @@ describe('DataContextProvider (web)', () => {
             </DataContextProvider>,
         );
 
-        screen.getByRole('button', { name: 'Enable' }).click();
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: error')).toBeInTheDocument();
@@ -355,5 +384,216 @@ describe('DataContextProvider (web)', () => {
         expect(screen.getByText('Sync: error')).toBeInTheDocument();
         expect(screen.getByText(/Partial sync failure: 1\/2 DAOs failed/)).toBeInTheDocument();
         expect(captureExceptionMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('disableSystem is a no-op when already idle', async () => {
+        const controls: HarnessControls = { statuses: [] };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+            </DataContextProvider>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Status: idle')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('Error: none')).toBeInTheDocument();
+        expect(closeMock).not.toHaveBeenCalled();
+    });
+
+    it('enableSystem sets error state when container creation fails', async () => {
+        createContainerWithModulesMock.mockImplementationOnce(() => {
+            throw new Error('Container creation failed');
+        });
+
+        const controls: HarnessControls = { statuses: [] };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} system={{ id: 'wh40k10e', getContainerModule: () => systemModule }} />
+            </DataContextProvider>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Status: error')).toBeInTheDocument();
+        });
+    });
+
+    it('probeSyncedSystems handles adapter initialization failure gracefully', async () => {
+        pgliteAdapterMock.initialize.mockRejectedValueOnce(new Error('Init failed'));
+
+        const controls: HarnessControls = { statuses: [] };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+            </DataContextProvider>,
+        );
+
+        await waitFor(() => {
+            expect(pgliteAdapterMock.initialize).toHaveBeenCalled();
+        });
+
+        expect(screen.getByText('Status: idle')).toBeInTheDocument();
+        expect(screen.getByText('Sync: none')).toBeInTheDocument();
+    });
+
+    it('concurrent enableSystem calls for different systems are handled', async () => {
+        dataContextBuilderMock.builder.mockImplementation(() => ({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: closeMock,
+                        sync: vi.fn(async () => ({
+                            success: true,
+                            total: 2,
+                            succeeded: ['dao-a', 'dao-b'],
+                            failures: [],
+                            timestamp: '2026-01-01T00:00:00.000Z',
+                        })),
+                    }) as unknown as DataContext,
+            ),
+        }));
+
+        function MultiSystemHarness(): ReactElement {
+            const ctx = useDataContext();
+            const systemA = {
+                id: 'wh40k10e',
+                getContainerModule: () => systemModule,
+                register: vi.fn().mockResolvedValue(undefined),
+                createGameContext: vi.fn().mockReturnValue({
+                    armies: {},
+                    campaigns: {},
+                    game: {},
+                    sync: vi.fn().mockResolvedValue({ success: true, total: 0, succeeded: [], failures: [] }),
+                }),
+            } as unknown as GameSystem;
+            const systemB = {
+                id: 'system-b',
+                getContainerModule: () => systemModule,
+                register: vi.fn().mockResolvedValue(undefined),
+                createGameContext: vi.fn().mockReturnValue({
+                    armies: {},
+                    campaigns: {},
+                    game: {},
+                    sync: vi.fn().mockResolvedValue({ success: true, total: 0, succeeded: [], failures: [] }),
+                }),
+            } as unknown as GameSystem;
+
+            return (
+                <div>
+                    <div>Status: {ctx.status}</div>
+                    <button type="button" onClick={() => void ctx.enableSystem(systemA)}>
+                        Enable A
+                    </button>
+                    <button type="button" onClick={() => void ctx.enableSystem(systemB)}>
+                        Enable B
+                    </button>
+                </div>
+            );
+        }
+
+        render(
+            <DataContextProvider>
+                <MultiSystemHarness />
+            </DataContextProvider>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Enable A' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable B' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Status: ready')).toBeInTheDocument();
+        });
+    });
+
+    describe('probeSyncedSystems persistence probe', () => {
+        it('restores sync state for systems with matching file keys on mount', async () => {
+            pgliteAdapterMock.getAllSyncStatuses.mockResolvedValueOnce([
+                {
+                    fileKey: 'core:wh40k-10e.gst',
+                    sha: 'abc',
+                    lastSynced: new Date('2026-01-01T00:00:00.000Z'),
+                },
+            ]);
+            resolveGameSystemMock.mockResolvedValueOnce({
+                getSyncFileKeyPrefixes: () => ['core:', 'factionModel:', 'crusadeRules:', 'wahapedia:'],
+            });
+
+            const controls: HarnessControls = { statuses: [] };
+
+            render(
+                <DataContextProvider>
+                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                </DataContextProvider>,
+            );
+
+            await waitFor(() => {
+                expect(screen.getByText('Sync: synced')).toBeInTheDocument();
+            });
+        });
+
+        it('does not restore sync state when no synced data exists', async () => {
+            pgliteAdapterMock.getAllSyncStatuses.mockResolvedValueOnce([]);
+
+            const controls: HarnessControls = { statuses: [] };
+
+            render(
+                <DataContextProvider>
+                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                </DataContextProvider>,
+            );
+
+            await waitFor(() => {
+                expect(pgliteAdapterMock.getAllSyncStatuses).toHaveBeenCalledTimes(1);
+            });
+
+            expect(screen.getByText('Sync: none')).toBeInTheDocument();
+        });
+
+        it('aborts probe on unmount', async () => {
+            const deferredStatuses: {
+                resolve: (statuses: Array<{ fileKey: string; sha: string; lastSynced: Date }>) => void;
+            } = {
+                resolve: () => undefined,
+            };
+            const pendingStatuses = new Promise<Array<{ fileKey: string; sha: string; lastSynced: Date }>>(
+                (resolve) => {
+                    deferredStatuses.resolve = resolve;
+                },
+            );
+            pgliteAdapterMock.getAllSyncStatuses.mockReturnValueOnce(pendingStatuses);
+
+            const controls: HarnessControls = { statuses: [] };
+            const rendered = render(
+                <DataContextProvider>
+                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                </DataContextProvider>,
+            );
+
+            rendered.unmount();
+            deferredStatuses.resolve([
+                {
+                    fileKey: 'core:wh40k-10e.gst',
+                    sha: 'abc',
+                    lastSynced: new Date('2026-01-01T00:00:00.000Z'),
+                },
+            ]);
+
+            await waitFor(() => {
+                expect(pgliteAdapterMock.close).toHaveBeenCalledTimes(1);
+            });
+
+            expect(resolveGameSystemMock).not.toHaveBeenCalled();
+        });
     });
 });

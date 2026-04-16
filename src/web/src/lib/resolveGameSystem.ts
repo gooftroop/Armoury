@@ -8,11 +8,30 @@
  * 1. Must resolve known system IDs to concrete GameSystem instances.
  * 2. Must return null for unknown systems.
  * 3. Must use dynamic imports.
+ * 4. Must expose the list of known system IDs for sync-state probing.
  *
  * @module resolveGameSystem
  */
 
 import type { GameSystem } from '@armoury/data-dao';
+
+/**
+ * All game system IDs that this application can resolve.
+ *
+ * Used by the DataContextProvider to discover which systems have synced data
+ * in the database without hardcoding file-key-to-system mappings. When a new
+ * game system is added, add its ID here AND add a case to {@link resolveGameSystem}.
+ */
+const KNOWN_SYSTEM_IDS: readonly string[] = ['wh40k10e'] as const;
+
+/**
+ * Returns the list of all game system IDs that this application supports.
+ *
+ * @returns Readonly array of known system IDs.
+ */
+export function getKnownSystemIds(): readonly string[] {
+    return KNOWN_SYSTEM_IDS;
+}
 
 /**
  * Resolves a GameSystem implementation for the provided manifest identifier.

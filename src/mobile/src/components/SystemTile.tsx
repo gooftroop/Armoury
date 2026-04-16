@@ -6,6 +6,7 @@
  * 2. Must preserve accessibility role, label, and hint for tile activation.
  * 3. Must derive tile theming from Tamagui useTheme.
  * 4. Must not perform orchestration logic or data fetching.
+ * 5. Must render queued badge when system is pending in sync queue.
  *
  * @module system-tile
  */
@@ -27,6 +28,8 @@ export interface SystemTileProps {
     isSyncing: boolean;
     /** Whether this tile has finished syncing. */
     isSynced: boolean;
+    /** Whether this tile is currently queued in the sync queue. */
+    isQueued?: boolean;
     /** Whether the last sync attempt failed. */
     isError: boolean;
     /** Live sync progress state, if available. */
@@ -45,6 +48,7 @@ function SystemTile({
     manifest,
     isSyncing,
     isSynced,
+    isQueued,
     isError,
     syncProgress,
     onPress,
@@ -120,6 +124,14 @@ function SystemTile({
                         </Paragraph>
                     </View>
                 )}
+
+                {isQueued && !isSyncing && !isSynced && (
+                    <View style={styles.queuedBadge}>
+                        <Paragraph color="$info" size="$1" fontWeight="600">
+                            ⏳ Queued
+                        </Paragraph>
+                    </View>
+                )}
             </View>
 
             <View style={styles.tileFooter}>
@@ -169,6 +181,15 @@ const styles = StyleSheet.create({
         top: 8,
         right: 8,
         backgroundColor: 'rgba(0, 60, 0, 0.6)',
+        borderRadius: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+    },
+    queuedBadge: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        backgroundColor: 'rgba(30, 58, 138, 0.6)',
         borderRadius: 12,
         paddingHorizontal: 10,
         paddingVertical: 4,

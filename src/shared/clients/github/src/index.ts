@@ -22,6 +22,7 @@ export {
     buildQueryGitHubFileShaKey,
     buildQueryGitHubFileKey,
     buildQueryGitHubUpdateCheckKey,
+    buildQueryGitHubFileLastCommitDateKey,
 } from '@/queries/buildQueryGitHubKeys.js';
 
 // === Query Options Builders ===
@@ -29,3 +30,4 @@ export { queryGitHubFiles } from '@/queries/queryGitHubFiles.js';
 export { queryGitHubFileSha } from '@/queries/queryGitHubFileSha.js';
 export { queryGitHubFile } from '@/queries/queryGitHubFile.js';
 export { queryGitHubUpdateCheck } from '@/queries/queryGitHubUpdateCheck.js';
+export { queryGitHubFileLastCommitDate } from '@/queries/queryGitHubFileLastCommitDate.js';

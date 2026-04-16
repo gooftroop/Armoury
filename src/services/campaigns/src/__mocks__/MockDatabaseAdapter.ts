@@ -135,6 +135,10 @@ export class MockDatabaseAdapter implements DatabaseAdapter {
         return null;
     }
 
+    public async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        return [];
+    }
+
     public async setSyncStatus(_fileKey: string, _sha: string, _etag?: string): Promise<void> {
         return;
     }

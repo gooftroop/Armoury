@@ -28,6 +28,7 @@ describe('CrusadeRulesDAO', () => {
             checkForUpdates: vi.fn(),
             listFiles: vi.fn(),
             downloadFile: vi.fn(),
+            getFileLastCommitDate: vi.fn(),
         };
         dao = new CrusadeRulesDAO(adapter, mockGitHubClient);
     });

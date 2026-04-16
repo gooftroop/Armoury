@@ -1,3 +1,22 @@
+/**
+ * SystemTile component tests.
+ *
+ * @requirements
+ * | Requirement | Description | Covered By |
+ * | --- | --- | --- |
+ * | REQ-ST-01 | Renders spinner when syncing without progress data. | "renders spinner when syncing without progress data" |
+ * | REQ-ST-02 | Renders spinner when syncing with idle progress. | "renders spinner when syncing with idle progress" |
+ * | REQ-ST-03 | Renders ProgressBar when syncing with syncing-phase progress. | "renders ProgressBar when syncing with syncing-phase progress" |
+ * | REQ-ST-04 | Renders ProgressBar with failures visible. | "renders ProgressBar with failures visible" |
+ * | REQ-ST-05 | Renders error icon when isError is true. | "renders error icon when isError is true" |
+ * | REQ-ST-06 | Renders synced badge when isSynced. | "renders synced badge when isSynced" |
+ * | REQ-ST-07 | Wraps in Link when href is provided. | "wraps in Link when href is provided" |
+ * | REQ-ST-08 | Calls onClick when overlay is clicked. | "calls onClick when overlay is clicked" |
+ * | REQ-ST-09 | Disables overlay button when syncing. | "disables overlay button when syncing" |
+ * | REQ-ST-10 | Renders queued badge when isQueued. | "renders queued badge when isQueued is true" |
+ * | REQ-ST-11 | Does not render overlay when showOverlay is false. | "does not render overlay when showOverlay is false" |
+ */
+
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -42,8 +61,7 @@ describe('SystemTile', () => {
     it('renders spinner when syncing without progress data', () => {
         render(<SystemTile {...baseProps} isSyncing showOverlay overlayText="Downloading..." />);
 
-        const svg = document.querySelector('.animate-spin');
-        expect(svg).toBeInTheDocument();
+        expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
@@ -66,8 +84,7 @@ describe('SystemTile', () => {
             />,
         );
 
-        const svg = document.querySelector('.animate-spin');
-        expect(svg).toBeInTheDocument();
+        expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
@@ -93,7 +110,7 @@ describe('SystemTile', () => {
         expect(screen.getByRole('progressbar')).toBeInTheDocument();
         expect(screen.getByText('15/40')).toBeInTheDocument();
         expect(screen.getByText('Syncing 15/40')).toBeInTheDocument();
-        expect(document.querySelector('.animate-spin')).not.toBeInTheDocument();
+        expect(screen.queryByRole('status', { name: 'Loading' })).not.toBeInTheDocument();
     });
 
     it('renders ProgressBar with failures visible', () => {
@@ -137,8 +154,8 @@ describe('SystemTile', () => {
             <SystemTile {...baseProps} isSynced showOverlay={false} overlayText="Synced" href="./wh40k10e/armies" />,
         );
 
-        const link = document.querySelector('a[href="./wh40k10e/armies"]');
-        expect(link).toBeInTheDocument();
+        const link = screen.getByRole('link');
+        expect(link).toHaveAttribute('href', './wh40k10e/armies');
     });
 
     it('calls onClick when overlay is clicked', async () => {
@@ -152,7 +169,25 @@ describe('SystemTile', () => {
     it('disables overlay button when syncing', () => {
         render(<SystemTile {...baseProps} isSyncing showOverlay overlayText="Downloading..." />);
 
-        const button = document.querySelector('button');
+        const button = screen.getByRole('button');
         expect(button).toBeDisabled();
+    });
+
+    it('renders queued badge when isQueued is true', () => {
+        render(<SystemTile {...baseProps} isQueued={true} />);
+
+        expect(screen.getByText('Queued')).toBeInTheDocument();
+    });
+
+    it('does not render queued badge when syncing', () => {
+        render(<SystemTile {...baseProps} isQueued={true} isSyncing={true} />);
+
+        expect(screen.queryByText('Queued')).not.toBeInTheDocument();
+    });
+
+    it('does not render overlay when showOverlay is false', () => {
+        render(<SystemTile {...baseProps} showOverlay={false} />);
+
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 });

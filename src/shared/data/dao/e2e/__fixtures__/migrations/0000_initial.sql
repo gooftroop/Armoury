@@ -79,5 +79,6 @@ CREATE TABLE IF NOT EXISTS "sync_status" (
     "file_key" TEXT PRIMARY KEY,
     "sha" TEXT NOT NULL,
     "last_synced" TIMESTAMP NOT NULL,
-    "etag" TEXT
+    "etag" TEXT,
+    "last_modified" TEXT
 );

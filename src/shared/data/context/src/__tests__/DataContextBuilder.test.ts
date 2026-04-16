@@ -73,6 +73,7 @@ function createStubGameSystem(): GameSystem {
         validationRules: [],
         getHydrators: vi.fn(() => new Map()),
         getSchemaExtension: vi.fn(() => ({})),
+        getSyncFileKeyPrefixes: vi.fn(() => []),
         register: vi.fn(),
         createGameContext: vi.fn(() => gameContext),
     };
@@ -336,6 +337,159 @@ describe('DataContextBuilder', () => {
             await expect(
                 new DataContextBuilder().system(stubSystem).adapter(mockAdapter).build(),
             ).resolves.toBeDefined();
+        });
+    });
+
+    describe('buildFromCache', () => {
+        it('returns a functional DataContext without calling sync', async () => {
+            const dc = await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .register('github', { listFiles: vi.fn() })
+                .buildFromCache();
+
+            expect(dc).toBeDefined();
+            expect(dc.accounts).toBeDefined();
+            expect(dc.armies).toBeDefined();
+            expect(dc.campaigns).toBeDefined();
+            expect(dc.game).toBeDefined();
+
+            // Sync should NOT have been called during buildFromCache
+            const gameContext = vi.mocked(stubSystem.createGameContext).mock.results[0]?.value as GameContextResult;
+            expect(gameContext.sync).not.toHaveBeenCalled();
+
+            // No syncResult should be set
+            expect(dc.syncResult).toBeUndefined();
+
+            await dc.close();
+        });
+
+        it('calls register() and initialize() like build()', async () => {
+            const initializeSpy = vi.spyOn(mockAdapter, 'initialize');
+
+            await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).buildFromCache();
+
+            expect(stubSystem.register).toHaveBeenCalledOnce();
+            expect(initializeSpy).toHaveBeenCalledOnce();
+        });
+
+        it('throws if no system is provided', async () => {
+            await expect(new DataContextBuilder().adapter(mockAdapter).buildFromCache()).rejects.toThrow(
+                'Game system is required to build a DataContext.',
+            );
+        });
+
+        it('throws if no adapter is provided', async () => {
+            await expect(new DataContextBuilder().system(stubSystem).buildFromCache()).rejects.toThrow(
+                'An adapter must be provided to build a DataContext.',
+            );
+        });
+    });
+
+    describe('sync() method', () => {
+        it('triggers staleness check and updates syncResult', async () => {
+            const dc = await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .register('github', { listFiles: vi.fn() })
+                .buildFromCache();
+
+            // syncResult should not be set yet
+            expect(dc.syncResult).toBeUndefined();
+
+            const result = await dc.sync();
+
+            expect(result).toBeDefined();
+            expect(result!.succeeded).toContain('CoreRules');
+            expect(dc.syncResult).toBe(result);
+
+            await dc.close();
+        });
+
+        it('returns null when no github client is registered', async () => {
+            const dc = await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).buildFromCache();
+
+            const result = await dc.sync();
+
+            expect(result).toBeNull();
+            expect(dc.syncResult).toBeUndefined();
+
+            await dc.close();
+        });
+
+        it('returns null when sync function does not exist on game context', async () => {
+            const gameContextWithoutSync = {
+                armies: {
+                    save: vi.fn(),
+                    saveMany: vi.fn(),
+                    get: vi.fn(),
+                    list: vi.fn(),
+                    listByOwner: vi.fn(),
+                    listByFaction: vi.fn(),
+                    delete: vi.fn(),
+                    deleteAll: vi.fn(),
+                    count: vi.fn(),
+                },
+                campaigns: {
+                    save: vi.fn(),
+                    saveMany: vi.fn(),
+                    get: vi.fn(),
+                    list: vi.fn(),
+                    listByOrganizer: vi.fn(),
+                    listByStatus: vi.fn(),
+                    listByType: vi.fn(),
+                    delete: vi.fn(),
+                    deleteAll: vi.fn(),
+                    count: vi.fn(),
+                },
+                matches: {
+                    save: vi.fn(),
+                    saveMany: vi.fn(),
+                    get: vi.fn(),
+                    list: vi.fn(),
+                    listByPlayer: vi.fn(),
+                    listByCampaign: vi.fn(),
+                    delete: vi.fn(),
+                    deleteAll: vi.fn(),
+                    count: vi.fn(),
+                },
+                game: {},
+            };
+
+            vi.mocked(stubSystem.createGameContext).mockReturnValue(gameContextWithoutSync);
+
+            const dc = await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .register('github', { listFiles: vi.fn() })
+                .buildFromCache();
+
+            const result = await dc.sync();
+
+            expect(result).toBeNull();
+
+            await dc.close();
+        });
+
+        it('can be called after buildFromCache to complete two-phase flow', async () => {
+            const dc = await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .register('github', { listFiles: vi.fn() })
+                .buildFromCache();
+
+            // Phase 1: DataContext ready with cached data, no sync yet
+            expect(dc.syncResult).toBeUndefined();
+            expect(dc.armies).toBeDefined();
+
+            // Phase 2: Trigger sync manually
+            const result = await dc.sync();
+
+            expect(result).toBeDefined();
+            expect(result!.success).toBe(true);
+            expect(dc.syncResult).toBe(result);
+
+            await dc.close();
         });
     });
 

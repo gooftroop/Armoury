@@ -368,6 +368,7 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
                 sha: String(record.sha),
                 lastSynced: new Date(String(record.lastSynced)),
                 etag: record.etag ? String(record.etag) : undefined,
+                lastModified: record.lastModified ? String(record.lastModified) : undefined,
             };
         } catch (error) {
             throw new DatabaseError(
@@ -377,7 +378,33 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
         }
     }
 
-    async setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void> {
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        const db = this.getDatabase();
+        const syncStatusTable = this.syncStatusTable;
+
+        if (!syncStatusTable) {
+            throw new DatabaseError('Sync status table not registered', 'SELECT');
+        }
+
+        try {
+            const rows = await db.select().from(syncStatusTable);
+
+            return rows.map((row) => ({
+                fileKey: String(row.fileKey),
+                sha: String(row.sha),
+                lastSynced: new Date(String(row.lastSynced)),
+                etag: row.etag ? String(row.etag) : undefined,
+                lastModified: row.lastModified ? String(row.lastModified) : undefined,
+            }));
+        } catch (error) {
+            throw new DatabaseError(
+                `Failed to getAllSyncStatuses: ${error instanceof Error ? error.message : String(error)}`,
+                'SELECT',
+            );
+        }
+    }
+
+    async setSyncStatus(fileKey: string, sha: string, etag?: string, lastModified?: string): Promise<void> {
         const db = this.getDatabase();
         const syncStatusTable = this.syncStatusTable;
 
@@ -393,6 +420,7 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
                     sha,
                     lastSynced: new Date().toISOString(),
                     etag,
+                    lastModified,
                 })
                 .onConflictDoUpdate({
                     target: syncStatusTable.fileKey,
@@ -400,6 +428,7 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
                         sha,
                         lastSynced: new Date().toISOString(),
                         etag,
+                        lastModified,
                     },
                 });
         } catch (error) {

@@ -3,6 +3,7 @@
  * 1. Must export a layout that wraps the game system application shell.
  * 2. Must render the SideNav (desktop) and BottomNav (mobile).
  * 3. Navigation components derive the game system from the URL via useGameSystem().
+ * 4. Must gate children content behind SystemAccessGate for sync validation.
  */
 
 import type { ReactNode } from 'react';
@@ -10,6 +11,7 @@ import type { ReactNode } from 'react';
 import { SideNav } from '@/components/navigation/SideNav.js';
 import { BottomNav } from '@/components/navigation/BottomNav.js';
 import { SystemAutoRestore } from '@/components/SystemAutoRestore.js';
+import { SystemAccessGate } from '@/components/SystemAccessGate.js';
 import { auth0 } from '@/lib/auth0.js';
 
 export interface AppLayoutProps {
@@ -40,7 +42,9 @@ export default async function AppLayout({ children, params }: AppLayoutProps) {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex-col pb-14 md:pb-0 relative min-h-0 min-w-0">{children}</div>
+            <div className="flex-1 flex-col pb-14 md:pb-0 relative min-h-0 min-w-0">
+                <SystemAccessGate systemId="wh40k10e">{children}</SystemAccessGate>
+            </div>
 
             {/* Mobile Bottom Navigation */}
             <div className="md:hidden">

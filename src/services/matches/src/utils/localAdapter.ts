@@ -273,6 +273,18 @@ export class LocalDatabaseAdapter implements DatabaseAdapter {
         }
     }
 
+    public async getSyncStatus(): Promise<null> {
+        return null;
+    }
+
+    public async getAllSyncStatuses(): Promise<unknown[]> {
+        return [];
+    }
+
+    public async setSyncStatus(): Promise<void> {}
+
+    public async deleteSyncStatus(): Promise<void> {}
+
     private getClient(): PgClient {
         if (!this.client) {
             throw new Error('Local database adapter not initialized');

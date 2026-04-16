@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { IWahapediaClient, IWahapediaParser } from '@armoury/clients-wahapedia';
+import type { WahapediaFetchResult } from '@armoury/clients-wahapedia';
 import { queryWahapedia, queryWahapediaRaw } from '@armoury/clients-wahapedia';
 
 /**
@@ -54,7 +55,20 @@ export class WahapediaAdapter implements IWahapediaClient {
      * @throws Error if fetching fails.
      */
     async fetchRaw(url: string): Promise<string> {
-        return this.queryClient.fetchQuery(queryWahapediaRaw(url));
+        const result = await this.queryClient.fetchQuery(queryWahapediaRaw(url));
+
+        return this.extractContent(result);
+    }
+
+    /**
+     * Extracts raw HTML content from either a string payload or structured fetch result.
+     */
+    private extractContent(result: string | WahapediaFetchResult): string {
+        if (typeof result === 'string') {
+            return result;
+        }
+
+        return result.content;
     }
 }
 

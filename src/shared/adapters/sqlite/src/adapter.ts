@@ -418,10 +418,42 @@ export class SQLiteAdapter extends BaseDatabaseAdapter {
                 sha: String(record.sha),
                 lastSynced: new Date(String(record.lastSynced)),
                 etag: record.etag ? String(record.etag) : undefined,
+                lastModified: record.lastModified ? String(record.lastModified) : undefined,
             };
         } catch (error) {
             throw new DatabaseError(
                 `Failed to getSyncStatus: ${error instanceof Error ? error.message : String(error)}`,
+                'SELECT',
+            );
+        }
+    }
+
+    /**
+     * Retrieves all sync statuses for BattleScribe data files.
+     * @returns Array of all FileSyncStatus objects
+     * @throws {DatabaseError} If the query fails
+     */
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        const db = this.getDatabase();
+        const syncStatusTable = this.syncStatusTable;
+
+        if (!syncStatusTable) {
+            throw new DatabaseError('Sync status table not registered', 'SELECT');
+        }
+
+        try {
+            const results = await db.select().from(syncStatusTable);
+
+            return results.map((record) => ({
+                fileKey: String(record.fileKey),
+                sha: String(record.sha),
+                lastSynced: new Date(String(record.lastSynced)),
+                etag: record.etag ? String(record.etag) : undefined,
+                lastModified: record.lastModified ? String(record.lastModified) : undefined,
+            }));
+        } catch (error) {
+            throw new DatabaseError(
+                `Failed to getAllSyncStatuses: ${error instanceof Error ? error.message : String(error)}`,
                 'SELECT',
             );
         }
@@ -435,7 +467,7 @@ export class SQLiteAdapter extends BaseDatabaseAdapter {
      * @param etag - Optional ETag from the HTTP response for conditional requests
      * @throws {DatabaseError} If the insert/update fails
      */
-    async setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void> {
+    async setSyncStatus(fileKey: string, sha: string, etag?: string, lastModified?: string): Promise<void> {
         const db = this.getDatabase();
         const syncStatusTable = this.syncStatusTable;
 
@@ -451,6 +483,7 @@ export class SQLiteAdapter extends BaseDatabaseAdapter {
                     sha,
                     lastSynced: new Date().toISOString(),
                     etag,
+                    lastModified,
                 })
                 .onConflictDoUpdate({
                     target: syncStatusTable.fileKey,
@@ -458,6 +491,7 @@ export class SQLiteAdapter extends BaseDatabaseAdapter {
                         sha,
                         lastSynced: new Date().toISOString(),
                         etag,
+                        lastModified,
                     },
                 });
         } catch (error) {

@@ -7,6 +7,8 @@
  * 5. Must render the child routes using the Expo Router Slot component.
  * 6. Must wrap the layout with AuthProvider for Auth0 authentication.
  * 7. Must wrap the layout with DataContextProvider for game system data management.
+ * 8. Must wrap the layout with SyncQueueProvider for sequential sync execution.
+ * 9. Must wrap the layout with SyncManifestProvider for session sync tracking.
  */
 
 import * as Sentry from '@sentry/react-native';
@@ -19,6 +21,8 @@ import { LandingSkeleton } from '@/components/LandingSkeleton.js';
 import config from '#/tamagui.config.js';
 import { AuthProvider } from '@/providers/AuthProvider.js';
 import { DataContextProvider } from '@/providers/DataContextProvider.js';
+import { SyncQueueProvider } from '@/providers/SyncQueueProvider.js';
+import { SyncManifestProvider } from '@/providers/SyncManifestProvider.js';
 import { PresenceProvider } from '@/providers/PresenceProvider.js';
 
 /** Initializes Sentry for mobile error tracking and performance monitoring. */
@@ -38,9 +42,13 @@ function AuthGatedLayout(): React.ReactElement {
 
     return (
         <DataContextProvider>
-            <PresenceProvider>
-                <Slot />
-            </PresenceProvider>
+            <SyncQueueProvider>
+                <SyncManifestProvider>
+                    <PresenceProvider>
+                        <Slot />
+                    </PresenceProvider>
+                </SyncManifestProvider>
+            </SyncQueueProvider>
         </DataContextProvider>
     );
 }

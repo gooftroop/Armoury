@@ -22,7 +22,7 @@ export async function fetchWahapediaPage<T>(
     parser: IWahapediaParser<T>,
     customFetch?: typeof fetch,
 ): Promise<T> {
-    const html = await fetchWahapediaPageRaw(url, customFetch);
+    const { content: html } = await fetchWahapediaPageRaw(url, customFetch);
 
     return parser.parse(html);
 }

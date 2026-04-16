@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import {
     GitHubClient,
     buildQueryGitHubFileKey,
+    buildQueryGitHubFileLastCommitDateKey,
     buildQueryGitHubFileShaKey,
     buildQueryGitHubFilesKey,
     buildQueryGitHubUpdateCheckKey,
@@ -28,6 +29,7 @@ describe('GitHubAdapter', () => {
         expect(typeof adapter.getFileSha).toBe('function');
         expect(typeof adapter.downloadFile).toBe('function');
         expect(typeof adapter.checkForUpdates).toBe('function');
+        expect(typeof adapter.getFileLastCommitDate).toBe('function');
     });
 
     it('listFiles delegates to queryClient.fetchQuery with correct query options', async () => {
@@ -116,5 +118,22 @@ describe('GitHubAdapter', () => {
         expect(first).toBe('<catalogue />');
         expect(second).toBe('<catalogue />');
         expect(downloadFileSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('getFileLastCommitDate delegates to queryClient.fetchQuery with correct query options', async () => {
+        const getFileLastCommitDateSpy = vi
+            .spyOn(GitHubClient.prototype, 'getFileLastCommitDate')
+            .mockResolvedValue('2024-06-01T12:00:00Z');
+        const fetchQuery = vi.fn(async (options: QueryOptionsLike) => options.queryFn?.());
+        const queryClient = { fetchQuery } as unknown as QueryClient;
+        const adapter = new GitHubAdapter(queryClient);
+
+        const result = await adapter.getFileLastCommitDate('BSData', 'wh40k-10e', 'file.cat');
+
+        expect(result).toBe('2024-06-01T12:00:00Z');
+        expect(fetchQuery).toHaveBeenCalledTimes(1);
+        const options = fetchQuery.mock.calls[0][0] as QueryOptionsLike;
+        expect(options.queryKey).toEqual(buildQueryGitHubFileLastCommitDateKey('BSData', 'wh40k-10e', 'file.cat'));
+        expect(getFileLastCommitDateSpy).toHaveBeenCalledWith('BSData', 'wh40k-10e', 'file.cat');
     });
 });

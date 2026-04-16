@@ -9,8 +9,8 @@
  *
  * @requirements
  * 1. Must extend RemoteDataDAO for shared load/sync infrastructure.
- * 2. Must check for updates via githubClient.checkForUpdates() using file SHA.
- * 3. Must store remote SHA as sync status after successful fetch.
+ * 2. Must check for updates via githubClient.getFileLastCommitDate() using date comparison.
+ * 3. Must store both remote SHA and lastModified as sync status after successful fetch.
  * 4. Must provide getRemoteFilePath() defaulting to getSyncFileKey().
  * 5. Must provide getRemoteSha() for retrieving the current remote SHA.
  * 6. Must accept (adapter, githubClient, owner, repo) in constructor.
@@ -66,9 +66,18 @@ abstract class BSDataBaseDAO<T> extends RemoteDataDAO<T> {
     }
 
     /**
+     * Returns the ISO 8601 date of the last commit that modified the remote BSData file.
+     * Used for date-based staleness comparison.
+     */
+    protected async getRemoteLastCommitDate(): Promise<string> {
+        return this.githubClient.getFileLastCommitDate(this.owner, this.repo, this.getRemoteFilePath());
+    }
+
+    /**
      * Checks if the remote file has updates compared to local sync status.
-     * Uses GitHub SHA comparison via checkForUpdates().
-     * Returns true if no sync status exists or if the check fails (fail-open).
+     * Compares the local lastSyncedAt timestamp with the remote file's last commit date.
+     * Returns true if no sync status exists, no lastModified is stored, or if the
+     * remote commit date is newer than the local lastModified. Falls open on error.
      */
     protected override async needsSync(): Promise<boolean> {
         const status = await this.adapter.getSyncStatus(this.getSyncFileKey());
@@ -77,20 +86,27 @@ abstract class BSDataBaseDAO<T> extends RemoteDataDAO<T> {
             return true;
         }
 
+        if (!status.lastModified) {
+            return true;
+        }
+
         try {
-            return await this.githubClient.checkForUpdates(this.owner, this.repo, this.getRemoteFilePath(), status.sha);
+            const remoteDate = await this.getRemoteLastCommitDate();
+
+            return new Date(remoteDate).getTime() > new Date(status.lastModified).getTime();
         } catch {
             return true;
         }
     }
 
     /**
-     * Updates sync status with the remote SHA after a successful fetch.
-     * Retrieves the current SHA from GitHub and stores it for future comparison.
+     * Updates sync status with the remote SHA and last commit date after a successful fetch.
+     * Retrieves both the current SHA and last commit date from GitHub.
      */
     protected override async onPostFetch(_data: T): Promise<void> {
-        const sha = await this.getRemoteSha();
-        await this.adapter.setSyncStatus(this.getSyncFileKey(), sha);
+        const [sha, lastModified] = await Promise.all([this.getRemoteSha(), this.getRemoteLastCommitDate()]);
+
+        await this.adapter.setSyncStatus(this.getSyncFileKey(), sha, undefined, lastModified);
     }
 }
 

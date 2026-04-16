@@ -18,6 +18,8 @@
  * 5. Must call dataContext.close() on unmount to release database connections.
  * 6. Must not block rendering — no full-screen loader
  * 7. Must provide the DataContext instance and sync state via React context.
+ * 8. Must restore sync state from the database adapter (getAllSyncStatuses), not localStorage.
+ * 9. Must derive system ownership via GameSystem.getSyncFileKeyPrefixes(), not hardcoded maps.
  *
  * @module DataContextProvider
  */
@@ -35,6 +37,68 @@ import { SyncProgressCollector } from '@armoury/data-dao';
 import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ContainerModule } from 'inversify';
+
+/**
+ * Probes the PGlite IndexedDB database to discover which game systems
+ * have previously synced data. Opens a lightweight adapter connection,
+ * queries all sync status records via the data layer, then resolves each
+ * known system to match file keys against declared prefixes.
+ *
+ * Runs in a useEffect (after first render) so it does NOT block rendering.
+ * Returns an empty array if the database doesn't exist yet, the query fails,
+ * or the signal is aborted before completion.
+ *
+ * @param signal - AbortSignal to cancel the probe when the component unmounts.
+ * @returns Array of system IDs that have synced data in IndexedDB.
+ */
+async function probeSyncedSystems(signal: AbortSignal): Promise<string[]> {
+    try {
+        const { PGliteAdapter } = await import('@armoury/adapters-pglite');
+        const probe = new PGliteAdapter({ dataDir: 'idb://armoury' });
+        await probe.initialize();
+
+        try {
+            const statuses = await probe.getAllSyncStatuses();
+
+            if (signal.aborted || statuses.length === 0) {
+                return [];
+            }
+
+            const fileKeys = statuses.map((s) => s.fileKey);
+
+            // Resolve each known system and check if any of its declared
+            // file-key prefixes match stored sync records.
+            const { resolveGameSystem, getKnownSystemIds } = await import('@/lib/resolveGameSystem.js');
+            const systemIds: string[] = [];
+
+            for (const id of getKnownSystemIds()) {
+                if (signal.aborted) {
+                    break;
+                }
+
+                const system = await resolveGameSystem(id);
+
+                if (!system) {
+                    continue;
+                }
+
+                const prefixes = system.getSyncFileKeyPrefixes();
+                const hasData = fileKeys.some((key) => prefixes.some((prefix) => key.startsWith(prefix)));
+
+                if (hasData) {
+                    systemIds.push(id);
+                }
+            }
+
+            return systemIds;
+        } finally {
+            await probe.close();
+        }
+    } catch {
+        // Database doesn't exist yet or query failed — no synced systems
+        return [];
+    }
+}
 
 /**
  * Possible states for the overall DataContext initialization lifecycle.
@@ -117,14 +181,40 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
     const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>({});
     const [syncProgressCollector, setSyncProgressCollector] = useState<SyncProgressCollector | null>(null);
 
+    useEffect(() => {
+        const controller = new AbortController();
+
+        void probeSyncedSystems(controller.signal).then((systemIds) => {
+            if (controller.signal.aborted) {
+                return;
+            }
+
+            if (systemIds.length > 0) {
+                const restored: Record<string, SystemSyncState> = {};
+
+                for (const id of systemIds) {
+                    restored[id] = { status: 'synced' };
+                }
+
+                setSystemSyncStates(restored);
+            }
+        });
+
+        return () => {
+            controller.abort();
+        };
+    }, []);
+
     /**
-     * Enables a game system by building a DataContext and syncing its data.
+     * Enables a game system using a two-phase flow:
+     * Phase 1 — Restore from cache: builds DataContext from local data only (no network),
+     *           sets status to 'ready' so the page renders immediately with cached data.
+     * Phase 2 — Staleness check: triggers `dc.sync()` which checks each DAO's SHA against
+     *           GitHub via ETag-cached requests and only re-downloads changed files.
      *
      * @param system - The GameSystem descriptor to enable.
      */
     const enableSystem = useCallback(async (system: GameSystem): Promise<void> => {
-        // Diagnostic logging — traces each sync phase with wall-clock timestamps
-        // so CI logs reveal where the flow stalls. Remove once root cause is fixed.
         const t0 = Date.now();
         const log = (phase: string) =>
             console.log(`[SYNC-DEBUG] ${phase} +${Date.now() - t0}ms (wall ${new Date().toISOString()})`);
@@ -139,10 +229,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
         setError(undefined);
 
         try {
-            /**
-             * Dynamic import to avoid bundling the full DataContext builder in the initial JS bundle.
-             * The builder pulls in PGlite, drizzle-orm, and adapter code which are heavy.
-             */
             log('dynamic imports start');
             const { DataContextBuilder } = await import('@armoury/data-context');
             const { getQueryClient } = await import('@/lib/getQueryClient.js');
@@ -176,18 +262,24 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             container.bind(TOKENS.GitHubClient).toConstantValue(githubClient);
             container.bind(TOKENS.WahapediaClient).toConstantValue(wahapediaAdapter);
 
-            log('dependencies resolved, starting build()');
+            // Phase 1: Build from cache — no network, page renders immediately
+            log('Phase 1: buildFromCache start');
             const dc = await DataContextBuilder.builder()
                 .system(system)
                 .adapter(adapter)
                 .register('github', githubClient)
                 .register('wahapedia', wahapediaAdapter)
                 .register('syncProgress', collector)
-                .build();
-            log('build() returned');
-            setDataContext(dc);
+                .buildFromCache();
+            log('Phase 1: buildFromCache done');
 
-            // Expose raw query function for e2e test helpers (avoids opening a second PGlite connection).
+            setDataContext(dc);
+            setStatus('ready');
+            setSystemSyncStates((prev) => ({
+                ...prev,
+                [system.id]: { status: 'syncing' },
+            }));
+
             if (process.env.NODE_ENV !== 'production') {
                 const rawQueryAdapter = adapter as DatabaseAdapter & {
                     rawQuery: (sql: string) => Promise<unknown>;
@@ -197,11 +289,14 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                     rawQueryAdapter.rawQuery(sql);
             }
 
-            // Report partial sync failures from the builder's sync result
-            const syncResult = dc.syncResult;
+            // Phase 2: Staleness check — each DAO checks SHA via ETag, re-downloads only changed files
+            log('Phase 2: sync start');
+            const syncResult = await dc.sync();
+            log(
+                `Phase 2: sync done — succeeded: ${syncResult?.succeeded.length ?? 0}, failed: ${syncResult?.failures.length ?? 0}`,
+            );
 
             if (syncResult && syncResult.failures.length > 0) {
-                // Report each failure to Sentry
                 for (const failure of syncResult.failures) {
                     Sentry.captureException(new Error(failure.error), {
                         tags: { dao: failure.dao, system: system.id },
@@ -213,7 +308,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                     });
                 }
 
-                // Log to console in non-production environments
                 if (process.env.NODE_ENV !== 'production') {
                     for (const failure of syncResult.failures) {
                         console.error('[Armoury Sync]', failure.dao, 'failed:', failure.error);
@@ -225,8 +319,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 }
             }
 
-            // Partial sync failure: some DAOs succeeded but others failed.
-            // Surface as error so the tile reflects the incomplete state.
             if (syncResult && !syncResult.success) {
                 const failedDaos = syncResult.failures.map((f: { dao: string }) => f.dao).join(', ');
                 const message = `Partial sync failure: ${syncResult.failures.length}/${syncResult.total} DAOs failed (${failedDaos})`;
@@ -240,8 +332,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 return;
             }
 
-            log('setting status=ready');
-            setStatus('ready');
+            log('Phase 2: setting sync status to synced');
             setSystemSyncStates((prev) => ({
                 ...prev,
                 [system.id]: { status: 'synced' },

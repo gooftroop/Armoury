@@ -202,6 +202,10 @@ class MockDatabaseAdapter extends BaseDatabaseAdapter {
         return this.syncStore.get(fileKey) ?? null;
     }
 
+    async getAllSyncStatuses(): Promise<FileSyncStatus[]> {
+        return Array.from(this.syncStore.values());
+    }
+
     async setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void> {
         this.syncStore.set(fileKey, {
             fileKey,
@@ -347,6 +351,63 @@ describe('DatabaseAdapter interface', () => {
         await adapter.deleteSyncStatus('core.gst');
         const deleted = await adapter.getSyncStatus('core.gst');
         expect(deleted).toBeNull();
+    });
+
+    /**
+     * getAllSyncStatuses() method tests.
+     */
+    describe('getAllSyncStatuses', () => {
+        /**
+         * Test: returns empty array when no sync statuses exist.
+         */
+        it('returns empty array when no sync statuses exist', async () => {
+            const adapter = new MockDatabaseAdapter();
+
+            const statuses = await adapter.getAllSyncStatuses();
+
+            expect(statuses).toEqual([]);
+        });
+
+        /**
+         * Test: returns all sync statuses after setting multiple.
+         */
+        it('returns all sync statuses after setting multiple', async () => {
+            const adapter = new MockDatabaseAdapter();
+
+            await adapter.setSyncStatus('core:wh40k-10e.gst', 'sha1', 'etag1');
+            await adapter.setSyncStatus('factionModel:space-marines.gst', 'sha2', 'etag2');
+            await adapter.setSyncStatus('crusadeRules:wh40k-10e.gst', 'sha3', 'etag3');
+
+            const statuses = await adapter.getAllSyncStatuses();
+
+            expect(statuses).toHaveLength(3);
+            expect(statuses.map((s) => s.fileKey)).toEqual([
+                'core:wh40k-10e.gst',
+                'factionModel:space-marines.gst',
+                'crusadeRules:wh40k-10e.gst',
+            ]);
+            expect(statuses.map((s) => s.sha)).toEqual(['sha1', 'sha2', 'sha3']);
+        });
+
+        /**
+         * Test: reflects deletions in getAllSyncStatuses results.
+         */
+        it('reflects deletions', async () => {
+            const adapter = new MockDatabaseAdapter();
+
+            await adapter.setSyncStatus('core:wh40k-10e.gst', 'sha1', 'etag1');
+            await adapter.setSyncStatus('factionModel:space-marines.gst', 'sha2', 'etag2');
+
+            let statuses = await adapter.getAllSyncStatuses();
+            expect(statuses).toHaveLength(2);
+
+            await adapter.deleteSyncStatus('core:wh40k-10e.gst');
+
+            statuses = await adapter.getAllSyncStatuses();
+
+            expect(statuses).toHaveLength(1);
+            expect(statuses[0]!.fileKey).toBe('factionModel:space-marines.gst');
+        });
     });
 
     it('deleteAll clears store', async () => {

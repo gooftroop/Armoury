@@ -31,6 +31,8 @@ export interface FileSyncStatus {
     lastSynced: Date;
     /** Optional ETag from GitHub for efficient cache validation */
     etag?: string;
+    /** ISO 8601 timestamp of the remote file's last modification. Absent for sources without date metadata. */
+    lastModified?: string;
 }
 
 /**
@@ -124,7 +126,16 @@ export interface DatabaseAdapter {
     deleteByField<T extends EntityType>(store: T, field: keyof EntityMap[T], value: string): Promise<void>;
     transaction<R>(fn: () => Promise<R>): Promise<R>;
     getSyncStatus(fileKey: string): Promise<FileSyncStatus | null>;
-    setSyncStatus(fileKey: string, sha: string, etag?: string): Promise<void>;
+    /**
+     * Retrieves all sync status records from the database.
+     * Used by the provider layer to discover which game systems have previously
+     * synced data, without hardcoding file-key-to-system mappings.
+     *
+     * @returns All stored sync status records, or an empty array if none exist.
+     * @throws DatabaseError if the query fails.
+     */
+    getAllSyncStatuses(): Promise<FileSyncStatus[]>;
+    setSyncStatus(fileKey: string, sha: string, etag?: string, lastModified?: string): Promise<void>;
     deleteSyncStatus(fileKey: string): Promise<void>;
 }
 
@@ -244,6 +255,17 @@ export interface GameSystem {
         /** Registered client instances keyed by name (e.g. 'github', 'wahapedia'). */
         clients: Map<string, unknown>,
     ): GameContextResult;
+
+    /**
+     * Returns the file-key prefixes that this system's DAOs write to the sync_status table.
+     * The provider uses these prefixes to match sync records to their owning system,
+     * eliminating hardcoded file-key-to-system mappings.
+     *
+     * Each prefix is matched with `String.startsWith()` against stored file keys.
+     *
+     * @returns Array of file-key prefixes owned by this system (e.g. `['core:', 'factionModel:']`).
+     */
+    getSyncFileKeyPrefixes(): string[];
 
     /**
      * Returns the inversify ContainerModule for this game system.
