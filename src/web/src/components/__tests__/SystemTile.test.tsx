@@ -1,3 +1,22 @@
+/**
+ * SystemTile component tests.
+ *
+ * @requirements
+ * | Requirement | Description | Covered By |
+ * | --- | --- | --- |
+ * | REQ-ST-01 | Renders spinner when syncing without progress data. | "renders spinner when syncing without progress data" |
+ * | REQ-ST-02 | Renders spinner when syncing with idle progress. | "renders spinner when syncing with idle progress" |
+ * | REQ-ST-03 | Renders ProgressBar when syncing with syncing-phase progress. | "renders ProgressBar when syncing with syncing-phase progress" |
+ * | REQ-ST-04 | Renders ProgressBar with failures visible. | "renders ProgressBar with failures visible" |
+ * | REQ-ST-05 | Renders error icon when isError is true. | "renders error icon when isError is true" |
+ * | REQ-ST-06 | Renders synced badge when isSynced. | "renders synced badge when isSynced" |
+ * | REQ-ST-07 | Wraps in Link when href is provided. | "wraps in Link when href is provided" |
+ * | REQ-ST-08 | Calls onClick when overlay is clicked. | "calls onClick when overlay is clicked" |
+ * | REQ-ST-09 | Disables overlay button when syncing. | "disables overlay button when syncing" |
+ * | REQ-ST-10 | Renders queued badge when isQueued. | "renders queued badge when isQueued is true" |
+ * | REQ-ST-11 | Does not render overlay when showOverlay is false. | "does not render overlay when showOverlay is false" |
+ */
+
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
