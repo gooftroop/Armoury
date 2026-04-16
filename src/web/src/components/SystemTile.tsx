@@ -121,10 +121,14 @@ function SystemTile({
                                     failures={syncProgress.failures}
                                 />
                             ) : (
-                                <Loader2 className="h-6 w-6 animate-spin text-white/90" />
+                                <Loader2
+                                    role="status"
+                                    aria-label="Loading"
+                                    className="h-6 w-6 animate-spin text-white/90"
+                                />
                             )
                         ) : isError ? (
-                            <AlertCircle className="h-6 w-6 text-red-400" />
+                            <AlertCircle aria-label="Sync error" className="h-6 w-6 text-red-400" />
                         ) : (
                             <Download className="h-6 w-6 text-white/90" />
                         )}
