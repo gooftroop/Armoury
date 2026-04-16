@@ -148,7 +148,7 @@ function OutsideHookConsumer(): ReactElement {
 }
 
 describe('DataContextProvider (web)', () => {
-    const adapter = { rawQuery: vi.fn(), initialize: vi.fn() };
+    const adapter = { rawQuery: vi.fn(), initialize: vi.fn(), close: vi.fn().mockResolvedValue(undefined) };
     const githubClient = { name: 'github-client' };
     const wahapediaClient = { name: 'wahapedia-client' };
     const queryClient = { id: 'query-client' } as unknown as QueryClient;
@@ -384,6 +384,136 @@ describe('DataContextProvider (web)', () => {
         expect(screen.getByText('Sync: error')).toBeInTheDocument();
         expect(screen.getByText(/Partial sync failure: 1\/2 DAOs failed/)).toBeInTheDocument();
         expect(captureExceptionMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('disableSystem is a no-op when already idle', async () => {
+        const controls: HarnessControls = { statuses: [] };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+            </DataContextProvider>,
+        );
+
+        screen.getByRole('button', { name: 'Disable' }).click();
+
+        await waitFor(() => {
+            expect(screen.getByText('Status: idle')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('Error: none')).toBeInTheDocument();
+        expect(closeMock).not.toHaveBeenCalled();
+    });
+
+    it('enableSystem sets error state when container creation fails', async () => {
+        createContainerWithModulesMock.mockImplementationOnce(() => {
+            throw new Error('Container creation failed');
+        });
+
+        const controls: HarnessControls = { statuses: [] };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} system={{ id: 'wh40k10e', getContainerModule: () => systemModule }} />
+            </DataContextProvider>,
+        );
+
+        screen.getByRole('button', { name: 'Enable' }).click();
+
+        await waitFor(() => {
+            expect(screen.getByText('Status: error')).toBeInTheDocument();
+        });
+    });
+
+    it('probeSyncedSystems handles adapter initialization failure gracefully', async () => {
+        pgliteAdapterMock.initialize.mockRejectedValueOnce(new Error('Init failed'));
+
+        const controls: HarnessControls = { statuses: [] };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+            </DataContextProvider>,
+        );
+
+        await waitFor(() => {
+            expect(pgliteAdapterMock.initialize).toHaveBeenCalled();
+        });
+
+        expect(screen.getByText('Status: idle')).toBeInTheDocument();
+        expect(screen.getByText('Sync: none')).toBeInTheDocument();
+    });
+
+    it('concurrent enableSystem calls for different systems are handled', async () => {
+        dataContextBuilderMock.builder.mockImplementation(() => ({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: closeMock,
+                        sync: vi.fn(async () => ({
+                            success: true,
+                            total: 2,
+                            succeeded: ['dao-a', 'dao-b'],
+                            failures: [],
+                            timestamp: '2026-01-01T00:00:00.000Z',
+                        })),
+                    }) as unknown as DataContext,
+            ),
+        }));
+
+        function MultiSystemHarness(): ReactElement {
+            const ctx = useDataContext();
+            const systemA = {
+                id: 'wh40k10e',
+                getContainerModule: () => systemModule,
+                register: vi.fn().mockResolvedValue(undefined),
+                createGameContext: vi.fn().mockReturnValue({
+                    armies: {},
+                    campaigns: {},
+                    game: {},
+                    sync: vi.fn().mockResolvedValue({ success: true, total: 0, succeeded: [], failures: [] }),
+                }),
+            } as unknown as GameSystem;
+            const systemB = {
+                id: 'system-b',
+                getContainerModule: () => systemModule,
+                register: vi.fn().mockResolvedValue(undefined),
+                createGameContext: vi.fn().mockReturnValue({
+                    armies: {},
+                    campaigns: {},
+                    game: {},
+                    sync: vi.fn().mockResolvedValue({ success: true, total: 0, succeeded: [], failures: [] }),
+                }),
+            } as unknown as GameSystem;
+
+            return (
+                <div>
+                    <div>Status: {ctx.status}</div>
+                    <button type="button" onClick={() => void ctx.enableSystem(systemA)}>
+                        Enable A
+                    </button>
+                    <button type="button" onClick={() => void ctx.enableSystem(systemB)}>
+                        Enable B
+                    </button>
+                </div>
+            );
+        }
+
+        render(
+            <DataContextProvider>
+                <MultiSystemHarness />
+            </DataContextProvider>,
+        );
+
+        screen.getByRole('button', { name: 'Enable A' }).click();
+        screen.getByRole('button', { name: 'Enable B' }).click();
+
+        await waitFor(() => {
+            expect(screen.getByText('Status: ready')).toBeInTheDocument();
+        });
     });
 
     describe('probeSyncedSystems persistence probe', () => {

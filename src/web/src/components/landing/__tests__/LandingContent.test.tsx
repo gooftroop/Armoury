@@ -289,4 +289,22 @@ describe('LandingContent', () => {
         expect(hasType(result, UnauthenticatedLanding)).toBe(true);
         expect(hasType(result, AuthenticatedLanding)).toBe(false);
     });
+
+    it('handles discoverSystemManifests returning empty array', async () => {
+        mockGetSession.mockResolvedValue(null);
+        mockDiscoverSystemManifests.mockResolvedValue([]);
+
+        const result = (await LandingContent({ params: Promise.resolve({ locale: 'en' }) })) as unknown as ReactElement;
+        const unauthed = findByType(result, UnauthenticatedLanding);
+
+        expect(unauthed).toBeDefined();
+        expect(unauthed!.props.manifests).toEqual([]);
+    });
+
+    it('handles discoverSystemManifests rejection gracefully', async () => {
+        mockGetSession.mockResolvedValue(null);
+        mockDiscoverSystemManifests.mockRejectedValue(new Error('Network error'));
+
+        await expect(LandingContent({ params: Promise.resolve({ locale: 'en' }) })).rejects.toThrow('Network error');
+    });
 });

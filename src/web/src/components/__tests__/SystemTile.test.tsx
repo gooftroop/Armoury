@@ -155,4 +155,22 @@ describe('SystemTile', () => {
         const button = document.querySelector('button');
         expect(button).toBeDisabled();
     });
+
+    it('renders queued badge when isQueued is true', () => {
+        render(<SystemTile {...baseProps} isQueued={true} />);
+
+        expect(screen.getByText('Queued')).toBeInTheDocument();
+    });
+
+    it('does not render queued badge when syncing', () => {
+        render(<SystemTile {...baseProps} isQueued={true} isSyncing={true} />);
+
+        expect(screen.queryByText('Queued')).not.toBeInTheDocument();
+    });
+
+    it('does not render overlay when showOverlay is false', () => {
+        render(<SystemTile {...baseProps} showOverlay={false} />);
+
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    });
 });
