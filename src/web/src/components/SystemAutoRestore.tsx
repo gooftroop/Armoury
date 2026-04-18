@@ -3,7 +3,7 @@
 /**
  * @requirements
  * 1. Must auto-restore a game system's DataContext when the user navigates directly to a system URL.
- * 2. Must call enableSystem() exactly once per mount when status is idle.
+ * 2. Must call enableSystem() exactly once per mount when status is idle and no probe sync state exists.
  * 3. Must render nothing — side-effect only component.
  * 4. Must not use default exports.
  */
@@ -26,10 +26,19 @@ export interface SystemAutoRestoreProps {
  * non-idle status and bail out.
  */
 function SystemAutoRestore({ systemId }: SystemAutoRestoreProps): null {
-    const { status, enableSystem } = useDataContext();
+    const { status, enableSystem, systemSyncStates } = useDataContext();
+    const syncState = systemSyncStates[systemId];
 
     useEffect(() => {
         if (status !== 'idle') {
+            return;
+        }
+
+        if (
+            syncState?.status === 'pending' ||
+            syncState?.status === 'checking-staleness' ||
+            syncState?.status === 'syncing'
+        ) {
             return;
         }
 
@@ -38,7 +47,7 @@ function SystemAutoRestore({ systemId }: SystemAutoRestoreProps): null {
                 void enableSystem(system);
             }
         });
-    }, [status, systemId, enableSystem]);
+    }, [status, systemId, enableSystem, syncState?.status]);
 
     return null;
 }

@@ -5,13 +5,14 @@
  * | Requirement ID | Requirement | Test Case(s) |
  * | --- | --- | --- |
  * | REQ-SAR-01 | Component must render no DOM output (null render). | "renders null" |
- * | REQ-SAR-02 | Must call enableSystem when status is idle and resolveGameSystem returns a system. | "calls enableSystem when status is idle and system resolves" |
+ * | REQ-SAR-02 | Must call enableSystem when no sync state exists and provider is idle. | "calls enableSystem when no sync state exists and provider status is idle" |
  * | REQ-SAR-03 | Must not call enableSystem when status is initializing. | "does not call enableSystem when status is initializing" |
  * | REQ-SAR-04 | Must not call enableSystem when status is ready. | "does not call enableSystem when status is ready" |
  * | REQ-SAR-05 | Must not call enableSystem when status is error. | "does not call enableSystem when status is error" |
- * | REQ-SAR-06 | Must not call enableSystem when resolveGameSystem returns null for idle status. | "does not call enableSystem when system cannot be resolved" |
+ * | REQ-SAR-06 | Must not call enableSystem when sync status is pending/checking-staleness/syncing. | "does not call enableSystem when sync state is pending" and "does not call enableSystem when sync state is checking-staleness" and "does not call enableSystem when sync state is syncing" |
  * | REQ-SAR-07 | Must call enableSystem again when status returns to idle after a non-idle status. | "calls enableSystem again when status returns to idle" |
  * | REQ-SAR-08 | Must call resolveGameSystem with the provided systemId. | "uses the provided systemId in resolveGameSystem" |
+ * | REQ-SAR-09 | Must not call enableSystem when resolveGameSystem returns null. | "does not call enableSystem when system cannot be resolved" |
  */
 
 import type { ReactElement, ReactNode } from 'react';
@@ -20,6 +21,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SystemAutoRestore } from '../SystemAutoRestore.js';
 
 type DataContextStatus = 'idle' | 'initializing' | 'ready' | 'error';
+type SystemSyncStatus = 'idle' | 'pending' | 'checking-staleness' | 'syncing' | 'synced' | 'error';
 
 const { mockEnableSystem, mockUseDataContext, mockResolveGameSystem, mockUseEffect } = vi.hoisted(() => ({
     mockEnableSystem: vi.fn(),
@@ -71,7 +73,11 @@ describe('SystemAutoRestore', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        mockUseDataContext.mockReturnValue({ status: 'idle', enableSystem: mockEnableSystem });
+        mockUseDataContext.mockReturnValue({
+            status: 'idle',
+            enableSystem: mockEnableSystem,
+            systemSyncStates: {},
+        });
         mockResolveGameSystem.mockResolvedValue(resolvedSystem);
         mockUseEffect.mockImplementation((effect: () => void) => {
             effect();
@@ -82,7 +88,7 @@ describe('SystemAutoRestore', () => {
         expect(Harness({ systemId: 'wh40k10e' })).toBeNull();
     });
 
-    it('calls enableSystem when status is idle and system resolves', async () => {
+    it('calls enableSystem when no sync state exists and provider status is idle', async () => {
         Harness({ systemId: 'wh40k10e' });
 
         await flushPromises();
@@ -95,6 +101,7 @@ describe('SystemAutoRestore', () => {
         mockUseDataContext.mockReturnValue({
             status: 'initializing' as DataContextStatus,
             enableSystem: mockEnableSystem,
+            systemSyncStates: {},
         });
 
         Harness({ systemId: 'wh40k10e' });
@@ -106,7 +113,11 @@ describe('SystemAutoRestore', () => {
     });
 
     it('does not call enableSystem when status is ready', async () => {
-        mockUseDataContext.mockReturnValue({ status: 'ready' as DataContextStatus, enableSystem: mockEnableSystem });
+        mockUseDataContext.mockReturnValue({
+            status: 'ready' as DataContextStatus,
+            enableSystem: mockEnableSystem,
+            systemSyncStates: {},
+        });
 
         Harness({ systemId: 'wh40k10e' });
 
@@ -117,7 +128,11 @@ describe('SystemAutoRestore', () => {
     });
 
     it('does not call enableSystem when status is error', async () => {
-        mockUseDataContext.mockReturnValue({ status: 'error' as DataContextStatus, enableSystem: mockEnableSystem });
+        mockUseDataContext.mockReturnValue({
+            status: 'error' as DataContextStatus,
+            enableSystem: mockEnableSystem,
+            systemSyncStates: {},
+        });
 
         Harness({ systemId: 'wh40k10e' });
 
@@ -144,6 +159,7 @@ describe('SystemAutoRestore', () => {
         mockUseDataContext.mockImplementation(() => ({
             status: statuses[Math.min(invocationIndex++, statuses.length - 1)],
             enableSystem: mockEnableSystem,
+            systemSyncStates: {},
         }));
 
         Harness({ systemId: 'wh40k10e' });
@@ -179,8 +195,8 @@ describe('SystemAutoRestore', () => {
         const secondEnable = vi.fn();
 
         mockUseDataContext
-            .mockReturnValueOnce({ status: 'idle', enableSystem: firstEnable })
-            .mockReturnValueOnce({ status: 'idle', enableSystem: secondEnable });
+            .mockReturnValueOnce({ status: 'idle', enableSystem: firstEnable, systemSyncStates: {} })
+            .mockReturnValueOnce({ status: 'idle', enableSystem: secondEnable, systemSyncStates: {} });
 
         Harness({ systemId: 'wh40k10e' });
         await flushPromises();
@@ -190,4 +206,28 @@ describe('SystemAutoRestore', () => {
         expect(firstEnable).toHaveBeenCalledTimes(1);
         expect(secondEnable).toHaveBeenCalledTimes(1);
     });
+
+    it.each<SystemSyncStatus>(['pending', 'checking-staleness', 'syncing'])(
+        'does not call enableSystem when sync state is %s',
+        async (syncStatus) => {
+            mockUseDataContext.mockReturnValue({
+                status: 'idle',
+                enableSystem: mockEnableSystem,
+                systemSyncStates: {
+                    wh40k10e: { status: syncStatus },
+                },
+            });
+
+            mockUseEffect.mockImplementationOnce((effect: () => void) => {
+                effect();
+            });
+
+            Harness({ systemId: 'wh40k10e' });
+
+            await flushPromises();
+
+            expect(mockEnableSystem).not.toHaveBeenCalled();
+            expect(mockResolveGameSystem).not.toHaveBeenCalled();
+        },
+    );
 });

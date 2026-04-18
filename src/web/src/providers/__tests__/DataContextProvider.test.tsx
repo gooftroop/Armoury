@@ -2,14 +2,22 @@
  * DataContextProvider tests (web).
  *
  * @requirements
- * - REQ-WEB-DCP-01: Provider renders children without crashing in idle state.
- * - REQ-WEB-DCP-02: useDataContext returns the default context values in idle state.
- * - REQ-WEB-DCP-03: useDataContext throws outside DataContextProvider.
- * - REQ-WEB-DCP-04: enableSystem transitions state idle -> initializing -> ready on success.
- * - REQ-WEB-DCP-05: enableSystem composes DI container with core + web modules.
- * - REQ-WEB-DCP-06: disableSystem closes DataContext and resets provider state.
- * - REQ-WEB-DCP-07: Provider unmount closes active DataContext.
- * - REQ-WEB-DCP-08: Partial sync failures set error state.
+ * | Requirement ID | Requirement | Test Case(s) |
+ * | --- | --- | --- |
+ * | REQ-WEB-DCP-01 | Provider renders children without crashing in idle state. | "renders children without crashing" |
+ * | REQ-WEB-DCP-02 | useDataContext returns default context values in idle state. | "returns default context value in idle state" |
+ * | REQ-WEB-DCP-03 | useDataContext throws outside DataContextProvider. | "throws when useDataContext is used outside provider" |
+ * | REQ-WEB-DCP-04 | enableSystem transitions DataContext status idle -> initializing -> ready and system sync syncing -> synced. | "transitions idle -> initializing -> ready and syncing -> synced when enableSystem succeeds" |
+ * | REQ-WEB-DCP-05 | enableSystem composes DI container with core + web modules. | "creates DI container with core + web modules and resolves factories" |
+ * | REQ-WEB-DCP-06 | disableSystem closes DataContext and resets provider state. | "disableSystem closes DataContext and resets state" |
+ * | REQ-WEB-DCP-07 | Provider unmount closes active DataContext. | "closes DataContext on unmount" |
+ * | REQ-WEB-DCP-08 | Partial sync failures set error state. | "sets error state when sync result is partial failure" |
+ * | REQ-WEB-DCP-09 | Probe restores discovered systems to pending status first (not synced). | "restores pending state for systems with matching file keys on mount" |
+ * | REQ-WEB-DCP-10 | Queue processes systems sequentially (one checking-staleness at a time). | "processes staleness checks sequentially for multiple systems" |
+ * | REQ-WEB-DCP-11 | Sync failures retry up to two times before success or error. | "retries sync up to two times before succeeding" |
+ * | REQ-WEB-DCP-12 | Exhausted retries set error + hasCache=true when cache exists. | "sets error with hasCache true after retries exhausted for cached system" |
+ * | REQ-WEB-DCP-13 | Exhausted retries set error + hasCache=false when cache is absent. | "sets error with hasCache false after retries exhausted for non-cached system" |
+ * | REQ-WEB-DCP-14 | checking-staleness status is observable while sync is in flight. | "exposes checking-staleness while sync is in progress" |
  */
 
 import { useEffect } from 'react';
@@ -107,36 +115,69 @@ vi.mock('@/lib/resolveGameSystem.js', () => ({
 
 interface HarnessControls {
     readonly statuses: string[];
+    readonly syncStatusHistory: Record<string, string[]>;
 }
 
 interface HarnessProps {
-    readonly system: {
+    readonly systems: ReadonlyArray<{
         id: string;
         getContainerModule?: () => unknown;
-    };
+    }>;
     readonly controls: HarnessControls;
 }
 
-function Harness({ system, controls }: HarnessProps): ReactElement {
+function Harness({ systems, controls }: HarnessProps): ReactElement {
     const ctx = useDataContext();
-    const gameSystem = system as unknown as GameSystem;
 
     useEffect(() => {
         controls.statuses.push(ctx.status);
     }, [ctx.status, controls.statuses]);
 
+    useEffect(() => {
+        for (const system of systems) {
+            const currentStatus = ctx.systemSyncStates[system.id]?.status ?? 'none';
+
+            if (!controls.syncStatusHistory[system.id]) {
+                controls.syncStatusHistory[system.id] = [];
+            }
+
+            controls.syncStatusHistory[system.id].push(currentStatus);
+        }
+    }, [controls.syncStatusHistory, systems, ctx.systemSyncStates]);
+
     return (
         <div>
             <div>Status: {ctx.status}</div>
             <div>Error: {ctx.error ?? 'none'}</div>
-            <div>Sync: {ctx.systemSyncStates[gameSystem.id]?.status ?? 'none'}</div>
             <div>HasDataContext: {ctx.dataContext ? 'yes' : 'no'}</div>
-            <button type="button" onClick={() => void ctx.enableSystem(gameSystem)}>
-                Enable
-            </button>
-            <button type="button" onClick={() => void ctx.disableSystem(gameSystem.id)}>
-                Disable
-            </button>
+
+            {systems.map((system) => {
+                const gameSystem = system as unknown as GameSystem;
+                const state = ctx.systemSyncStates[system.id];
+
+                return (
+                    <div key={system.id}>
+                        <div>
+                            Sync {system.id}: {state?.status ?? 'none'}
+                        </div>
+                        <div>
+                            SyncError {system.id}: {state?.error ?? 'none'}
+                        </div>
+                        <div>
+                            SyncHasCache {system.id}:{' '}
+                            {(state as { hasCache?: boolean } | undefined)?.hasCache === undefined
+                                ? 'none'
+                                : String((state as { hasCache?: boolean }).hasCache)}
+                        </div>
+                        <button type="button" onClick={() => void ctx.enableSystem(gameSystem)}>
+                            Enable {system.id}
+                        </button>
+                        <button type="button" onClick={() => void ctx.disableSystem(system.id)}>
+                            Disable {system.id}
+                        </button>
+                    </div>
+                );
+            })}
         </div>
     );
 }
@@ -180,6 +221,28 @@ describe('DataContextProvider (web)', () => {
         get: getMock,
         load: loadMock,
     };
+    const successSyncResult = {
+        success: true,
+        total: 2,
+        succeeded: ['dao-a', 'dao-b'],
+        failures: [],
+        timestamp: '2026-01-01T00:00:00.000Z',
+    };
+
+    function createDeferred<T>(): {
+        promise: Promise<T>;
+        resolve: (value: T) => void;
+        reject: (reason?: unknown) => void;
+    } {
+        let resolve: (value: T) => void = () => undefined;
+        let reject: (reason?: unknown) => void = () => undefined;
+        const promise = new Promise<T>((res, rej) => {
+            resolve = res;
+            reject = rej;
+        });
+
+        return { promise, resolve, reject };
+    }
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -198,13 +261,7 @@ describe('DataContextProvider (web)', () => {
                 async () =>
                     ({
                         close: closeMock,
-                        sync: vi.fn(async () => ({
-                            success: true,
-                            total: 2,
-                            succeeded: ['dao-a', 'dao-b'],
-                            failures: [],
-                            timestamp: '2026-01-01T00:00:00.000Z',
-                        })),
+                        sync: vi.fn(async () => successSyncResult),
                     }) as unknown as DataContext,
             ),
         });
@@ -229,17 +286,17 @@ describe('DataContextProvider (web)', () => {
     });
 
     it('returns default context value in idle state', () => {
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
             </DataContextProvider>,
         );
 
         expect(screen.getByText('Status: idle')).toBeInTheDocument();
         expect(screen.getByText('Error: none')).toBeInTheDocument();
-        expect(screen.getByText('Sync: none')).toBeInTheDocument();
+        expect(screen.getByText('Sync wh40k10e: none')).toBeInTheDocument();
         expect(screen.getByText('HasDataContext: no')).toBeInTheDocument();
     });
 
@@ -249,16 +306,16 @@ describe('DataContextProvider (web)', () => {
         );
     });
 
-    it('transitions idle -> initializing -> ready when enableSystem succeeds', async () => {
-        const controls: HarnessControls = { statuses: [] };
+    it('transitions idle -> initializing -> ready and syncing -> synced when enableSystem succeeds', async () => {
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e', getContainerModule: () => systemModule }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e', getContainerModule: () => systemModule }]} />
             </DataContextProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
@@ -267,20 +324,22 @@ describe('DataContextProvider (web)', () => {
         expect(controls.statuses).toContain('idle');
         expect(controls.statuses).toContain('initializing');
         expect(controls.statuses).toContain('ready');
-        expect(screen.getByText('Sync: synced')).toBeInTheDocument();
+        expect(controls.syncStatusHistory.wh40k10e).toContain('syncing');
+        expect(controls.syncStatusHistory.wh40k10e).toContain('synced');
+        expect(screen.getByText('Sync wh40k10e: synced')).toBeInTheDocument();
         expect(screen.getByText('HasDataContext: yes')).toBeInTheDocument();
     });
 
     it('creates DI container with core + web modules and resolves factories', async () => {
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e', getContainerModule: () => systemModule }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e', getContainerModule: () => systemModule }]} />
             </DataContextProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
 
         await waitFor(() => {
             expect(createContainerWithModulesMock).toHaveBeenCalledWith(coreModuleMock, webModuleMock);
@@ -299,40 +358,40 @@ describe('DataContextProvider (web)', () => {
     });
 
     it('disableSystem closes DataContext and resets state', async () => {
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
             </DataContextProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
         });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Disable wh40k10e' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: idle')).toBeInTheDocument();
         });
 
         expect(closeMock).toHaveBeenCalled();
-        expect(screen.getByText('Sync: none')).toBeInTheDocument();
+        expect(screen.getByText('Sync wh40k10e: none')).toBeInTheDocument();
         expect(screen.getByText('HasDataContext: no')).toBeInTheDocument();
     });
 
     it('closes DataContext on unmount', async () => {
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
         const rendered = render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
             </DataContextProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeInTheDocument();
@@ -367,35 +426,35 @@ describe('DataContextProvider (web)', () => {
             ),
         });
 
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
             </DataContextProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: error')).toBeInTheDocument();
         });
 
-        expect(screen.getByText('Sync: error')).toBeInTheDocument();
-        expect(screen.getByText(/Partial sync failure: 1\/2 DAOs failed/)).toBeInTheDocument();
-        expect(captureExceptionMock).toHaveBeenCalledTimes(1);
+        expect(screen.getByText('Sync wh40k10e: error')).toBeInTheDocument();
+        expect(screen.getByText(/SyncError wh40k10e: Partial sync failure: 1\/2 DAOs failed/)).toBeInTheDocument();
+        expect(captureExceptionMock).toHaveBeenCalled();
     });
 
     it('disableSystem is a no-op when already idle', async () => {
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
             </DataContextProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Disable wh40k10e' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: idle')).toBeInTheDocument();
@@ -410,15 +469,15 @@ describe('DataContextProvider (web)', () => {
             throw new Error('Container creation failed');
         });
 
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e', getContainerModule: () => systemModule }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e', getContainerModule: () => systemModule }]} />
             </DataContextProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
 
         await waitFor(() => {
             expect(screen.getByText('Status: error')).toBeInTheDocument();
@@ -428,11 +487,11 @@ describe('DataContextProvider (web)', () => {
     it('probeSyncedSystems handles adapter initialization failure gracefully', async () => {
         pgliteAdapterMock.initialize.mockRejectedValueOnce(new Error('Init failed'));
 
-        const controls: HarnessControls = { statuses: [] };
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
             <DataContextProvider>
-                <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
             </DataContextProvider>,
         );
 
@@ -441,83 +500,10 @@ describe('DataContextProvider (web)', () => {
         });
 
         expect(screen.getByText('Status: idle')).toBeInTheDocument();
-        expect(screen.getByText('Sync: none')).toBeInTheDocument();
+        expect(screen.getByText('Sync wh40k10e: none')).toBeInTheDocument();
     });
-
-    it('concurrent enableSystem calls for different systems are handled', async () => {
-        dataContextBuilderMock.builder.mockImplementation(() => ({
-            system: vi.fn().mockReturnThis(),
-            adapter: vi.fn().mockReturnThis(),
-            register: vi.fn().mockReturnThis(),
-            buildFromCache: vi.fn(
-                async () =>
-                    ({
-                        close: closeMock,
-                        sync: vi.fn(async () => ({
-                            success: true,
-                            total: 2,
-                            succeeded: ['dao-a', 'dao-b'],
-                            failures: [],
-                            timestamp: '2026-01-01T00:00:00.000Z',
-                        })),
-                    }) as unknown as DataContext,
-            ),
-        }));
-
-        function MultiSystemHarness(): ReactElement {
-            const ctx = useDataContext();
-            const systemA = {
-                id: 'wh40k10e',
-                getContainerModule: () => systemModule,
-                register: vi.fn().mockResolvedValue(undefined),
-                createGameContext: vi.fn().mockReturnValue({
-                    armies: {},
-                    campaigns: {},
-                    game: {},
-                    sync: vi.fn().mockResolvedValue({ success: true, total: 0, succeeded: [], failures: [] }),
-                }),
-            } as unknown as GameSystem;
-            const systemB = {
-                id: 'system-b',
-                getContainerModule: () => systemModule,
-                register: vi.fn().mockResolvedValue(undefined),
-                createGameContext: vi.fn().mockReturnValue({
-                    armies: {},
-                    campaigns: {},
-                    game: {},
-                    sync: vi.fn().mockResolvedValue({ success: true, total: 0, succeeded: [], failures: [] }),
-                }),
-            } as unknown as GameSystem;
-
-            return (
-                <div>
-                    <div>Status: {ctx.status}</div>
-                    <button type="button" onClick={() => void ctx.enableSystem(systemA)}>
-                        Enable A
-                    </button>
-                    <button type="button" onClick={() => void ctx.enableSystem(systemB)}>
-                        Enable B
-                    </button>
-                </div>
-            );
-        }
-
-        render(
-            <DataContextProvider>
-                <MultiSystemHarness />
-            </DataContextProvider>,
-        );
-
-        fireEvent.click(screen.getByRole('button', { name: 'Enable A' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Enable B' }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Status: ready')).toBeInTheDocument();
-        });
-    });
-
     describe('probeSyncedSystems persistence probe', () => {
-        it('restores sync state for systems with matching file keys on mount', async () => {
+        it('restores pending state for systems with matching file keys on mount', async () => {
             pgliteAdapterMock.getAllSyncStatuses.mockResolvedValueOnce([
                 {
                     fileKey: 'core:wh40k-10e.gst',
@@ -525,31 +511,34 @@ describe('DataContextProvider (web)', () => {
                     lastSynced: new Date('2026-01-01T00:00:00.000Z'),
                 },
             ]);
-            resolveGameSystemMock.mockResolvedValueOnce({
+            const resolvedSystem = {
+                id: 'wh40k10e',
+                getContainerModule: () => systemModule,
                 getSyncFileKeyPrefixes: () => ['core:', 'factionModel:', 'crusadeRules:', 'wahapedia:'],
-            });
+            };
+            resolveGameSystemMock.mockResolvedValueOnce(resolvedSystem).mockResolvedValueOnce(null);
 
-            const controls: HarnessControls = { statuses: [] };
+            const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
             render(
                 <DataContextProvider>
-                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                    <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
                 </DataContextProvider>,
             );
 
             await waitFor(() => {
-                expect(screen.getByText('Sync: synced')).toBeInTheDocument();
+                expect(controls.syncStatusHistory.wh40k10e).toContain('pending');
             });
         });
 
         it('does not restore sync state when no synced data exists', async () => {
             pgliteAdapterMock.getAllSyncStatuses.mockResolvedValueOnce([]);
 
-            const controls: HarnessControls = { statuses: [] };
+            const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
             render(
                 <DataContextProvider>
-                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                    <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
                 </DataContextProvider>,
             );
 
@@ -557,7 +546,7 @@ describe('DataContextProvider (web)', () => {
                 expect(pgliteAdapterMock.getAllSyncStatuses).toHaveBeenCalledTimes(1);
             });
 
-            expect(screen.getByText('Sync: none')).toBeInTheDocument();
+            expect(screen.getByText('Sync wh40k10e: none')).toBeInTheDocument();
         });
 
         it('aborts probe on unmount', async () => {
@@ -573,10 +562,10 @@ describe('DataContextProvider (web)', () => {
             );
             pgliteAdapterMock.getAllSyncStatuses.mockReturnValueOnce(pendingStatuses);
 
-            const controls: HarnessControls = { statuses: [] };
+            const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
             const rendered = render(
                 <DataContextProvider>
-                    <Harness controls={controls} system={{ id: 'wh40k10e' }} />
+                    <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
                 </DataContextProvider>,
             );
 
@@ -594,6 +583,259 @@ describe('DataContextProvider (web)', () => {
             });
 
             expect(resolveGameSystemMock).not.toHaveBeenCalled();
+        });
+    });
+
+    it('processes staleness checks sequentially for multiple systems', async () => {
+        const syncStarts: string[] = [];
+        const syncA = createDeferred<typeof successSyncResult>();
+        const syncB = createDeferred<typeof successSyncResult>();
+
+        dataContextBuilderMock.builder.mockImplementation(() => {
+            let activeSystemId = 'unknown';
+            const chain = {
+                system: vi.fn((system: { id: string }) => {
+                    activeSystemId = system.id;
+
+                    return chain;
+                }),
+                adapter: vi.fn(() => chain),
+                register: vi.fn(() => chain),
+                buildFromCache: vi.fn(
+                    async () =>
+                        ({
+                            close: closeMock,
+                            sync: vi.fn(async () => {
+                                syncStarts.push(activeSystemId);
+
+                                if (activeSystemId === 'wh40k10e') {
+                                    return syncA.promise;
+                                }
+
+                                return syncB.promise;
+                            }),
+                        }) as unknown as DataContext,
+                ),
+            };
+
+            return chain;
+        });
+
+        const controls: HarnessControls = {
+            statuses: [],
+            syncStatusHistory: {},
+        };
+
+        render(
+            <DataContextProvider>
+                <Harness
+                    controls={controls}
+                    systems={[
+                        {
+                            id: 'wh40k10e',
+                            getContainerModule: () => systemModule,
+                            register: vi.fn().mockResolvedValue(undefined),
+                            createGameContext: vi.fn().mockReturnValue({
+                                armies: {},
+                                campaigns: {},
+                                game: {},
+                                sync: vi.fn().mockResolvedValue({
+                                    success: true,
+                                    total: 0,
+                                    succeeded: [],
+                                    failures: [],
+                                }),
+                            }),
+                        } as unknown as { id: string; getContainerModule?: () => unknown },
+                        {
+                            id: 'system-b',
+                            getContainerModule: () => systemModule,
+                            register: vi.fn().mockResolvedValue(undefined),
+                            createGameContext: vi.fn().mockReturnValue({
+                                armies: {},
+                                campaigns: {},
+                                game: {},
+                                sync: vi.fn().mockResolvedValue({
+                                    success: true,
+                                    total: 0,
+                                    succeeded: [],
+                                    failures: [],
+                                }),
+                            }),
+                        } as unknown as { id: string; getContainerModule?: () => unknown },
+                    ]}
+                />
+            </DataContextProvider>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Enable system-b' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Sync wh40k10e: checking-staleness')).toBeInTheDocument();
+        });
+
+        expect(syncStarts).toEqual(['wh40k10e']);
+        expect(screen.getByText('Sync system-b: syncing')).toBeInTheDocument();
+
+        syncA.resolve(successSyncResult);
+
+        syncB.resolve(successSyncResult);
+
+        await waitFor(() => {
+            expect(screen.getByText('Sync wh40k10e: synced')).toBeInTheDocument();
+            expect(screen.getByText('Sync system-b: synced')).toBeInTheDocument();
+        });
+    });
+
+    it('retries sync up to two times before succeeding', async () => {
+        const syncMock = vi
+            .fn()
+            .mockRejectedValueOnce(new Error('network-1'))
+            .mockRejectedValueOnce(new Error('network-2'))
+            .mockResolvedValue(successSyncResult);
+
+        dataContextBuilderMock.builder.mockReturnValueOnce({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: closeMock,
+                        sync: syncMock,
+                    }) as unknown as DataContext,
+            ),
+        });
+
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
+            </DataContextProvider>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Sync wh40k10e: synced')).toBeInTheDocument();
+        });
+
+        expect(syncMock).toHaveBeenCalledTimes(3);
+    });
+
+    it('sets error with hasCache true after retries exhausted for cached system', async () => {
+        pgliteAdapterMock.getAllSyncStatuses.mockResolvedValueOnce([
+            {
+                fileKey: 'core:wh40k-10e.gst',
+                sha: 'abc',
+                lastSynced: new Date('2026-01-01T00:00:00.000Z'),
+            },
+        ]);
+        resolveGameSystemMock.mockResolvedValue({
+            id: 'wh40k10e',
+            getSyncFileKeyPrefixes: () => ['core:'],
+            getContainerModule: () => systemModule,
+        });
+
+        dataContextBuilderMock.builder.mockReturnValueOnce({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: closeMock,
+                        sync: vi.fn(async () => {
+                            throw new Error('offline');
+                        }),
+                    }) as unknown as DataContext,
+            ),
+        });
+
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
+            </DataContextProvider>,
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Sync wh40k10e: error')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('SyncHasCache wh40k10e: true')).toBeInTheDocument();
+    });
+
+    it('sets error with hasCache false after retries exhausted for non-cached system', async () => {
+        dataContextBuilderMock.builder.mockReturnValueOnce({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: closeMock,
+                        sync: vi.fn(async () => {
+                            throw new Error('offline');
+                        }),
+                    }) as unknown as DataContext,
+            ),
+        });
+
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
+            </DataContextProvider>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Sync wh40k10e: error')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('SyncHasCache wh40k10e: false')).toBeInTheDocument();
+    });
+
+    it('exposes checking-staleness while sync is in progress', async () => {
+        const deferredSync = createDeferred<typeof successSyncResult>();
+
+        dataContextBuilderMock.builder.mockReturnValueOnce({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: closeMock,
+                        sync: vi.fn(async () => deferredSync.promise),
+                    }) as unknown as DataContext,
+            ),
+        });
+
+        const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
+
+        render(
+            <DataContextProvider>
+                <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
+            </DataContextProvider>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Sync wh40k10e: checking-staleness')).toBeInTheDocument();
+        });
+
+        deferredSync.resolve(successSyncResult);
+
+        await waitFor(() => {
+            expect(screen.getByText('Sync wh40k10e: synced')).toBeInTheDocument();
         });
     });
 });
