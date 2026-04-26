@@ -10,7 +10,11 @@ Sentry.init({
     tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
-    integrations: [replayIntegration()],
+    enableLogs: true,
+    integrations: [
+        replayIntegration(),
+        Sentry.consoleLoggingIntegration({ levels: ['log', 'info', 'warn', 'error'] }),
+    ],
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
