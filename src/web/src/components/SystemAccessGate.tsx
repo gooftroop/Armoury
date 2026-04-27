@@ -119,7 +119,7 @@ function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactE
                 <h2 className="text-lg font-semibold text-foreground">This game system is not ready yet.</h2>
                 <p className="mt-2 text-sm leading-relaxed text-tertiary">Return to the home page to download it.</p>
                 <Link
-                    href="./"
+                    href="/"
                     className="mt-5 inline-flex items-center rounded-md border border-border/60 bg-base px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                 >
                     Back to home
