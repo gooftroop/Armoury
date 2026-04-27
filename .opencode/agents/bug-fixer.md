@@ -1,10 +1,10 @@
 ---
-description: "QA/QSE bug-fix agent — reads issue tracker tickets, gathers context from documentation/VCS/web/codebase, plans and implements fixes with tests on a dedicated branch, and creates merge/pull requests. Invoke with @bug-fixer PROJ-1234."
+description: 'QA/QSE bug-fix agent — reads issue tracker tickets, gathers context from documentation/VCS/web/codebase, plans and implements fixes with tests on a dedicated branch, and creates merge/pull requests. Invoke with @bug-fixer PROJ-1234.'
 mode: subagent
-model: anthropic/claude-sonnet-4-20250514
+model: github-copilot/claude-sonnet-4-6
 temperature: 0.1
 steps: 200
-color: "#e74c3c"
+color: '#e74c3c'
 tools:
     read: true
     grep: true
@@ -25,36 +25,36 @@ tools:
     lsp: true
 permission:
     bash:
-        "git *": allow
-        "pnpm *": allow
-        "npm *": allow
-        "npx *": allow
-        "yarn *": allow
-        "bun *": allow
-        "node *": allow
-        "python *": allow
-        "python3 *": allow
-        "cargo *": allow
-        "go *": allow
-        "make *": allow
-        "gradle *": allow
-        "mvn *": allow
-        "grep *": allow
-        "find *": allow
-        "ls *": allow
-        "cat *": allow
-        "head *": allow
-        "tail *": allow
-        "wc *": allow
-        "diff *": allow
-        "curl *": allow
-        "*": ask
+        'git *': allow
+        'pnpm *': allow
+        'npm *': allow
+        'npx *': allow
+        'yarn *': allow
+        'bun *': allow
+        'node *': allow
+        'python *': allow
+        'python3 *': allow
+        'cargo *': allow
+        'go *': allow
+        'make *': allow
+        'gradle *': allow
+        'mvn *': allow
+        'grep *': allow
+        'find *': allow
+        'ls *': allow
+        'cat *': allow
+        'head *': allow
+        'tail *': allow
+        'wc *': allow
+        'diff *': allow
+        'curl *': allow
+        '*': ask
     edit: allow
     webfetch: allow
     task:
         explore: allow
         librarian: allow
-        "*": ask
+        '*': ask
 ---
 
 <identity>
@@ -500,14 +500,12 @@ After localizing the bug, understand what depends on the affected code:
 When the bug involves unfamiliar APIs, libraries, or patterns:
 
 1. **Search project documentation** (if `{DOCUMENTATION_PLATFORM}` is available):
-
     - **Confluence**: `atlassian_searchConfluenceUsingCql` for architecture decision records, design specs, known issues
     - **GitLab Wiki**: `gitlab_get_wiki_page` or search
     - **GitHub Wiki**: `bash` with `gh` CLI
     - **Markdown docs**: Search `docs/` directory in the repo
 
 2. **Search the web** using `websearch` for:
-
     - Known issues with third-party libraries
     - API documentation for external services
     - Similar bug reports in open-source projects
@@ -702,10 +700,10 @@ Always combine category with relevant skills:
 
 ```typescript
 task(
-    (category = "visual-engineering"),
-    (load_skills = ["playwright", "frontend-ui-ux"]),
-    (description = "Fix visual regression in color picker"),
-    (prompt = "...")
+    (category = 'visual-engineering'),
+    (load_skills = ['playwright', 'frontend-ui-ux']),
+    (description = 'Fix visual regression in color picker'),
+    (prompt = '...'),
 );
 ```
 
@@ -737,10 +735,10 @@ Example:
 
 ```typescript
 task(
-    (subagent_type = "explore"),
+    (subagent_type = 'explore'),
     (run_in_background = true),
     (load_skills = []),
-    (description = "Find error handling patterns near auth module"),
+    (description = 'Find error handling patterns near auth module'),
     (prompt = `
     [CONTEXT]: I'm fixing bug PROJ-1234 in src/auth/login.ts where null user causes a crash.
     [GOAL]: Understand the existing error handling conventions so my fix matches the codebase.
@@ -748,7 +746,7 @@ task(
     [REQUEST]: Find custom Error subclasses, error response JSON shape, try/catch patterns in
     handlers. Focus on src/auth/ and src/middleware/. Skip test files. Return file paths with
     pattern descriptions.
-  `)
+  `),
 );
 ```
 

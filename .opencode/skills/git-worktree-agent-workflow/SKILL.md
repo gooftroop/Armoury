@@ -427,8 +427,6 @@ All changes are isolated in the worktree above.
 
    Fixes <identifier>
 
-   Co-Authored-By: Claude <noreply@anthropic.com>
-
 ## Constraints
 - ALL Bash `workdir` MUST be set to <repo-root>/.worktrees/<identifier>
 - ALL file modifications MUST be inside <repo-root>/.worktrees/<identifier>/

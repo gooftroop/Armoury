@@ -1,14 +1,4 @@
 {
     "$schema": "https://opencode.ai/config.json",
     "instructions": [".opencode/AGENTS.md"],
-    "compaction": {
-        "auto": true,
-        "prune": true,
-        "reserved": 12000,
-    },
-    "agent": {
-        "compaction": {
-            "model": "github-copilot/claude-haiku-4.5",
-        },
-    },
 }
