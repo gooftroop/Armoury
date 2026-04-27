@@ -41,6 +41,33 @@ Available skills in `.opencode/skills/`. Load via the `skill` tool only when nee
 **Infrastructure**: `aws-advisor`, `sentry`
 **Quality**: `best-practices`
 
+### Mandatory Skill: `bootstrap` (implementation phase only)
+
+When executing Speckit workflows (`/specify`, `/plan`, `/tasks`, `/implement` and Product Forge variants),
+if planning artifacts imply **creating a new repository** or **adding a new workspace/service scaffold**,
+you MUST defer bootstrap execution until the implementation phase.
+
+Phase boundary rule:
+
+- `/specify`, `/plan`, `/tasks`: planning artifacts only — **do not create scaffold code/files**
+- `/implement`: execute scaffold creation with `bootstrap` skill, then apply task deltas
+
+Trigger conditions (any of these):
+
+- Plan/tasks include creating monorepo scaffolding
+- Plan/tasks include creating a new `library`, `serverless`, `nextjs`, `react-native`, or `nestjs` workspace
+- Plan/tasks include infra bootstrapping under workspace-local `infra/`
+
+Required behavior:
+
+1. During planning phases, tag bootstrap intent only (no scaffold execution)
+2. At implementation start, load `bootstrap` skill first
+3. Run bootstrap script(s) to generate canonical baseline
+4. Only then implement task-specific deltas on top
+5. Verify generated baseline matches bootstrap expectations (including `docs/CODING_STANDARDS.md` presence)
+
+This prevents drift between planned implementation and canonical bootstrap conventions.
+
 ## Coding & Testing Conventions
 
 **Read `docs/CODING_STANDARDS.md` before writing or modifying code.** It covers: code style, naming, exports, types, imports, file extensions, error handling, database schema, and testing patterns.
@@ -85,6 +112,11 @@ Break work into the smallest possible incremental changes. Identify blocking vs.
 **⚠️ MANDATORY: Load `git-worktree-agent-workflow` skill BEFORE writing any code.** All code changes MUST happen inside a git worktree — no exceptions unless the human explicitly says "skip worktree" or "work on main".
 
 Implement one increment at a time. Run linting, type checks, and tests on affected packages. Summarize what changed and what was verified.
+
+Speckit implementation gate:
+
+- If implementing a Speckit-generated task that creates repo/workspace scaffolding, use `bootstrap` skill first to materialize baseline.
+- Do not hand-roll scaffold files that the bootstrap scripts already define.
 
 **Gate** (Medium/High risk): After each increment → wait for human feedback.
 

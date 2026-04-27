@@ -8,7 +8,8 @@
  *   - serverless:     AWS Lambda service with Serverless Framework
  *   - nextjs:         Next.js web application
  *   - react-native:   Expo/React Native mobile application
- *   - nestjs-docker:  NestJS service with Docker Compose
+ *   - nestjs:         NestJS service (Docker optional)
+ *   - nestjs-docker:  Alias for nestjs (backward compatibility)
  *
  * Usage:
  *   node scripts/bootstrap/create-workspace.js --name <pkg-name> --location <path> --type <type> [--scope <scope>]
@@ -39,11 +40,12 @@ function getArg(name) {
     return args[idx + 1];
 }
 
-const VALID_TYPES = ['library', 'serverless', 'nextjs', 'react-native', 'nestjs-docker'];
+const VALID_TYPES = ['library', 'serverless', 'nextjs', 'react-native', 'nestjs', 'nestjs-docker'];
 
 const name = getArg('name');
 const location = getArg('location');
-const type = getArg('type');
+const rawType = getArg('type');
+const type = rawType === 'nestjs-docker' ? 'nestjs' : rawType;
 const scope = getArg('scope') || detectScope();
 
 if (!name || !location || !type) {
@@ -204,6 +206,266 @@ export {};
     );
 }
 
+function writeInfraBase() {
+    json('infra/package.json', {
+        name: `${scope}-${name}-infra`,
+        private: true,
+        type: 'module',
+        scripts: {
+            build: 'tsc -p tsconfig.json',
+            synth: 'cdk synth',
+            diff: 'cdk diff',
+            deploy: 'cdk deploy',
+        },
+        devDependencies: {
+            'aws-cdk': '^2.1000.0',
+            'aws-cdk-lib': '^2.0.0',
+            constructs: '^10.0.0',
+            tsx: '^4.21.0',
+            typescript: '^5.0.0',
+            '@types/node': '^24.0.0',
+        },
+    });
+
+    json('infra/tsconfig.json', {
+        compilerOptions: {
+            target: 'ES2022',
+            module: 'NodeNext',
+            moduleResolution: 'NodeNext',
+            lib: ['ES2022'],
+            strict: true,
+            esModuleInterop: true,
+            skipLibCheck: true,
+            outDir: 'dist',
+        },
+        include: ['bin/**/*.ts', 'lib/**/*.ts'],
+    });
+
+    w(
+        'infra/cdk.json',
+        `{
+    "app": "tsx bin/app.ts"
+}
+`,
+    );
+}
+
+function writeFargateInfra(serviceType) {
+    writeInfraBase();
+
+    w(
+        'infra/bin/app.ts',
+        `import { App } from 'aws-cdk-lib';
+import { ${serviceType}FargateStack } from '../lib/${serviceType}-fargate-stack.js';
+
+const app = new App();
+
+const stage = app.node.tryGetContext('stage') ?? process.env.STAGE ?? 'sandbox';
+
+new ${serviceType}FargateStack(app, '${scope}-${name}-fargate', {
+    stage,
+});
+`,
+    );
+
+    w(
+        `infra/lib/${serviceType}-fargate-stack.ts`,
+        `import {
+    CfnOutput,
+    Duration,
+    RemovalPolicy,
+    Stack,
+    StackProps,
+    aws_ec2 as ec2,
+    aws_ecs as ecs,
+    aws_ecs_patterns as ecsPatterns,
+    aws_ecr as ecr,
+    aws_iam as iam,
+    aws_s3 as s3,
+} from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+
+interface ${serviceType}FargateStackProps extends StackProps {
+    stage: string;
+}
+
+export class ${serviceType}FargateStack extends Stack {
+    public constructor(scope: Construct, id: string, props: ${serviceType}FargateStackProps) {
+        super(scope, id, props);
+
+        const isProduction = props.stage === 'production';
+
+        const vpc = ec2.Vpc.fromLookup(this, 'Vpc', {
+            isDefault: true,
+        });
+
+        const cluster = new ecs.Cluster(this, 'Cluster', { vpc });
+
+        const executionRole = new iam.Role(this, 'ExecutionRole', {
+            assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+            managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy')],
+        });
+
+        const taskRole = new iam.Role(this, 'TaskRole', {
+            assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+        });
+
+        taskRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: ['ssm:GetParameter', 'ssm:GetParameters'],
+                resources: ['*'],
+            }),
+        );
+
+        const assetsBucket = new s3.Bucket(this, 'AssetsBucket', {
+            removalPolicy: isProduction ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
+            autoDeleteObjects: !isProduction,
+            enforceSSL: true,
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        });
+
+        assetsBucket.grantReadWrite(taskRole);
+
+        const repository = ecr.Repository.fromRepositoryName(this, 'Repository', '${scope}/${name}');
+
+        const taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDefinition', {
+            cpu: 512,
+            memoryLimitMiB: 1024,
+            executionRole,
+            taskRole,
+        });
+
+        taskDefinition.addContainer('AppContainer', {
+            image: ecs.ContainerImage.fromEcrRepository(repository),
+            portMappings: [{ containerPort: 3000 }],
+            logging: ecs.LogDrivers.awsLogs({ streamPrefix: '${name}' }),
+            environment: {
+                STAGE: props.stage,
+                ASSETS_BUCKET_NAME: assetsBucket.bucketName,
+            },
+        });
+
+        const service = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'Service', {
+            cluster,
+            taskDefinition,
+            publicLoadBalancer: true,
+            desiredCount: isProduction ? 2 : 1,
+            healthCheckGracePeriod: Duration.seconds(60),
+        });
+
+        new CfnOutput(this, 'LoadBalancerDns', {
+            value: service.loadBalancer.loadBalancerDnsName,
+        });
+
+        new CfnOutput(this, 'AssetsBucketName', {
+            value: assetsBucket.bucketName,
+        });
+    }
+}
+`,
+    );
+}
+
+function writeServerlessInfra() {
+    writeInfraBase();
+
+    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    const stackClassName = `${cap(scope)}${cap(name)}ServerlessStack`;
+
+    w(
+        'infra/bin/app.ts',
+        `import { App } from 'aws-cdk-lib';
+import { ${stackClassName} } from '../lib/serverless-stack.js';
+
+const app = new App();
+
+const stage = app.node.tryGetContext('stage') ?? process.env.STAGE ?? 'sandbox';
+
+new ${stackClassName}(app, '${scope}-${name}-serverless', {
+    stage,
+});
+`,
+    );
+
+    w(
+        'infra/lib/serverless-stack.ts',
+        `import {
+    CfnOutput,
+    RemovalPolicy,
+    Stack,
+    StackProps,
+    aws_iam as iam,
+    aws_s3 as s3,
+} from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+
+interface ServerlessStackProps extends StackProps {
+    stage: string;
+}
+
+export class ${stackClassName} extends Stack {
+    public constructor(scope: Construct, id: string, props: ServerlessStackProps) {
+        super(scope, id, props);
+
+        const isProduction = props.stage === 'production';
+
+        const runtimeRole = new iam.Role(this, 'RuntimeRole', {
+            assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+            managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
+        });
+
+        runtimeRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: ['ssm:GetParameter', 'ssm:GetParameters'],
+                resources: ['*'],
+            }),
+        );
+
+        const dataBucket = new s3.Bucket(this, 'DataBucket', {
+            removalPolicy: isProduction ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
+            autoDeleteObjects: !isProduction,
+            enforceSSL: true,
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        });
+
+        dataBucket.grantReadWrite(runtimeRole);
+
+        new CfnOutput(this, 'RuntimeRoleArn', { value: runtimeRole.roleArn });
+        new CfnOutput(this, 'DataBucketName', { value: dataBucket.bucketName });
+    }
+}
+`,
+    );
+
+    w(
+        'infra/README.md',
+        `# Serverless infrastructure overlay
+
+This folder contains CDK infrastructure for @${scope}/${name}.
+
+- Runtime IAM role baseline (CloudWatch logs + SSM access)
+- Stage-aware S3 lifecycle behavior:
+    - production: RETAIN
+    - non-production: DESTROY
+
+## API Gateway pattern requirements
+
+Follow service patterns for HTTP API and optional websocket APIs:
+
+1. Use \`httpApi\` routes with JWT authorizer settings in \`serverless.yml\`.
+2. If websocket is required, add websocket routes and pass \`authorizerArn\` through \`serverless-compose.yml\` params.
+3. Keep environment-scoped parameter paths under \`/${scope}/\${param:environment}/...\`.
+4. Add IAM permissions for websocket management only when websocket routes are enabled.
+
+## Websocket extension checklist
+
+- Add websocket function handler and \`websocket\` event routes.
+- Add execute-api ManageConnections IAM statement.
+- Add websocket auth middleware/validation pattern consistent with existing services.
+`,
+    );
+}
+
 // ---------------------------------------------------------------------------
 // Library workspace
 // ---------------------------------------------------------------------------
@@ -326,6 +588,12 @@ function generateServerless() {
         'serverless.yml',
         `service: ${scope}-${name}
 
+params:
+    production:
+        environment: production
+    default:
+        environment: sandbox
+
 provider:
     name: aws
     runtime: nodejs22.x
@@ -335,7 +603,44 @@ provider:
     memorySize: 256
     timeout: 29
     environment:
+        SERVICE_ENVIRONMENT: \${param:environment}
+        PARAMETER_PREFIX: /${scope}/\${param:environment}/${name}
         NODE_OPTIONS: '--enable-source-maps'
+    iam:
+        role:
+            statements:
+                - Effect: Allow
+                  Action:
+                      - logs:CreateLogGroup
+                      - logs:CreateLogStream
+                      - logs:PutLogEvents
+                  Resource: '*'
+                - Effect: Allow
+                  Action:
+                      - ssm:GetParameter
+                      - ssm:GetParameters
+                  Resource: arn:aws:ssm:\${self:provider.region}:\${aws:accountId}:parameter/${scope}/\${param:environment}/*
+    httpApi:
+        authorizers:
+            jwt:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl: https://\${env:AUTH0_DOMAIN}/
+                audience:
+                    - \${env:AUTH0_AUDIENCE}
+        cors:
+            allowedOrigins:
+                - \${env:ALLOWED_ORIGIN, '*'}
+            allowedHeaders:
+                - Content-Type
+                - Authorization
+            allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
+                - OPTIONS
 
 build:
     esbuild:
@@ -362,12 +667,22 @@ functions:
     ${name}:
         handler: src/handler.handler
         events:
-            - http:
+            - httpApi:
                   path: /${name}
                   method: ANY
-            - http:
+                  authorizer:
+                      name: jwt
+            - httpApi:
                   path: /${name}/{proxy+}
                   method: ANY
+                  authorizer:
+                      name: jwt
+
+# Extension guidance:
+# - Keep REST routes under httpApi event config with explicit auth strategy (a generic JWT authorizer is pre-wired by default).
+# - If websocket routes are needed, add a websocket handler/function and websocket events ($connect/$disconnect/$default + custom routes).
+# - When websocket is enabled, wire authorizerArn via serverless-compose.yml params and add execute-api:ManageConnections IAM permissions.
+# - Ensure AUTH0_DOMAIN and AUTH0_AUDIENCE are provided via environment/parameter management for deployed stages.
 `,
     );
 
@@ -394,6 +709,7 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     // Also update serverless-compose.yml if it exists at repo root
     updateServerlessCompose();
+    writeServerlessInfra();
 }
 
 // ---------------------------------------------------------------------------
@@ -517,6 +833,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 export {};
 `,
     );
+
+    writeFargateInfra('nextjs');
 }
 
 // ---------------------------------------------------------------------------
@@ -611,10 +929,10 @@ export {};
 }
 
 // ---------------------------------------------------------------------------
-// NestJS + Docker workspace
+// NestJS workspace (Docker optional)
 // ---------------------------------------------------------------------------
 
-function generateNestJsDocker() {
+function generateNestJs() {
     json('package.json', {
         name: pkgName,
         version: '0.0.0',
@@ -662,7 +980,7 @@ function generateNestJsDocker() {
     writePrettierIgnore();
     writeVitestConfig();
 
-    // Dockerfile
+    // Dockerfile (optional local/prod container workflow)
     w(
         'Dockerfile',
         `FROM node:${nodeVersion}-alpine AS builder
@@ -682,7 +1000,7 @@ CMD ["node", "dist/main.js"]
 `,
     );
 
-    // docker-compose.yml
+    // docker-compose.yml (optional local workflow)
     w(
         'docker-compose.yml',
         `services:
@@ -737,6 +1055,8 @@ export class AppModule {}
 export {};
 `,
     );
+
+    writeFargateInfra('nestjs');
 }
 
 // ---------------------------------------------------------------------------
@@ -747,17 +1067,18 @@ function updateServerlessCompose() {
     const composePath = resolve('serverless-compose.yml');
 
     if (!existsSync(composePath)) {
-        // Create a new serverless-compose.yml
         const content = `services:
     ${name}:
         path: ${location}
+        # If this service depends on a sibling authorizer service, add:
+        #     params:
+        #         authorizerArn: \${authorizer.AuthorizerArn}
 `;
         writeFileSync(composePath, content, 'utf-8');
         console.log(`  created serverless-compose.yml (new)`);
         return;
     }
 
-    // Append service to existing file
     const existing = readFileSync(composePath, 'utf-8');
 
     if (existing.includes(`    ${name}:`)) {
@@ -845,8 +1166,8 @@ switch (type) {
     case 'react-native':
         generateReactNative();
         break;
-    case 'nestjs-docker':
-        generateNestJsDocker();
+    case 'nestjs':
+        generateNestJs();
         break;
 }
 
