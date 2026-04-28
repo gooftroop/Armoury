@@ -3,6 +3,12 @@ import type { GameSystem } from '@armoury/data-dao';
 import type { GameContextResult } from '@armoury/data-dao';
 import { DataContext } from '@/DataContext.js';
 
+/**
+ * @requirements
+ * - REQ-DATA-CONTEXT-001: DataContextBuilder must default to owning the adapter lifecycle.
+ * - REQ-DATA-CONTEXT-002: Adapter ownership must be configurable for shared-adapter scenarios.
+ */
+
 /** Builder for creating DataContext instances with configured dependencies. */
 export class DataContextBuilder<TGameData = unknown> {
     /** Creates a new DataContextBuilder instance. */
@@ -12,6 +18,7 @@ export class DataContextBuilder<TGameData = unknown> {
 
     private gameSystem: GameSystem | null = null;
     private adapterInstance: DatabaseAdapter | null = null;
+    private adapterOwned = true;
     /** Registered client instances keyed by name. */
     private clients: Map<string, unknown> = new Map();
 
@@ -32,6 +39,13 @@ export class DataContextBuilder<TGameData = unknown> {
     /** Registers a named client instance for use by game systems. */
     public register(key: string, client: unknown): DataContextBuilder<TGameData> {
         this.clients.set(key, client);
+
+        return this;
+    }
+
+    /** Sets whether this DataContext owns its adapter's lifecycle. Defaults to true. */
+    public ownsAdapter(owns: boolean): DataContextBuilder<TGameData> {
+        this.adapterOwned = owns;
 
         return this;
     }
@@ -62,12 +76,18 @@ export class DataContextBuilder<TGameData = unknown> {
         const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
         log('createGameContext done');
 
-        const dc = new DataContext(this.adapterInstance, gameSystem, this.clients, {
-            armies: gameContext.armies,
-            campaigns: gameContext.campaigns,
-            game: gameContext.game as TGameData,
-            sync: gameContext.sync,
-        });
+        const dc = new DataContext(
+            this.adapterInstance,
+            gameSystem,
+            this.clients,
+            {
+                armies: gameContext.armies,
+                campaigns: gameContext.campaigns,
+                game: gameContext.game as TGameData,
+                sync: gameContext.sync,
+            },
+            this.adapterOwned,
+        );
 
         if (gameContext.sync && this.clients.has('github')) {
             log('sync start');
@@ -121,12 +141,18 @@ export class DataContextBuilder<TGameData = unknown> {
         const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
         log('createGameContext done');
 
-        const dc = new DataContext(this.adapterInstance, gameSystem, this.clients, {
-            armies: gameContext.armies,
-            campaigns: gameContext.campaigns,
-            game: gameContext.game as TGameData,
-            sync: gameContext.sync,
-        });
+        const dc = new DataContext(
+            this.adapterInstance,
+            gameSystem,
+            this.clients,
+            {
+                armies: gameContext.armies,
+                campaigns: gameContext.campaigns,
+                game: gameContext.game as TGameData,
+                sync: gameContext.sync,
+            },
+            this.adapterOwned,
+        );
 
         log('buildFromCache complete (sync skipped)');
 

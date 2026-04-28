@@ -308,9 +308,18 @@ export class DataContextManager {
             this.wahapediaClient = await createWahapedia(queryClient);
         }
 
-        const dataContext = await DataContextBuilder.builder()
-            .system(system)
-            .adapter(this.adapter)
+        const dataContextBuilder = DataContextBuilder.builder().system(system).adapter(this.adapter) as
+            | (ReturnType<typeof DataContextBuilder.builder> & {
+                  ownsAdapter?: (owns: boolean) => ReturnType<typeof DataContextBuilder.builder>;
+              })
+            | ReturnType<typeof DataContextBuilder.builder>;
+
+        const configuredBuilder =
+            'ownsAdapter' in dataContextBuilder && typeof dataContextBuilder.ownsAdapter === 'function'
+                ? dataContextBuilder.ownsAdapter(false)
+                : dataContextBuilder;
+
+        const dataContext = await configuredBuilder
             .register('github', this.githubClient)
             .register('wahapedia', this.wahapediaClient)
             .register('syncProgress', new SyncProgressCollector(40))

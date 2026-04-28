@@ -3,6 +3,12 @@
  * Tests builder validation, lifecycle method calls, and proper DataContext assembly.
  */
 
+/**
+ * @requirements
+ * - REQ-DATA-CONTEXT-001: DataContextBuilder defaults to owning adapter lifecycle.
+ * - REQ-DATA-CONTEXT-002: DataContextBuilder can disable adapter ownership per context.
+ */
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DataContextBuilder } from '@/DataContextBuilder.js';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
@@ -526,6 +532,30 @@ describe('DataContextBuilder', () => {
             const closeSpy = vi.spyOn(mockAdapter, 'close');
 
             const dc = await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).build();
+
+            await dc.close();
+
+            expect(closeSpy).toHaveBeenCalledOnce();
+        });
+
+        it('close() with ownsAdapter false does not call adapter.close', async () => {
+            const closeSpy = vi.spyOn(mockAdapter, 'close');
+
+            const dc = await new DataContextBuilder()
+                .system(stubSystem)
+                .adapter(mockAdapter)
+                .ownsAdapter(false)
+                .build();
+
+            await dc.close();
+
+            expect(closeSpy).not.toHaveBeenCalled();
+        });
+
+        it('close() with ownsAdapter true calls adapter.close', async () => {
+            const closeSpy = vi.spyOn(mockAdapter, 'close');
+
+            const dc = await new DataContextBuilder().system(stubSystem).adapter(mockAdapter).ownsAdapter(true).build();
 
             await dc.close();
 
