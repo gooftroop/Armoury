@@ -19,14 +19,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
 
-import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
-import type { SyncQueueState } from '@/providers/SyncQueueProvider.js';
+import type { SystemSyncStatus } from '@/data/useDataContext.js';
 
 import { SystemGridContainer } from '../SystemGridContainer.js';
 
 const {
     useDataContextMock,
-    useSyncQueueMock,
     useSyncProgressMock,
     resolveGameSystemMock,
     getSyncStatusMock,
@@ -39,7 +37,6 @@ const {
 } = vi.hoisted(() => {
     return {
         useDataContextMock: vi.fn(),
-        useSyncQueueMock: vi.fn(),
         useSyncProgressMock: vi.fn(),
         resolveGameSystemMock: vi.fn(),
         getSyncStatusMock: vi.fn(),
@@ -52,12 +49,8 @@ const {
     };
 });
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
+vi.mock('@/data/useDataContext.js', () => ({
     useDataContext: useDataContextMock,
-}));
-
-vi.mock('@/providers/SyncQueueProvider.js', () => ({
-    useSyncQueue: useSyncQueueMock,
 }));
 
 vi.mock('@/hooks/useSyncProgress.js', () => ({
@@ -123,7 +116,6 @@ const IDLE_PROGRESS: SyncProgressState = {
 interface RenderOptions {
     manifests?: GameSystemManifest[];
     statuses?: Record<string, { status: SystemSyncStatus; error?: string }>;
-    queueState?: SyncQueueState;
     userId?: string;
     onUnauthenticatedClick?: () => void;
 }
@@ -142,20 +134,12 @@ interface MockTile {
 
 function renderHarness(options: RenderOptions = {}): void {
     const statuses = options.statuses ?? {};
-    const queueState: SyncQueueState =
-        options.queueState ??
-        ({
-            pending: [],
-            active: null,
-            isProcessing: false,
-        } as SyncQueueState);
 
     useDataContextMock.mockReturnValue({
         systemSyncStates: statuses,
         syncProgressCollector: { getState: () => IDLE_PROGRESS },
         enableSystem: enableSystemMock,
     });
-    useSyncQueueMock.mockReturnValue({ state: queueState });
     useSyncProgressMock.mockReturnValue(IDLE_PROGRESS);
 
     render(
@@ -268,14 +252,8 @@ describe('SystemGridContainer', () => {
         expect(within(getTile(manifest.id)).queryByText('overlay')).not.toBeInTheDocument();
     });
 
-    it('derives isQueued=true when system is in queue pending', () => {
-        renderHarness({
-            queueState: {
-                pending: [manifest.id],
-                active: null,
-                isProcessing: true,
-            },
-        });
+    it('derives isQueued=true when sync status is pending', () => {
+        renderHarness({ statuses: { [manifest.id]: { status: 'pending' } } });
 
         expect(within(getTile(manifest.id)).getByText('queued')).toBeInTheDocument();
     });

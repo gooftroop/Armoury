@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { getSyncStatus } from '../getSyncStatus.js';
-import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
+import type { SystemSyncStatus } from '@/data/useDataContext.js';
 
 describe('getSyncStatus', () => {
     it('returns mapped status for a known system ID', () => {

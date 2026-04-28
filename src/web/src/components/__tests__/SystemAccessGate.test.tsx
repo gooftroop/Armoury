@@ -28,7 +28,7 @@ vi.mock('next/link', () => ({
     default: ({ children }: { children: unknown; href: string }) => children,
 }));
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
+vi.mock('@/data/useDataContext.js', () => ({
     useDataContext: mockUseDataContext,
 }));
 

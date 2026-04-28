@@ -10,7 +10,7 @@
 
 import { useEffect } from 'react';
 
-import { useDataContext } from '@/providers/DataContextProvider.js';
+import { useDataContext } from '@/data/useDataContext.js';
 import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
 
 export interface SystemAutoRestoreProps {

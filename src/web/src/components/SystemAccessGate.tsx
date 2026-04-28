@@ -5,7 +5,7 @@ import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
-import { useDataContext } from '@/providers/DataContextProvider.js';
+import { useDataContext } from '@/data/useDataContext.js';
 import { useSyncManifest } from '@/providers/SyncManifestProvider.js';
 
 /**

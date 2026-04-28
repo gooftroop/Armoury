@@ -39,7 +39,7 @@ vi.mock('react', async () => {
     };
 });
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
+vi.mock('@/data/useDataContext.js', () => ({
     useDataContext: mockUseDataContext,
 }));
 
