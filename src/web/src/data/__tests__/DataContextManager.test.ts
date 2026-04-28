@@ -189,6 +189,7 @@ describe('DataContextManager', () => {
                     return chain;
                 }),
                 adapter: vi.fn(() => chain),
+                ownsAdapter: vi.fn(() => chain),
                 register: vi.fn(() => chain),
                 buildFromCache: vi.fn(async () => contextsById[systemId] as unknown as DataContext),
             };
@@ -216,6 +217,7 @@ describe('DataContextManager', () => {
 
                     return chain;
                 }),
+                ownsAdapter: vi.fn(() => chain),
                 register: vi.fn(() => chain),
                 buildFromCache: vi.fn(
                     async () => ({ close: vi.fn(), sync: vi.fn(async () => null) }) as unknown as DataContext,
@@ -243,6 +245,7 @@ describe('DataContextManager', () => {
         DataContextBuilderMock.builder.mockReturnValue({
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
             buildFromCache: vi.fn(async () => ({ close: closeMock, sync: syncMock }) as unknown as DataContext),
         });
@@ -261,6 +264,7 @@ describe('DataContextManager', () => {
         DataContextBuilderMock.builder.mockReturnValue({
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
             buildFromCache: vi.fn(
                 async () => ({ close: vi.fn(), sync: vi.fn(async () => null) }) as unknown as DataContext,
@@ -290,6 +294,7 @@ describe('DataContextManager', () => {
                     return chain;
                 }),
                 adapter: vi.fn(() => chain),
+                ownsAdapter: vi.fn(() => chain),
                 register: vi.fn(() => chain),
                 buildFromCache: vi.fn(async () => {
                     return {
@@ -348,6 +353,7 @@ describe('DataContextManager', () => {
         DataContextBuilderMock.builder.mockReturnValue({
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
             buildFromCache: vi.fn(async () => ({ close: vi.fn(), sync: syncMock }) as unknown as DataContext),
         });
@@ -377,6 +383,7 @@ describe('DataContextManager', () => {
                     return chain;
                 }),
                 adapter: vi.fn(() => chain),
+                ownsAdapter: vi.fn(() => chain),
                 register: vi.fn(() => chain),
                 buildFromCache: vi.fn(async () => {
                     return {
@@ -422,6 +429,7 @@ describe('DataContextManager', () => {
                     return chain;
                 }),
                 adapter: vi.fn(() => chain),
+                ownsAdapter: vi.fn(() => chain),
                 register: vi.fn(() => chain),
                 buildFromCache: vi.fn(async () => {
                     return {
@@ -481,6 +489,7 @@ describe('DataContextManager', () => {
                     return chain;
                 }),
                 adapter: vi.fn(() => chain),
+                ownsAdapter: vi.fn(() => chain),
                 register: vi.fn(() => chain),
                 buildFromCache: vi.fn(async () => {
                     return {
@@ -538,6 +547,7 @@ describe('DataContextManager', () => {
         DataContextBuilderMock.builder.mockReturnValue({
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
             buildFromCache: vi.fn(async () => dataContextRef),
         });
@@ -571,6 +581,7 @@ describe('DataContextManager', () => {
         DataContextBuilderMock.builder.mockReturnValue({
             system: vi.fn().mockReturnThis(),
             adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
             buildFromCache: vi.fn(
                 async () => ({ close: vi.fn(), sync: vi.fn(async () => null) }) as unknown as DataContext,
