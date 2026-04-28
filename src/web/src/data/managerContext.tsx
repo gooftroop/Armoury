@@ -23,6 +23,12 @@ export function DataContextManagerProvider({ children }: DataContextManagerProvi
     const [manager] = useState(() => new DataContextManager());
 
     useEffect(() => {
+        if (process.env.NODE_ENV === 'test') {
+            void import('./__testing__/e2eManager.js').then(({ installE2EBridge }) => {
+                installE2EBridge(manager);
+            });
+        }
+
         return () => {
             void manager.dispose();
         };
