@@ -30,12 +30,14 @@
  * | REQ-DATASYNC-02   | repeat sync: reload triggers new GitHub requests              |
  * | REQ-DATASYNC-03   | CRUD: create, duplicate, delete army via Forge UI             |
  * | REQ-DATASYNC-04   | sync error: abort → error state → unroute → retry → Ready    |
+ * | REQ-DATASYNC-05   | regression: 40K sync populates units table (PGlite adapter-not-initialized bug) |
  *
  * @requirements
  * - REQ-DATASYNC-01: First-time system download shows game data as available in UI
  * - REQ-DATASYNC-02: Repeat sync detects upstream changes and revalidates
  * - REQ-DATASYNC-03: DataContext CRUD is exercisable via Forge UI (create, duplicate, delete)
  * - REQ-DATASYNC-04: Sync failure shows user-facing error and supports retry
+ * - REQ-DATASYNC-05: 40K sync MUST populate PGlite units table without PGlite adapter-not-initialized errors
  */
 
 import { test, expect } from '../fixtures/index.js';
@@ -246,5 +248,31 @@ test.describe('WH40K system data sync lifecycle', () => {
         await clickSystemTileOverlay(page);
 
         await waitForSyncReady(page);
+    });
+
+    test('40K sync populates units table — regression for PGlite adapter-not-initialized bug', async ({ page }) => {
+        await page.goto('/');
+        await deletePgliteDatabase(page);
+        await clickSystemTileOverlay(page);
+        await waitForSyncReady(page);
+
+        // Verify units table has been populated via the raw-query bridge.
+        // Before the DataContextManager rewrite, this failed with:
+        //   DatabaseError: PGlite adapter not initialized
+        // because probeSyncedSystems opened a second PGliteAdapter against the same IDB store.
+        const result = await page.evaluate(async () => {
+            const rawQuery = (window as unknown as Record<string, unknown>).__armoury_raw_query as
+                | ((sql: string) => Promise<{ rows: Array<Record<string, unknown>> }>)
+                | undefined;
+
+            if (!rawQuery) {
+                throw new Error('__armoury_raw_query not available — is NODE_ENV=test and the bridge installed?');
+            }
+
+            return rawQuery('SELECT count(*) AS count FROM units');
+        });
+
+        const count = Number((result as { rows: Array<{ count: unknown }> }).rows[0]?.count ?? 0);
+        expect(count).toBeGreaterThan(0);
     });
 });
