@@ -4,7 +4,17 @@
  * - REQ-WEB-MGR-002: Active DataContext reference is independent of sync-state churn.
  */
 
-export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'error';
+/** Sync states for a system data context. */
+export const SyncStatus = {
+    Idle: 'idle',
+    Pending: 'pending',
+    Syncing: 'syncing',
+    Synced: 'synced',
+    Error: 'error',
+} as const;
+
+/** Sync states for a system data context. */
+export type SyncStatus = (typeof SyncStatus)[keyof typeof SyncStatus];
 
 export type SystemSyncState = {
     systemId: string;

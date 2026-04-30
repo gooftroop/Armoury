@@ -71,8 +71,8 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
         adapter: DatabaseAdapter,
         gameSystem: GameSystem,
         clients: Map<string, unknown>,
-        gameContext?: GameContextResult<TGameData>,
-        ownsAdapter = true,
+        gameContext: GameContextResult<TGameData> | undefined,
+        ownsAdapter: boolean,
     ) {
         this.adapter = adapter;
         this.gameSystem = gameSystem;

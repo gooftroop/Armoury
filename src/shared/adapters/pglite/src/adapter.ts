@@ -121,7 +121,9 @@ export class PGliteAdapter extends BaseDatabaseAdapter {
         this.config = config;
     }
     async initialize(): Promise<void> {
-        if (this.client && this.db) {return;}
+        if (this.client && this.db) {
+            return;
+        }
 
         try {
             const client = new PGlite(this.config.dataDir);

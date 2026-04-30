@@ -50,18 +50,13 @@ export class DataContextBuilder<TGameData = unknown> {
         return this;
     }
 
-    /** Builds a fully initialized DataContext instance. */
-    public async build(): Promise<DataContext<TGameData>> {
-        if (!this.gameSystem) {
-            throw new Error('Game system is required to build a DataContext.');
-        }
-
-        if (!this.adapterInstance) {
-            throw new Error('An adapter must be provided to build a DataContext.');
-        }
-
+    private async buildContext(label: string): Promise<{
+        dc: DataContext<TGameData>;
+        gameContext: GameContextResult<TGameData>;
+        log: (phase: string) => void;
+    }> {
         const t0 = Date.now();
-        const log = (phase: string) => console.log(`[SYNC-DEBUG] build: ${phase} +${Date.now() - t0}ms`);
+        const log = (phase: string): void => console.debug(`[SYNC-DEBUG] ${label}: ${phase} +${Date.now() - t0}ms`);
 
         const gameSystem = this.gameSystem as GameSystem & {
             createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult<TGameData>;
@@ -70,14 +65,17 @@ export class DataContextBuilder<TGameData = unknown> {
         log('register start');
         await gameSystem.register();
         log('register done, adapter.initialize start');
-        await this.adapterInstance.initialize();
+        await this.adapterInstance!.initialize();
         log('adapter.initialize done, createGameContext start');
 
-        const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
+        const gameContext = gameSystem.createGameContext(
+            this.adapterInstance!,
+            this.clients,
+        ) as GameContextResult<TGameData>;
         log('createGameContext done');
 
-        const dc = new DataContext(
-            this.adapterInstance,
+        const dc = new DataContext<TGameData>(
+            this.adapterInstance!,
             gameSystem,
             this.clients,
             {
@@ -88,6 +86,21 @@ export class DataContextBuilder<TGameData = unknown> {
             },
             this.adapterOwned,
         );
+
+        return { dc, gameContext, log };
+    }
+
+    /** Builds a fully initialized DataContext instance. */
+    public async build(): Promise<DataContext<TGameData>> {
+        if (!this.gameSystem) {
+            throw new Error('Game system is required to build a DataContext.');
+        }
+
+        if (!this.adapterInstance) {
+            throw new Error('An adapter must be provided to build a DataContext.');
+        }
+
+        const { dc, gameContext, log } = await this.buildContext('build');
 
         if (gameContext.sync && this.clients.has('github')) {
             log('sync start');
@@ -125,34 +138,7 @@ export class DataContextBuilder<TGameData = unknown> {
             throw new Error('An adapter must be provided to build a DataContext.');
         }
 
-        const t0 = Date.now();
-        const log = (phase: string) => console.log(`[SYNC-DEBUG] buildFromCache: ${phase} +${Date.now() - t0}ms`);
-
-        const gameSystem = this.gameSystem as GameSystem & {
-            createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult<TGameData>;
-        };
-
-        log('register start');
-        await gameSystem.register();
-        log('register done, adapter.initialize start');
-        await this.adapterInstance.initialize();
-        log('adapter.initialize done, createGameContext start');
-
-        const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
-        log('createGameContext done');
-
-        const dc = new DataContext(
-            this.adapterInstance,
-            gameSystem,
-            this.clients,
-            {
-                armies: gameContext.armies,
-                campaigns: gameContext.campaigns,
-                game: gameContext.game as TGameData,
-                sync: gameContext.sync,
-            },
-            this.adapterOwned,
-        );
+        const { dc, log } = await this.buildContext('buildFromCache');
 
         log('buildFromCache complete (sync skipped)');
 
