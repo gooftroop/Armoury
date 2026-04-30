@@ -21,9 +21,10 @@ import { BehaviorSubject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import type { DataContext } from '@armoury/data-context';
-import type { GameSystem, SyncProgressCollector } from '@armoury/data-dao';
+import { SyncProgressCollector } from '@armoury/data-dao';
+import type { GameSystem } from '@armoury/data-dao';
 
-import { initialManagerState, type ManagerState, type SystemSyncState } from '../managerState.js';
+import { initialManagerState, SyncStatus, type ManagerState, type SystemSyncState } from '../managerState.js';
 
 const { managerInstances, ManagerCtor } = vi.hoisted(() => {
     const instances: unknown[] = [];
@@ -38,6 +39,7 @@ const { managerInstances, ManagerCtor } = vi.hoisted(() => {
             const dispose = vi.fn(async () => undefined);
             const enableSystem = vi.fn(async () => undefined);
             const disableSystem = vi.fn(async () => undefined);
+            const hasInflightSystemSync = vi.fn(() => false);
 
             const instance = {
                 state: () => state$.asObservable(),
@@ -45,6 +47,7 @@ const { managerInstances, ManagerCtor } = vi.hoisted(() => {
                 selectActiveDataContext: () => active$.asObservable(),
                 getActiveDataContextSnapshot: () => active$.value,
                 selectSyncProgress: () => progress$.asObservable(),
+                hasInflightSystemSync,
                 enableSystem,
                 disableSystem,
                 dispose,
@@ -65,6 +68,7 @@ vi.mock('../DataContextManager.js', () => ({
 }));
 
 interface MockManager {
+    hasInflightSystemSync: ReturnType<typeof vi.fn>;
     enableSystem: ReturnType<typeof vi.fn>;
     disableSystem: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
@@ -216,7 +220,7 @@ describe('bridge hooks', () => {
         act(() => {
             const nextSystemState: SystemSyncState = {
                 systemId: 'wh40k10e',
-                status: 'syncing',
+                status: SyncStatus.Syncing,
                 hasCache: false,
                 attempts: 0,
             };
@@ -272,7 +276,7 @@ describe('bridge hooks', () => {
         const manager = lastManager();
         const targetState: SystemSyncState = {
             systemId: 'wh40k10e',
-            status: 'pending',
+            status: SyncStatus.Pending,
             hasCache: false,
             attempts: 0,
         };
@@ -304,15 +308,16 @@ describe('useDataContext (legacy compatibility)', () => {
             status: 'idle',
             error: undefined,
             systemSyncStates: {},
-            syncProgressCollector: null,
+            syncProgressCollector: expect.any(SyncProgressCollector),
         });
         expect(typeof result.current.enableSystem).toBe('function');
         expect(typeof result.current.disableSystem).toBe('function');
+        expect(typeof result.current.hasInflightSystemSync).toBe('function');
 
         const manager = lastManager();
         const targetState: SystemSyncState = {
             systemId: 'wh40k10e',
-            status: 'pending',
+            status: SyncStatus.Pending,
             hasCache: true,
             attempts: 0,
         };
@@ -327,7 +332,7 @@ describe('useDataContext (legacy compatibility)', () => {
 
         expect(result.current.status).toBe('ready');
         expect(result.current.systemSyncStates['wh40k10e']).toEqual({
-            status: 'pending',
+            status: SyncStatus.Pending,
             error: undefined,
             hasCache: true,
         });
@@ -351,6 +356,7 @@ describe('useDataContext (legacy compatibility)', () => {
         });
 
         expect(manager.enableSystem).toHaveBeenCalledWith(system);
+        expect(result.current.hasInflightSystemSync('wh40k10e')).toBe(false);
 
         await act(async () => {
             await result.current.disableSystem('wh40k10e');

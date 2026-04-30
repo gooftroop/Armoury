@@ -92,7 +92,12 @@ export interface DataContextValue {
 /**
  * React context for accessing the DataContext and sync state.
  */
-const DataContextReactContext = React.createContext<DataContextValue | undefined>(undefined);
+/**
+ * @internal Exported solely so test-only factories under `__testing__/` can wrap components
+ * in a stubbed value. Production code MUST consume via `useDataContext()` hook only.
+ * ESLint `no-restricted-imports` enforces the production boundary.
+ */
+export const DataContextReactContext = React.createContext<DataContextValue | undefined>(undefined);
 
 /**
  * Props for the DataContextProvider component.
@@ -205,16 +210,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                         },
                     });
                 }
-
-                if (process.env.NODE_ENV !== 'production') {
-                    for (const failure of syncResult.failures) {
-                        console.error('[Armoury Sync]', failure.dao, 'failed:', failure.error);
-                    }
-
-                    console.warn(
-                        `[Armoury Sync] Summary: ${syncResult.succeeded.length}/${syncResult.total} succeeded`,
-                    );
-                }
             }
 
             if (syncResult && !syncResult.success) {
@@ -300,6 +295,11 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
  *
  * @returns The current DataContextValue.
  * @throws Error if used outside of a DataContextProvider.
+ */
+/**
+ * @deprecated Prefer reading the manager state directly via `useDataContextManager()`
+ *   from `@armoury/web/data`. This shim exists for backwards compatibility with
+ *   pre-manager call sites and will be removed in a future release.
  */
 export function useDataContext(): DataContextValue {
     const context = React.useContext(DataContextReactContext);

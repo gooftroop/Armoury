@@ -21,7 +21,7 @@
  *     PresenceProvider reconnect loop does not block tests when the service is absent.
  */
 
-import { test as base, expect } from '@playwright/test';
+import { test as baseFromE2EBridge, expect } from './e2eBridge.js';
 import type { Page, Request } from '@playwright/test';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,7 +55,7 @@ interface ArmouryFixtures {
     usersApiRequests: Request[];
 }
 
-export const test = base.extend<ArmouryFixtures>({
+export const test = baseFromE2EBridge.extend<ArmouryFixtures>({
     appLocale: ['en', { option: true }],
 
     seedDb: [

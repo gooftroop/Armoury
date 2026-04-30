@@ -39,6 +39,7 @@ import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
 import { useSyncProgress } from '@/hooks/useSyncProgress.js';
 import { useDataContext } from '@/data/useDataContext.js';
 import type { SystemSyncStatus } from '@/data/useDataContext.js';
+import { SyncStatus } from '@/data/managerState.js';
 
 /** Per-system sync map used by SystemGrid activation helpers. */
 type SyncStateMap = Record<string, { status: SystemSyncStatus; error?: string }>;
@@ -83,7 +84,7 @@ async function activateSystemTile(
 
     const status = getSyncStatus(manifest.id, syncStates);
 
-    if (status === 'syncing') {
+    if (status === SyncStatus.Syncing) {
         return;
     }
 
@@ -159,11 +160,11 @@ function buildTiles(
 ): SystemTileData[] {
     return manifests.map((manifest) => {
         const status = getSyncStatus(manifest.id, syncStates);
-        const isQueued = status === 'pending' || status === 'syncing';
-        const isSyncing = status === 'syncing' || activatingId === manifest.id;
+        const isQueued = status === SyncStatus.Pending || status === SyncStatus.Syncing;
+        const isSyncing = status === SyncStatus.Syncing || activatingId === manifest.id;
         const hasPersistError = Boolean(persistErrors[manifest.id]);
-        const isSynced = status === 'synced' && !hasPersistError;
-        const isError = status === 'error' || hasPersistError;
+        const isSynced = status === SyncStatus.Synced && !hasPersistError;
+        const isError = status === SyncStatus.Error || hasPersistError;
         const showOverlay = !isSynced;
 
         return {

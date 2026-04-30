@@ -10,6 +10,7 @@
  */
 
 import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
+import { SyncStatus } from '@/lib/syncStatus.js';
 
 /**
  * Derives the sync status for a given system from the DataContext sync state map.
@@ -22,5 +23,5 @@ export function getSyncStatus(
     systemId: string,
     syncStates: Record<string, { status: SystemSyncStatus; error?: string }>,
 ): SystemSyncStatus {
-    return syncStates[systemId]?.status ?? 'idle';
+    return syncStates[systemId]?.status ?? SyncStatus.Idle;
 }

@@ -5,6 +5,7 @@ import type { GameSystem, SyncProgressCollector } from '@armoury/data-dao';
 import {
     useActiveDataContext,
     useDataContextManager,
+    useLastSyncResult,
     useManagerSelector,
     useSyncProgressCollector,
 } from '@/data/managerBridge.js';
@@ -16,8 +17,8 @@ import type { ManagerState, SystemSyncState, SyncStatus } from '@/data/managerSt
  * - REQ-WEB-MGR-LH-002: enableSystem / disableSystem delegate to the manager and are stable references.
  * - REQ-WEB-MGR-LH-003: Hook does not over-render — slices manager state into legacy-equivalent fields.
  * - REQ-WEB-MGR-LH-004: dataContext field is sourced from the dedicated activeDataContext$ stream.
- * - REQ-WEB-MGR-LH-005: SystemSyncStatus mapping mirrors legacy ('idle' | 'pending' | 'checking-staleness'
- *   | 'syncing' | 'synced' | 'error') — manager 'pending' maps to legacy 'pending', manager 'syncing'
+ * - REQ-WEB-MGR-LH-005: SystemSyncStatus mapping mirrors legacy ('idle' | 'pending' | 'syncing'
+ *   | 'synced' | 'error') — manager 'pending' maps to legacy 'pending', manager 'syncing'
  *   maps to legacy 'syncing'.
  */
 
@@ -25,7 +26,7 @@ import type { ManagerState, SystemSyncState, SyncStatus } from '@/data/managerSt
 export type DataContextStatus = 'idle' | 'initializing' | 'ready' | 'error';
 
 /** Possible states for a single game system sync lifecycle (legacy compatibility). */
-export type SystemSyncStatus = 'idle' | 'pending' | 'checking-staleness' | 'syncing' | 'synced' | 'error';
+export type SystemSyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'error';
 
 /** Per-system sync state in legacy shape. */
 export interface LegacySystemSyncState {
@@ -40,7 +41,8 @@ export interface DataContextValue {
     status: DataContextStatus;
     error?: string;
     systemSyncStates: Record<string, LegacySystemSyncState>;
-    syncProgressCollector: SyncProgressCollector | null;
+    syncProgressCollector: SyncProgressCollector;
+    hasInflightSystemSync: (systemId: string) => boolean;
     enableSystem: (system: GameSystem) => Promise<void>;
     disableSystem: (systemId: string) => Promise<void>;
 }
@@ -114,11 +116,17 @@ function isSyncSliceEqual(a: ManagerSyncSlice, b: ManagerSyncSlice): boolean {
  * Backwards-compatible hook returning the legacy DataContextValue shape.
  * Composes the bridge hooks so existing consumers do not need to change.
  */
+/**
+ * @deprecated Prefer reading the manager state directly via `useDataContextManager()`
+ *   from `@armoury/web/data`. This shim exists for backwards compatibility with
+ *   pre-manager call sites and will be removed in a future release.
+ */
 export function useDataContext(): DataContextValue {
     const manager = useDataContextManager();
     const slice = useManagerSelector(selectSyncSlice, isSyncSliceEqual);
     const dataContext = useActiveDataContext();
     const syncProgressCollector = useSyncProgressCollector();
+    const hasInflightSystemSync = manager.hasInflightSystemSync?.bind(manager) ?? (() => false);
 
     const enableSystem = useCallback((system: GameSystem) => manager.enableSystem(system), [manager]);
 
@@ -131,9 +139,12 @@ export function useDataContext(): DataContextValue {
             error: slice.error,
             systemSyncStates: slice.systemSyncStates,
             syncProgressCollector,
+            hasInflightSystemSync,
             enableSystem,
             disableSystem,
         }),
-        [dataContext, slice, syncProgressCollector, enableSystem, disableSystem],
+        [dataContext, slice, syncProgressCollector, hasInflightSystemSync, enableSystem, disableSystem],
     );
 }
+
+export { useLastSyncResult };
