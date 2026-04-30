@@ -2,6 +2,7 @@ import { BehaviorSubject, EMPTY, Subject, catchError, concatMap, distinctUntilCh
 import type { Observable, Subscription } from 'rxjs';
 import { DataContextBuilder, type DataContext } from '@armoury/data-context';
 import { SyncProgressCollector, type DatabaseAdapter, type GameSystem } from '@armoury/data-dao';
+import type { SyncResult } from '@armoury/data-dao';
 import {
     TOKENS,
     createContainerWithModules,
@@ -14,10 +15,11 @@ import type { IGitHubClient } from '@armoury/clients-github';
 import type { IWahapediaClient } from '@armoury/clients-wahapedia';
 import type { QueryClient } from '@tanstack/react-query';
 import type { Container } from 'inversify';
+import * as Sentry from '@sentry/nextjs';
 
 import { getQueryClient } from '@/lib/getQueryClient.js';
 import type { ManagerState, SystemSyncState } from '@/data/managerState.js';
-import { initialManagerState } from '@/data/managerState.js';
+import { initialManagerState, SyncStatus } from '@/data/managerState.js';
 
 /**
  * @requirements
@@ -41,10 +43,12 @@ export class DataContextManager {
     private readonly state$ = new BehaviorSubject<ManagerState>(initialManagerState);
     private readonly activeDataContext$ = new BehaviorSubject<DataContext | null>(null);
     private readonly progress$ = new BehaviorSubject<SyncProgressCollector | null>(null);
+    private readonly lastSyncResults$ = new BehaviorSubject<Record<string, SyncResult | null>>({});
     private readonly jobs$ = new Subject<SyncJob>();
 
     private readonly queueSubscription: Subscription;
     private readonly pendingSystemIds = new Set<string>();
+    private readonly inflightSystemSyncs = new Set<string>();
     private readonly systemsById = new Map<string, GameSystemDefinition>();
     private readonly dataContextsBySystemId = new Map<string, DataContext>();
 
@@ -52,6 +56,8 @@ export class DataContextManager {
     private container: Container | null = null;
     private githubClient: IGitHubClient | null = null;
     private wahapediaClient: IWahapediaClient | null = null;
+    /** Tracks a single in-flight adapter/container initialization to make concurrent callers idempotent. */
+    private adapterInitPromise: Promise<void> | null = null;
     private disposed = false;
 
     public constructor() {
@@ -67,8 +73,11 @@ export class DataContextManager {
                 concatMap((job) =>
                     from(this.runSyncJob(job.systemId)).pipe(
                         catchError((error: unknown) => {
+                            Sentry.captureException(error, {
+                                tags: { area: 'data-context-manager', operation: 'sync-queue' },
+                            });
                             this.updateSystemSyncState(job.systemId, {
-                                status: 'error',
+                                status: SyncStatus.Error,
                                 error: error instanceof Error ? error.message : 'Failed to sync system',
                             });
 
@@ -113,6 +122,24 @@ export class DataContextManager {
         );
     }
 
+    /** Returns a stream of the last SyncResult for a specific system id. */
+    public selectLastSyncResult(systemId: string): Observable<SyncResult | null> {
+        return this.lastSyncResults$.pipe(
+            map((results) => results[systemId] ?? null),
+            distinctUntilChanged(),
+        );
+    }
+
+    /** Returns the last SyncResult snapshot for a specific system id. */
+    public getLastSyncResultSnapshot(systemId: string): SyncResult | null {
+        return this.lastSyncResults$.value[systemId] ?? null;
+    }
+
+    /** Returns true while runSyncJob is actively executing for the given system. */
+    public hasInflightSystemSync(systemId: string): boolean {
+        return this.inflightSystemSyncs.has(systemId);
+    }
+
     /** Enables a game system and enqueues a sync job. */
     public async enableSystem(system: GameSystemDefinition): Promise<void> {
         this.assertNotDisposed();
@@ -123,7 +150,7 @@ export class DataContextManager {
 
         this.updateSystemSyncState(system.id, {
             systemId: system.id,
-            status: 'pending',
+            status: SyncStatus.Pending,
             hasCache: false,
             attempts: 0,
             error: undefined,
@@ -226,46 +253,78 @@ export class DataContextManager {
         this.state$.next(initialManagerState);
 
         this.jobs$.complete();
+        this.lastSyncResults$.complete();
         this.progress$.complete();
         this.activeDataContext$.complete();
         this.state$.complete();
     }
 
     private async runSyncJob(systemId: string): Promise<void> {
-        this.pendingSystemIds.delete(systemId);
-        const dataContext = this.dataContextsBySystemId.get(systemId);
-
-        if (!dataContext) {
-            return;
-        }
-
-        this.updateSystemSyncState(systemId, { status: 'syncing', error: undefined });
-        const collector = new SyncProgressCollector(40);
-        this.progress$.next(collector);
-
-        const previousAttempts = this.state$.value.systemSyncStates[systemId]?.attempts ?? 0;
+        this.inflightSystemSyncs.add(systemId);
 
         try {
-            await dataContext.sync();
-            this.updateSystemSyncState(systemId, {
-                status: 'synced',
-                attempts: previousAttempts + 1,
-                error: undefined,
-            });
-            this.patchState({ status: 'ready', error: undefined });
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to sync system';
-            this.updateSystemSyncState(systemId, {
-                status: 'error',
-                attempts: previousAttempts + 1,
-                error: message,
-            });
-            this.patchState({ status: 'error', error: message });
-            throw error;
+            this.pendingSystemIds.delete(systemId);
+            const dataContext = this.dataContextsBySystemId.get(systemId);
+
+            if (!dataContext) {
+                return;
+            }
+
+            this.updateSystemSyncState(systemId, { status: SyncStatus.Syncing, error: undefined });
+            const collector = new SyncProgressCollector(40);
+            this.progress$.next(collector);
+
+            const previousAttempts = this.state$.value.systemSyncStates[systemId]?.attempts ?? 0;
+
+            try {
+                const result = await dataContext.sync();
+                this.updateSystemSyncState(systemId, {
+                    status: SyncStatus.Synced,
+                    attempts: previousAttempts + 1,
+                    error: undefined,
+                });
+                this.lastSyncResults$.next({
+                    ...this.lastSyncResults$.value,
+                    [systemId]: result,
+                });
+                this.patchState({ status: 'ready', error: undefined });
+            } catch (error) {
+                Sentry.captureException(error, { tags: { area: 'data-context-manager', operation: 'run-sync-job' } });
+                const message = error instanceof Error ? error.message : 'Failed to sync system';
+                this.updateSystemSyncState(systemId, {
+                    status: SyncStatus.Error,
+                    attempts: previousAttempts + 1,
+                    error: message,
+                });
+                this.lastSyncResults$.next({
+                    ...this.lastSyncResults$.value,
+                    [systemId]: null,
+                });
+                this.patchState({ status: 'error', error: message });
+                throw error;
+            }
+        } finally {
+            this.inflightSystemSyncs.delete(systemId);
         }
     }
 
-    private async ensureAdapterAndContainer(): Promise<void> {
+    private ensureAdapterAndContainer(): Promise<void> {
+        if (this.adapter && this.container) {
+            return Promise.resolve();
+        }
+
+        if (this.adapterInitPromise) {
+            return this.adapterInitPromise;
+        }
+
+        this.adapterInitPromise = this.doInitialize().finally(() => {
+            this.adapterInitPromise = null;
+        });
+
+        return this.adapterInitPromise;
+    }
+
+    private async doInitialize(): Promise<void> {
         if (this.container === null) {
             const container = createContainerWithModules(coreModule, webModule);
             const queryClient = getQueryClient();
@@ -276,7 +335,14 @@ export class DataContextManager {
         if (this.adapter === null) {
             const createAdapter = this.container.get<AdapterFactoryFn>(TOKENS.AdapterFactory);
             this.adapter = await createAdapter();
-            await this.adapter.initialize();
+
+            try {
+                await this.adapter.initialize();
+            } catch (error) {
+                this.adapter = null;
+                throw error;
+            }
+
             this.patchState({ status: 'initializing', error: undefined });
         }
     }
@@ -324,7 +390,7 @@ export class DataContextManager {
     private enqueueSync(systemId: string): void {
         const state = this.state$.value.systemSyncStates[systemId];
 
-        if (this.pendingSystemIds.has(systemId) || state?.status === 'syncing') {
+        if (this.pendingSystemIds.has(systemId) || state?.status === SyncStatus.Syncing) {
             return;
         }
 
@@ -335,7 +401,7 @@ export class DataContextManager {
     private updateSystemSyncState(systemId: string, patch: Partial<SystemSyncState>): void {
         const previous = this.state$.value.systemSyncStates[systemId] ?? {
             systemId,
-            status: 'idle',
+            status: SyncStatus.Idle,
             hasCache: false,
             attempts: 0,
         };

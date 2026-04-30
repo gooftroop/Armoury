@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useDebugValue, useRef } from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector';
 import type { DataContext } from '@armoury/data-context';
-import type { SyncProgressCollector } from '@armoury/data-dao';
+import { SyncProgressCollector } from '@armoury/data-dao';
+import type { SyncResult } from '@armoury/data-dao';
 
 import type { DataContextManager } from '@/data/DataContextManager.js';
 import type { ManagerState, SystemSyncState } from '@/data/managerState.js';
@@ -34,6 +35,16 @@ export function useDataContextManager(): DataContextManager {
 
 const identitySelector = <T>(value: T): T => value;
 const defaultIsEqual = <T>(a: T, b: T): boolean => Object.is(a, b);
+
+type LastSyncResultReadableManager = DataContextManager & {
+    getLastSyncResultSnapshot: (systemId: string) => SyncResult | null;
+    selectLastSyncResult: (systemId: string) => import('rxjs').Observable<SyncResult | null>;
+};
+
+/** Stable non-null fallback collector used before progress stream emits. */
+export const EMPTY_PROGRESS_COLLECTOR: SyncProgressCollector = Object.freeze(
+    new SyncProgressCollector(0),
+) as SyncProgressCollector;
 
 /**
  * Subscribes to manager state via useSyncExternalStore with a memoised selector.
@@ -93,14 +104,14 @@ export function useActiveDataContext(): DataContext | null {
 }
 
 /** Returns the active SyncProgressCollector reference, sourced from the dedicated stream. */
-export function useSyncProgressCollector(): SyncProgressCollector | null {
+export function useSyncProgressCollector(): SyncProgressCollector {
     const manager = useDataContextManager();
-    const lastSnapshotRef = useRef<SyncProgressCollector | null>(null);
+    const lastSnapshotRef = useRef<SyncProgressCollector>(EMPTY_PROGRESS_COLLECTOR);
 
     const subscribe = useCallback(
         (onStoreChange: () => void) => {
             const subscription = manager.selectSyncProgress().subscribe((value) => {
-                lastSnapshotRef.current = value;
+                lastSnapshotRef.current = value ?? EMPTY_PROGRESS_COLLECTOR;
                 onStoreChange();
             });
 
@@ -119,4 +130,26 @@ export function useSystemSyncState(systemId: string): SystemSyncState | undefine
     const selector = useCallback((state: ManagerState) => state.systemSyncStates[systemId], [systemId]);
 
     return useManagerSelector(selector);
+}
+
+/** Returns the last SyncResult for a single system id, or null when absent. */
+export function useLastSyncResult(systemId: string): SyncResult | null {
+    const manager = useDataContextManager() as LastSyncResultReadableManager;
+    const lastSnapshotRef = useRef<SyncResult | null>(manager.getLastSyncResultSnapshot(systemId));
+
+    const subscribe = useCallback(
+        (onStoreChange: () => void) => {
+            const subscription = manager.selectLastSyncResult(systemId).subscribe((value: SyncResult | null) => {
+                lastSnapshotRef.current = value;
+                onStoreChange();
+            });
+
+            return () => subscription.unsubscribe();
+        },
+        [manager, systemId],
+    );
+
+    const getSnapshot = useCallback(() => lastSnapshotRef.current, []);
+
+    return useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identitySelector, defaultIsEqual);
 }
