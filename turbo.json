@@ -10,7 +10,7 @@
             "cache": false
         },
         "build": {
-            "dependsOn": ["^build", "^generate:types", "copy:systems"],
+            "dependsOn": ["^build", "^generate:types", "generate:types", "copy:systems"],
             "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
             "env": [
                 "SENTRY_DSN",
