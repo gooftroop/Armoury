@@ -3,6 +3,20 @@
 @import './css/default.css';
 @import './css/defaultDark.css';
 
+@theme {
+    --animate-shimmer: shimmer 1.8s linear infinite;
+
+    @keyframes shimmer {
+        from {
+            background-position: 200% 0;
+        }
+
+        to {
+            background-position: -200% 0;
+        }
+    }
+}
+
 @layer base {
     * {
         @apply border-border;
