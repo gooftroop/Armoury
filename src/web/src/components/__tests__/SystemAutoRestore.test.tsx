@@ -48,6 +48,7 @@ function createManagerMock(options: { inflight: boolean }): DataContextManager {
         selectActiveDataContext: () => activeDataContext$.asObservable(),
         getActiveDataContextSnapshot: () => activeDataContext$.value,
         selectSyncProgress: () => syncProgress$.asObservable(),
+        getSyncProgressSnapshot: () => syncProgress$.value,
         selectSystem: vi.fn(),
         selectLastSyncResult: vi.fn(),
         getLastSyncResultSnapshot: vi.fn(),

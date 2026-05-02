@@ -29,6 +29,7 @@ describe('useSyncProgressCollector', () => {
     it('T1: returns stable empty collector before manager emits', () => {
         const manager = createTestManager({
             selectSyncProgress: () => of(null),
+            getSyncProgressSnapshot: () => null,
         });
 
         const { result } = renderHook(() => useSyncProgressCollector(), {
@@ -46,6 +47,7 @@ describe('useSyncProgressCollector', () => {
     it('T2: no infinite re-render', async () => {
         const manager = createTestManager({
             selectSyncProgress: () => of(null),
+            getSyncProgressSnapshot: () => null,
         });
 
         const { result } = renderHook(

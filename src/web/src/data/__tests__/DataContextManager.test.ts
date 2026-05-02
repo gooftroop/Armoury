@@ -717,4 +717,118 @@ describe('DataContextManager', () => {
 
         await manager.dispose();
     });
+
+    it('T15: partial sync failure (success=false) marks system as error and stores result', async () => {
+        const partialResult = {
+            success: false,
+            total: 2,
+            succeeded: ['alpha:core'],
+            failures: [{ dao: 'alpha:units', error: 'fetch failed' }],
+            timestamp: '2026-01-01T00:00:00.000Z',
+        };
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () => ({ close: vi.fn(), sync: vi.fn(async () => partialResult) }) as unknown as DataContext,
+            ),
+        });
+
+        const manager = new DataContextManager();
+        await manager.enableSystem(createSystem('alpha', ['alpha:']));
+
+        await vi.waitFor(() => {
+            expect(manager.getSnapshot().systemSyncStates.alpha?.status).toBe('error');
+        });
+
+        const state = manager.getSnapshot().systemSyncStates.alpha;
+        expect(state?.error).toContain('alpha:units: fetch failed');
+
+        const sessionFlag =
+            typeof globalThis.sessionStorage !== 'undefined'
+                ? globalThis.sessionStorage.getItem('armoury:synced:alpha')
+                : null;
+        expect(sessionFlag).toBeNull();
+
+        await manager.dispose();
+    });
+
+    it('T16: collector emitted on progress stream is the same instance registered with the DataContext', async () => {
+        let registeredCollector: unknown = null;
+
+        DataContextBuilderMock.builder.mockImplementation(() => {
+            const chain = {
+                system: vi.fn().mockReturnThis(),
+                adapter: vi.fn().mockReturnThis(),
+                ownsAdapter: vi.fn().mockReturnThis(),
+                register: vi.fn((key: string, value: unknown) => {
+                    if (key === 'syncProgress') {
+                        registeredCollector = value;
+                    }
+
+                    return chain;
+                }),
+                buildFromCache: vi.fn(
+                    async () => ({ close: vi.fn(), sync: vi.fn(async () => null) }) as unknown as DataContext,
+                ),
+            };
+
+            return chain;
+        });
+
+        const manager = new DataContextManager();
+        const emitted: unknown[] = [];
+        const subscription = manager.selectSyncProgress().subscribe((collector) => {
+            if (collector) {
+                emitted.push(collector);
+            }
+        });
+
+        await manager.enableSystem(createSystem('alpha'));
+
+        await vi.waitFor(() => {
+            expect(emitted).toHaveLength(1);
+        });
+
+        expect(emitted[0]).toBe(registeredCollector);
+
+        subscription.unsubscribe();
+        await manager.dispose();
+    });
+
+    it('T17: disableSystem clears lastSyncResults entry for that system', async () => {
+        const partialResult = {
+            success: false,
+            total: 1,
+            succeeded: [],
+            failures: [{ dao: 'alpha:core', error: 'boom' }],
+            timestamp: '2026-01-01T00:00:00.000Z',
+        };
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () => ({ close: vi.fn(), sync: vi.fn(async () => partialResult) }) as unknown as DataContext,
+            ),
+        });
+
+        const manager = new DataContextManager();
+        await manager.enableSystem(createSystem('alpha'));
+
+        await vi.waitFor(() => {
+            expect(manager.getLastSyncResultSnapshot('alpha')).not.toBeNull();
+        });
+
+        await manager.disableSystem('alpha');
+
+        expect(manager.getLastSyncResultSnapshot('alpha')).toBeNull();
+
+        await manager.dispose();
+    });
 });

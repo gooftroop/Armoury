@@ -23,8 +23,16 @@ export function DataContextManagerProvider({ children }: DataContextManagerProvi
     const [manager] = useState(() => new DataContextManager());
 
     useEffect(() => {
-        /** E2E test bridge install. Triggered by 'window.__ARMOURY_E2E__' flag set via Playwright fixture (see src/web/e2e/fixtures/e2eBridge.ts). Production builds NEVER set this flag. */
-        if (typeof window !== 'undefined' && (window as { __ARMOURY_E2E__?: boolean }).__ARMOURY_E2E__ === true) {
+        /**
+         * E2E test bridge install. Gated by both build-time NODE_ENV check (so the dynamic
+         * import is dead-code-eliminated from production bundles) and a runtime window flag
+         * set via Playwright fixture (src/web/e2e/fixtures/e2eBridge.ts).
+         */
+        if (
+            process.env.NODE_ENV !== 'production' &&
+            typeof window !== 'undefined' &&
+            (window as { __ARMOURY_E2E__?: boolean }).__ARMOURY_E2E__ === true
+        ) {
             void import('./__testing__/e2eManager.js').then(({ installE2EBridge }) => {
                 installE2EBridge(manager);
             });

@@ -47,6 +47,7 @@ const { managerInstances, ManagerCtor } = vi.hoisted(() => {
                 selectActiveDataContext: () => active$.asObservable(),
                 getActiveDataContextSnapshot: () => active$.value,
                 selectSyncProgress: () => progress$.asObservable(),
+                getSyncProgressSnapshot: () => progress$.value,
                 hasInflightSystemSync,
                 enableSystem,
                 disableSystem,

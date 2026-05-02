@@ -106,7 +106,9 @@ export function useActiveDataContext(): DataContext | null {
 /** Returns the active SyncProgressCollector reference, sourced from the dedicated stream. */
 export function useSyncProgressCollector(): SyncProgressCollector {
     const manager = useDataContextManager();
-    const lastSnapshotRef = useRef<SyncProgressCollector>(EMPTY_PROGRESS_COLLECTOR);
+    const lastSnapshotRef = useRef<SyncProgressCollector>(
+        manager.getSyncProgressSnapshot() ?? EMPTY_PROGRESS_COLLECTOR,
+    );
 
     const subscribe = useCallback(
         (onStoreChange: () => void) => {

@@ -57,6 +57,12 @@ export class DataContextManager {
     private readonly inflightSystemSyncs = new Set<string>();
     private readonly systemsById = new Map<string, GameSystemDefinition>();
     private readonly dataContextsBySystemId = new Map<string, DataContext>();
+    /**
+     * Per-system progress collector — the SAME instance registered into the DataContext
+     * via the DI container. Emitted via `progress$` so UI consumers observe the live
+     * collector that the sync pipeline actually writes to. Reset between sync runs.
+     */
+    private readonly progressCollectorsBySystemId = new Map<string, SyncProgressCollector>();
 
     private adapter: DatabaseAdapter | null = null;
     private container: Container | null = null;
@@ -118,6 +124,11 @@ export class DataContextManager {
     /** Returns a stream of the current sync progress collector. */
     public selectSyncProgress(): Observable<SyncProgressCollector | null> {
         return this.progress$.asObservable();
+    }
+
+    /** Returns the current sync progress collector synchronously. */
+    public getSyncProgressSnapshot(): SyncProgressCollector | null {
+        return this.progress$.value;
     }
 
     /** Returns a stream of a specific system's sync state. */
@@ -202,6 +213,12 @@ export class DataContextManager {
             this.dataContextsBySystemId.delete(systemId);
         }
 
+        this.progressCollectorsBySystemId.delete(systemId);
+
+        const nextResults = { ...this.lastSyncResults$.value };
+        delete nextResults[systemId];
+        this.lastSyncResults$.next(nextResults);
+
         this.removeSystemState(systemId);
 
         if (this.state$.value.activeSystemId === systemId) {
@@ -267,6 +284,7 @@ export class DataContextManager {
         }
 
         this.dataContextsBySystemId.clear();
+        this.progressCollectorsBySystemId.clear();
         this.systemsById.clear();
         this.pendingSystemIds.clear();
 
@@ -301,13 +319,40 @@ export class DataContextManager {
             }
 
             this.updateSystemSyncState(systemId, { status: SyncStatus.Syncing, error: undefined });
-            const collector = new SyncProgressCollector(40);
-            this.progress$.next(collector);
+            const collector = this.progressCollectorsBySystemId.get(systemId);
+
+            if (collector) {
+                collector.reset();
+                this.progress$.next(collector);
+            }
 
             const previousAttempts = this.state$.value.systemSyncStates[systemId]?.attempts ?? 0;
 
             try {
                 const result = await dataContext.sync();
+
+                if (result && result.success === false) {
+                    const failureCount = result.failures.length;
+                    const detail =
+                        failureCount > 0
+                            ? result.failures.map((f) => `${f.dao}: ${f.error}`).join('; ')
+                            : 'unknown failure';
+                    const message = `Sync completed with ${failureCount} DAO failure(s): ${detail}`;
+
+                    this.updateSystemSyncState(systemId, {
+                        status: SyncStatus.Error,
+                        attempts: previousAttempts + 1,
+                        error: message,
+                    });
+                    this.lastSyncResults$.next({
+                        ...this.lastSyncResults$.value,
+                        [systemId]: result,
+                    });
+                    this.patchState({ status: 'error', error: message });
+
+                    return;
+                }
+
                 this.updateSystemSyncState(systemId, {
                     status: SyncStatus.Synced,
                     attempts: previousAttempts + 1,
@@ -378,6 +423,19 @@ export class DataContextManager {
         }
     }
 
+    private getOrCreateProgressCollector(systemId: string): SyncProgressCollector {
+        const existing = this.progressCollectorsBySystemId.get(systemId);
+
+        if (existing) {
+            return existing;
+        }
+
+        const collector = new SyncProgressCollector(40);
+        this.progressCollectorsBySystemId.set(systemId, collector);
+
+        return collector;
+    }
+
     private async ensureSystemDataContext(system: GameSystemDefinition): Promise<void> {
         const existingContext = this.dataContextsBySystemId.get(system.id);
 
@@ -411,7 +469,7 @@ export class DataContextManager {
             .ownsAdapter(false)
             .register('github', this.githubClient)
             .register('wahapedia', this.wahapediaClient)
-            .register('syncProgress', new SyncProgressCollector(40))
+            .register('syncProgress', this.getOrCreateProgressCollector(system.id))
             .buildFromCache();
 
         this.dataContextsBySystemId.set(system.id, dataContext);
