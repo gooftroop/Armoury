@@ -15,6 +15,9 @@
  * | REQ-WEB-MGR-009 | selectSystem emits only for selected system changes. | T9 |
  * | REQ-WEB-MGR-010 | Active DataContext reference remains stable across sync state churn. | T10 |
  * | REQ-WEB-MGR-011 | probeSyncedSystems reuses existing adapter instance. | T11 |
+ * | REQ-WEB-MGR-006 (session) | enableSystem skips sync when session flag set AND cache exists. | T12 |
+ * | REQ-WEB-MGR-006 (session) | enableSystem still syncs when session flag set but cache missing. | T13 |
+ * | REQ-WEB-MGR-006 (session) | runSyncJob writes session flag only on success, not on error. | T14 |
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -167,6 +170,10 @@ describe('DataContextManager', () => {
         adapterMock.close.mockResolvedValue(undefined);
         adapterMock.getAllSyncStatuses.mockResolvedValue([]);
         adapterMock.rawQuery.mockResolvedValue({ rows: [] });
+
+        if (typeof globalThis.sessionStorage !== 'undefined') {
+            globalThis.sessionStorage.clear();
+        }
     });
 
     afterEach(async () => {
@@ -604,6 +611,109 @@ describe('DataContextManager', () => {
 
         expect(result).toEqual({ alpha: true });
         expect(adapterMock.initialize).not.toHaveBeenCalled();
+
+        await manager.dispose();
+    });
+
+    it('T12: second enableSystem in same session skips sync when cache present', async () => {
+        const syncMock = vi.fn(async () => null);
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(async () => ({ close: vi.fn(), sync: syncMock }) as unknown as DataContext),
+        });
+
+        adapterMock.getAllSyncStatuses.mockResolvedValue([
+            {
+                fileKey: 'alpha:core',
+                sha: 'sha',
+                lastSynced: new Date('2026-01-01T00:00:00.000Z'),
+            },
+        ]);
+
+        const managerA = new DataContextManager();
+        await managerA.enableSystem(createSystem('alpha', ['alpha:']));
+
+        await vi.waitFor(() => {
+            expect(managerA.getSnapshot().systemSyncStates.alpha?.status).toBe('synced');
+        });
+        expect(syncMock).toHaveBeenCalledTimes(1);
+        await managerA.dispose();
+
+        const managerB = new DataContextManager();
+        await managerB.enableSystem(createSystem('alpha', ['alpha:']));
+
+        expect(managerB.getSnapshot().systemSyncStates.alpha?.status).toBe('synced');
+        expect(syncMock).toHaveBeenCalledTimes(1);
+
+        await managerB.dispose();
+    });
+
+    it('T13: enableSystem still syncs when session flag set but cache missing', async () => {
+        const syncMock = vi.fn(async () => null);
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(async () => ({ close: vi.fn(), sync: syncMock }) as unknown as DataContext),
+        });
+
+        if (typeof globalThis.sessionStorage !== 'undefined') {
+            globalThis.sessionStorage.setItem('armoury:synced:alpha', '1');
+        }
+
+        adapterMock.getAllSyncStatuses.mockResolvedValue([]);
+
+        const manager = new DataContextManager();
+        await manager.enableSystem(createSystem('alpha', ['alpha:']));
+
+        await vi.waitFor(() => {
+            expect(manager.getSnapshot().systemSyncStates.alpha?.status).toBe('synced');
+        });
+        expect(syncMock).toHaveBeenCalledTimes(1);
+
+        await manager.dispose();
+    });
+
+    it('T14: runSyncJob does not set session flag when sync fails', async () => {
+        const failingSync = vi.fn(async () => {
+            throw new Error('sync exploded');
+        });
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(async () => ({ close: vi.fn(), sync: failingSync }) as unknown as DataContext),
+        });
+
+        adapterMock.getAllSyncStatuses.mockResolvedValue([
+            {
+                fileKey: 'alpha:core',
+                sha: 'sha',
+                lastSynced: new Date('2026-01-01T00:00:00.000Z'),
+            },
+        ]);
+
+        const manager = new DataContextManager();
+        await manager.enableSystem(createSystem('alpha', ['alpha:']));
+
+        await vi.waitFor(() => {
+            expect(manager.getSnapshot().systemSyncStates.alpha?.status).toBe('error');
+        });
+
+        const flag =
+            typeof globalThis.sessionStorage !== 'undefined'
+                ? globalThis.sessionStorage.getItem('armoury:synced:alpha')
+                : null;
+        expect(flag).toBeNull();
+        expect(failingSync).toHaveBeenCalledTimes(1);
 
         await manager.dispose();
     });

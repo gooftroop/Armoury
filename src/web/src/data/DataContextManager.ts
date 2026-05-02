@@ -28,7 +28,13 @@ import { initialManagerState, SyncStatus } from '@/data/managerState.js';
  * - REQ-WEB-MGR-003: Sync queue is sequential FIFO (rxjs concatMap) with per-system dedup.
  * - REQ-WEB-MGR-004: Per-system sync state changes do not affect active DataContext reference stability.
  * - REQ-WEB-MGR-005: probeSyncedSystems uses the same adapter — no second instance.
+ * - REQ-WEB-MGR-006: enableSystem skips sync when the system was already synced in the current
+ *   browser session AND its data is still present in the adapter cache. Session scope is
+ *   per-tab via sessionStorage, so refreshing the tab reuses the cached data, but a new
+ *   tab/session re-syncs to pick up upstream changes.
  */
+
+const SESSION_SYNC_FLAG_PREFIX = 'armoury:synced:';
 
 export type GameSystemDefinition = GameSystem;
 
@@ -147,6 +153,30 @@ export class DataContextManager {
 
         await this.ensureAdapterAndContainer();
         await this.ensureSystemDataContext(system);
+
+        /**
+         * Skip sync when this system was already synced in the current browser session
+         * AND the adapter still has cached data on disk. Both conditions are required:
+         * the session flag alone is insufficient if the user cleared IndexedDB, and the
+         * cache alone would suppress sync forever across sessions (no freshness guarantee).
+         */
+        if (this.readSessionSyncFlag(system.id)) {
+            const probed = await this.probeSyncedSystems();
+
+            if (probed[system.id] === true) {
+                this.updateSystemSyncState(system.id, {
+                    systemId: system.id,
+                    status: SyncStatus.Synced,
+                    hasCache: true,
+                    attempts: 0,
+                    error: undefined,
+                });
+                this.setActiveSystem(system.id);
+                this.patchState({ status: 'ready', error: undefined });
+
+                return;
+            }
+        }
 
         this.updateSystemSyncState(system.id, {
             systemId: system.id,
@@ -283,6 +313,7 @@ export class DataContextManager {
                     attempts: previousAttempts + 1,
                     error: undefined,
                 });
+                this.writeSessionSyncFlag(systemId);
                 this.lastSyncResults$.next({
                     ...this.lastSyncResults$.value,
                     [systemId]: result,
@@ -436,6 +467,30 @@ export class DataContextManager {
     private assertNotDisposed(): void {
         if (this.disposed) {
             throw new Error('DataContextManager has been disposed.');
+        }
+    }
+
+    private readSessionSyncFlag(systemId: string): boolean {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        try {
+            return window.sessionStorage.getItem(`${SESSION_SYNC_FLAG_PREFIX}${systemId}`) === '1';
+        } catch {
+            return false;
+        }
+    }
+
+    private writeSessionSyncFlag(systemId: string): void {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        try {
+            window.sessionStorage.setItem(`${SESSION_SYNC_FLAG_PREFIX}${systemId}`, '1');
+        } catch {
+            /* sessionStorage unavailable (private mode, quota, disabled) — degrade to re-sync next mount. */
         }
     }
 }
