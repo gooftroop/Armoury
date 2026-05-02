@@ -3,9 +3,10 @@
  *
  * Installs window.__armoury_raw_query against the manager's live adapter so
  * Playwright specs in src/web/e2e/ can issue raw SQL against the same PGlite
- * instance the app uses. Loaded only when NODE_ENV === 'test' via dynamic
- * import in managerContext.tsx — production bundles tree-shake this module
- * out entirely.
+ * instance the app uses. Loaded only when NODE_ENV !== 'production' AND
+ * window.__ARMOURY_E2E__ === true via a gated dynamic import in
+ * managerContext.tsx — production bundles tree-shake this module out
+ * entirely.
  *
  * @module @armoury/web/data/testing
  *

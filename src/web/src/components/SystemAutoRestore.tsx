@@ -22,13 +22,17 @@ export interface SystemAutoRestoreProps {
 /**
  * Side-effect-only component that restores the DataContext for a game system.
  *
- * The `status !== 'idle'` guard is sufficient to prevent duplicate calls because
- * `enableSystem()` synchronously transitions `status` from `'idle'` to
- * `'initializing'` before the next render, so subsequent effect runs see a
- * non-idle status and bail out.
- *
- * The inflight-sync guard deduplicates restore attempts across remounts while the
- * manager is already actively syncing the same system.
+ * De-duplication relies on three layered checks because `enableSystem()` is
+ * async and awaits adapter/context initialization before patching manager
+ * state — there is no synchronous status transition to rely on:
+ *   1. `status !== 'idle'` skips when the manager has already advanced past
+ *      idle (i.e. a prior enable has completed initialization).
+ *   2. `syncState.status` of `Pending` or `Syncing` skips when a sync for this
+ *      specific system is already queued or in flight per the manager's state.
+ *   3. `hasInflightSystemSync(systemId)` skips when the manager's internal
+ *      inflight set still tracks an active runSyncJob for this system, even if
+ *      `syncState` has not yet been patched. This catches the race window
+ *      between job start and the first state patch.
  */
 function SystemAutoRestore({ systemId }: SystemAutoRestoreProps): null {
     const { status, enableSystem, hasInflightSystemSync, systemSyncStates } = useDataContext();

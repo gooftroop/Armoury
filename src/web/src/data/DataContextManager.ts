@@ -203,6 +203,8 @@ export class DataContextManager {
 
     /** Disables a game system and removes associated state and context. */
     public async disableSystem(systemId: string): Promise<void> {
+        this.assertNotDisposed();
+
         this.pendingSystemIds.delete(systemId);
         this.systemsById.delete(systemId);
 
@@ -228,6 +230,8 @@ export class DataContextManager {
 
     /** Sets the active system identifier and active DataContext reference. */
     public setActiveSystem(systemId: string | null): void {
+        this.assertNotDisposed();
+
         const activeDataContext = systemId ? (this.dataContextsBySystemId.get(systemId) ?? null) : null;
         this.activeDataContext$.next(activeDataContext);
         this.patchState({ activeSystemId: systemId });
