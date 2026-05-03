@@ -48,8 +48,6 @@ function forgeTestMockPatchPlugin() {
     const to =
         'vi.mock(\'@armoury/ui\', () => ({\n    Button: ({ children, onClick }: { children: ReactNode; onClick?: () => void }) => (\n        <button onClick={onClick} type="button">\n            {children}\n        </button>\n    ),\n    ArmyCardSkeleton: () => <div data-testid="army-card-skeleton" />,\n    EmptyState: ({ title, description, action }: { title: string; description?: string; action?: ReactNode }) => (\n        <div>\n            <h2>{title}</h2>\n            {description ? <p>{description}</p> : null}\n            {action}\n        </div>\n    ),\n}));';
 
-    const armyCardSkeletonTarget = '/src/components/ArmyCardSkeleton.web.tsx';
-
     return {
         name: 'forge-test-mock-patch',
         resolveId(id: string, importer?: string) {

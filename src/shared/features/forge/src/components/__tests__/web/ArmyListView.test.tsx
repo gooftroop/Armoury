@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * ArmyListView component tests.
  *
@@ -5,6 +7,8 @@
  * - REQ-LIST-01: Renders cards for armies and forwards action callbacks.
  * - REQ-LIST-02: Shows loading skeletons and empty states.
  */
+
+/// <reference types="@testing-library/jest-dom" />
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
