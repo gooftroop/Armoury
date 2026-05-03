@@ -51,6 +51,12 @@ export { Badge, badgeVariants, type BadgeProps } from '@/components/Badge/Badge.
 // Button component
 export { Button, buttonVariants, type ButtonProps } from '@/components/Button/Button.mobile.js';
 
+// ConfirmDialog component
+export { ConfirmDialog, type ConfirmDialogProps } from '@/components/ConfirmDialog/ConfirmDialog.mobile.js';
+
+// EmptyState component
+export { EmptyState, type EmptyStateProps } from '@/components/EmptyState/EmptyState.mobile.js';
+
 // Card components
 export {
     Card,
