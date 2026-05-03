@@ -16,7 +16,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Slot } from 'expo-router';
 import { useAuth0 } from 'react-native-auth0';
 import { TamaguiProvider } from 'tamagui';
-import { queryClient } from '@/lib/queryClient.js';
+import { queryClient } from '@armoury/query';
 import { LandingSkeleton } from '@/components/LandingSkeleton.js';
 import config from '#/tamagui.config.js';
 import { AuthProvider } from '@/providers/AuthProvider.js';

@@ -12,7 +12,7 @@
  */
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { getQueryClient } from '@/lib/getQueryClient.js';
+import { getQueryClient } from '@armoury/query';
 import { DataContextProvider } from '@/providers/DataContextProvider.js';
 import { SyncQueueProvider } from '@/providers/SyncQueueProvider.js';
 import { SyncManifestProvider } from '@/providers/SyncManifestProvider.js';

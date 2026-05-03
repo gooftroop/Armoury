@@ -1,3 +1,8 @@
-// @requirements
-// 1. Placeholder export — real exports added in Wave 2 move tasks.
-export const __PLACEHOLDER__ = true;
+/**
+ * @requirements
+ * 1. Must export the singleton QueryClient for use in web providers.
+ * 2. Must export the SSR-safe getQueryClient factory for Next.js RSC/SSR.
+ */
+
+export { queryClient } from './queryClient.js';
+export { getQueryClient } from './getQueryClient.js';

@@ -145,7 +145,7 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
 
         try {
             const { DataContextBuilder } = await import('@armoury/data-context');
-            const { queryClient } = await import('@/lib/queryClient.js');
+            const { queryClient } = await import('@armoury/query');
             const container = createContainerWithModules(coreModule, mobileModule);
 
             container.bind(TOKENS.QueryClient).toConstantValue(queryClient);

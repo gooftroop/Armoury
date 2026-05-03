@@ -1,3 +1,7 @@
-// @requirements
-// 1. Placeholder export — real exports added in Wave 2 move tasks.
-export const __PLACEHOLDER__ = true;
+/**
+ * @requirements
+ * 1. Must export the singleton QueryClient for use in mobile providers.
+ * 2. Must NOT use Next.js cache() — mobile has no server-side per-request caching.
+ */
+
+export { queryClient } from './queryClient.js';

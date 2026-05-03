@@ -140,7 +140,7 @@ async function buildDataContextFromCache(
     setDataContext: (dc: DataContext) => void,
 ): Promise<DataContext> {
     const { DataContextBuilder } = await import('@armoury/data-context');
-    const { getQueryClient } = await import('@/lib/getQueryClient.js');
+    const { getQueryClient } = await import('@armoury/query');
 
     const container = createContainerWithModules(coreModule, webModule);
     const queryClient = getQueryClient();

@@ -96,7 +96,7 @@ vi.mock('@armoury/data-context', () => ({
     DataContextBuilder: dataContextBuilderMock,
 }));
 
-vi.mock('@/lib/getQueryClient.js', () => ({
+vi.mock('@armoury/query', () => ({
     getQueryClient: getQueryClientMock,
 }));
 
