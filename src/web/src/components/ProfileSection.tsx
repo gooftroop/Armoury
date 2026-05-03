@@ -27,7 +27,7 @@ import {
     AvatarImage,
     AvatarFallback,
 } from '@/components/ui/index.js';
-import { getInitials } from '@/lib/getInitials.js';
+import { getInitials } from '@armoury/feature-profile';
 
 /** Props for the ProfileSection component. */
 export interface ProfileSectionProps {

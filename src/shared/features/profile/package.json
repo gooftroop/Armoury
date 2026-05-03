@@ -30,10 +30,45 @@
     },
     "peerDependencies": {
         "react": "^18 || ^19",
-        "react-native": ">=0.74"
+        "react-native": ">=0.74",
+        "@auth0/nextjs-auth0": ">=4",
+        "next-intl": ">=3",
+        "lucide-react": ">=0.300",
+        "@sentry/nextjs": ">=8",
+        "@armoury/clients-friends": "*",
+        "@armoury/streams": "*",
+        "rxjs": ">=7",
+        "react-native-auth0": ">=3",
+        "@sentry/react-native": ">=5",
+        "expo-router": ">=4",
+        "tamagui": ">=2"
     },
     "peerDependenciesMeta": {
         "react-native": {
+            "optional": true
+        },
+        "@auth0/nextjs-auth0": {
+            "optional": true
+        },
+        "next-intl": {
+            "optional": true
+        },
+        "lucide-react": {
+            "optional": true
+        },
+        "@sentry/nextjs": {
+            "optional": true
+        },
+        "react-native-auth0": {
+            "optional": true
+        },
+        "@sentry/react-native": {
+            "optional": true
+        },
+        "expo-router": {
+            "optional": true
+        },
+        "tamagui": {
             "optional": true
         }
     },
@@ -45,6 +80,8 @@
         "@armoury/esbuild": "*",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
+        "@testing-library/jest-dom": "^6.0.0",
+        "@testing-library/react": "^16.0.0",
         "eslint": "^10.0.3",
         "prettier": "^3.0.0",
         "react-native": "~0.79.0",

@@ -19,8 +19,8 @@ import * as React from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth0 } from 'react-native-auth0';
 
-import { AuthenticatedProfile } from '@/components/profile/AuthenticatedProfile.js';
-import { UnauthenticatedPrompt } from '@/components/profile/UnauthenticatedPrompt.js';
+import { AuthenticatedProfile } from './AuthenticatedProfile.mobile.js';
+import { UnauthenticatedPrompt } from './UnauthenticatedPrompt.mobile.js';
 
 /**
  * Orchestrational wrapper that reads auth state and renders the appropriate leaf component.

@@ -17,7 +17,7 @@ import * as React from 'react';
 import { StyleSheet } from 'react-native';
 import { Avatar, Paragraph, XStack, YStack } from 'tamagui';
 
-import { getInitials } from '@/lib/getInitials.js';
+import { getInitials } from '../utils/getInitials.js';
 
 /** Props for ProfileCard. */
 export interface ProfileCardProps {

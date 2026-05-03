@@ -19,9 +19,9 @@ import { useUser } from '@auth0/nextjs-auth0';
 import { useTranslations } from 'next-intl';
 import type { ReactElement } from 'react';
 
-import { AuthenticatedProfile } from '@/components/profile/AuthenticatedProfile.js';
-import { ProfileTileSkeleton } from '@/components/profile/ProfileTileSkeleton.js';
-import { UnauthenticatedPrompt } from '@/components/profile/UnauthenticatedPrompt.js';
+import { AuthenticatedProfile } from './AuthenticatedProfile.web.js';
+import { ProfileTileSkeleton } from './ProfileTileSkeleton.web.js';
+import { UnauthenticatedPrompt } from './UnauthenticatedPrompt.web.js';
 
 /**
  * @requirements

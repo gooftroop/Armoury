@@ -23,7 +23,7 @@ import { AuthProvider } from '@/providers/AuthProvider.js';
 import { DataContextProvider } from '@/providers/DataContextProvider.js';
 import { SyncQueueProvider } from '@/providers/SyncQueueProvider.js';
 import { SyncManifestProvider } from '@/providers/SyncManifestProvider.js';
-import { PresenceProvider } from '@/providers/PresenceProvider.js';
+import { PresenceProvider } from '@armoury/feature-profile';
 
 /** Initializes Sentry for mobile error tracking and performance monitoring. */
 Sentry.init({

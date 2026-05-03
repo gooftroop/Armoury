@@ -29,6 +29,7 @@
         "@armoury/clients-friends": "*",
         "@armoury/clients-users": "*",
         "@armoury/di": "*",
+        "@armoury/feature-profile": "*",
         "@armoury/streams": "*",
         "@armoury/models": "*",
         "@armoury/wh40k10e": "*",

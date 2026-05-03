@@ -12,8 +12,7 @@
 
 import type { ReactElement } from 'react';
 
-import { Card, CardContent } from '@/components/ui/index.js';
-import { Skeleton } from '@/components/ui/skeleton.js';
+import { Card, CardContent, Skeleton } from '@armoury/ui';
 
 /**
  * @requirements

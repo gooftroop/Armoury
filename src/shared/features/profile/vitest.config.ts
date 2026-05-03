@@ -7,6 +7,7 @@ export default mergeConfig(
         test: {
             include: ['**/__tests__/**/*.test.{ts,tsx}'],
             passWithNoTests: true,
+            setupFiles: ['@testing-library/jest-dom/vitest'],
         },
     }),
 );

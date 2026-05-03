@@ -16,7 +16,7 @@ import { getQueryClient } from '@armoury/query';
 import { DataContextProvider } from '@/providers/DataContextProvider.js';
 import { SyncQueueProvider } from '@/providers/SyncQueueProvider.js';
 import { SyncManifestProvider } from '@/providers/SyncManifestProvider.js';
-import { PresenceProvider } from '@/providers/PresenceProvider.js';
+import { PresenceProvider } from '@armoury/feature-profile';
 
 /**
  * Properties for the Providers component.

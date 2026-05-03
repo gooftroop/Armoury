@@ -9,11 +9,12 @@
  * - REQ-PROFILE-CONTAINER-05: Falls through to UnauthenticatedPrompt on error when no user.
  * - REQ-PROFILE-CONTAINER-06: Coerces nullable user name/picture to empty string.
  */
+/// <reference types="@testing-library/jest-dom/vitest" />
 
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ProfileTileContainer } from '../ProfileTileContainer.js';
+import { ProfileTileContainer } from '../ProfileTileContainer.web.js';
 
 const { useUserMock, useTranslationsMock } = vi.hoisted(() => ({
     useUserMock: vi.fn(),
@@ -28,7 +29,7 @@ vi.mock('next-intl', () => ({
     useTranslations: (namespace: string) => useTranslationsMock(namespace),
 }));
 
-vi.mock('@/components/profile/AuthenticatedProfile.js', () => ({
+vi.mock('@/components/AuthenticatedProfile.web.js', () => ({
     AuthenticatedProfile: (props: Record<string, unknown>) => (
         <div>
             <span>authenticated</span>
@@ -43,11 +44,11 @@ vi.mock('@/components/profile/AuthenticatedProfile.js', () => ({
     ),
 }));
 
-vi.mock('@/components/profile/ProfileTileSkeleton.js', () => ({
+vi.mock('@/components/ProfileTileSkeleton.web.js', () => ({
     ProfileTileSkeleton: () => <div>profile-skeleton</div>,
 }));
 
-vi.mock('@/components/profile/UnauthenticatedPrompt.js', () => ({
+vi.mock('@/components/UnauthenticatedPrompt.web.js', () => ({
     UnauthenticatedPrompt: (props: Record<string, unknown>) => (
         <div>
             <span>unauthenticated</span>

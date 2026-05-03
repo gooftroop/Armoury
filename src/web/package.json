@@ -28,6 +28,7 @@
         "@armoury/data-context": "*",
         "@armoury/data-dao": "*",
         "@armoury/di": "*",
+        "@armoury/feature-profile": "*",
         "@armoury/models": "*",
         "@armoury/streams": "*",
         "@armoury/ui": "*",

@@ -11,7 +11,7 @@
  */
 
 import type { ReactElement } from 'react';
-import { Button, Card, CardContent } from '@/components/ui/index.js';
+import { Button, Card, CardContent } from '@armoury/ui';
 
 /**
  * @requirements

@@ -23,8 +23,8 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from '@/components/ui/index.js';
-import { getInitials } from '@/lib/getInitials.js';
+} from '@armoury/ui';
+import { getInitials } from '../utils/getInitials.js';
 
 /**
  * @requirements
