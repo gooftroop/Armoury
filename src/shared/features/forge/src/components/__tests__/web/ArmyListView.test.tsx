@@ -36,6 +36,9 @@ vi.mock('@armoury/ui', () => ({
             {action}
         </div>
     ),
+    Button: ({ children, variant }: { children: ReactNode; variant?: string }) => (
+        <button data-variant={variant}>{children}</button>
+    ),
 }));
 
 vi.mock('../ArmyFilterPanel.web.js', async (importOriginal) => {
@@ -72,6 +75,10 @@ vi.mock('../ArmyCard.web.js', () => ({
             </button>
         </article>
     ),
+}));
+
+vi.mock('../ArmyCardSkeleton.web.js', () => ({
+    ArmyCardSkeleton: () => <div data-testid="army-card-skeleton" />,
 }));
 
 describe('ArmyListView', () => {
