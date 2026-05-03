@@ -18,7 +18,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import createIntlMiddleware from 'next-intl/middleware';
-import { routing } from '@/i18n/routing.js';
+import { routing } from '@armoury/i18n';
 import { auth0 } from '@/lib/auth0.js';
 
 /** Middleware for next-intl locale detection and routing. */
