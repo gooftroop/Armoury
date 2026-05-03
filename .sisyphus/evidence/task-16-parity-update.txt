@@ -1,0 +1,42 @@
+Task 16 — mobile-web-parity plan update
+Date: 2026-05-03
+
+## Summary
+
+Updated .sisyphus/plans/mobile-web-parity.md to reflect shared-code-migration outcomes.
+
+## Changes made
+
+1. Added "Shared-Code Migration Outcomes" summary section at the top of the plan listing:
+   - New workspaces created: @armoury/query, @armoury/i18n, @armoury/auth-client,
+     @armoury/feature-profile, @armoury/feature-forge, @armoury/feature-game-system
+   - Updated workspace: @armoury/ui (EmptyState, ConfirmDialog added)
+   - Deferred items: mobile auth runtime, mobile i18n runtime
+
+2. Added RESOLVED markers to the following tasks:
+
+   T2 (i18n scaffolding) — RESOLVED (partial) via shared-code-migration T10 (@armoury/i18n)
+     Mobile runtime wiring remains in scope.
+
+   T3 (Tamagui UI primitives batch 1) — RESOLVED (partial) via shared-code-migration T2 (@armoury/ui)
+     EmptyState and ConfirmDialog now in @armoury/ui. Tamagui-specific primitives remain in scope.
+
+   T4 (Mobile lib parity) — RESOLVED (partial) via shared-code-migration T9 + T11
+     @armoury/query covers queryClient/getQueryClient.
+     @armoury/auth-client covers auth0SpaClient.
+     Mobile auth runtime (react-native-auth0) remains in scope.
+
+   T5 (useGameSystem hook) — RESOLVED via shared-code-migration T14 (@armoury/feature-game-system)
+     Hook ships from @armoury/feature-game-system. Thin Expo Router pathname shim may still be needed.
+
+   T16 (Account components) — RESOLVED (partial) via shared-code-migration T12 (@armoury/feature-profile)
+     ProfileSection and profile hooks now in @armoury/feature-profile.
+     DangerZoneSection and PreferencesSection remain in scope.
+
+   T21 (Armies screen parity refresh) — RESOLVED (partial) via shared-code-migration T13 (@armoury/feature-forge)
+     Forge components/hooks now in @armoury/feature-forge.
+     Screen-level integration and provider wiring remain in scope.
+
+## Verification
+
+grep -E "RESOLVED|@armoury/feature-" .sisyphus/plans/mobile-web-parity.md | head
