@@ -1,0 +1,36 @@
+=== T18 Mobile Expo Export Smoke Test ===
+Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+Worktree: feat-shared-code-migration
+
+=== iOS Export (EXPO_ROUTER_APP_ROOT=app) ===
+[33m› [1m[@sentry/react-native/expo][22m Missing config for [1morganization, project[22m. Environment variables will be used as a fallback during the build. https://docs.sentry.io/platforms/react-native/manual-setup/[0m
+Starting Metro Bundler
+iOS Bundling failed 553ms src/mobile/node_modules/expo-router/entry.js (739 modules)
+Error: Unable to resolve module use-latest-callback from /home/brandon/Development/Armoury/.worktrees/feat-shared-code-migration/src/mobile/node_modules/expo-router/build/fork/NavigationContainer.js: use-latest-callback could not be found within the project or in these directories:
+  node_modules/expo-router/node_modules
+  node_modules
+  ../../node_modules
+  ../../../../node_modules
+  node_modules
+  ../../node_modules
+[0m [90m  8 |[39m [36mconst[39m react_1 [33m=[39m __importDefault(require([32m"react"[39m))[33m;[39m
+ [90m  9 |[39m [36mconst[39m react_native_1 [33m=[39m require([32m"react-native"[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 10 |[39m [36mconst[39m use_latest_callback_1 [33m=[39m __importDefault(require([32m"use-latest-callback"[39m))[33m;[39m
+ [90m    |[39m                                                        [31m[1m^[22m[39m
+ [90m 11 |[39m [36mconst[39m useBackButton_1 [33m=[39m require([32m"./useBackButton"[39m)[33m;[39m
+ [90m 12 |[39m [36mconst[39m useDocumentTitle_1 [33m=[39m require([32m"./useDocumentTitle"[39m)[33m;[39m
+ [90m 13 |[39m [36mconst[39m useLinking_1 [33m=[39m require([32m"./useLinking"[39m)[33m;[39m[0m
+
+=== Android Export ===
+[33m› [1m[@sentry/react-native/expo][22m Missing config for [1morganization, project[22m. Environment variables will be used as a fallback during the build. https://docs.sentry.io/platforms/react-native/manual-setup/[0m
+Starting Metro Bundler
+Android src/mobile/node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 33.3% ( 71/256)
+Android Bundling failed 5494ms src/mobile/node_modules/expo-router/entry.js (766 modules)
+SyntaxError: node_modules/expo-router/_ctx.android.js: node_modules/expo-router/_ctx.android.js:Invalid call at line 2: process.env.EXPO_ROUTER_APP_ROOT
+First argument of `require.context` should be a string denoting the directory to require.
+
+=== Analysis ===
+iOS: Bundler resolved 739 modules before failing at expo-router internals (use-latest-callback missing dep).
+Android: EXPO_ROUTER_APP_ROOT not set at build time (expected — needs app context from Expo build system).
+Neither "Module not found" nor "Cannot resolve" errors relate to the shared-code migration.
+The use-latest-callback dependency is a known Expo Router peer dep issue in development worktrees.
