@@ -22,11 +22,11 @@ import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScrollView, YStack, H2, Paragraph } from 'tamagui';
 
-import { EmptyState } from '@/components/shared/EmptyState.js';
-import { ArmyCardSkeleton } from '@/components/shared/ArmyCardSkeleton.js';
-import { ArmyCard } from '@/components/forge/ArmyCard.js';
-import { ArmyFilterPanel } from '@/components/forge/ArmyFilterPanel.js';
-import type { ForgeFilters } from '@/components/forge/ArmyFilterPanel.js';
+import { EmptyState } from '@armoury/ui';
+import { ArmyCardSkeleton } from './ArmyCardSkeleton.mobile.js';
+import { ArmyCard } from './ArmyCard.mobile.js';
+import { ArmyFilterPanel } from './ArmyFilterPanel.mobile.js';
+import type { ForgeFilters } from './ArmyFilterPanel.mobile.js';
 import type { Army } from '@armoury/wh40k10e';
 
 /**

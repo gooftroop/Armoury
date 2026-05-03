@@ -18,7 +18,7 @@ import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
 import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
-import { ForgeContainer } from '@/components/forge/index.js';
+import { ForgeContainer } from '@/components/ForgeContainer.js';
 
 export interface ArmiesPageProps {
     params: Promise<{

@@ -34,8 +34,8 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ArmyFilterPanel, DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.js';
-import type { ForgeFilters } from '../ArmyFilterPanel.js';
+import { ArmyFilterPanel, DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.mobile.js';
+import type { ForgeFilters } from '../ArmyFilterPanel.mobile.js';
 
 describe('ArmyFilterPanel', () => {
     const defaultProps = {

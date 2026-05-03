@@ -26,11 +26,12 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Shield, Plus } from 'lucide-react';
 
-import { Button } from '@/components/ui/index.js';
-import { EmptyState, ArmyCardSkeleton } from '@/components/shared/index.js';
-import { ArmyCard } from '@/components/forge/ArmyCard.js';
-import { ArmyFilterPanel } from '@/components/forge/ArmyFilterPanel.js';
-import type { ForgeFilters } from '@/components/forge/ArmyFilterPanel.js';
+import { Button } from '@armoury/ui';
+import { EmptyState } from '@armoury/ui';
+import { ArmyCardSkeleton } from './ArmyCardSkeleton.web.js';
+import { ArmyCard } from './ArmyCard.web.js';
+import { ArmyFilterPanel } from './ArmyFilterPanel.web.js';
+import type { ForgeFilters } from './ArmyFilterPanel.web.js';
 import type { Army } from '@armoury/wh40k10e';
 
 /**

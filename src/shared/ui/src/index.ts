@@ -194,3 +194,6 @@ export {
     type TooltipTriggerProps,
     type TooltipContentProps,
 } from '@/components/Tooltip/index.js';
+
+// Utilities
+export { cn } from '@/lib/utils.js';

@@ -12,7 +12,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ForgeContainer } from '../ForgeContainer.js';
-import { makeArmy } from './fixtures.js';
+import { makeArmy } from './forge-fixtures.js';
 
 const mockPush = vi.fn();
 const mockInvalidateQueries = vi.fn();
@@ -63,7 +63,7 @@ vi.mock('@tanstack/react-query', () => ({
     }),
 }));
 
-vi.mock('@/components/forge/ArmyListView.js', () => ({
+vi.mock('@armoury/feature-forge', () => ({
     ArmyListView: ({
         armies,
         isLoading,

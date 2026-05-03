@@ -1,4 +1,4 @@
-import type { ArmyCardProps } from '@/components/forge/ArmyCard.js';
+import type { ArmyCardProps } from '@armoury/feature-forge';
 
 type Army = ArmyCardProps['army'];
 

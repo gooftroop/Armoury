@@ -27,7 +27,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Army } from '@armoury/wh40k10e';
 
-import { ArmyCard } from '../ArmyCard.js';
+import { ArmyCard } from '../ArmyCard.mobile.js';
 
 /**
  * Creates a mock Army object with sensible defaults.

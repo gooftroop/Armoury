@@ -20,7 +20,7 @@ import type { ReactElement } from 'react';
 import { useTranslations } from 'next-intl';
 import { Swords, Copy, Trash2 } from 'lucide-react';
 
-import { Button } from '@/components/ui/index.js';
+import { Button } from '@armoury/ui';
 
 /**
  * Props for the ArmyCardActions component.

@@ -17,9 +17,7 @@
 
 import type { ReactElement, ComponentPropsWithRef } from 'react';
 
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card.js';
-import { Skeleton } from '@/components/ui/skeleton.js';
-import { cn } from '@/lib/utils.js';
+import { Card, CardContent, CardFooter, CardHeader, Skeleton, cn } from '@armoury/ui';
 
 /**
  * Props for the ArmyCardSkeleton component.

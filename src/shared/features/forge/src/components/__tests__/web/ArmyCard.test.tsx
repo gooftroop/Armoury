@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { ArmyCard } from '../ArmyCard.js';
+import { ArmyCard } from '../ArmyCard.web.js';
 import { makeArmy } from './fixtures.js';
 
 vi.mock('next-intl', () => ({

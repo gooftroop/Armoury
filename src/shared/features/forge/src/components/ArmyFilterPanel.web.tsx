@@ -23,7 +23,7 @@ import type { ReactElement } from 'react';
 import { useTranslations } from 'next-intl';
 import { SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 
-import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/index.js';
+import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@armoury/ui';
 import type { BattleSize } from '@armoury/wh40k10e';
 
 /** Sort order options for the army list. */

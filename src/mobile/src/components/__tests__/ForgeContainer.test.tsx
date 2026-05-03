@@ -49,7 +49,7 @@ vi.mock('expo-router', () => ({
     useRouter: () => routerMock,
 }));
 
-vi.mock('../../../providers/DataContextProvider.js', () => ({
+vi.mock('../../providers/DataContextProvider.js', () => ({
     useDataContext: () => ({
         dataContext: {
             armies: {

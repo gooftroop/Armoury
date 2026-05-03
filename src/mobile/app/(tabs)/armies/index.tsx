@@ -11,7 +11,7 @@
 
 import { useAuth0 } from 'react-native-auth0';
 
-import { ForgeContainer } from '@/components/forge/ForgeContainer.js';
+import { ForgeContainer } from '@/components/ForgeContainer.js';
 
 /**
  * The Forge tab screen.

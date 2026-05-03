@@ -29,6 +29,7 @@
         "@armoury/data-dao": "*",
         "@armoury/di": "*",
         "@armoury/feature-profile": "*",
+        "@armoury/feature-forge": "*",
         "@armoury/models": "*",
         "@armoury/streams": "*",
         "@armoury/ui": "*",

@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { ArmyCardSkeleton } from '../ArmyCardSkeleton.js';
+import { ArmyCardSkeleton } from '../ArmyCardSkeleton.web.js';
 
 describe('ArmyCardSkeleton', () => {
     beforeEach(() => {

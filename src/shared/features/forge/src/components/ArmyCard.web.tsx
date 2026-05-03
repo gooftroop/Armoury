@@ -21,8 +21,8 @@ import type { ReactElement } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge } from '@/components/ui/index.js';
-import { ArmyCardActions } from '@/components/forge/ArmyCardActions.js';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge } from '@armoury/ui';
+import { ArmyCardActions } from './ArmyCardActions.web.js';
 import type { Army } from '@armoury/wh40k10e';
 
 /**

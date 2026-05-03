@@ -12,13 +12,13 @@ import userEvent from '@testing-library/user-event';
 import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 
-import { ArmyFilterPanel, DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.js';
+import { ArmyFilterPanel, DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.web.js';
 
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('@/components/ui/index.js', () => ({
+vi.mock('@armoury/ui', () => ({
     ...(() => {
         const SelectContext = createContext<(value: string) => void>(() => {});
 

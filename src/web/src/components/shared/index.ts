@@ -15,6 +15,3 @@ export { EmptyState, type EmptyStateProps } from '@/components/shared/EmptyState
 
 // ConfirmDialog component
 export { ConfirmDialog, type ConfirmDialogProps } from '@/components/shared/ConfirmDialog.js';
-
-// ArmyCardSkeleton component
-export { ArmyCardSkeleton, type ArmyCardSkeletonProps } from '@/components/shared/ArmyCardSkeleton.js';

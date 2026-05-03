@@ -14,7 +14,7 @@ import '@testing-library/jest-dom/vitest';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { ArmyCardSkeleton } from '../ArmyCardSkeleton.js';
+import { ArmyCardSkeleton } from '../ArmyCardSkeleton.mobile.js';
 
 describe('ArmyCardSkeleton', () => {
     it('renders without crashing', () => {

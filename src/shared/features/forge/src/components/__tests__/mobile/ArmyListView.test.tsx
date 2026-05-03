@@ -33,9 +33,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Army } from '@armoury/wh40k10e';
 
-import { ArmyListView } from '../ArmyListView.js';
-import { DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.js';
-import type { ArmyListViewProps } from '../ArmyListView.js';
+import { ArmyListView } from '../ArmyListView.mobile.js';
+import { DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.mobile.js';
+import type { ArmyListViewProps } from '../ArmyListView.mobile.js';
 
 /**
  * Creates a mock Army object with sensible defaults.

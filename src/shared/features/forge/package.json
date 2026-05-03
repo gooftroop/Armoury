@@ -27,14 +27,30 @@
     },
     "dependencies": {
         "@armoury/ui": "*",
-        "@armoury/query": "*"
+        "@armoury/wh40k10e": "*"
     },
     "peerDependencies": {
         "react": "^18 || ^19",
-        "react-native": ">=0.74"
+        "react-native": ">=0.74",
+        "next-intl": ">=3",
+        "lucide-react": ">=0.300",
+        "next": ">=14",
+        "tamagui": ">=2"
     },
     "peerDependenciesMeta": {
         "react-native": {
+            "optional": true
+        },
+        "next-intl": {
+            "optional": true
+        },
+        "lucide-react": {
+            "optional": true
+        },
+        "next": {
+            "optional": true
+        },
+        "tamagui": {
             "optional": true
         }
     },

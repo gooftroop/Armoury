@@ -11,8 +11,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 
-import { ArmyListView } from '../ArmyListView.js';
-import { DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.js';
+import { ArmyListView } from '../ArmyListView.web.js';
+import { DEFAULT_FORGE_FILTERS } from '../ArmyFilterPanel.web.js';
 import { makeArmy } from './fixtures.js';
 
 vi.mock('next-intl', () => ({
@@ -23,7 +23,7 @@ vi.mock('next/link', () => ({
     default: ({ children, href }: { children: ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
 
-vi.mock('@/components/shared/index.js', () => ({
+vi.mock('@armoury/ui', () => ({
     ArmyCardSkeleton: () => <div data-testid="army-card-skeleton" />,
     EmptyState: ({ title, description, action }: { title: string; description?: string; action?: ReactNode }) => (
         <div>
@@ -34,8 +34,8 @@ vi.mock('@/components/shared/index.js', () => ({
     ),
 }));
 
-vi.mock('@/components/forge/ArmyFilterPanel.js', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../ArmyFilterPanel.js')>();
+vi.mock('../ArmyFilterPanel.web.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../ArmyFilterPanel.web.js')>();
 
     return {
         ...actual,
@@ -43,7 +43,7 @@ vi.mock('@/components/forge/ArmyFilterPanel.js', async (importOriginal) => {
     };
 });
 
-vi.mock('@/components/forge/ArmyCard.js', () => ({
+vi.mock('../ArmyCard.web.js', () => ({
     ArmyCard: ({
         army,
         onDeploy,

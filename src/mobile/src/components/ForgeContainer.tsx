@@ -27,9 +27,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog.js';
-import { ArmyListView } from '@/components/forge/ArmyListView.js';
-import { DEFAULT_FORGE_FILTERS } from '@/components/forge/ArmyFilterPanel.js';
-import type { ForgeFilters } from '@/components/forge/ArmyFilterPanel.js';
+import { ArmyListView } from '@armoury/feature-forge';
+import { DEFAULT_FORGE_FILTERS } from '@armoury/feature-forge';
+import type { ForgeFilters } from '@armoury/feature-forge';
 import type { Army } from '@armoury/wh40k10e';
 
 /**

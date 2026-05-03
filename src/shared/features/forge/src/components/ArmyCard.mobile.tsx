@@ -19,7 +19,7 @@ import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card, Paragraph, H4, YStack } from 'tamagui';
 
-import { ArmyCardActions } from '@/components/forge/ArmyCardActions.js';
+import { ArmyCardActions } from './ArmyCardActions.mobile.js';
 import type { Army } from '@armoury/wh40k10e';
 
 /**

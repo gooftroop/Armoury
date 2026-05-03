@@ -34,7 +34,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { Army } from '@armoury/wh40k10e';
-import type { ForgeFilters } from '@/components/forge/ArmyFilterPanel.js';
+import type { ForgeFilters } from '../ArmyFilterPanel.mobile.js';
 
 /**
  * We import the functions under test directly. They are module-scoped

@@ -18,7 +18,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ArmyCardActions } from '../ArmyCardActions.js';
+import { ArmyCardActions } from '../ArmyCardActions.mobile.js';
 
 describe('ArmyCardActions', () => {
     it('renders Deploy, Duplicate, and Delete buttons', () => {
