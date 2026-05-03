@@ -29,6 +29,7 @@
         "@armoury/clients-friends": "*",
         "@armoury/clients-users": "*",
         "@armoury/di": "*",
+        "@armoury/feature-game-system": "*",
         "@armoury/feature-profile": "*",
         "@armoury/feature-forge": "*",
         "@armoury/streams": "*",

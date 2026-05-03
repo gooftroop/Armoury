@@ -10,7 +10,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { getKnownSystemIds, resolveGameSystem } from '../resolveGameSystem.js';
+import { getKnownSystemIds, resolveGameSystem } from '@armoury/feature-game-system';
 
 const { wh40k10eSystemMock } = vi.hoisted(() => ({
     wh40k10eSystemMock: {

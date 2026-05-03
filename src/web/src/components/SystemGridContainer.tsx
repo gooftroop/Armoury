@@ -31,11 +31,11 @@ import type { SyncProgressState } from '@armoury/data-dao';
 
 import { getAccessToken } from '@auth0/nextjs-auth0/client';
 import { mutationUpdateAccount } from '@armoury/clients-users';
+import { resolveGameSystem } from '@armoury/feature-game-system';
 
 import { SystemGridView } from '@/components/SystemGridView.js';
 import type { SystemTileData } from '@/components/SystemGridView.js';
 import { getSyncStatus } from '@/lib/getSyncStatus.js';
-import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
 import { useSyncProgress } from '@/hooks/useSyncProgress.js';
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';

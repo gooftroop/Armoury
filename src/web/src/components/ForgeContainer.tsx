@@ -29,10 +29,9 @@ import type { ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { resolveGameSystem, useGameSystem } from '@armoury/feature-game-system';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
-import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
-import { useGameSystem } from '@/hooks/useGameSystem.js';
 import { ConfirmDialog } from '@/components/shared/index.js';
 import { ArmyListView } from '@armoury/feature-forge';
 import { DEFAULT_FORGE_FILTERS } from '@armoury/feature-forge';

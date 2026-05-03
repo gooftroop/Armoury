@@ -32,6 +32,7 @@ import { SyncProgressCollector } from '@armoury/data-dao';
 import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ContainerModule } from 'inversify';
+import { getKnownSystemIds, resolveGameSystem } from '@armoury/feature-game-system';
 
 /**
  * Probes the local database and returns system IDs that have cached sync records.
@@ -53,7 +54,6 @@ async function probeSyncedSystems(signal: AbortSignal): Promise<string[]> {
             }
 
             const fileKeys = statuses.map((s) => s.fileKey);
-            const { resolveGameSystem, getKnownSystemIds } = await import('@/lib/resolveGameSystem.js');
             const systemIds: string[] = [];
 
             for (const id of getKnownSystemIds()) {
@@ -237,7 +237,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                 let system: GameSystem | undefined = systemRegistryRef.current[systemId];
 
                 if (!system) {
-                    const { resolveGameSystem } = await import('@/lib/resolveGameSystem.js');
                     const resolvedSystem = await resolveGameSystem(systemId);
 
                     if (!resolvedSystem) {
@@ -362,8 +361,6 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
 
             systemSyncStatesRef.current = restored;
             setSystemSyncStates(restored);
-
-            const { resolveGameSystem } = await import('@/lib/resolveGameSystem.js');
 
             for (const id of systemIds) {
                 if (controller.signal.aborted) {

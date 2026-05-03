@@ -2,6 +2,9 @@
     "extends": "@armoury/typescript/base.json",
     "compilerOptions": {
         "noEmit": true,
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "rewriteRelativeImportExtensions": false,
         "jsx": "react-jsx",
         "baseUrl": ".",
         "paths": {

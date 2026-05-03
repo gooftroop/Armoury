@@ -51,8 +51,9 @@ vi.mock('@/providers/DataContextProvider.js', () => ({
     useDataContext: () => mockDataContextValue,
 }));
 
-vi.mock('@/lib/resolveGameSystem.js', () => ({
+vi.mock('@armoury/feature-game-system', () => ({
     resolveGameSystem: (...args: unknown[]) => mockResolveGameSystem(...args),
+    useGameSystem: () => 'wh40k10e',
 }));
 
 vi.mock('@tanstack/react-query', () => ({

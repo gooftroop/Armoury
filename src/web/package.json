@@ -28,6 +28,7 @@
         "@armoury/data-context": "*",
         "@armoury/data-dao": "*",
         "@armoury/di": "*",
+        "@armoury/feature-game-system": "*",
         "@armoury/feature-profile": "*",
         "@armoury/feature-forge": "*",
         "@armoury/models": "*",

@@ -3,6 +3,9 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "dist/web",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "rewriteRelativeImportExtensions": false,
         "jsx": "react-jsx",
         "baseUrl": ".",
         "paths": {

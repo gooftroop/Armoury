@@ -43,7 +43,7 @@ vi.mock('@/providers/DataContextProvider.js', () => ({
     useDataContext: mockUseDataContext,
 }));
 
-vi.mock('@/lib/resolveGameSystem.js', () => ({
+vi.mock('@armoury/feature-game-system', () => ({
     resolveGameSystem: mockResolveGameSystem,
 }));
 

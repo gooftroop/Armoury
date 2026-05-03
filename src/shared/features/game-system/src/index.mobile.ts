@@ -1,3 +1,11 @@
-// @requirements
-// 1. Placeholder export — real exports added in Wave 2 move tasks.
-export const __PLACEHOLDER__ = true;
+/**
+ * @armoury/feature-game-system — mobile barrel file.
+ *
+ * @requirements
+ * 1. Must re-export mobile-compatible game-system utilities.
+ * 2. Must not use default exports.
+ */
+
+// === Utilities ===
+
+export { resolveGameSystem } from './utils/resolveGameSystem.mobile.js';
