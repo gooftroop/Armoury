@@ -26,7 +26,7 @@
 
 import { useEffect } from 'react';
 
-import { getAuth0SpaClient } from '@/lib/auth0SpaClient.js';
+import { getAuth0SpaClient } from '@armoury/auth-client';
 
 /** Error codes from Auth0 that indicate no active SSO session. */
 const EXPECTED_AUTH_ERRORS = new Set([
