@@ -14,4 +14,4 @@
 export { EmptyState, type EmptyStateProps } from '@/components/shared/EmptyState.js';
 
 // ConfirmDialog component
-export { ConfirmDialog, type ConfirmDialogProps } from '@/components/shared/ConfirmDialog.js';
+export { ConfirmDialog, type ConfirmDialogProps } from '@armoury/ui';

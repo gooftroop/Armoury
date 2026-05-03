@@ -17,7 +17,7 @@ import {
     ToastDescription,
     ToastClose,
     ToastAction,
-} from '../toast.js';
+} from '@armoury/ui';
 
 describe('Toast', () => {
     beforeEach(() => {

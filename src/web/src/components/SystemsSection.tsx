@@ -19,7 +19,7 @@ import type { ReactElement } from 'react';
 
 import type { useTranslations } from 'next-intl';
 
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui/index.js';
+import { Card, CardHeader, CardTitle, CardContent, Badge } from '@armoury/ui';
 
 /** Props for the SystemsSection component. */
 export interface SystemsSectionProps {

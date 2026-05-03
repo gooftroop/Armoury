@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { Skeleton } from '../skeleton.js';
+import { Skeleton } from '@armoury/ui';
 
 describe('Skeleton', () => {
     beforeEach(() => {

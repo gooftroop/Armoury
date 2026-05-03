@@ -53,7 +53,7 @@ vi.mock('@/lib/discoverSystems.js', () => ({
     discoverSystemManifests: mockDiscoverSystemManifests,
 }));
 
-vi.mock('@/lib/getQueryClient.js', () => ({
+vi.mock('@armoury/query', () => ({
     getQueryClient: mockGetQueryClient,
 }));
 
@@ -73,10 +73,15 @@ vi.mock('@/components/landing/UnauthenticatedLanding.js', () => ({
     UnauthenticatedLanding: vi.fn(() => null),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-    dehydrate: vi.fn(() => ({ queries: [], mutations: [] })),
-    HydrationBoundary: vi.fn(({ children }: { children: React.ReactNode }) => children),
-}));
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+
+    return {
+        ...actual,
+        dehydrate: vi.fn(() => ({ queries: [], mutations: [] })),
+        HydrationBoundary: vi.fn(({ children }: { children: React.ReactNode }) => children),
+    };
+});
 
 vi.mock('next/headers', () => ({
     cookies: vi.fn(() => Promise.resolve({ get: vi.fn(() => undefined) })),

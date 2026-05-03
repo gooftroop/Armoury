@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { Separator } from '../separator.js';
+import { Separator } from '@armoury/ui';
 
 describe('Separator', () => {
     beforeEach(() => {

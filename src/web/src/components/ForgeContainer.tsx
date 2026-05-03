@@ -32,7 +32,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { resolveGameSystem, useGameSystem } from '@armoury/feature-game-system';
 
 import { useDataContext } from '@/providers/DataContextProvider.js';
-import { ConfirmDialog } from '@/components/shared/index.js';
+import { ConfirmDialog } from '@armoury/ui';
 import { ArmyListView } from '@armoury/feature-forge';
 import { DEFAULT_FORGE_FILTERS } from '@armoury/feature-forge';
 import type { ForgeFilters } from '@armoury/feature-forge';

@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { Avatar, AvatarImage, AvatarFallback } from '../avatar.js';
+import { Avatar, AvatarImage, AvatarFallback } from '@armoury/ui';
 
 describe('Avatar', () => {
     beforeEach(() => {
