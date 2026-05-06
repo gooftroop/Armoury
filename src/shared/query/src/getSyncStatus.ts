@@ -6,11 +6,10 @@
  * @requirements
  * 1. Must return the mapped status for known system IDs.
  * 2. Must default to 'idle' for unknown system IDs.
+ * 3. Must be framework-agnostic and avoid app-local type imports.
  *
  * @module getSyncStatus
  */
-
-import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
 
 /**
  * Returns the current sync status for a game system ID.
@@ -19,9 +18,9 @@ import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
  * @param syncStates - Current per-system sync states.
  * @returns The current sync status for the system.
  */
-export function getSyncStatus(
+export function getSyncStatus<TStatus extends string>(
     systemId: string,
-    syncStates: Record<string, { status: SystemSyncStatus; error?: string }>,
-): SystemSyncStatus {
-    return syncStates[systemId]?.status ?? 'idle';
+    syncStates: Record<string, { status: TStatus; error?: string }>,
+): TStatus {
+    return syncStates[systemId]?.status ?? ('idle' as TStatus);
 }

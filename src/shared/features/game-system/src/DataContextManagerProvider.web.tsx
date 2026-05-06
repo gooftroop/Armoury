@@ -16,7 +16,7 @@
  * 8. Must restore sync state from the database adapter (getAllSyncStatuses), not localStorage.
  * 9. Must derive system ownership via GameSystem.getSyncFileKeyPrefixes(), not hardcoded maps.
  *
- * @module DataContextProvider
+ * @module DataContextManagerProvider
  */
 
 import { useState, useEffect, useCallback, useMemo, createContext, useContext, useRef } from 'react';
@@ -32,7 +32,7 @@ import { SyncProgressCollector } from '@armoury/data-dao';
 import type { DatabaseAdapter, GameSystem } from '@armoury/data-dao';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ContainerModule } from 'inversify';
-import { getKnownSystemIds, resolveGameSystem } from '@armoury/feature-game-system';
+import { getKnownSystemIds, resolveGameSystem } from './utils/resolveGameSystem.web.js';
 
 /**
  * Probes the local database and returns system IDs that have cached sync records.
@@ -116,15 +116,20 @@ export interface DataContextValue {
     enableSystem: (system: GameSystem) => Promise<void>;
     /** Disables a game system and clears sync state. */
     disableSystem: (systemId: string) => Promise<void>;
+    /** Returns whether a system has synced in the current session. */
+    hasSynced: (systemId: string) => boolean;
 }
 
 const DataContextReactContext = createContext<DataContextValue | undefined>(undefined);
 
-/** Props for DataContextProvider. */
-export interface DataContextProviderProps {
+/** Props for DataContextManagerProvider. */
+export interface DataContextManagerProviderProps {
     /** Child components that consume provider state. */
     children: ReactNode;
 }
+
+/** Backward-compatible alias for provider props. */
+export type DataContextProviderProps = DataContextManagerProviderProps;
 
 /**
  * Builds a DataContext from local cache using the existing DI setup.
@@ -193,17 +198,18 @@ async function buildDataContextFromCache(
 }
 
 /**
- * DataContextProvider component.
+ * DataContextManagerProvider component.
  *
  * @param props - Component props.
  * @returns Provider-wrapped React tree.
  */
-export function DataContextProvider({ children }: DataContextProviderProps): ReactElement {
+export function DataContextManagerProvider({ children }: DataContextManagerProviderProps): ReactElement {
     const [dataContext, setDataContext] = useState<DataContext | null>(null);
     const [status, setStatus] = useState<DataContextStatus>('idle');
     const [error, setError] = useState<string | undefined>();
     const [systemSyncStates, setSystemSyncStates] = useState<Record<string, SystemSyncState>>({});
     const [syncProgressCollector, setSyncProgressCollector] = useState<SyncProgressCollector | null>(null);
+    const [syncedSet, setSyncedSet] = useState<Set<string>>(new Set());
 
     const systemSyncStatesRef = useRef<Record<string, SystemSyncState>>({});
     const systemRegistryRef = useRef<Record<string, GameSystem>>({});
@@ -298,6 +304,12 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
                             ...prev,
                             [systemId]: { status: 'synced', hasCache },
                         }));
+                        setSyncedSet((prev) => {
+                            const next = new Set(prev);
+                            next.add(systemId);
+
+                            return next;
+                        });
                         syncSucceeded = true;
                     } catch (err) {
                         lastError = err instanceof Error ? err.message : 'Failed to sync';
@@ -475,8 +487,11 @@ export function DataContextProvider({ children }: DataContextProviderProps): Rea
             syncProgressCollector,
             enableSystem,
             disableSystem,
+            hasSynced: (systemId: string): boolean => {
+                return syncedSet.has(systemId);
+            },
         }),
-        [dataContext, status, error, systemSyncStates, syncProgressCollector, enableSystem, disableSystem],
+        [dataContext, status, error, systemSyncStates, syncProgressCollector, enableSystem, disableSystem, syncedSet],
     );
 
     return <DataContextReactContext.Provider value={value}>{children}</DataContextReactContext.Provider>;
@@ -497,3 +512,8 @@ export function useDataContext(): DataContextValue {
 
     return context;
 }
+
+DataContextManagerProvider.displayName = 'DataContextManagerProvider';
+
+/** Backward-compatible provider export alias. */
+export const DataContextProvider = DataContextManagerProvider;

@@ -47,13 +47,10 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
-    useDataContext: () => mockDataContextValue,
-}));
-
 vi.mock('@armoury/feature-game-system', () => ({
     resolveGameSystem: (...args: unknown[]) => mockResolveGameSystem(...args),
     useGameSystem: () => 'wh40k10e',
+    useDataContext: () => mockDataContextValue,
 }));
 
 vi.mock('@tanstack/react-query', () => ({

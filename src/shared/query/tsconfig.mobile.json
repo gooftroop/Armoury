@@ -12,6 +12,6 @@
             "@/*": ["./src/*"]
         }
     },
-    "include": ["src/index.mobile.ts", "src/components/**/*.mobile.tsx"],
+    "include": ["src/index.mobile.ts", "src/getSyncStatus.ts", "src/components/**/*.mobile.tsx"],
     "exclude": ["node_modules", "dist"]
 }

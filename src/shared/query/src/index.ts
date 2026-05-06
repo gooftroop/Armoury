@@ -6,3 +6,4 @@
 
 export { queryClient } from './queryClient.js';
 export { getQueryClient } from './getQueryClient.js';
+export { getSyncStatus } from './getSyncStatus.js';

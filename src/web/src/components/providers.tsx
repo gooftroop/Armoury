@@ -13,7 +13,7 @@
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { getQueryClient } from '@armoury/query';
-import { DataContextProvider } from '@/providers/DataContextProvider.js';
+import { DataContextManagerProvider } from '@armoury/feature-game-system';
 import { SyncQueueProvider } from '@/providers/SyncQueueProvider.js';
 import { SyncManifestProvider } from '@/providers/SyncManifestProvider.js';
 import { PresenceProvider } from '@armoury/feature-profile';
@@ -37,13 +37,13 @@ export function Providers({ children }: ProvidersProps) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <SyncQueueProvider>
                     <SyncManifestProvider>
                         <PresenceProvider>{children}</PresenceProvider>
                     </SyncManifestProvider>
                 </SyncQueueProvider>
-            </DataContextProvider>
+            </DataContextManagerProvider>
         </QueryClientProvider>
     );
 }

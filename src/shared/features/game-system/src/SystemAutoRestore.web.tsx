@@ -9,9 +9,10 @@
  */
 
 import { useEffect } from 'react';
-import { resolveGameSystem } from '@armoury/feature-game-system';
 
-import { useDataContext } from '@/providers/DataContextProvider.js';
+import { resolveGameSystem } from './utils/resolveGameSystem.web.js';
+
+import { useDataContext } from './DataContextManagerProvider.web.js';
 
 export interface SystemAutoRestoreProps {
     systemId: string;

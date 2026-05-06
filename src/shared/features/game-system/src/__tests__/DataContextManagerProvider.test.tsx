@@ -1,12 +1,12 @@
 /**
- * DataContextProvider tests (web).
+ * DataContextManagerProvider tests (web).
  *
  * @requirements
  * | Requirement ID | Requirement | Test Case(s) |
  * | --- | --- | --- |
  * | REQ-WEB-DCP-01 | Provider renders children without crashing in idle state. | "renders children without crashing" |
  * | REQ-WEB-DCP-02 | useDataContext returns default context values in idle state. | "returns default context value in idle state" |
- * | REQ-WEB-DCP-03 | useDataContext throws outside DataContextProvider. | "throws when useDataContext is used outside provider" |
+ * | REQ-WEB-DCP-03 | useDataContext throws outside DataContextManagerProvider. | "throws when useDataContext is used outside provider" |
  * | REQ-WEB-DCP-04 | enableSystem transitions DataContext status idle -> initializing -> ready and system sync syncing -> synced. | "transitions idle -> initializing -> ready and syncing -> synced when enableSystem succeeds" |
  * | REQ-WEB-DCP-05 | enableSystem composes DI container with core + web modules. | "creates DI container with core + web modules and resolves factories" |
  * | REQ-WEB-DCP-06 | disableSystem closes DataContext and resets provider state. | "disableSystem closes DataContext and resets state" |
@@ -23,12 +23,13 @@
 import { useEffect } from 'react';
 import type { ReactElement } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DataContext } from '@armoury/data-context';
 import type { GameSystem } from '@armoury/data-dao';
 import type { QueryClient } from '@tanstack/react-query';
 
-import { DataContextProvider, useDataContext } from '../DataContextProvider.js';
+import { DataContextManagerProvider, useDataContext } from '../DataContextManagerProvider.web.js';
 
 const {
     createContainerWithModulesMock,
@@ -108,7 +109,7 @@ vi.mock('@armoury/adapters-pglite', () => ({
     PGliteAdapter: PGliteAdapterConstructorMock,
 }));
 
-vi.mock('@armoury/feature-game-system', () => ({
+vi.mock('../utils/resolveGameSystem.web.js', () => ({
     resolveGameSystem: resolveGameSystemMock,
     getKnownSystemIds: getKnownSystemIdsMock,
 }));
@@ -188,7 +189,7 @@ function OutsideHookConsumer(): ReactElement {
     return <div>outside</div>;
 }
 
-describe('DataContextProvider (web)', () => {
+describe('DataContextManagerProvider (web)', () => {
     const adapter = { rawQuery: vi.fn(), initialize: vi.fn(), close: vi.fn().mockResolvedValue(undefined) };
     const githubClient = { name: 'github-client' };
     const wahapediaClient = { name: 'wahapedia-client' };
@@ -277,9 +278,9 @@ describe('DataContextProvider (web)', () => {
 
     it('renders children without crashing', () => {
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <div>child-content</div>
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         expect(screen.getByText('child-content')).toBeInTheDocument();
@@ -289,9 +290,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         expect(screen.getByText('Status: idle')).toBeInTheDocument();
@@ -310,9 +311,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e', getContainerModule: () => systemModule }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -334,9 +335,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e', getContainerModule: () => systemModule }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -361,9 +362,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -386,9 +387,9 @@ describe('DataContextProvider (web)', () => {
     it('closes DataContext on unmount', async () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
         const rendered = render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -429,9 +430,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -449,9 +450,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Disable wh40k10e' }));
@@ -472,9 +473,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e', getContainerModule: () => systemModule }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -490,9 +491,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         await waitFor(() => {
@@ -521,9 +522,9 @@ describe('DataContextProvider (web)', () => {
             const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
             render(
-                <DataContextProvider>
+                <DataContextManagerProvider>
                     <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-                </DataContextProvider>,
+                </DataContextManagerProvider>,
             );
 
             await waitFor(() => {
@@ -537,9 +538,9 @@ describe('DataContextProvider (web)', () => {
             const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
             render(
-                <DataContextProvider>
+                <DataContextManagerProvider>
                     <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-                </DataContextProvider>,
+                </DataContextManagerProvider>,
             );
 
             await waitFor(() => {
@@ -564,9 +565,9 @@ describe('DataContextProvider (web)', () => {
 
             const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
             const rendered = render(
-                <DataContextProvider>
+                <DataContextManagerProvider>
                     <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-                </DataContextProvider>,
+                </DataContextManagerProvider>,
             );
 
             rendered.unmount();
@@ -627,7 +628,7 @@ describe('DataContextProvider (web)', () => {
         };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness
                     controls={controls}
                     systems={[
@@ -665,7 +666,7 @@ describe('DataContextProvider (web)', () => {
                         } as unknown as { id: string; getContainerModule?: () => unknown },
                     ]}
                 />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -711,9 +712,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -757,9 +758,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         await waitFor(() => {
@@ -788,9 +789,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));
@@ -821,9 +822,9 @@ describe('DataContextProvider (web)', () => {
         const controls: HarnessControls = { statuses: [], syncStatusHistory: {} };
 
         render(
-            <DataContextProvider>
+            <DataContextManagerProvider>
                 <Harness controls={controls} systems={[{ id: 'wh40k10e' }]} />
-            </DataContextProvider>,
+            </DataContextManagerProvider>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable wh40k10e' }));

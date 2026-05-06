@@ -26,6 +26,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
+        "@armoury/adapters-pglite": "*",
         "@armoury/data-dao": "*",
         "@armoury/ui": "*",
         "@armoury/query": "*",

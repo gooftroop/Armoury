@@ -5,3 +5,4 @@
  */
 
 export { queryClient } from './queryClient.js';
+export { getSyncStatus } from './getSyncStatus.js';

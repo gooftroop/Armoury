@@ -15,8 +15,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
+
 import { getSyncStatus } from '../getSyncStatus.js';
-import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
+
+type SystemSyncStatus = 'idle' | 'pending' | 'checking-staleness' | 'syncing' | 'synced' | 'error';
 
 describe('getSyncStatus', () => {
     it('returns mapped status for a known system ID', () => {

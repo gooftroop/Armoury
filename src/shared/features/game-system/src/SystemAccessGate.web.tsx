@@ -5,8 +5,7 @@ import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
-import { useDataContext } from '@/providers/DataContextProvider.js';
-import { useSyncManifest } from '@/providers/SyncManifestProvider.js';
+import { useDataContext } from './DataContextManagerProvider.web.js';
 
 /**
  * @requirements
@@ -40,8 +39,7 @@ export interface SystemAccessGateProps {
  * @returns The gated children or the appropriate blocked-state UI.
  */
 function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactElement {
-    const { hasSynced } = useSyncManifest();
-    const { systemSyncStates } = useDataContext();
+    const { hasSynced, systemSyncStates } = useDataContext();
     const syncState = systemSyncStates[systemId];
     const isSyncedInDataContext = syncState?.status === 'synced';
     const isSyncedThisSession = hasSynced(systemId);

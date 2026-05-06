@@ -31,16 +31,17 @@ import type { SyncProgressState } from '@armoury/data-dao';
 
 import { getAccessToken } from '@auth0/nextjs-auth0/client';
 import { mutationUpdateAccount } from '@armoury/clients-users';
-import { resolveGameSystem } from '@armoury/feature-game-system';
+import { getSyncStatus } from '@armoury/query';
+import { resolveGameSystem, useDataContext } from '@armoury/feature-game-system';
 
 import { SystemGridView } from '@/components/SystemGridView.js';
 import type { SystemTileData } from '@/components/SystemGridView.js';
-import { getSyncStatus } from '@/lib/getSyncStatus.js';
 import { useSyncProgress } from '@/hooks/useSyncProgress.js';
-import { useDataContext } from '@/providers/DataContextProvider.js';
-import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
 import { useSyncQueue } from '@/providers/SyncQueueProvider.js';
 import type { SyncQueueState } from '@/providers/SyncQueueProvider.js';
+
+type DataContextValue = ReturnType<typeof useDataContext>;
+type SystemSyncStatus = DataContextValue['systemSyncStates'][string]['status'];
 
 /** Per-system sync map used by SystemGrid activation helpers. */
 type SyncStateMap = Record<string, { status: SystemSyncStatus; error?: string }>;
