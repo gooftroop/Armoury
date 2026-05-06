@@ -17,24 +17,36 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SystemAccessGate } from '../SystemAccessGate.js';
+import { SystemAccessGate } from '@armoury/feature-game-system';
 
-const { mockUseDataContext, mockUseSyncManifest } = vi.hoisted(() => ({
+const { mockUseDataContext } = vi.hoisted(() => ({
     mockUseDataContext: vi.fn(),
-    mockUseSyncManifest: vi.fn(),
 }));
 
 vi.mock('next/link', () => ({
     default: ({ children }: { children: unknown; href: string }) => children,
 }));
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
-    useDataContext: mockUseDataContext,
-}));
+vi.mock('../../../../shared/features/game-system/src/DataContextManagerProvider.web.js', async () => {
+    const actual = await vi.importActual(
+        '../../../../shared/features/game-system/src/DataContextManagerProvider.web.js',
+    );
 
-vi.mock('@/providers/SyncManifestProvider.js', () => ({
-    useSyncManifest: mockUseSyncManifest,
-}));
+    return {
+        ...actual,
+        useDataContext: mockUseDataContext,
+    };
+});
+
+vi.mock('@armoury/feature-game-system', async () => {
+    const actual = await vi.importActual('@armoury/feature-game-system');
+    const source = await vi.importActual('../../../../shared/features/game-system/src/SystemAccessGate.web.js');
+
+    return {
+        ...actual,
+        SystemAccessGate: source.SystemAccessGate,
+    };
+});
 
 interface RenderHarnessOptions {
     readonly systemId?: string;
@@ -51,8 +63,10 @@ function renderHarness({ systemId = 'wh40k10e' }: RenderHarnessOptions = {}): vo
 describe('SystemAccessGate', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockUseSyncManifest.mockReturnValue({ hasSynced: vi.fn(() => false) });
-        mockUseDataContext.mockReturnValue({ systemSyncStates: {} });
+        mockUseDataContext.mockReturnValue({
+            systemSyncStates: {},
+            hasSynced: vi.fn(() => false),
+        });
     });
 
     it('renders children when status is synced', () => {
@@ -60,6 +74,7 @@ describe('SystemAccessGate', () => {
             systemSyncStates: {
                 wh40k10e: { status: 'synced' },
             },
+            hasSynced: vi.fn(() => false),
         });
 
         renderHarness();
@@ -68,7 +83,10 @@ describe('SystemAccessGate', () => {
     });
 
     it('renders children when SyncManifest has synced', () => {
-        mockUseSyncManifest.mockReturnValue({ hasSynced: vi.fn(() => true) });
+        mockUseDataContext.mockReturnValue({
+            systemSyncStates: {},
+            hasSynced: vi.fn(() => true),
+        });
 
         renderHarness();
 
@@ -80,6 +98,7 @@ describe('SystemAccessGate', () => {
             systemSyncStates: {
                 wh40k10e: { status: 'pending' },
             },
+            hasSynced: vi.fn(() => false),
         });
 
         renderHarness();
@@ -92,6 +111,7 @@ describe('SystemAccessGate', () => {
             systemSyncStates: {
                 wh40k10e: { status: 'checking-staleness' },
             },
+            hasSynced: vi.fn(() => false),
         });
 
         renderHarness();
@@ -104,6 +124,7 @@ describe('SystemAccessGate', () => {
             systemSyncStates: {
                 wh40k10e: { status: 'syncing' },
             },
+            hasSynced: vi.fn(() => false),
         });
 
         renderHarness();
@@ -116,6 +137,7 @@ describe('SystemAccessGate', () => {
             systemSyncStates: {
                 wh40k10e: { status: 'error', hasCache: true },
             },
+            hasSynced: vi.fn(() => false),
         });
 
         renderHarness();
@@ -130,6 +152,7 @@ describe('SystemAccessGate', () => {
             systemSyncStates: {
                 wh40k10e: { status: 'error', hasCache: false },
             },
+            hasSynced: vi.fn(() => false),
         });
 
         renderHarness();
@@ -144,6 +167,7 @@ describe('SystemAccessGate', () => {
             systemSyncStates: {
                 wh40k10e: { status: 'idle' },
             },
+            hasSynced: vi.fn(() => false),
         });
 
         renderHarness();

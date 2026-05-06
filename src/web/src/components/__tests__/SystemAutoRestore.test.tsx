@@ -16,36 +16,49 @@
  */
 
 import type { ReactElement, ReactNode } from 'react';
+import { render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SystemAutoRestore } from '../SystemAutoRestore.js';
+import { SystemAutoRestore } from '@armoury/feature-game-system';
 
 type DataContextStatus = 'idle' | 'initializing' | 'ready' | 'error';
 type SystemSyncStatus = 'idle' | 'pending' | 'checking-staleness' | 'syncing' | 'synced' | 'error';
 
-const { mockEnableSystem, mockUseDataContext, mockResolveGameSystem, mockUseEffect } = vi.hoisted(() => ({
+const { mockEnableSystem, mockUseDataContext, mockResolveGameSystem } = vi.hoisted(() => ({
     mockEnableSystem: vi.fn(),
     mockUseDataContext: vi.fn(),
     mockResolveGameSystem: vi.fn(),
-    mockUseEffect: vi.fn(),
 }));
 
-vi.mock('react', async () => {
-    const actual = await vi.importActual<typeof import('react')>('react');
+vi.mock('../../../../shared/features/game-system/src/DataContextManagerProvider.web.js', async () => {
+    const actual = await vi.importActual(
+        '../../../../shared/features/game-system/src/DataContextManagerProvider.web.js',
+    );
 
     return {
         ...actual,
-        useEffect: mockUseEffect,
+        useDataContext: mockUseDataContext,
     };
 });
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
-    useDataContext: mockUseDataContext,
-}));
+vi.mock('../../../../shared/features/game-system/src/utils/resolveGameSystem.web.js', async () => {
+    const actual = await vi.importActual('../../../../shared/features/game-system/src/utils/resolveGameSystem.web.js');
 
-vi.mock('@armoury/feature-game-system', () => ({
-    resolveGameSystem: mockResolveGameSystem,
-}));
+    return {
+        ...actual,
+        resolveGameSystem: mockResolveGameSystem,
+    };
+});
+
+vi.mock('@armoury/feature-game-system', async () => {
+    const actual = await vi.importActual('@armoury/feature-game-system');
+    const source = await vi.importActual('../../../../shared/features/game-system/src/SystemAutoRestore.web.js');
+
+    return {
+        ...actual,
+        SystemAutoRestore: source.SystemAutoRestore,
+    };
+});
 
 interface MockDataContextProviderProps {
     readonly children: ReactNode;
@@ -60,7 +73,7 @@ interface HarnessProps {
 }
 
 function Harness({ systemId }: HarnessProps): ReactElement {
-    return MockDataContextProvider({ children: SystemAutoRestore({ systemId }) });
+    return MockDataContextProvider({ children: <SystemAutoRestore systemId={systemId} /> });
 }
 
 describe('SystemAutoRestore', () => {
@@ -79,17 +92,16 @@ describe('SystemAutoRestore', () => {
             systemSyncStates: {},
         });
         mockResolveGameSystem.mockResolvedValue(resolvedSystem);
-        mockUseEffect.mockImplementation((effect: () => void) => {
-            effect();
-        });
     });
 
     it('renders null', () => {
-        expect(Harness({ systemId: 'wh40k10e' })).toBeNull();
+        const { container } = render(<Harness systemId="wh40k10e" />);
+
+        expect(container).toBeEmptyDOMElement();
     });
 
     it('calls enableSystem when no sync state exists and provider status is idle', async () => {
-        Harness({ systemId: 'wh40k10e' });
+        render(<Harness systemId="wh40k10e" />);
 
         await flushPromises();
 
@@ -104,7 +116,7 @@ describe('SystemAutoRestore', () => {
             systemSyncStates: {},
         });
 
-        Harness({ systemId: 'wh40k10e' });
+        render(<Harness systemId="wh40k10e" />);
 
         await flushPromises();
 
@@ -119,7 +131,7 @@ describe('SystemAutoRestore', () => {
             systemSyncStates: {},
         });
 
-        Harness({ systemId: 'wh40k10e' });
+        render(<Harness systemId="wh40k10e" />);
 
         await flushPromises();
 
@@ -134,7 +146,7 @@ describe('SystemAutoRestore', () => {
             systemSyncStates: {},
         });
 
-        Harness({ systemId: 'wh40k10e' });
+        render(<Harness systemId="wh40k10e" />);
 
         await flushPromises();
 
@@ -145,7 +157,7 @@ describe('SystemAutoRestore', () => {
     it('does not call enableSystem when system cannot be resolved', async () => {
         mockResolveGameSystem.mockResolvedValue(null);
 
-        Harness({ systemId: 'unknown-system' });
+        render(<Harness systemId="unknown-system" />);
 
         await flushPromises();
 
@@ -162,18 +174,18 @@ describe('SystemAutoRestore', () => {
             systemSyncStates: {},
         }));
 
-        Harness({ systemId: 'wh40k10e' });
+        const { rerender } = render(<Harness systemId="wh40k10e" />);
         await flushPromises();
-        Harness({ systemId: 'wh40k10e' });
+        rerender(<Harness systemId="wh40k10e" />);
         await flushPromises();
-        Harness({ systemId: 'wh40k10e' });
+        rerender(<Harness systemId="wh40k10e" />);
         await flushPromises();
 
         expect(mockEnableSystem).toHaveBeenCalledTimes(2);
     });
 
     it('uses the provided systemId in resolveGameSystem', async () => {
-        Harness({ systemId: 'ageofsigmar4e' });
+        render(<Harness systemId="ageofsigmar4e" />);
 
         await flushPromises();
 
@@ -181,9 +193,9 @@ describe('SystemAutoRestore', () => {
     });
 
     it('re-resolves and re-enables when systemId changes while idle', async () => {
-        Harness({ systemId: 'wh40k10e' });
+        const { rerender } = render(<Harness systemId="wh40k10e" />);
         await flushPromises();
-        Harness({ systemId: 'horusheresy2e' });
+        rerender(<Harness systemId="horusheresy2e" />);
         await flushPromises();
 
         expect(mockResolveGameSystem).toHaveBeenCalledWith('horusheresy2e');
@@ -198,9 +210,9 @@ describe('SystemAutoRestore', () => {
             .mockReturnValueOnce({ status: 'idle', enableSystem: firstEnable, systemSyncStates: {} })
             .mockReturnValueOnce({ status: 'idle', enableSystem: secondEnable, systemSyncStates: {} });
 
-        Harness({ systemId: 'wh40k10e' });
+        const { rerender } = render(<Harness systemId="wh40k10e" />);
         await flushPromises();
-        Harness({ systemId: 'wh40k10e' });
+        rerender(<Harness systemId="wh40k10e" />);
         await flushPromises();
 
         expect(firstEnable).toHaveBeenCalledTimes(1);
@@ -218,11 +230,7 @@ describe('SystemAutoRestore', () => {
                 },
             });
 
-            mockUseEffect.mockImplementationOnce((effect: () => void) => {
-                effect();
-            });
-
-            Harness({ systemId: 'wh40k10e' });
+            render(<Harness systemId="wh40k10e" />);
 
             await flushPromises();
 

@@ -18,8 +18,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
+import type { SystemSyncStatus } from '@armoury/feature-game-system';
 
-import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
 import type { SyncQueueState } from '@/providers/SyncQueueProvider.js';
 
 import { SystemGridContainer } from '../SystemGridContainer.js';
@@ -52,8 +52,9 @@ const {
     };
 });
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
+vi.mock('@armoury/feature-game-system', () => ({
     useDataContext: useDataContextMock,
+    resolveGameSystem: resolveGameSystemMock,
 }));
 
 vi.mock('@/providers/SyncQueueProvider.js', () => ({
@@ -64,13 +65,14 @@ vi.mock('@/hooks/useSyncProgress.js', () => ({
     useSyncProgress: useSyncProgressMock,
 }));
 
-vi.mock('@armoury/feature-game-system', () => ({
-    resolveGameSystem: resolveGameSystemMock,
-}));
+vi.mock('@armoury/query', async () => {
+    const actual = await vi.importActual('@armoury/query');
 
-vi.mock('@/lib/getSyncStatus.js', () => ({
-    getSyncStatus: getSyncStatusMock,
-}));
+    return {
+        ...actual,
+        getSyncStatus: getSyncStatusMock,
+    };
+});
 
 vi.mock('next-intl', () => ({
     useTranslations: useTranslationsMock,
@@ -119,6 +121,13 @@ const IDLE_PROGRESS: SyncProgressState = {
     failures: 0,
     message: '',
 };
+
+function getSyncStatusForTest(
+    systemId: string,
+    syncStates: Record<string, { status: SystemSyncStatus; error?: string }>,
+): SystemSyncStatus {
+    return syncStates[systemId]?.status ?? 'idle';
+}
 
 interface RenderOptions {
     manifests?: GameSystemManifest[];
@@ -211,8 +220,9 @@ describe('SystemGridContainer', () => {
         enableSystemMock.mockResolvedValue(undefined);
 
         getSyncStatusMock.mockImplementation(
-            (systemId: string, syncStates: Record<string, { status: SystemSyncStatus }>) =>
-                syncStates[systemId]?.status ?? 'idle',
+            (systemId: string, syncStates: Record<string, { status: SystemSyncStatus }>) => {
+                return getSyncStatusForTest(systemId, syncStates);
+            },
         );
     });
 
