@@ -8,7 +8,8 @@
 
 import type { ReactNode } from 'react';
 
-import { SystemAccessGate, SystemAutoRestore } from '@armoury/feature-game-system';
+import { SystemAccessGate } from '@/components/SystemAccessGate.js';
+import { SystemAutoRestore } from '@/components/SystemAutoRestore.js';
 
 import { SideNav } from '@/components/navigation/SideNav.js';
 import { BottomNav } from '@/components/navigation/BottomNav.js';
