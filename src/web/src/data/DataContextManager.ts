@@ -337,10 +337,7 @@ export class DataContextManager {
 
                 if (result && result.succeeded.length === 0 && result.failures.length > 0) {
                     const failureCount = result.failures.length;
-                    const detail =
-                        failureCount > 0
-                            ? result.failures.map((f) => `${f.dao}: ${f.error}`).join('; ')
-                            : 'unknown failure';
+                    const detail = result.failures.map((f) => `${f.dao}: ${f.error}`).join('; ');
                     const message = `Sync completed with ${failureCount} DAO failure(s): ${detail}`;
 
                     this.updateSystemSyncState(systemId, {
