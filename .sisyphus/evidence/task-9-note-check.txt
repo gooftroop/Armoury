@@ -1,0 +1,8 @@
+65 .sisyphus/notes/pr45-rootcause.md
+## Symptom
+## Repro Steps
+# PR #45 Root Cause Note
+## Root Cause
+## Why It Wasn't Caught
+## Fix
+## Test Coverage Added
