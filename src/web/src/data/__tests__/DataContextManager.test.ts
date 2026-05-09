@@ -718,7 +718,7 @@ describe('DataContextManager', () => {
         await manager.dispose();
     });
 
-    it('T15: partial sync failure (success=false) marks system as error and stores result', async () => {
+    it('T15: partial sync failure (some DAOs succeed) marks system as synced', async () => {
         const partialResult = {
             success: false,
             total: 2,
@@ -741,11 +741,49 @@ describe('DataContextManager', () => {
         await manager.enableSystem(createSystem('alpha', ['alpha:']));
 
         await vi.waitFor(() => {
+            expect(manager.getSnapshot().systemSyncStates.alpha?.status).toBe('synced');
+        });
+
+        const sessionFlag =
+            typeof globalThis.sessionStorage !== 'undefined'
+                ? globalThis.sessionStorage.getItem('armoury:synced:alpha')
+                : null;
+        expect(sessionFlag).toBe('1');
+
+        await manager.dispose();
+    });
+
+    it('T15b: total sync failure (no DAOs succeed) marks system as error', async () => {
+        const totalFailureResult = {
+            success: false,
+            total: 2,
+            succeeded: [],
+            failures: [
+                { dao: 'alpha:core', error: 'network error' },
+                { dao: 'alpha:units', error: 'network error' },
+            ],
+            timestamp: '2026-01-01T00:00:00.000Z',
+        };
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () => ({ close: vi.fn(), sync: vi.fn(async () => totalFailureResult) }) as unknown as DataContext,
+            ),
+        });
+
+        const manager = new DataContextManager();
+        await manager.enableSystem(createSystem('alpha', ['alpha:']));
+
+        await vi.waitFor(() => {
             expect(manager.getSnapshot().systemSyncStates.alpha?.status).toBe('error');
         });
 
         const state = manager.getSnapshot().systemSyncStates.alpha;
-        expect(state?.error).toContain('alpha:units: fetch failed');
+        expect(state?.error).toContain('alpha:core: network error');
 
         const sessionFlag =
             typeof globalThis.sessionStorage !== 'undefined'

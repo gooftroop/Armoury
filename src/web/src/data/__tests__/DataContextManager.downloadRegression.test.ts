@@ -8,75 +8,66 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { QueryClient } from '@tanstack/react-query';
 import type { DataContext } from '@armoury/data-context';
-import type { DatabaseAdapter, FileSyncStatus, GameSystem, SyncResult } from '@armoury/data-dao';
+import type { GameSystem, SyncResult } from '@armoury/data-dao';
 
 import { DataContextManager } from '../DataContextManager.js';
 import { SyncStatus } from '../managerState.js';
 
-const adapterMock = {
-    initialize: vi.fn(async () => undefined),
-    close: vi.fn(async () => undefined),
-    getAllSyncStatuses: vi.fn(async () => [] as FileSyncStatus[]),
-    rawQuery: vi.fn(async () => ({ rows: [] as unknown[] })),
-};
+const { DataContextBuilderMock, createContainerWithModulesMock, getQueryClientMock, adapterMock } = vi.hoisted(() => {
+    const queryClientToken = Symbol.for('QueryClient');
+    const adapterFactoryToken = Symbol.for('AdapterFactory');
+    const githubFactoryToken = Symbol.for('GitHubClientFactory');
+    const wahapediaFactoryToken = Symbol.for('WahapediaClientFactory');
 
-const queryClientToken = Symbol.for('QueryClient');
-const adapterFactoryToken = Symbol.for('AdapterFactory');
-const githubFactoryToken = Symbol.for('GitHubClientFactory');
-const wahapediaFactoryToken = Symbol.for('WahapediaClientFactory');
+    const adapterMockInner = {
+        initialize: vi.fn(async () => undefined),
+        close: vi.fn(async () => undefined),
+        getAllSyncStatuses: vi.fn(async () => []),
+        rawQuery: vi.fn(async () => ({ rows: [] })),
+    };
 
-const adapterFactory = vi.fn(async () => adapterMock as unknown as DatabaseAdapter);
-const githubFactory = vi.fn(async () => ({ kind: 'github' }));
-const wahapediaFactory = vi.fn(async () => ({ kind: 'wahapedia' }));
+    const adapterFactory = vi.fn(async () => adapterMockInner);
+    const githubFactory = vi.fn(async () => ({ kind: 'github' }));
+    const wahapediaFactory = vi.fn(async () => ({ kind: 'wahapedia' }));
 
-const bindMock = vi.fn(() => ({ toConstantValue: vi.fn() }));
-const getMock = vi.fn((token: symbol) => {
-    if (token === adapterFactoryToken) {
-        return adapterFactory;
-    }
+    const bindMock = vi.fn(() => ({ toConstantValue: vi.fn() }));
+    const getMock = vi.fn((token: symbol) => {
+        if (token === adapterFactoryToken) {return adapterFactory;}
 
-    if (token === githubFactoryToken) {
-        return githubFactory;
-    }
+        if (token === githubFactoryToken) {return githubFactory;}
 
-    if (token === wahapediaFactoryToken) {
-        return wahapediaFactory;
-    }
+        if (token === wahapediaFactoryToken) {return wahapediaFactory;}
 
-    if (token === queryClientToken) {
-        return { id: 'query-client' } as unknown as QueryClient;
-    }
+        if (token === queryClientToken) {return { id: 'query-client' };}
 
-    return undefined;
+        return undefined;
+    });
+
+    return {
+        adapterMock: adapterMockInner,
+        createContainerWithModulesMock: vi.fn(() => ({ bind: bindMock, get: getMock })),
+        getQueryClientMock: vi.fn(() => ({ id: 'query-client' })),
+        DataContextBuilderMock: {
+            builder: vi.fn(() => ({
+                system: vi.fn().mockReturnThis(),
+                adapter: vi.fn().mockReturnThis(),
+                ownsAdapter: vi.fn().mockReturnThis(),
+                register: vi.fn().mockReturnThis(),
+                buildFromCache: vi.fn(async () => ({ close: vi.fn(), sync: vi.fn() })),
+            })),
+        },
+    };
 });
-
-const createContainerWithModulesMock = vi.fn(() => ({
-    bind: bindMock,
-    get: getMock,
-}));
-
-const DataContextBuilderMock = {
-    builder: vi.fn(() => ({
-        system: vi.fn().mockReturnThis(),
-        adapter: vi.fn().mockReturnThis(),
-        ownsAdapter: vi.fn().mockReturnThis(),
-        register: vi.fn().mockReturnThis(),
-        buildFromCache: vi.fn(async () => ({ close: vi.fn(), sync: vi.fn() }) as unknown as DataContext),
-    })),
-};
-
-const getQueryClientMock = vi.fn(() => ({ id: 'query-client' }) as unknown as QueryClient);
 
 vi.mock('@armoury/di', () => ({
     createContainerWithModules: createContainerWithModulesMock,
     coreModule: { name: 'core-module' },
     TOKENS: {
-        QueryClient: queryClientToken,
-        AdapterFactory: adapterFactoryToken,
-        GitHubClientFactory: githubFactoryToken,
-        WahapediaClientFactory: wahapediaFactoryToken,
+        QueryClient: Symbol.for('QueryClient'),
+        AdapterFactory: Symbol.for('AdapterFactory'),
+        GitHubClientFactory: Symbol.for('GitHubClientFactory'),
+        WahapediaClientFactory: Symbol.for('WahapediaClientFactory'),
     },
 }));
 
@@ -128,82 +119,47 @@ describe('DataContextManager download regression', () => {
         const failingSyncResult: SyncResult = {
             success: false,
             total: 40,
-            succeeded: [],
+            succeeded: [
+                'ChapterApproved',
+                'CoreRules',
+                'CrusadeRules',
+                'Aeldari',
+                'Drukhari',
+                'ChaosSpaceMarines',
+                'ChaosDaemons',
+                'ChaosKnights',
+                'DeathGuard',
+                'EmperorsChildren',
+                'ThousandSons',
+                'WorldEaters',
+                'AdeptaSororitas',
+                'AdeptusCustodes',
+                'AdeptusMechanicus',
+                'AgentsOfTheImperium',
+                'AstraMilitarum',
+                'ImperialKnights',
+                'GreyKnights',
+                'SpaceMarines',
+                'BlackTemplars',
+                'BloodAngels',
+                'DarkAngels',
+                'Deathwatch',
+                'SpaceWolves',
+                'Ultramarines',
+                'ImperialFists',
+                'IronHands',
+                'RavenGuard',
+                'Salamanders',
+                'WhiteScars',
+                'GenestealerCults',
+                'LeaguesOfVotann',
+                'Necrons',
+                'Orks',
+                'TauEmpire',
+                'Tyranids',
+                'AdeptusTitanicus',
+            ],
             failures: [
-                {
-                    dao: 'ChapterApproved',
-                    error: 'Unknown entity store: chapterApproved. Is the plugin schema registered?',
-                },
-                { dao: 'CoreRules', error: 'Unknown entity store: faction. Is the plugin schema registered?' },
-                { dao: 'CrusadeRules', error: 'Unknown entity store: crusadeRules. Is the plugin schema registered?' },
-                { dao: 'Aeldari', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'Drukhari', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                {
-                    dao: 'ChaosSpaceMarines',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                { dao: 'ChaosDaemons', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'ChaosKnights', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'DeathGuard', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                {
-                    dao: 'EmperorsChildren',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                { dao: 'ThousandSons', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'WorldEaters', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                {
-                    dao: 'AdeptaSororitas',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                {
-                    dao: 'AdeptusCustodes',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                {
-                    dao: 'AdeptusMechanicus',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                {
-                    dao: 'AgentsOfTheImperium',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                {
-                    dao: 'AstraMilitarum',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                {
-                    dao: 'ImperialKnights',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                { dao: 'GreyKnights', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'SpaceMarines', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'BlackTemplars', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'BloodAngels', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'DarkAngels', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'Deathwatch', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'SpaceWolves', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'Ultramarines', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'ImperialFists', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'IronHands', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'RavenGuard', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'Salamanders', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'WhiteScars', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                {
-                    dao: 'GenestealerCults',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                {
-                    dao: 'LeaguesOfVotann',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
-                { dao: 'Necrons', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'Orks', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'TauEmpire', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                { dao: 'Tyranids', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
-                {
-                    dao: 'AdeptusTitanicus',
-                    error: 'Unknown entity store: factionModel. Is the plugin schema registered?',
-                },
                 { dao: 'HorusHeresy', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
                 { dao: 'Necromunda', error: 'Unknown entity store: factionModel. Is the plugin schema registered?' },
             ],
@@ -215,13 +171,10 @@ describe('DataContextManager download regression', () => {
             adapter: vi.fn().mockReturnThis(),
             ownsAdapter: vi.fn().mockReturnThis(),
             register: vi.fn().mockReturnThis(),
-            buildFromCache: vi.fn(
-                async () =>
-                    ({
-                        close: vi.fn(async () => undefined),
-                        sync: vi.fn(async () => failingSyncResult),
-                    }) as unknown as DataContext,
-            ),
+            buildFromCache: vi.fn().mockResolvedValue({
+                close: vi.fn(),
+                sync: vi.fn().mockResolvedValue(failingSyncResult),
+            } as unknown as DataContext),
         });
 
         const manager = new DataContextManager();

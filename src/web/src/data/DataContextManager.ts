@@ -335,7 +335,7 @@ export class DataContextManager {
             try {
                 const result = await dataContext.sync();
 
-                if (result && result.success === false) {
+                if (result && result.succeeded.length === 0 && result.failures.length > 0) {
                     const failureCount = result.failures.length;
                     const detail =
                         failureCount > 0
