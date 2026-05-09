@@ -224,7 +224,95 @@ describe('DataContextManager SyncResult tracking', () => {
         await manager.dispose();
     });
 
-    it('T3: preserves error path semantics', async () => {
+    it('T3: keeps partial success as Synced even when success is false', async () => {
+        const syncResult: SyncResult = {
+            success: false,
+            total: 3,
+            succeeded: ['daoA', 'daoB'],
+            failures: [{ dao: 'daoC', error: 'timeout' }],
+            timestamp: '2026-04-30T00:00:01.500Z',
+        };
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: vi.fn(async () => undefined),
+                        sync: vi.fn(async () => syncResult),
+                    }) as unknown as DataContext,
+            ),
+        });
+
+        const manager = new DataContextManager();
+        await manager.enableSystem(createSystem('alpha'));
+
+        await vi.waitFor(() => {
+            expect(manager.getSnapshot().systemSyncStates.alpha?.status).toBe('synced');
+        });
+
+        expect(
+            (
+                manager as unknown as { getLastSyncResultSnapshot: (systemId: string) => SyncResult | null }
+            ).getLastSyncResultSnapshot('alpha'),
+        ).toEqual(syncResult);
+
+        await manager.dispose();
+    });
+
+    it('T4: keeps empty SyncResult as Synced even when success is false', async () => {
+        const syncResult: SyncResult = {
+            success: false,
+            total: 0,
+            succeeded: [],
+            failures: [],
+            timestamp: '2026-04-30T00:00:01.750Z',
+        };
+
+        DataContextBuilderMock.builder.mockReturnValue({
+            system: vi.fn().mockReturnThis(),
+            adapter: vi.fn().mockReturnThis(),
+            ownsAdapter: vi.fn().mockReturnThis(),
+            register: vi.fn().mockReturnThis(),
+            buildFromCache: vi.fn(
+                async () =>
+                    ({
+                        close: vi.fn(async () => undefined),
+                        sync: vi.fn(async () => syncResult),
+                    }) as unknown as DataContext,
+            ),
+        });
+
+        const manager = new DataContextManager();
+        const emissions: Array<SyncResult | null> = [];
+        const subscription = (
+            manager as unknown as {
+                selectLastSyncResult: (systemId: string) => {
+                    subscribe: (cb: (value: SyncResult | null) => void) => { unsubscribe: () => void };
+                };
+            }
+        )
+            .selectLastSyncResult('alpha')
+            .subscribe((value) => {
+                emissions.push(value);
+            });
+
+        await manager.enableSystem(createSystem('alpha'));
+
+        await vi.waitFor(() => {
+            expect(manager.getSnapshot().systemSyncStates.alpha?.status).toBe('synced');
+        });
+
+        expect(emissions).toEqual([null, syncResult]);
+
+        subscription.unsubscribe();
+        await manager.dispose();
+    });
+
+    it('T5: preserves error path semantics', async () => {
         const syncError = new Error('sync failed');
 
         DataContextBuilderMock.builder.mockReturnValue({
