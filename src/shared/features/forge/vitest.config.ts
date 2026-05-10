@@ -41,38 +41,6 @@ function tamaguiNativePlugin() {
     };
 }
 
-function forgeTestMockPatchPlugin() {
-    const target = '/src/components/__tests__/web/ArmyListView.test.tsx';
-    const from =
-        'vi.mock(\'@armoury/ui\', () => ({\n    ArmyCardSkeleton: () => <div data-testid="army-card-skeleton" />,\n    EmptyState: ({ title, description, action }: { title: string; description?: string; action?: ReactNode }) => (\n        <div>\n            <h2>{title}</h2>\n            {description ? <p>{description}</p> : null}\n            {action}\n        </div>\n    ),\n}));';
-    const to =
-        'vi.mock(\'@armoury/ui\', () => ({\n    Button: ({ children, onClick }: { children: ReactNode; onClick?: () => void }) => (\n        <button onClick={onClick} type="button">\n            {children}\n        </button>\n    ),\n    ArmyCardSkeleton: () => <div data-testid="army-card-skeleton" />,\n    EmptyState: ({ title, description, action }: { title: string; description?: string; action?: ReactNode }) => (\n        <div>\n            <h2>{title}</h2>\n            {description ? <p>{description}</p> : null}\n            {action}\n        </div>\n    ),\n}));';
-
-    return {
-        name: 'forge-test-mock-patch',
-        resolveId(id: string, importer?: string) {
-            if (id === './ArmyCardSkeleton.web.js' && importer?.endsWith('/src/components/ArmyListView.web.tsx')) {
-                return 'virtual:army-card-skeleton-mock';
-            }
-
-            return null;
-        },
-        load(id: string) {
-            if (id === 'virtual:army-card-skeleton-mock') {
-                return `export function ArmyCardSkeleton() {
-                    return <div data-testid=\"army-card-skeleton\" />;
-                }`;
-            }
-
-            return null;
-        },
-        transform(code: string, id: string) {
-            if (!id.endsWith(target)) return null;
-            return code.includes(from) ? code.replace(from, to) : null;
-        },
-    };
-}
-
 export default mergeConfig(
     baseConfig,
     defineConfig({
@@ -82,7 +50,7 @@ export default mergeConfig(
                 tamagui: path.resolve(FORGE_ROOT, '../../../mobile/__mocks__/tamagui.ts'),
             },
         },
-        plugins: [platformExtensionPlugin(), tamaguiNativePlugin(), forgeTestMockPatchPlugin()],
+        plugins: [platformExtensionPlugin(), tamaguiNativePlugin()],
         test: {
             environment: 'happy-dom',
             include: ['**/__tests__/**/*.test.{ts,tsx}'],
