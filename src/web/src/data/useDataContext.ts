@@ -41,7 +41,7 @@ export interface DataContextValue {
     status: DataContextStatus;
     error?: string;
     systemSyncStates: Record<string, LegacySystemSyncState>;
-    syncProgressCollector: SyncProgressCollector;
+    syncProgressCollector: SyncProgressCollector | null;
     hasInflightSystemSync: (systemId: string) => boolean;
     enableSystem: (system: GameSystem) => Promise<void>;
     disableSystem: (systemId: string) => Promise<void>;
