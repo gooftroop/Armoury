@@ -110,19 +110,14 @@ describe('DataContextManager.ensureAdapterAndContainer races', () => {
         await Promise.all(Array.from({ length: 10 }, () => ensureAdapterAndContainer()));
 
         expect(adapterFactoryMock).toHaveBeenCalledTimes(1);
-        expect(adapter.initialize).toHaveBeenCalledTimes(1);
+        // Manager no longer calls adapter.initialize() — DataContextBuilder owns init
+        // so it can run AFTER gameSystem.register() merges plugin schema.
+        expect(adapter.initialize).not.toHaveBeenCalled();
 
         await manager.dispose();
     });
 
-    it('init failure clears in-flight promise so retry works', async () => {
-        const failingAdapter = {
-            initialize: vi.fn(async () => {
-                throw new Error('boom');
-            }),
-            close: vi.fn(async () => undefined),
-            getAllSyncStatuses: vi.fn(async () => []),
-        } as unknown as DatabaseAdapter;
+    it('adapter-factory failure clears in-flight promise so retry works', async () => {
         const workingAdapter = {
             initialize: vi.fn(async () => undefined),
             close: vi.fn(async () => undefined),
@@ -130,7 +125,9 @@ describe('DataContextManager.ensureAdapterAndContainer races', () => {
         } as unknown as DatabaseAdapter;
 
         adapterFactoryMock
-            .mockImplementationOnce(async () => failingAdapter)
+            .mockImplementationOnce(async () => {
+                throw new Error('boom');
+            })
             .mockImplementationOnce(async () => workingAdapter);
 
         const manager = new DataContextManager();
@@ -143,8 +140,8 @@ describe('DataContextManager.ensureAdapterAndContainer races', () => {
         await expect(ensureAdapterAndContainer()).resolves.toBeUndefined();
 
         expect(adapterFactoryMock).toHaveBeenCalledTimes(2);
-        expect(failingAdapter.initialize).toHaveBeenCalledTimes(1);
-        expect(workingAdapter.initialize).toHaveBeenCalledTimes(1);
+        // Manager never calls adapter.initialize(); init is owned by DataContextBuilder.
+        expect(workingAdapter.initialize).not.toHaveBeenCalled();
 
         await manager.dispose();
     });

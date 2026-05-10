@@ -180,7 +180,7 @@ describe('DataContextManager', () => {
         vi.useRealTimers();
     });
 
-    it('T1: enableSystem initializes adapter exactly once across multiple systems', async () => {
+    it('T1: manager does not initialize the adapter — DataContextBuilder owns init (so plugin schema is registered first)', async () => {
         const contextsById: Record<string, MockDataContext> = {
             alpha: { close: vi.fn(async () => undefined), sync: vi.fn(async () => null) },
             beta: { close: vi.fn(async () => undefined), sync: vi.fn(async () => null) },
@@ -208,7 +208,10 @@ describe('DataContextManager', () => {
         await manager.enableSystem(createSystem('alpha'));
         await manager.enableSystem(createSystem('beta'));
 
-        expect(adapterMock.initialize).toHaveBeenCalledTimes(1);
+        // The manager no longer calls adapter.initialize() — DataContextBuilder
+        // owns init so it can run AFTER gameSystem.register() merges plugin schema.
+        expect(adapterMock.initialize).not.toHaveBeenCalled();
+        expect(adapterMock.close).not.toHaveBeenCalled();
 
         await manager.dispose();
     });

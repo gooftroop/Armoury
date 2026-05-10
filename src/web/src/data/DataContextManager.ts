@@ -413,13 +413,10 @@ export class DataContextManager {
             const createAdapter = this.container.get<AdapterFactoryFn>(TOKENS.AdapterFactory);
             this.adapter = await createAdapter();
 
-            try {
-                await this.adapter.initialize();
-            } catch (error) {
-                this.adapter = null;
-                throw error;
-            }
-
+            // Adapter init is deferred to DataContextBuilder.buildContext(), which
+            // runs gameSystem.register() first. The PGlite schema merge happens
+            // once on the first initialize(); initializing here locks in a
+            // core-only schema and every plugin DAO throws "Unknown entity store".
             this.patchState({ status: 'initializing', error: undefined });
         }
     }
