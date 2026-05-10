@@ -33,13 +33,21 @@ const { DataContextBuilderMock, createContainerWithModulesMock, getQueryClientMo
 
     const bindMock = vi.fn(() => ({ toConstantValue: vi.fn() }));
     const getMock = vi.fn((token: symbol) => {
-        if (token === adapterFactoryToken) {return adapterFactory;}
+        if (token === adapterFactoryToken) {
+            return adapterFactory;
+        }
 
-        if (token === githubFactoryToken) {return githubFactory;}
+        if (token === githubFactoryToken) {
+            return githubFactory;
+        }
 
-        if (token === wahapediaFactoryToken) {return wahapediaFactory;}
+        if (token === wahapediaFactoryToken) {
+            return wahapediaFactory;
+        }
 
-        if (token === queryClientToken) {return { id: 'query-client' };}
+        if (token === queryClientToken) {
+            return { id: 'query-client' };
+        }
 
         return undefined;
     });
