@@ -63,6 +63,7 @@ function ConfirmDialog({
     confirmLabel = 'Confirm',
     cancelLabel = 'Cancel',
     onConfirm,
+    variant = 'destructive',
     children,
 }: ConfirmDialogProps): React.ReactElement {
     return (
@@ -77,7 +78,9 @@ function ConfirmDialog({
 
                 <AlertDialogFooter>
                     <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-                    <AlertDialogAction onPress={onConfirm}>{confirmLabel}</AlertDialogAction>
+                    <AlertDialogAction onPress={onConfirm} variant={variant}>
+                        {confirmLabel}
+                    </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
