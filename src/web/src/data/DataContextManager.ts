@@ -356,6 +356,7 @@ export class DataContextManager {
 
                 this.updateSystemSyncState(systemId, {
                     status: SyncStatus.Synced,
+                    hasCache: true,
                     attempts: previousAttempts + 1,
                     error: undefined,
                 });

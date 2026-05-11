@@ -57,11 +57,21 @@ function SystemAutoRestore({ systemId }: SystemAutoRestoreProps): null {
             return;
         }
 
+        let cancelled = false;
+
         void resolveGameSystem(systemId).then((system) => {
+            if (cancelled) {
+                return;
+            }
+
             if (system) {
                 void enableSystem(system);
             }
         });
+
+        return () => {
+            cancelled = true;
+        };
     }, [status, systemId, enableSystem, hasInflightSystemSync, syncState?.status]);
 
     return null;

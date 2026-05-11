@@ -138,6 +138,17 @@ export function useSystemSyncState(systemId: string): SystemSyncState | undefine
 export function useLastSyncResult(systemId: string): SyncResult | null {
     const manager = useDataContextManager() as LastSyncResultReadableManager;
     const lastSnapshotRef = useRef<SyncResult | null>(manager.getLastSyncResultSnapshot(systemId));
+    const lastSystemIdRef = useRef<string>(systemId);
+
+    /**
+     * Re-seed the snapshot ref when the caller switches systemId so that the
+     * returned value reflects the new system immediately, instead of remaining
+     * stuck on the previous system's value until the observable emits.
+     */
+    if (lastSystemIdRef.current !== systemId) {
+        lastSystemIdRef.current = systemId;
+        lastSnapshotRef.current = manager.getLastSyncResultSnapshot(systemId);
+    }
 
     const subscribe = useCallback(
         (onStoreChange: () => void) => {
