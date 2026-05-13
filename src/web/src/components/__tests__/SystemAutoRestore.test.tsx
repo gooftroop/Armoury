@@ -1,233 +1,210 @@
-/**
- * SystemAutoRestore tests.
- *
- * @requirements
- * | Requirement ID | Requirement | Test Case(s) |
- * | --- | --- | --- |
- * | REQ-SAR-01 | Component must render no DOM output (null render). | "renders null" |
- * | REQ-SAR-02 | Must call enableSystem when no sync state exists and provider is idle. | "calls enableSystem when no sync state exists and provider status is idle" |
- * | REQ-SAR-03 | Must not call enableSystem when status is initializing. | "does not call enableSystem when status is initializing" |
- * | REQ-SAR-04 | Must not call enableSystem when status is ready. | "does not call enableSystem when status is ready" |
- * | REQ-SAR-05 | Must not call enableSystem when status is error. | "does not call enableSystem when status is error" |
- * | REQ-SAR-06 | Must not call enableSystem when sync status is pending/checking-staleness/syncing. | "does not call enableSystem when sync state is pending" and "does not call enableSystem when sync state is checking-staleness" and "does not call enableSystem when sync state is syncing" |
- * | REQ-SAR-07 | Must call enableSystem again when status returns to idle after a non-idle status. | "calls enableSystem again when status returns to idle" |
- * | REQ-SAR-08 | Must call resolveGameSystem with the provided systemId. | "uses the provided systemId in resolveGameSystem" |
- * | REQ-SAR-09 | Must not call enableSystem when resolveGameSystem returns null. | "does not call enableSystem when system cannot be resolved" |
- */
-
-import type { ReactElement, ReactNode } from 'react';
+import { BehaviorSubject } from 'rxjs';
+import { render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { DataContext } from '@armoury/data-context';
+import type { GameSystem, SyncProgressCollector } from '@armoury/data-dao';
 
 import { SystemAutoRestore } from '../SystemAutoRestore.js';
+import { ManagerContext } from '@/data/managerBridge.js';
+import type { DataContextManager } from '@/data/DataContextManager.js';
 
-type DataContextStatus = 'idle' | 'initializing' | 'ready' | 'error';
-type SystemSyncStatus = 'idle' | 'pending' | 'checking-staleness' | 'syncing' | 'synced' | 'error';
-
-const { mockEnableSystem, mockUseDataContext, mockResolveGameSystem, mockUseEffect } = vi.hoisted(() => ({
-    mockEnableSystem: vi.fn(),
-    mockUseDataContext: vi.fn(),
-    mockResolveGameSystem: vi.fn(),
-    mockUseEffect: vi.fn(),
-}));
-
-vi.mock('react', async () => {
-    const actual = await vi.importActual<typeof import('react')>('react');
-
-    return {
-        ...actual,
-        useEffect: mockUseEffect,
-    };
-});
-
-vi.mock('@/providers/DataContextProvider.js', () => ({
-    useDataContext: mockUseDataContext,
-}));
+/**
+ * Test Plan for SystemAutoRestore
+ *
+ * Requirement 1: skip auto-restore when sync is already inflight
+ *   - Test: does not call enableSystem when the manager reports inflight sync for the system
+ *
+ * Requirement 2: restore when no sync is inflight
+ *   - Test: calls enableSystem exactly once when the manager reports no inflight sync
+ *
+ * Requirement 3: skip when manager status has advanced past idle
+ *   - Test: does not call enableSystem when status is 'ready'
+ *
+ * Requirement 4: skip when syncState reports Pending or Syncing for the system
+ *   - Test: does not call enableSystem when syncState.status is Pending
+ *   - Test: does not call enableSystem when syncState.status is Syncing
+ *
+ * Requirement 5: do not call enableSystem when resolveGameSystem returns null
+ *   - Test: skips enableSystem when game system cannot be resolved
+ *
+ * Requirement 6: do not call enableSystem after the component unmounts
+ *   - Test: cancellation guard prevents enableSystem when unmounted before resolveGameSystem resolves
+ */
 
 vi.mock('@/lib/resolveGameSystem.js', () => ({
-    resolveGameSystem: mockResolveGameSystem,
+    resolveGameSystem: vi.fn(),
 }));
 
-interface MockDataContextProviderProps {
-    readonly children: ReactNode;
-}
+const { resolveGameSystem } = await import('@/lib/resolveGameSystem.js');
 
-function MockDataContextProvider({ children }: MockDataContextProviderProps): ReactElement {
-    return children as ReactElement;
-}
+type ManagerStateSnapshot = {
+    activeSystemId: string | null;
+    error?: string;
+    status: 'idle' | 'initializing' | 'ready' | 'error';
+    systemSyncStates: Record<string, unknown>;
+};
 
-interface HarnessProps {
-    readonly systemId: string;
-}
+function createManagerMock(options: {
+    inflight: boolean;
+    status?: ManagerStateSnapshot['status'];
+    systemSyncStates?: Record<string, unknown>;
+}): DataContextManager {
+    const inflightIds = new Set<string>(options.inflight ? ['sys-1'] : []);
+    const state$ = new BehaviorSubject<ManagerStateSnapshot>({
+        activeSystemId: null,
+        status: options.status ?? 'idle',
+        error: undefined,
+        systemSyncStates: options.systemSyncStates ?? {},
+    });
+    const activeDataContext$ = new BehaviorSubject<DataContext | null>(null);
+    const syncProgress$ = new BehaviorSubject<SyncProgressCollector | null>(null);
 
-function Harness({ systemId }: HarnessProps): ReactElement {
-    return MockDataContextProvider({ children: SystemAutoRestore({ systemId }) });
+    return {
+        state: () => state$.asObservable(),
+        getSnapshot: () => state$.value,
+        selectActiveDataContext: () => activeDataContext$.asObservable(),
+        getActiveDataContextSnapshot: () => activeDataContext$.value,
+        selectSyncProgress: () => syncProgress$.asObservable(),
+        getSyncProgressSnapshot: () => syncProgress$.value,
+        selectSystem: vi.fn(),
+        selectLastSyncResult: vi.fn(),
+        getLastSyncResultSnapshot: vi.fn(),
+        hasInflightSystemSync: vi.fn((systemId: string) => inflightIds.has(systemId)),
+        enableSystem: vi.fn(async (system: { id: string }) => {
+            inflightIds.add(system.id);
+        }),
+        disableSystem: vi.fn(),
+        setActiveSystem: vi.fn(),
+        probeSyncedSystems: vi.fn(),
+        rawQuery: vi.fn(),
+        dispose: vi.fn(),
+    } as unknown as DataContextManager;
 }
 
 describe('SystemAutoRestore', () => {
-    const resolvedSystem = { id: 'wh40k10e' };
-
-    const flushPromises = async (): Promise<void> => {
-        await Promise.resolve();
-        await Promise.resolve();
-    };
-
     beforeEach(() => {
         vi.clearAllMocks();
-        mockUseDataContext.mockReturnValue({
-            status: 'idle',
-            enableSystem: mockEnableSystem,
-            systemSyncStates: {},
+    });
+
+    it('skips enableSystem when sync already inflight', async () => {
+        const manager = createManagerMock({ inflight: true });
+        const enableSystem = manager.enableSystem as ReturnType<typeof vi.fn>;
+        vi.mocked(resolveGameSystem).mockResolvedValue({ id: 'sys-1' } as unknown as GameSystem);
+
+        render(
+            <ManagerContext.Provider value={manager}>
+                <SystemAutoRestore systemId="sys-1" />
+            </ManagerContext.Provider>,
+        );
+
+        await waitFor(() => {
+            expect(enableSystem).not.toHaveBeenCalled();
         });
-        mockResolveGameSystem.mockResolvedValue(resolvedSystem);
-        mockUseEffect.mockImplementation((effect: () => void) => {
-            effect();
+    });
+
+    it('calls enableSystem once when no sync inflight', async () => {
+        const manager = createManagerMock({ inflight: false });
+        const enableSystem = manager.enableSystem as ReturnType<typeof vi.fn>;
+        vi.mocked(resolveGameSystem).mockResolvedValue({ id: 'sys-1' } as unknown as GameSystem);
+
+        render(
+            <ManagerContext.Provider value={manager}>
+                <SystemAutoRestore systemId="sys-1" />
+            </ManagerContext.Provider>,
+        );
+
+        await waitFor(() => {
+            expect(enableSystem).toHaveBeenCalledTimes(1);
         });
     });
 
-    it('renders null', () => {
-        expect(Harness({ systemId: 'wh40k10e' })).toBeNull();
+    it('skips enableSystem when manager status has advanced past idle', async () => {
+        const manager = createManagerMock({ inflight: false, status: 'ready' });
+        const enableSystem = manager.enableSystem as ReturnType<typeof vi.fn>;
+        vi.mocked(resolveGameSystem).mockResolvedValue({ id: 'sys-1' } as unknown as GameSystem);
+
+        render(
+            <ManagerContext.Provider value={manager}>
+                <SystemAutoRestore systemId="sys-1" />
+            </ManagerContext.Provider>,
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        expect(enableSystem).not.toHaveBeenCalled();
     });
 
-    it('calls enableSystem when no sync state exists and provider status is idle', async () => {
-        Harness({ systemId: 'wh40k10e' });
-
-        await flushPromises();
-
-        expect(mockResolveGameSystem).toHaveBeenCalledWith('wh40k10e');
-        expect(mockEnableSystem).toHaveBeenCalledWith(resolvedSystem);
-    });
-
-    it('does not call enableSystem when status is initializing', async () => {
-        mockUseDataContext.mockReturnValue({
-            status: 'initializing' as DataContextStatus,
-            enableSystem: mockEnableSystem,
-            systemSyncStates: {},
+    it('skips enableSystem when syncState reports Pending', async () => {
+        const manager = createManagerMock({
+            inflight: false,
+            systemSyncStates: { 'sys-1': { systemId: 'sys-1', status: 'pending', hasCache: false, attempts: 0 } },
         });
+        const enableSystem = manager.enableSystem as ReturnType<typeof vi.fn>;
+        vi.mocked(resolveGameSystem).mockResolvedValue({ id: 'sys-1' } as unknown as GameSystem);
 
-        Harness({ systemId: 'wh40k10e' });
+        render(
+            <ManagerContext.Provider value={manager}>
+                <SystemAutoRestore systemId="sys-1" />
+            </ManagerContext.Provider>,
+        );
 
-        await flushPromises();
-
-        expect(mockEnableSystem).not.toHaveBeenCalled();
-        expect(mockResolveGameSystem).not.toHaveBeenCalled();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        expect(enableSystem).not.toHaveBeenCalled();
     });
 
-    it('does not call enableSystem when status is ready', async () => {
-        mockUseDataContext.mockReturnValue({
-            status: 'ready' as DataContextStatus,
-            enableSystem: mockEnableSystem,
-            systemSyncStates: {},
+    it('skips enableSystem when syncState reports Syncing', async () => {
+        const manager = createManagerMock({
+            inflight: false,
+            systemSyncStates: { 'sys-1': { systemId: 'sys-1', status: 'syncing', hasCache: false, attempts: 0 } },
         });
+        const enableSystem = manager.enableSystem as ReturnType<typeof vi.fn>;
+        vi.mocked(resolveGameSystem).mockResolvedValue({ id: 'sys-1' } as unknown as GameSystem);
 
-        Harness({ systemId: 'wh40k10e' });
+        render(
+            <ManagerContext.Provider value={manager}>
+                <SystemAutoRestore systemId="sys-1" />
+            </ManagerContext.Provider>,
+        );
 
-        await flushPromises();
-
-        expect(mockEnableSystem).not.toHaveBeenCalled();
-        expect(mockResolveGameSystem).not.toHaveBeenCalled();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        expect(enableSystem).not.toHaveBeenCalled();
     });
 
-    it('does not call enableSystem when status is error', async () => {
-        mockUseDataContext.mockReturnValue({
-            status: 'error' as DataContextStatus,
-            enableSystem: mockEnableSystem,
-            systemSyncStates: {},
-        });
+    it('skips enableSystem when resolveGameSystem returns null', async () => {
+        const manager = createManagerMock({ inflight: false });
+        const enableSystem = manager.enableSystem as ReturnType<typeof vi.fn>;
+        vi.mocked(resolveGameSystem).mockResolvedValue(null as unknown as GameSystem);
 
-        Harness({ systemId: 'wh40k10e' });
+        render(
+            <ManagerContext.Provider value={manager}>
+                <SystemAutoRestore systemId="sys-1" />
+            </ManagerContext.Provider>,
+        );
 
-        await flushPromises();
-
-        expect(mockEnableSystem).not.toHaveBeenCalled();
-        expect(mockResolveGameSystem).not.toHaveBeenCalled();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        expect(enableSystem).not.toHaveBeenCalled();
     });
 
-    it('does not call enableSystem when system cannot be resolved', async () => {
-        mockResolveGameSystem.mockResolvedValue(null);
+    it('does not call enableSystem after unmount when resolveGameSystem resolves later', async () => {
+        const manager = createManagerMock({ inflight: false });
+        const enableSystem = manager.enableSystem as ReturnType<typeof vi.fn>;
 
-        Harness({ systemId: 'unknown-system' });
+        let resolveLater!: (value: GameSystem) => void;
+        vi.mocked(resolveGameSystem).mockReturnValue(
+            new Promise<GameSystem>((resolve) => {
+                resolveLater = resolve;
+            }),
+        );
 
-        await flushPromises();
+        const { unmount } = render(
+            <ManagerContext.Provider value={manager}>
+                <SystemAutoRestore systemId="sys-1" />
+            </ManagerContext.Provider>,
+        );
 
-        expect(mockResolveGameSystem).toHaveBeenCalledWith('unknown-system');
-        expect(mockEnableSystem).not.toHaveBeenCalled();
+        unmount();
+        resolveLater({ id: 'sys-1' } as unknown as GameSystem);
+
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        expect(enableSystem).not.toHaveBeenCalled();
     });
-
-    it('calls enableSystem again when status returns to idle', async () => {
-        const statuses: DataContextStatus[] = ['idle', 'ready', 'idle'];
-        let invocationIndex = 0;
-        mockUseDataContext.mockImplementation(() => ({
-            status: statuses[Math.min(invocationIndex++, statuses.length - 1)],
-            enableSystem: mockEnableSystem,
-            systemSyncStates: {},
-        }));
-
-        Harness({ systemId: 'wh40k10e' });
-        await flushPromises();
-        Harness({ systemId: 'wh40k10e' });
-        await flushPromises();
-        Harness({ systemId: 'wh40k10e' });
-        await flushPromises();
-
-        expect(mockEnableSystem).toHaveBeenCalledTimes(2);
-    });
-
-    it('uses the provided systemId in resolveGameSystem', async () => {
-        Harness({ systemId: 'ageofsigmar4e' });
-
-        await flushPromises();
-
-        expect(mockResolveGameSystem).toHaveBeenCalledWith('ageofsigmar4e');
-    });
-
-    it('re-resolves and re-enables when systemId changes while idle', async () => {
-        Harness({ systemId: 'wh40k10e' });
-        await flushPromises();
-        Harness({ systemId: 'horusheresy2e' });
-        await flushPromises();
-
-        expect(mockResolveGameSystem).toHaveBeenCalledWith('horusheresy2e');
-        expect(mockEnableSystem).toHaveBeenCalledTimes(2);
-    });
-
-    it('uses the latest enableSystem function reference on rerender', async () => {
-        const firstEnable = vi.fn();
-        const secondEnable = vi.fn();
-
-        mockUseDataContext
-            .mockReturnValueOnce({ status: 'idle', enableSystem: firstEnable, systemSyncStates: {} })
-            .mockReturnValueOnce({ status: 'idle', enableSystem: secondEnable, systemSyncStates: {} });
-
-        Harness({ systemId: 'wh40k10e' });
-        await flushPromises();
-        Harness({ systemId: 'wh40k10e' });
-        await flushPromises();
-
-        expect(firstEnable).toHaveBeenCalledTimes(1);
-        expect(secondEnable).toHaveBeenCalledTimes(1);
-    });
-
-    it.each<SystemSyncStatus>(['pending', 'checking-staleness', 'syncing'])(
-        'does not call enableSystem when sync state is %s',
-        async (syncStatus) => {
-            mockUseDataContext.mockReturnValue({
-                status: 'idle',
-                enableSystem: mockEnableSystem,
-                systemSyncStates: {
-                    wh40k10e: { status: syncStatus },
-                },
-            });
-
-            mockUseEffect.mockImplementationOnce((effect: () => void) => {
-                effect();
-            });
-
-            Harness({ systemId: 'wh40k10e' });
-
-            await flushPromises();
-
-            expect(mockEnableSystem).not.toHaveBeenCalled();
-            expect(mockResolveGameSystem).not.toHaveBeenCalled();
-        },
-    );
 });

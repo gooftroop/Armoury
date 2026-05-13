@@ -57,7 +57,7 @@ describe('DataContext', () => {
     it('rejects fallback armies and campaigns DAO methods when game context is missing', async () => {
         const adapter = new MockDatabaseAdapter();
         const gameSystem = makeGameSystem({ name: 'Warhammer 40,000 10th Edition' });
-        const context = new DataContext(adapter, gameSystem, new Map());
+        const context = new DataContext(adapter, gameSystem, new Map(), undefined, true);
 
         await expect(context.armies.count()).rejects.toThrow("Game-specific DAO 'armies' is not yet implemented.");
         await expect(context.campaigns.count()).rejects.toThrow(
@@ -69,7 +69,7 @@ describe('DataContext', () => {
         const adapter = new MockDatabaseAdapter();
         const gameSystem = makeGameSystem({ name: 'Warhammer 40,000 10th Edition' });
 
-        const withoutGithub = new DataContext<Record<string, unknown>>(adapter, gameSystem, new Map());
+        const withoutGithub = new DataContext<Record<string, unknown>>(adapter, gameSystem, new Map(), undefined, true);
         const githubClient = {
             listFiles: vi.fn(),
             getFileSha: vi.fn(),
@@ -77,7 +77,13 @@ describe('DataContext', () => {
             checkForUpdates: vi.fn(async () => false),
         };
         const clientsWithGithub = new Map<string, unknown>([['github', githubClient]]);
-        const withGithub = new DataContext<Record<string, unknown>>(adapter, gameSystem, clientsWithGithub);
+        const withGithub = new DataContext<Record<string, unknown>>(
+            adapter,
+            gameSystem,
+            clientsWithGithub,
+            undefined,
+            true,
+        );
 
         expect(() => {
             void withoutGithub.game['anything'];
@@ -95,32 +101,38 @@ describe('DataContext', () => {
     it('delegates close() to adapter.close()', async () => {
         const adapter = new MockDatabaseAdapter();
         const closeSpy = vi.spyOn(adapter, 'close');
-        const context = new DataContext(adapter, makeGameSystem(), new Map(), {
-            armies: {
-                save: vi.fn(),
-                saveMany: vi.fn(),
-                get: vi.fn(),
-                list: vi.fn(),
-                listByOwner: vi.fn(),
-                listByFaction: vi.fn(),
-                delete: vi.fn(),
-                deleteAll: vi.fn(),
-                count: vi.fn(),
+        const context = new DataContext(
+            adapter,
+            makeGameSystem(),
+            new Map(),
+            {
+                armies: {
+                    save: vi.fn(),
+                    saveMany: vi.fn(),
+                    get: vi.fn(),
+                    list: vi.fn(),
+                    listByOwner: vi.fn(),
+                    listByFaction: vi.fn(),
+                    delete: vi.fn(),
+                    deleteAll: vi.fn(),
+                    count: vi.fn(),
+                },
+                campaigns: {
+                    save: vi.fn(),
+                    saveMany: vi.fn(),
+                    get: vi.fn(),
+                    list: vi.fn(),
+                    listByOrganizer: vi.fn(),
+                    listByStatus: vi.fn(),
+                    listByType: vi.fn(),
+                    delete: vi.fn(),
+                    deleteAll: vi.fn(),
+                    count: vi.fn(),
+                },
+                game: {},
             },
-            campaigns: {
-                save: vi.fn(),
-                saveMany: vi.fn(),
-                get: vi.fn(),
-                list: vi.fn(),
-                listByOrganizer: vi.fn(),
-                listByStatus: vi.fn(),
-                listByType: vi.fn(),
-                delete: vi.fn(),
-                deleteAll: vi.fn(),
-                count: vi.fn(),
-            },
-            game: {},
-        });
+            true,
+        );
 
         await context.close();
 

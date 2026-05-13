@@ -10,7 +10,7 @@
  * @module getSyncStatus
  */
 
-import type { SystemSyncStatus } from '@/providers/DataContextProvider.js';
+import type { SystemSyncStatus } from '@/data/useDataContext.js';
 
 /**
  * Returns the current sync status for a game system ID.

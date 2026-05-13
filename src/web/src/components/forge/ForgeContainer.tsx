@@ -30,7 +30,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { useDataContext } from '@/providers/DataContextProvider.js';
+import { useDataContext } from '@/data/useDataContext.js';
 import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
 import { useGameSystem } from '@/hooks/useGameSystem.js';
 import { ConfirmDialog } from '@/components/shared/index.js';

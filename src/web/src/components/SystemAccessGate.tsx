@@ -5,15 +5,16 @@ import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
-import { useDataContext } from '@/providers/DataContextProvider.js';
+import { useDataContext } from '@/data/useDataContext.js';
 import { useSyncManifest } from '@/providers/SyncManifestProvider.js';
+import { SyncStatus } from '@/data/managerState.js';
 
 /**
  * @requirements
  * 1. Must gate system content based on session sync manifest and DataContext sync state.
  * 2. Must allow access when system status is synced in DataContext.
  * 3. Must allow access when system has synced in this session via SyncManifest.
- * 4. Must render a loading state when system status is pending, checking-staleness, or syncing.
+ * 4. Must render a loading state when system status is pending or syncing.
  * 5. Must render differentiated error states for cached and uncached failures.
  * 6. Must render a not-ready state with navigation back to locale root when access is blocked.
  *
@@ -41,19 +42,22 @@ export interface SystemAccessGateProps {
  */
 function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactElement {
     const { hasSynced } = useSyncManifest();
-    const { systemSyncStates } = useDataContext();
+    const { status: dcStatus, systemSyncStates } = useDataContext();
     const syncState = systemSyncStates[systemId];
-    const isSyncedInDataContext = syncState?.status === 'synced';
+    const isSyncedInDataContext = syncState?.status === SyncStatus.Synced;
     const isSyncedThisSession = hasSynced(systemId);
 
     if (isSyncedInDataContext || isSyncedThisSession) {
         return <>{children}</>;
     }
 
+    const isDataContextInitializing = dcStatus === 'idle' || dcStatus === 'initializing';
+    const isAwaitingFirstSyncState = syncState === undefined && isDataContextInitializing;
+
     if (
-        syncState?.status === 'pending' ||
-        syncState?.status === 'checking-staleness' ||
-        syncState?.status === 'syncing'
+        isAwaitingFirstSyncState ||
+        syncState?.status === SyncStatus.Pending ||
+        syncState?.status === SyncStatus.Syncing
     ) {
         return (
             <div className="flex min-h-[50dvh] items-center justify-center px-4 py-10">
@@ -65,7 +69,7 @@ function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactE
         );
     }
 
-    if (syncState?.status === 'error' && syncState.hasCache) {
+    if (syncState?.status === SyncStatus.Error && syncState.hasCache) {
         return (
             <div className="flex min-h-[50dvh] items-center justify-center px-4 py-10">
                 <div className="w-full max-w-xl rounded-xl border border-border/50 bg-surface/80 p-6 text-center shadow-sm backdrop-blur-sm">
@@ -89,7 +93,7 @@ function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactE
         );
     }
 
-    if (syncState?.status === 'error') {
+    if (syncState?.status === SyncStatus.Error) {
         return (
             <div className="flex min-h-[50dvh] items-center justify-center px-4 py-10">
                 <div className="w-full max-w-xl rounded-xl border border-border/50 bg-surface/80 p-6 text-center shadow-sm backdrop-blur-sm">

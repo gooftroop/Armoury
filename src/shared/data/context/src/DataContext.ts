@@ -7,6 +7,11 @@ import { MatchDAO } from '@armoury/data-dao';
 import { UserDAO } from '@armoury/data-dao';
 
 /**
+ * @requirements
+ * - REQ-DATA-CONTEXT-003: DataContext.close() must only close adapters it owns.
+ */
+
+/**
  * DataContext interface exposing core and game-specific DAOs.
  */
 export interface DataContextShape<TGameData = unknown> {
@@ -52,6 +57,7 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
     private readonly gameSystem: GameSystem;
     private readonly clients: Map<string, unknown>;
     private readonly syncFn: (() => Promise<SyncResult>) | null;
+    private readonly ownsAdapter: boolean;
 
     /**
      * Creates a DataContext implementation bound to a database adapter.
@@ -59,16 +65,19 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
      * @param gameSystem - Game system descriptor.
      * @param clients - Registered client instances keyed by name.
      * @param gameContext - Optional game-specific DAO wiring from the system's createGameContext().
+     * @param ownsAdapter - Whether this DataContext owns the adapter lifecycle.
      */
     public constructor(
         adapter: DatabaseAdapter,
         gameSystem: GameSystem,
         clients: Map<string, unknown>,
-        gameContext?: GameContextResult<TGameData>,
+        gameContext: GameContextResult<TGameData> | undefined,
+        ownsAdapter: boolean,
     ) {
         this.adapter = adapter;
         this.gameSystem = gameSystem;
         this.clients = clients;
+        this.ownsAdapter = ownsAdapter;
         this.syncFn = gameContext?.sync && clients.has('github') ? gameContext.sync : null;
         this.accounts = new AccountDAO(adapter);
         this.social = new FriendDAO(adapter);
@@ -81,7 +90,9 @@ export class DataContext<TGameData = unknown> implements DataContextShape<TGameD
 
     /** Closes the database adapter connection. */
     public async close(): Promise<void> {
-        await this.adapter.close();
+        if (this.ownsAdapter) {
+            await this.adapter.close();
+        }
     }
 
     /**

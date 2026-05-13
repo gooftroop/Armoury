@@ -47,7 +47,7 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('@/providers/DataContextProvider.js', () => ({
+vi.mock('@/data/useDataContext.js', () => ({
     useDataContext: () => mockDataContextValue,
 }));
 
