@@ -9,9 +9,9 @@ import { useDataContext } from './DataContextManagerProvider.web.js';
 
 /**
  * @requirements
- * 1. Must gate system content based on session sync manifest and DataContext sync state.
+ * 1. Must gate system content based on DataContext sync state and per-session sync tracking.
  * 2. Must allow access when system status is synced in DataContext.
- * 3. Must allow access when system has synced in this session via SyncManifest.
+ * 3. Must allow access when DataContext's hasSynced(systemId) reports the system synced this session.
  * 4. Must render a loading state when system status is pending, checking-staleness, or syncing.
  * 5. Must render an error state with navigation back to home when sync fails.
  *    Retry is initiated from the system tile on the home page, not from this gate.
@@ -34,7 +34,8 @@ export interface SystemAccessGateProps {
  * Gates game-system page content until the system is available this session.
  *
  * Access is granted when either the DataContext reports the system as synced
- * (local data available) or the SyncManifest marks it synced this session.
+ * (local data available) or DataContext's `hasSynced(systemId)` reports the system as synced
+ * for the current session.
  *
  * @param props - Access gate props.
  * @returns The gated children or the appropriate blocked-state UI.
