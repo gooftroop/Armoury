@@ -18,27 +18,34 @@ import { describe, expect, it } from 'vitest';
 
 import { getSyncStatus } from '../getSyncStatus.js';
 
+const SyncStatus = {
+    Idle: 'idle',
+    Syncing: 'syncing',
+    Synced: 'synced',
+    Error: 'error',
+} as const;
+
 type SystemSyncStatus = 'idle' | 'pending' | 'checking-staleness' | 'syncing' | 'synced' | 'error';
 
 describe('getSyncStatus', () => {
     it('returns mapped status for a known system ID', () => {
         const syncStates: Record<string, { status: SystemSyncStatus; error?: string }> = {
-            wh40k10e: { status: 'syncing' },
+            wh40k10e: { status: SyncStatus.Syncing },
         };
 
         const result = getSyncStatus('wh40k10e', syncStates);
 
-        expect(result).toBe('syncing');
+        expect(result).toBe(SyncStatus.Syncing);
     });
 
     it('returns idle for an unknown system ID', () => {
         const syncStates: Record<string, { status: SystemSyncStatus; error?: string }> = {
-            wh40k10e: { status: 'synced' },
+            wh40k10e: { status: SyncStatus.Synced },
         };
 
         const result = getSyncStatus('unknown', syncStates);
 
-        expect(result).toBe('idle');
+        expect(result).toBe(SyncStatus.Idle);
     });
 
     it('returns idle when syncStates is empty', () => {
@@ -46,16 +53,16 @@ describe('getSyncStatus', () => {
 
         const result = getSyncStatus('wh40k10e', syncStates);
 
-        expect(result).toBe('idle');
+        expect(result).toBe(SyncStatus.Idle);
     });
 
     it('ignores error field and returns status', () => {
         const syncStates: Record<string, { status: SystemSyncStatus; error?: string }> = {
-            wh40k10e: { status: 'error', error: 'network failure' },
+            wh40k10e: { status: SyncStatus.Error, error: 'network failure' },
         };
 
         const result = getSyncStatus('wh40k10e', syncStates);
 
-        expect(result).toBe('error');
+        expect(result).toBe(SyncStatus.Error);
     });
 });
