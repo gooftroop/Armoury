@@ -37,7 +37,19 @@ export type SkeletonProps = React.ComponentPropsWithRef<'div'>;
  * @returns The rendered Skeleton component.
  */
 function Skeleton({ className, ref, ...props }: SkeletonProps): React.ReactElement {
-    return <div className={cn('animate-pulse rounded-md bg-muted', className)} ref={ref} {...props} />;
+    return (
+        <div
+            className={cn(
+                'rounded-md bg-muted',
+                'bg-[linear-gradient(90deg,transparent_0%,color-mix(in_oklch,var(--color-foreground)_8%,transparent)_50%,transparent_100%),var(--color-muted)]',
+                'bg-[length:200%_100%,100%_100%]',
+                'motion-safe:animate-shimmer motion-reduce:animate-pulse',
+                className,
+            )}
+            ref={ref}
+            {...props}
+        />
+    );
 }
 
 Skeleton.displayName = 'Skeleton';

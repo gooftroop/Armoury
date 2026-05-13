@@ -18,15 +18,13 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
-import type { SystemSyncStatus } from '@armoury/feature-game-system';
 
-import type { SyncQueueState } from '@/providers/SyncQueueProvider.js';
+import type { SystemSyncStatus } from '@/data/useDataContext.js';
 
 import { SystemGridContainer } from '../SystemGridContainer.js';
 
 const {
     useDataContextMock,
-    useSyncQueueMock,
     useSyncProgressMock,
     resolveGameSystemMock,
     getSyncStatusMock,
@@ -39,7 +37,6 @@ const {
 } = vi.hoisted(() => {
     return {
         useDataContextMock: vi.fn(),
-        useSyncQueueMock: vi.fn(),
         useSyncProgressMock: vi.fn(),
         resolveGameSystemMock: vi.fn(),
         getSyncStatusMock: vi.fn(),
@@ -52,27 +49,21 @@ const {
     };
 });
 
-vi.mock('@armoury/feature-game-system', () => ({
+vi.mock('@/data/useDataContext.js', () => ({
     useDataContext: useDataContextMock,
-    resolveGameSystem: resolveGameSystemMock,
-}));
-
-vi.mock('@/providers/SyncQueueProvider.js', () => ({
-    useSyncQueue: useSyncQueueMock,
 }));
 
 vi.mock('@/hooks/useSyncProgress.js', () => ({
     useSyncProgress: useSyncProgressMock,
 }));
 
-vi.mock('@armoury/query', async () => {
-    const actual = await vi.importActual('@armoury/query');
+vi.mock('@armoury/feature-game-system', () => ({
+    resolveGameSystem: resolveGameSystemMock,
+}));
 
-    return {
-        ...actual,
-        getSyncStatus: getSyncStatusMock,
-    };
-});
+vi.mock('@armoury/query', () => ({
+    getSyncStatus: getSyncStatusMock,
+}));
 
 vi.mock('next-intl', () => ({
     useTranslations: useTranslationsMock,
@@ -122,17 +113,9 @@ const IDLE_PROGRESS: SyncProgressState = {
     message: '',
 };
 
-function getSyncStatusForTest(
-    systemId: string,
-    syncStates: Record<string, { status: SystemSyncStatus; error?: string }>,
-): SystemSyncStatus {
-    return syncStates[systemId]?.status ?? 'idle';
-}
-
 interface RenderOptions {
     manifests?: GameSystemManifest[];
     statuses?: Record<string, { status: SystemSyncStatus; error?: string }>;
-    queueState?: SyncQueueState;
     userId?: string;
     onUnauthenticatedClick?: () => void;
 }
@@ -151,20 +134,12 @@ interface MockTile {
 
 function renderHarness(options: RenderOptions = {}): void {
     const statuses = options.statuses ?? {};
-    const queueState: SyncQueueState =
-        options.queueState ??
-        ({
-            pending: [],
-            active: null,
-            isProcessing: false,
-        } as SyncQueueState);
 
     useDataContextMock.mockReturnValue({
         systemSyncStates: statuses,
         syncProgressCollector: { getState: () => IDLE_PROGRESS },
         enableSystem: enableSystemMock,
     });
-    useSyncQueueMock.mockReturnValue({ state: queueState });
     useSyncProgressMock.mockReturnValue(IDLE_PROGRESS);
 
     render(
@@ -220,9 +195,8 @@ describe('SystemGridContainer', () => {
         enableSystemMock.mockResolvedValue(undefined);
 
         getSyncStatusMock.mockImplementation(
-            (systemId: string, syncStates: Record<string, { status: SystemSyncStatus }>) => {
-                return getSyncStatusForTest(systemId, syncStates);
-            },
+            (systemId: string, syncStates: Record<string, { status: SystemSyncStatus }>) =>
+                syncStates[systemId]?.status ?? 'idle',
         );
     });
 
@@ -278,14 +252,8 @@ describe('SystemGridContainer', () => {
         expect(within(getTile(manifest.id)).queryByText('overlay')).not.toBeInTheDocument();
     });
 
-    it('derives isQueued=true when system is in queue pending', () => {
-        renderHarness({
-            queueState: {
-                pending: [manifest.id],
-                active: null,
-                isProcessing: true,
-            },
-        });
+    it('derives isQueued=true when sync status is pending', () => {
+        renderHarness({ statuses: { [manifest.id]: { status: 'pending' } } });
 
         expect(within(getTile(manifest.id)).getByText('queued')).toBeInTheDocument();
     });

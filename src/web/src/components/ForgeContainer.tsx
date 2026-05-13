@@ -29,12 +29,11 @@ import type { ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { resolveGameSystem, useDataContext, useGameSystem } from '@armoury/feature-game-system';
 
-import { ConfirmDialog } from '@armoury/ui';
-import { ArmyListView } from '@armoury/feature-forge';
-import { DEFAULT_FORGE_FILTERS } from '@armoury/feature-forge';
-import type { ForgeFilters } from '@armoury/feature-forge';
+import { useDataContext } from '@/data/useDataContext.js';
+import { resolveGameSystem, useGameSystem } from '@armoury/feature-game-system';
+import { ConfirmDialog } from '@/components/shared/index.js';
+import { ArmyListView, DEFAULT_FORGE_FILTERS, type ForgeFilters } from '@armoury/feature-forge';
 import type { Army } from '@armoury/wh40k10e';
 
 /**

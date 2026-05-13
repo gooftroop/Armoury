@@ -47,10 +47,13 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
 }));
 
+vi.mock('@/data/useDataContext.js', () => ({
+    useDataContext: () => mockDataContextValue,
+}));
+
 vi.mock('@armoury/feature-game-system', () => ({
     resolveGameSystem: (...args: unknown[]) => mockResolveGameSystem(...args),
     useGameSystem: () => 'wh40k10e',
-    useDataContext: () => mockDataContextValue,
 }));
 
 vi.mock('@tanstack/react-query', () => ({
@@ -62,7 +65,7 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 vi.mock('@armoury/feature-forge', () => ({
-    DEFAULT_FORGE_FILTERS: { factionId: null, battleSize: null, sortBy: 'newest' },
+    DEFAULT_FORGE_FILTERS: { search: '', sortBy: 'updatedAt', factionId: null, battleSize: null },
     ArmyListView: ({
         armies,
         isLoading,
@@ -97,38 +100,33 @@ vi.mock('@armoury/feature-forge', () => ({
     ),
 }));
 
-vi.mock('@armoury/ui', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('@armoury/ui')>();
-
-    return {
-        ...actual,
-        ConfirmDialog: ({
-            open,
-            onOpenChange,
-            onConfirm,
-            title,
-            description,
-        }: {
-            open: boolean;
-            onOpenChange: (open: boolean) => void;
-            onConfirm: () => void;
-            title: string;
-            description: string;
-        }) => (
-            <div>
-                <div>confirm-open:{String(open)}</div>
-                <div>{title}</div>
-                <div>{description}</div>
-                <button onClick={() => onOpenChange(false)} type="button">
-                    close-confirm
-                </button>
-                <button onClick={onConfirm} type="button">
-                    confirm-delete
-                </button>
-            </div>
-        ),
-    };
-});
+vi.mock('@/components/shared/index.js', () => ({
+    ConfirmDialog: ({
+        open,
+        onOpenChange,
+        onConfirm,
+        title,
+        description,
+    }: {
+        open: boolean;
+        onOpenChange: (open: boolean) => void;
+        onConfirm: () => void;
+        title: string;
+        description: string;
+    }) => (
+        <div>
+            <div>confirm-open:{String(open)}</div>
+            <div>{title}</div>
+            <div>{description}</div>
+            <button onClick={() => onOpenChange(false)} type="button">
+                close-confirm
+            </button>
+            <button onClick={onConfirm} type="button">
+                confirm-delete
+            </button>
+        </div>
+    ),
+}));
 
 describe('ForgeContainer', () => {
     beforeEach(() => {

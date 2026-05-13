@@ -10,7 +10,7 @@
             "cache": false
         },
         "build": {
-            "dependsOn": ["^build", "^generate:types", "copy:systems"],
+            "dependsOn": ["^build", "^generate:types", "generate:types", "copy:systems"],
             "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
             "env": [
                 "SENTRY_DSN",
@@ -31,7 +31,7 @@
         },
         "generate:types": {
             "dependsOn": ["^generate:types"],
-            "outputs": ["dist/**/*.d.ts", "dist/**/*.d.ts.map"]
+            "outputs": ["dist/**/*.d.ts", "dist/**/*.d.ts.map", "tsconfig.build.tsbuildinfo"]
         },
         "test": {
             "dependsOn": ["^generate:types", "copy:systems"],

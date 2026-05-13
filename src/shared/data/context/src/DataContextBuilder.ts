@@ -3,6 +3,12 @@ import type { GameSystem } from '@armoury/data-dao';
 import type { GameContextResult } from '@armoury/data-dao';
 import { DataContext } from '@/DataContext.js';
 
+/**
+ * @requirements
+ * - REQ-DATA-CONTEXT-001: DataContextBuilder must default to owning the adapter lifecycle.
+ * - REQ-DATA-CONTEXT-002: Adapter ownership must be configurable for shared-adapter scenarios.
+ */
+
 /** Builder for creating DataContext instances with configured dependencies. */
 export class DataContextBuilder<TGameData = unknown> {
     /** Creates a new DataContextBuilder instance. */
@@ -12,6 +18,7 @@ export class DataContextBuilder<TGameData = unknown> {
 
     private gameSystem: GameSystem | null = null;
     private adapterInstance: DatabaseAdapter | null = null;
+    private adapterOwned = true;
     /** Registered client instances keyed by name. */
     private clients: Map<string, unknown> = new Map();
 
@@ -36,6 +43,53 @@ export class DataContextBuilder<TGameData = unknown> {
         return this;
     }
 
+    /** Sets whether this DataContext owns its adapter's lifecycle. Defaults to true. */
+    public ownsAdapter(owns: boolean): DataContextBuilder<TGameData> {
+        this.adapterOwned = owns;
+
+        return this;
+    }
+
+    private async buildContext(label: string): Promise<{
+        dc: DataContext<TGameData>;
+        gameContext: GameContextResult<TGameData>;
+        log: (phase: string) => void;
+    }> {
+        const t0 = Date.now();
+        const log = (phase: string): void => console.debug(`[SYNC-DEBUG] ${label}: ${phase} +${Date.now() - t0}ms`);
+
+        const gameSystem = this.gameSystem as GameSystem & {
+            createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult<TGameData>;
+        };
+
+        log('register start');
+        await gameSystem.register();
+        log('register done, adapter.initialize start');
+        await this.adapterInstance!.initialize();
+        log('adapter.initialize done, createGameContext start');
+
+        const gameContext = gameSystem.createGameContext(
+            this.adapterInstance!,
+            this.clients,
+        ) as GameContextResult<TGameData>;
+        log('createGameContext done');
+
+        const dc = new DataContext<TGameData>(
+            this.adapterInstance!,
+            gameSystem,
+            this.clients,
+            {
+                armies: gameContext.armies,
+                campaigns: gameContext.campaigns,
+                game: gameContext.game as TGameData,
+                sync: gameContext.sync,
+            },
+            this.adapterOwned,
+        );
+
+        return { dc, gameContext, log };
+    }
+
     /** Builds a fully initialized DataContext instance. */
     public async build(): Promise<DataContext<TGameData>> {
         if (!this.gameSystem) {
@@ -46,28 +100,7 @@ export class DataContextBuilder<TGameData = unknown> {
             throw new Error('An adapter must be provided to build a DataContext.');
         }
 
-        const t0 = Date.now();
-        const log = (phase: string) => console.log(`[SYNC-DEBUG] build: ${phase} +${Date.now() - t0}ms`);
-
-        const gameSystem = this.gameSystem as GameSystem & {
-            createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult<TGameData>;
-        };
-
-        log('register start');
-        await gameSystem.register();
-        log('register done, adapter.initialize start');
-        await this.adapterInstance.initialize();
-        log('adapter.initialize done, createGameContext start');
-
-        const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
-        log('createGameContext done');
-
-        const dc = new DataContext(this.adapterInstance, gameSystem, this.clients, {
-            armies: gameContext.armies,
-            campaigns: gameContext.campaigns,
-            game: gameContext.game as TGameData,
-            sync: gameContext.sync,
-        });
+        const { dc, gameContext, log } = await this.buildContext('build');
 
         if (gameContext.sync && this.clients.has('github')) {
             log('sync start');
@@ -105,28 +138,7 @@ export class DataContextBuilder<TGameData = unknown> {
             throw new Error('An adapter must be provided to build a DataContext.');
         }
 
-        const t0 = Date.now();
-        const log = (phase: string) => console.log(`[SYNC-DEBUG] buildFromCache: ${phase} +${Date.now() - t0}ms`);
-
-        const gameSystem = this.gameSystem as GameSystem & {
-            createGameContext(adapter: DatabaseAdapter, clients: Map<string, unknown>): GameContextResult<TGameData>;
-        };
-
-        log('register start');
-        await gameSystem.register();
-        log('register done, adapter.initialize start');
-        await this.adapterInstance.initialize();
-        log('adapter.initialize done, createGameContext start');
-
-        const gameContext = gameSystem.createGameContext(this.adapterInstance, this.clients);
-        log('createGameContext done');
-
-        const dc = new DataContext(this.adapterInstance, gameSystem, this.clients, {
-            armies: gameContext.armies,
-            campaigns: gameContext.campaigns,
-            game: gameContext.game as TGameData,
-            sync: gameContext.sync,
-        });
+        const { dc, log } = await this.buildContext('buildFromCache');
 
         log('buildFromCache complete (sync skipped)');
 

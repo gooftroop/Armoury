@@ -22,6 +22,7 @@ import { resolveGameSystem } from '@armoury/feature-game-system';
 import { LandingView } from '@/components/LandingView.js';
 import type { LandingTileViewModel } from '@/components/LandingView.js';
 import { systemManifests } from '@/lib/discoverSystems.js';
+import { SyncStatus } from '@/lib/syncStatus.js';
 import { useSyncProgress } from '@/hooks/useSyncProgress.js';
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import { useSyncQueue } from '@/providers/SyncQueueProvider.js';
@@ -56,7 +57,7 @@ function LandingContainer(): React.ReactElement {
 
             const status = getSyncStatus(manifest.id, systemSyncStates);
 
-            if (status === 'syncing') {
+            if (status === SyncStatus.Syncing) {
                 return;
             }
 
@@ -76,14 +77,14 @@ function LandingContainer(): React.ReactElement {
     const tiles: LandingTileViewModel[] = systemManifests.map((manifest) => {
         const status = getSyncStatus(manifest.id, systemSyncStates);
         const isQueued = queueState.pending.includes(manifest.id) || queueState.active === manifest.id;
-        const isSyncing = status === 'syncing' || activatingId === manifest.id;
+        const isSyncing = status === SyncStatus.Syncing || activatingId === manifest.id;
 
         return {
             manifest,
             isSyncing,
-            isSynced: status === 'synced',
+            isSynced: status === SyncStatus.Synced,
             isQueued,
-            isError: status === 'error',
+            isError: status === SyncStatus.Error,
             syncProgress: isSyncing ? syncProgress : undefined,
             onPress: () => {
                 void handleTilePress(manifest);

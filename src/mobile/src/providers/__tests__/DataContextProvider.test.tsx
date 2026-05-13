@@ -231,6 +231,7 @@ describe('DataContextProvider (mobile)', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Status: ready')).toBeTruthy();
+            expect(controls.statuses).toContain('ready');
         });
 
         expect(controls.statuses).toContain('idle');

@@ -162,7 +162,26 @@ export class GameData {
 
         collector?.setPhase('syncing');
 
-        const results = await Promise.allSettled(daoEntries.map(([, promise]) => promise));
+        // Wrap each DAO promise so progress is reported as soon as that
+        // individual promise settles. `Promise.allSettled` over the raw
+        // promises would only let us report after every DAO finishes,
+        // freezing the UI bar at 0/total for the entire sync.
+        const results = await Promise.allSettled(
+            daoEntries.map(([name, promise]) =>
+                promise.then(
+                    (value) => {
+                        collector?.reportCompletion(name);
+
+                        return value;
+                    },
+                    (error: unknown) => {
+                        const err = error instanceof Error ? error : new Error(String(error));
+                        collector?.reportFailure(name, err);
+                        throw err;
+                    },
+                ),
+            ),
+        );
 
         const succeeded: string[] = [];
         const failures: Array<{ dao: string; error: string }> = [];
@@ -173,11 +192,9 @@ export class GameData {
 
             if (result.status === 'fulfilled') {
                 succeeded.push(name);
-                collector?.reportCompletion(name);
             } else {
                 const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
                 failures.push({ dao: name, error: reason });
-                collector?.reportFailure(name, result.reason instanceof Error ? result.reason : new Error(reason));
             }
         }
 

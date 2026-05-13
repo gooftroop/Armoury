@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "browserslist-to-esbuild": "^2.1.1",
-        "esbuild": "^0.27.3"
+        "esbuild": "^0.27.4"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,html,yaml,yml}": "prettier --write"

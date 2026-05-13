@@ -16,7 +16,7 @@
  * 7. Must NOT use boolean flag props to control auth-gated behavior.
  * 8. Must surface account persistence failures as error state on the tile so the user can retry.
  * 9. Must provide navigation href for synced tiles pointing to the system's armies page.
- * 10. Must consume SyncQueue state to surface queue position on tiles.
+ * 10. Must derive queue state from system sync statuses without SyncQueueProvider dependencies.
  *
  * @module system-grid-container
  */
@@ -31,17 +31,15 @@ import type { SyncProgressState } from '@armoury/data-dao';
 
 import { getAccessToken } from '@auth0/nextjs-auth0/client';
 import { mutationUpdateAccount } from '@armoury/clients-users';
-import { getSyncStatus } from '@armoury/query';
-import { resolveGameSystem, useDataContext } from '@armoury/feature-game-system';
 
 import { SystemGridView } from '@/components/SystemGridView.js';
 import type { SystemTileData } from '@/components/SystemGridView.js';
+import { getSyncStatus } from '@armoury/query';
+import { resolveGameSystem } from '@armoury/feature-game-system';
 import { useSyncProgress } from '@/hooks/useSyncProgress.js';
-import { useSyncQueue } from '@/providers/SyncQueueProvider.js';
-import type { SyncQueueState } from '@/providers/SyncQueueProvider.js';
-
-type DataContextValue = ReturnType<typeof useDataContext>;
-type SystemSyncStatus = DataContextValue['systemSyncStates'][string]['status'];
+import { useDataContext } from '@/data/useDataContext.js';
+import type { SystemSyncStatus } from '@/data/useDataContext.js';
+import { SyncStatus } from '@/data/managerState.js';
 
 /** Per-system sync map used by SystemGrid activation helpers. */
 type SyncStateMap = Record<string, { status: SystemSyncStatus; error?: string }>;
@@ -86,7 +84,7 @@ async function activateSystemTile(
 
     const status = getSyncStatus(manifest.id, syncStates);
 
-    if (status === 'syncing') {
+    if (status === SyncStatus.Syncing) {
         return;
     }
 
@@ -147,7 +145,6 @@ async function activateSystemTile(
  * @param syncStates - Current per-system sync states.
  * @param activatingId - Locally activating system ID.
  * @param persistErrors - Per-system account persistence error messages.
- * @param queueState - Sync queue state for pending/active systems.
  * @param t - Landing translator function.
  * @param handleTileClick - Tile click callback.
  * @returns Tile descriptors for SystemGridView.
@@ -158,17 +155,16 @@ function buildTiles(
     activatingId: string | null,
     persistErrors: Record<string, string>,
     syncProgress: SyncProgressState | null,
-    queueState: SyncQueueState,
     t: ReturnType<typeof useTranslations<'landing'>>,
     handleTileClick: (manifest: GameSystemManifest) => void,
 ): SystemTileData[] {
     return manifests.map((manifest) => {
         const status = getSyncStatus(manifest.id, syncStates);
-        const isQueued = queueState.pending.includes(manifest.id) || queueState.active === manifest.id;
-        const isSyncing = status === 'syncing' || activatingId === manifest.id;
+        const isQueued = status === SyncStatus.Pending || status === SyncStatus.Syncing;
+        const isSyncing = status === SyncStatus.Syncing || activatingId === manifest.id;
         const hasPersistError = Boolean(persistErrors[manifest.id]);
-        const isSynced = status === 'synced' && !hasPersistError;
-        const isError = status === 'error' || hasPersistError;
+        const isSynced = status === SyncStatus.Synced && !hasPersistError;
+        const isError = status === SyncStatus.Error || hasPersistError;
         const showOverlay = !isSynced;
 
         return {
@@ -204,7 +200,6 @@ function buildTiles(
 function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: SystemGridProps): ReactElement {
     const t = useTranslations('landing');
     const { systemSyncStates, syncProgressCollector, enableSystem } = useDataContext();
-    const { state: queueState } = useSyncQueue();
     const syncProgress = useSyncProgress(syncProgressCollector);
     const [activatingId, setActivatingId] = useState<string | null>(null);
     const [persistErrors, setPersistErrors] = useState<Record<string, string>>({});
@@ -232,11 +227,10 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
                 activatingId,
                 persistErrors,
                 syncProgress.phase !== 'idle' ? syncProgress : null,
-                queueState,
                 t,
                 (manifest) => void handleTileClick(manifest),
             ),
-        [manifests, systemSyncStates, activatingId, persistErrors, syncProgress, queueState, t, handleTileClick],
+        [manifests, systemSyncStates, activatingId, persistErrors, syncProgress, t, handleTileClick],
     );
 
     return <SystemGridView tiles={tiles} />;

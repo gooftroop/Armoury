@@ -15,8 +15,10 @@ describe('Skeleton', () => {
         vi.clearAllMocks();
     });
 
-    it('renders with animate-pulse class', () => {
+    it('renders with shimmer animation class and reduced-motion fallback', () => {
         render(<Skeleton data-testid="skeleton" />);
-        expect(screen.getByTestId('skeleton').className).toContain('animate-pulse');
+        const el = screen.getByTestId('skeleton');
+        expect(el.className).toContain('animate-shimmer');
+        expect(el.className).toContain('motion-reduce:animate-pulse');
     });
 });
