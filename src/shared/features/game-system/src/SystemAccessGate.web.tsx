@@ -13,7 +13,8 @@ import { useDataContext } from './DataContextManagerProvider.web.js';
  * 2. Must allow access when system status is synced in DataContext.
  * 3. Must allow access when system has synced in this session via SyncManifest.
  * 4. Must render a loading state when system status is pending, checking-staleness, or syncing.
- * 5. Must render differentiated error states for cached and uncached failures.
+ * 5. Must render an error state with navigation back to home when sync fails.
+ *    Retry is initiated from the system tile on the home page, not from this gate.
  * 6. Must render a not-ready state with navigation back to locale root when access is blocked.
  *
  * @module system-access-gate
@@ -63,59 +64,17 @@ function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactE
         );
     }
 
-    if (syncState?.status === 'error' && syncState.hasCache) {
-        return (
-            <div className="flex min-h-[50dvh] items-center justify-center px-4 py-10">
-                <div className="w-full max-w-xl rounded-xl border border-border/50 bg-surface/80 p-6 text-center shadow-sm backdrop-blur-sm">
-                    <h2 className="text-lg font-semibold text-foreground">Sync failed but cached data is available.</h2>
-                    <div className="mt-5 flex items-center justify-center gap-2">
-                        <button
-                            type="button"
-                            className="inline-flex items-center rounded-md border border-border/60 bg-base px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface"
-                        >
-                            Use cached data
-                        </button>
-                        <button
-                            type="button"
-                            className="inline-flex items-center rounded-md border border-border/60 bg-base px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface"
-                        >
-                            Retry
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (syncState?.status === 'error') {
-        return (
-            <div className="flex min-h-[50dvh] items-center justify-center px-4 py-10">
-                <div className="w-full max-w-xl rounded-xl border border-border/50 bg-surface/80 p-6 text-center shadow-sm backdrop-blur-sm">
-                    <h2 className="text-lg font-semibold text-foreground">Failed to sync.</h2>
-                    <div className="mt-5 flex items-center justify-center gap-2">
-                        <button
-                            type="button"
-                            className="inline-flex items-center rounded-md border border-border/60 bg-base px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface"
-                        >
-                            Retry
-                        </button>
-                        <Link
-                            href="./"
-                            className="inline-flex items-center rounded-md border border-border/60 bg-base px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface"
-                        >
-                            Back to home
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const isError = syncState?.status === 'error';
+    const heading = isError ? 'Failed to sync.' : 'This game system is not ready yet.';
+    const description = isError
+        ? 'Return to the home page and retry the download from the system tile.'
+        : 'Return to the home page to download it.';
 
     return (
         <div className="flex min-h-[50dvh] items-center justify-center px-4 py-10">
             <div className="w-full max-w-xl rounded-xl border border-border/50 bg-surface/80 p-6 text-center shadow-sm backdrop-blur-sm">
-                <h2 className="text-lg font-semibold text-foreground">This game system is not ready yet.</h2>
-                <p className="mt-2 text-sm leading-relaxed text-tertiary">Return to the home page to download it.</p>
+                <h2 className="text-lg font-semibold text-foreground">{heading}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-tertiary">{description}</p>
                 <Link
                     href="/"
                     className="mt-5 inline-flex items-center rounded-md border border-border/60 bg-base px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface"
