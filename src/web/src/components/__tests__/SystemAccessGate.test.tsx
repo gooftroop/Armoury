@@ -11,6 +11,7 @@
  * | REQ-SAG-05 | Must render cache fallback error UI when sync fails but cache exists. | "shows error with cache fallback UI for error with cache" |
  * | REQ-SAG-06 | Must render blocking error UI when sync fails and cache is unavailable. | "shows error without cache UI for error without cache" |
  * | REQ-SAG-07 | Must render not-ready state when status is idle or missing. | "shows not ready for idle status" and "shows not ready for undefined status" |
+ * | REQ-SAG-08 | Must render loading state while DataContext is initializing and no sync state exists yet. | "shows loading when DataContext is idle and syncState is undefined" and "shows loading when DataContext is initializing and syncState is undefined" |
  */
 
 import { render, screen } from '@testing-library/react';
@@ -52,7 +53,7 @@ describe('SystemAccessGate', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUseSyncManifest.mockReturnValue({ hasSynced: vi.fn(() => false) });
-        mockUseDataContext.mockReturnValue({ systemSyncStates: {} });
+        mockUseDataContext.mockReturnValue({ status: 'ready', systemSyncStates: {} });
     });
 
     it('renders children when status is synced', () => {
@@ -143,5 +144,21 @@ describe('SystemAccessGate', () => {
         renderHarness();
 
         expect(screen.getByText('This game system is not ready yet.')).toBeInTheDocument();
+    });
+
+    it('shows loading when DataContext is idle and syncState is undefined', () => {
+        mockUseDataContext.mockReturnValue({ status: 'idle', systemSyncStates: {} });
+
+        renderHarness();
+
+        expect(screen.getByText('Syncing...')).toBeInTheDocument();
+    });
+
+    it('shows loading when DataContext is initializing and syncState is undefined', () => {
+        mockUseDataContext.mockReturnValue({ status: 'initializing', systemSyncStates: {} });
+
+        renderHarness();
+
+        expect(screen.getByText('Syncing...')).toBeInTheDocument();
     });
 });

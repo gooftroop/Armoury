@@ -42,7 +42,7 @@ export interface SystemAccessGateProps {
  */
 function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactElement {
     const { hasSynced } = useSyncManifest();
-    const { systemSyncStates } = useDataContext();
+    const { status: dcStatus, systemSyncStates } = useDataContext();
     const syncState = systemSyncStates[systemId];
     const isSyncedInDataContext = syncState?.status === SyncStatus.Synced;
     const isSyncedThisSession = hasSynced(systemId);
@@ -51,7 +51,14 @@ function SystemAccessGate({ systemId, children }: SystemAccessGateProps): ReactE
         return <>{children}</>;
     }
 
-    if (syncState?.status === SyncStatus.Pending || syncState?.status === SyncStatus.Syncing) {
+    const isDataContextInitializing = dcStatus === 'idle' || dcStatus === 'initializing';
+    const isAwaitingFirstSyncState = syncState === undefined && isDataContextInitializing;
+
+    if (
+        isAwaitingFirstSyncState ||
+        syncState?.status === SyncStatus.Pending ||
+        syncState?.status === SyncStatus.Syncing
+    ) {
         return (
             <div className="flex min-h-[50dvh] items-center justify-center px-4 py-10">
                 <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface/80 px-5 py-4 text-foreground shadow-sm backdrop-blur-sm">
