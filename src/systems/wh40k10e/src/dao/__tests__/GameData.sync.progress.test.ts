@@ -136,4 +136,43 @@ describe('GameData.sync() progress collector', () => {
         expect(resultWith.succeeded).toHaveLength(resultWithout.succeeded.length);
         expect(resultWith.failures).toHaveLength(resultWithout.failures.length);
     });
+
+    it('emits incremental progress as each DAO settles, not only after all settle', async () => {
+        let resolveFirst!: (v: unknown) => void;
+        let resolveSecond!: (v: unknown) => void;
+        const firstPending = new Promise((r) => {
+            resolveFirst = r;
+        });
+        const secondPending = new Promise((r) => {
+            resolveSecond = r;
+        });
+
+        deps.necronDAO = { load: vi.fn().mockReturnValue(firstPending) } as unknown as GameDataDeps['necronDAO'];
+        deps.orksDAO = { load: vi.fn().mockReturnValue(secondPending) } as unknown as GameDataDeps['orksDAO'];
+        game = new GameData(deps);
+
+        const collector = new SyncProgressCollector(40);
+        const completedSnapshots: number[] = [];
+        collector.subscribe((s) => {
+            if (s.phase === 'syncing') {
+                completedSnapshots.push(s.completed);
+            }
+        });
+
+        const syncPromise = game.sync(collector);
+
+        await new Promise((r) => setTimeout(r, 0));
+        const completedBeforeFirst = collector.getState().completed;
+
+        resolveFirst('necron');
+        await new Promise((r) => setTimeout(r, 0));
+        const completedAfterFirst = collector.getState().completed;
+
+        resolveSecond('orks');
+        await syncPromise;
+
+        expect(completedBeforeFirst).toBe(38);
+        expect(completedAfterFirst).toBe(39);
+        expect(completedSnapshots).toContain(39);
+    });
 });
