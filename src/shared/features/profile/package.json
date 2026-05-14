@@ -78,6 +78,7 @@
         "@armoury/typescript": "*",
         "@armoury/vitest": "*",
         "@armoury/esbuild": "*",
+        "@auth0/nextjs-auth0": "^4.17.1",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "@testing-library/jest-dom": "^6.0.0",
