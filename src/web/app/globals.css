@@ -3,6 +3,18 @@
 @import './css/default.css';
 @import './css/defaultDark.css';
 
+/*
+ * Tailwind v4 auto-scans the project root but skips node_modules. Shared
+ * workspaces (@armoury/ui, @armoury/feature-*) live in src/shared/** and are
+ * consumed via symlinked node_modules/@armoury/* paths, so their class names
+ * are invisible to the default scanner. Source their src/ folders directly so
+ * utilities used inside shared components get generated.
+ */
+@source "../../shared/ui/src";
+@source "../../shared/features/profile/src";
+@source "../../shared/features/forge/src";
+@source "../../shared/features/game-system/src";
+
 @theme {
     --animate-shimmer: shimmer 1.8s linear infinite;
 
