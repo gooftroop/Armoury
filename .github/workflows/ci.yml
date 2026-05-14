@@ -34,6 +34,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Install dependencies (prod-only)
@@ -46,6 +47,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-prod-${{ hashFiles('package-lock.json') }}
 
     test:
@@ -66,6 +68,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Run tests
@@ -89,6 +92,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Run lint and format check
@@ -112,6 +116,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Run typecheck
@@ -135,6 +140,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Cache Docker images
@@ -202,6 +208,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Get Playwright version
@@ -265,6 +272,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Build web and dependencies
@@ -294,6 +302,7 @@ jobs:
                       node_modules
                       src/*/node_modules
                       src/*/*/node_modules
+                      src/*/*/*/node_modules
                   key: ${{ runner.os }}-node-full-${{ hashFiles('package-lock.json') }}
 
             - name: Build mobile and dependencies
