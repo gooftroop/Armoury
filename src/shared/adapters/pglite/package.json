@@ -22,7 +22,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "@electric-sql/pglite": "^0.3.15",
+        "@electric-sql/pglite": "^0.4.5",
         "drizzle-orm": "^0.45.2",
         "@armoury/data-dao": "*"
     },
