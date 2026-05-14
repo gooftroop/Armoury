@@ -17,7 +17,7 @@
 
 'use client';
 
-import { Skeleton } from '@/components/ui/skeleton.js';
+import { Skeleton } from '@armoury/ui';
 
 /**
  * A single placeholder tile matching the SystemTile layout:

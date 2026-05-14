@@ -16,13 +16,13 @@ import { useRouter } from 'expo-router';
 import { useAuth0 } from 'react-native-auth0';
 import { useTheme } from 'tamagui';
 import type { GameSystemManifest } from '@armoury/data-dao';
+import { getSyncStatus } from '@armoury/query';
+import { resolveGameSystem } from '@armoury/feature-game-system';
 
 import { LandingView } from '@/components/LandingView.js';
 import type { LandingTileViewModel } from '@/components/LandingView.js';
 import { systemManifests } from '@/lib/discoverSystems.js';
-import { getSyncStatus } from '@/lib/getSyncStatus.js';
 import { SyncStatus } from '@/lib/syncStatus.js';
-import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
 import { useSyncProgress } from '@/hooks/useSyncProgress.js';
 import { useDataContext } from '@/providers/DataContextProvider.js';
 import { useSyncQueue } from '@/providers/SyncQueueProvider.js';

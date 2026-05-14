@@ -4,7 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Libre_Franklin, JetBrains_Mono } from 'next/font/google';
 import Script from 'next/script';
-import { routing } from '@/i18n/routing.js';
+import { routing } from '@armoury/i18n';
 import { Providers } from '@/components/providers.js';
 import '../globals.css';
 

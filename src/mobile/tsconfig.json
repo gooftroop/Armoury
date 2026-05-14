@@ -4,6 +4,7 @@
         "rootDir": ".",
         "module": "ESNext",
         "moduleResolution": "Bundler",
+        "customConditions": ["react-native"],
         "rewriteRelativeImportExtensions": false,
         "jsx": "react-jsx",
         "noEmit": true,

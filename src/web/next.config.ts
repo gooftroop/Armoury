@@ -95,7 +95,7 @@ async function loadSSMSecrets(): Promise<void> {
 
 // ---------------------------------------------------------------------------
 
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+const withNextIntl = createNextIntlPlugin('../shared/i18n/src/request.ts');
 
 // Wrap in an async function to avoid top-level await.
 // Next.js compiles next.config.ts to CJS via require(); Node 24 rejects

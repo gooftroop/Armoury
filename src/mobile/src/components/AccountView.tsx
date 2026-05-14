@@ -16,7 +16,7 @@ import { StyleSheet } from 'react-native';
 import { Button, Card, H2, H3, Paragraph, ScrollView, YStack, useTheme } from 'tamagui';
 import type { UserPreferences } from '@armoury/clients-users';
 
-import { ProfileCard } from '@/components/ProfileCard.js';
+import { ProfileCard } from '@armoury/feature-profile';
 import { PreferencesSection } from '@/components/PreferencesSection.js';
 import { SignOutCard } from '@/components/SignOutCard.js';
 

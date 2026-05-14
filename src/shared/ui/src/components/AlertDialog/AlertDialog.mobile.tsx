@@ -113,6 +113,8 @@ export interface AlertDialogActionProps {
     children: React.ReactNode;
     /** Callback when the action is pressed. */
     onPress?: () => void;
+    /** Visual variant. Defaults to "primary". */
+    variant?: 'primary' | 'destructive';
     /** Web compatibility prop — accepted but unused on mobile. */
     className?: string;
 }
@@ -347,12 +349,14 @@ AlertDialogDescription.displayName = 'AlertDialogDescription';
  * @param props - Component props with children and onPress callback.
  * @returns The rendered AlertDialogAction component.
  */
-function AlertDialogAction({ children, onPress }: AlertDialogActionProps): React.ReactElement {
+function AlertDialogAction({ children, onPress, variant = 'primary' }: AlertDialogActionProps): React.ReactElement {
     const { setOpen } = React.useContext(AlertDialogContext);
     const theme = useTheme();
 
-    const bgColor = resolveThemeColor(theme, 'primary') ?? '#000000';
-    const textColor = resolveThemeColor(theme, 'primaryForeground') ?? '#ffffff';
+    const bgToken = variant === 'destructive' ? 'destructive' : 'primary';
+    const fgToken = variant === 'destructive' ? 'destructiveForeground' : 'primaryForeground';
+    const bgColor = resolveThemeColor(theme, bgToken) ?? (variant === 'destructive' ? '#dc2626' : '#000000');
+    const textColor = resolveThemeColor(theme, fgToken) ?? '#ffffff';
 
     const handlePress = React.useCallback(() => {
         onPress?.();

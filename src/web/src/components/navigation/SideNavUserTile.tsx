@@ -13,7 +13,7 @@
  * @module SideNavUserTile
  */
 
-import { getInitials } from '@/lib/getInitials.js';
+import { getInitials } from '@armoury/feature-profile';
 import { cn } from '@/lib/utils.js';
 
 /** Props for SideNavUserTile. */

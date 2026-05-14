@@ -18,16 +18,8 @@
 
 import type { ReactElement } from 'react';
 
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    Avatar,
-    AvatarImage,
-    AvatarFallback,
-} from '@/components/ui/index.js';
-import { getInitials } from '@/lib/getInitials.js';
+import { Card, CardHeader, CardTitle, CardContent, Avatar, AvatarImage, AvatarFallback } from '@armoury/ui';
+import { getInitials } from '@armoury/feature-profile';
 
 /** Props for the ProfileSection component. */
 export interface ProfileSectionProps {

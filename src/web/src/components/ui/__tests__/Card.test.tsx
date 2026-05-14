@@ -10,7 +10,7 @@ import { createRef } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../card.js';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@armoury/ui';
 
 describe('Card', () => {
     beforeEach(() => {

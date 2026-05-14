@@ -16,7 +16,7 @@ import { H1, Paragraph, ScrollView, YStack } from 'tamagui';
 
 import { SystemTile } from '@/components/SystemTile.js';
 import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
-import { ProfileTileContainer } from '@/components/profile/ProfileTileContainer.js';
+import { ProfileTileContainer } from '@armoury/feature-profile';
 
 /**
  * View model for a rendered landing system tile.

@@ -12,7 +12,7 @@
 import { useEffect } from 'react';
 
 import { useDataContext } from '@/data/useDataContext.js';
-import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
+import { resolveGameSystem } from '@armoury/feature-game-system';
 import { SyncStatus } from '@/data/managerState.js';
 
 export interface SystemAutoRestoreProps {

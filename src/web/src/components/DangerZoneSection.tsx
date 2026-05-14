@@ -36,7 +36,7 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
     Button,
-} from '@/components/ui/index.js';
+} from '@armoury/ui';
 
 /** Props for the DangerZoneSection component. */
 export interface DangerZoneSectionProps {

@@ -11,10 +11,10 @@
  */
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { getQueryClient } from '@/lib/getQueryClient.js';
+import { getQueryClient } from '@armoury/query';
 import { DataContextManagerProvider } from '@/data/managerContext.js';
 import { SyncManifestProvider } from '@/providers/SyncManifestProvider.js';
-import { PresenceProvider } from '@/providers/PresenceProvider.js';
+import { PresenceProvider } from '@armoury/feature-profile';
 
 /**
  * Properties for the Providers component.

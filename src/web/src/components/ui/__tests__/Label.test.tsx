@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { Label } from '../label.js';
+import { Label } from '@armoury/ui';
 
 describe('Label', () => {
     beforeEach(() => {

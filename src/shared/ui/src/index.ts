@@ -50,6 +50,12 @@ export { Badge, badgeVariants, type BadgeProps } from '@/components/Badge/index.
 // Button component
 export { Button, buttonVariants, type ButtonProps } from '@/components/Button/index.js';
 
+// ConfirmDialog component
+export { ConfirmDialog, type ConfirmDialogProps } from '@/components/ConfirmDialog/index.js';
+
+// EmptyState component
+export { EmptyState, type EmptyStateProps } from '@/components/EmptyState/index.js';
+
 // Card components
 export {
     Card,
@@ -188,3 +194,6 @@ export {
     type TooltipTriggerProps,
     type TooltipContentProps,
 } from '@/components/Tooltip/index.js';
+
+// Utilities
+export { cn } from '@/lib/utils.js';

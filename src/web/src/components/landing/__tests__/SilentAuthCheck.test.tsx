@@ -23,7 +23,7 @@ const { mockGetAuth0SpaClient } = vi.hoisted(() => ({
     mockGetAuth0SpaClient: vi.fn<() => MockAuthClient | null>(),
 }));
 
-vi.mock('@/lib/auth0SpaClient.js', () => ({
+vi.mock('@armoury/auth-client', () => ({
     getAuth0SpaClient: mockGetAuth0SpaClient,
 }));
 

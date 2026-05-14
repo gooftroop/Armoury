@@ -31,11 +31,11 @@ import type { DataContextManager } from '@/data/DataContextManager.js';
  *   - Test: cancellation guard prevents enableSystem when unmounted before resolveGameSystem resolves
  */
 
-vi.mock('@/lib/resolveGameSystem.js', () => ({
+vi.mock('@armoury/feature-game-system', () => ({
     resolveGameSystem: vi.fn(),
 }));
 
-const { resolveGameSystem } = await import('@/lib/resolveGameSystem.js');
+const { resolveGameSystem } = await import('@armoury/feature-game-system');
 
 type ManagerStateSnapshot = {
     activeSystemId: string | null;

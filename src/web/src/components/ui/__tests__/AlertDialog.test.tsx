@@ -17,7 +17,7 @@ import {
     AlertDialogDescription,
     AlertDialogAction,
     AlertDialogCancel,
-} from '../AlertDialog.js';
+} from '@armoury/ui';
 
 describe('AlertDialog', () => {
     beforeEach(() => {

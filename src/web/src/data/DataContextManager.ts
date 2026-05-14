@@ -17,7 +17,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { Container } from 'inversify';
 import * as Sentry from '@sentry/nextjs';
 
-import { getQueryClient } from '@/lib/getQueryClient.js';
+import { getQueryClient } from '@armoury/query';
 import type { ManagerState, SystemSyncState } from '@/data/managerState.js';
 import { initialManagerState, SyncStatus } from '@/data/managerState.js';
 

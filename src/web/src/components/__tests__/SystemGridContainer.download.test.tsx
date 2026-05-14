@@ -57,11 +57,11 @@ vi.mock('@/hooks/useSyncProgress.js', () => ({
     useSyncProgress: useSyncProgressMock,
 }));
 
-vi.mock('@/lib/resolveGameSystem.js', () => ({
+vi.mock('@armoury/feature-game-system', () => ({
     resolveGameSystem: resolveGameSystemMock,
 }));
 
-vi.mock('@/lib/getSyncStatus.js', () => ({
+vi.mock('@armoury/query', () => ({
     getSyncStatus: getSyncStatusMock,
 }));
 

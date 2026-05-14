@@ -19,7 +19,7 @@ import type { ReactElement } from 'react';
 import type { useTranslations } from 'next-intl';
 import type { UserPreferences } from '@armoury/clients-users';
 
-import { Card, CardHeader, CardContent, Skeleton } from '@/components/ui/index.js';
+import { Card, CardHeader, CardContent, Skeleton } from '@armoury/ui';
 import { ProfileSection } from '@/components/ProfileSection.js';
 import { PreferencesSection } from '@/components/PreferencesSection.js';
 import { SystemsSection } from '@/components/SystemsSection.js';

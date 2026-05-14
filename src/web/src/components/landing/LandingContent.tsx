@@ -29,7 +29,7 @@ import { queryAccount } from '@armoury/clients-users';
 
 import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
 import { discoverSystemManifests } from '@/lib/discoverSystems.js';
-import { getQueryClient } from '@/lib/getQueryClient.js';
+import { getQueryClient } from '@armoury/query';
 import { AuthenticatedLanding } from '@/components/landing/AuthenticatedLanding.js';
 import { SilentAuthCheck } from '@/components/landing/SilentAuthCheck.js';
 import { UnauthenticatedLanding } from '@/components/landing/UnauthenticatedLanding.js';

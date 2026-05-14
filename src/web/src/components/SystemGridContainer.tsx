@@ -34,8 +34,8 @@ import { mutationUpdateAccount } from '@armoury/clients-users';
 
 import { SystemGridView } from '@/components/SystemGridView.js';
 import type { SystemTileData } from '@/components/SystemGridView.js';
-import { getSyncStatus } from '@/lib/getSyncStatus.js';
-import { resolveGameSystem } from '@/lib/resolveGameSystem.js';
+import { getSyncStatus } from '@armoury/query';
+import { resolveGameSystem } from '@armoury/feature-game-system';
 import { useSyncProgress } from '@/hooks/useSyncProgress.js';
 import { useDataContext } from '@/data/useDataContext.js';
 import type { SystemSyncStatus } from '@/data/useDataContext.js';

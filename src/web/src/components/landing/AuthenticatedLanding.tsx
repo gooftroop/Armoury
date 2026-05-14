@@ -20,7 +20,7 @@ import type { ReactElement } from 'react';
 import type { GameSystemManifest } from '@armoury/data-dao';
 
 import { SystemGrid } from '@/components/SystemGridContainer.js';
-import { ProfileTileContainer } from '@/components/profile/index.js';
+import { ProfileTileContainer } from '@armoury/feature-profile';
 
 /** Props for the AuthenticatedLanding component. */
 export interface AuthenticatedLandingProps {

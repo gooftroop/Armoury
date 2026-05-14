@@ -11,8 +11,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Swords, BookOpen, Flag, Users, Library } from 'lucide-react';
+import { useGameSystem } from '@armoury/feature-game-system';
 import { cn } from '@/lib/utils.js';
-import { useGameSystem } from '@/hooks/useGameSystem.js';
 
 export interface BottomNavProps {
     locale: string;

@@ -78,10 +78,10 @@ const ToastProvider = ToastPrimitive.Provider;
  * @param ref - Forwarded ref to the ol element.
  * @returns The rendered ToastViewport component.
  */
-function ToastViewport(
-    { className, ...props }: React.ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport>,
-    ref: React.ForwardedRef<HTMLOListElement>,
-): React.ReactElement {
+const ToastViewport = React.forwardRef<
+    HTMLOListElement,
+    React.ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport>
+>(function ToastViewport({ className, ...props }, ref) {
     return (
         <ToastPrimitive.Viewport
             className={cn(
@@ -92,7 +92,7 @@ function ToastViewport(
             {...props}
         />
     );
-}
+});
 
 ToastViewport.displayName = 'ToastViewport';
 
@@ -103,12 +103,9 @@ ToastViewport.displayName = 'ToastViewport';
  * @param ref - Forwarded ref to the li element.
  * @returns The rendered Toast component.
  */
-function Toast(
-    { className, variant, ...props }: ToastProps,
-    ref: React.ForwardedRef<HTMLLIElement>,
-): React.ReactElement {
+const Toast = React.forwardRef<HTMLLIElement, ToastProps>(function Toast({ className, variant, ...props }, ref) {
     return <ToastPrimitive.Root className={cn(toastVariants({ variant }), className)} ref={ref} {...props} />;
-}
+});
 
 Toast.displayName = 'Toast';
 
@@ -119,10 +116,10 @@ Toast.displayName = 'Toast';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered ToastAction component.
  */
-function ToastAction(
-    { className, ...props }: ToastActionProps,
-    ref: React.ForwardedRef<HTMLButtonElement>,
-): React.ReactElement {
+const ToastAction = React.forwardRef<HTMLButtonElement, ToastActionProps>(function ToastAction(
+    { className, ...props },
+    ref,
+) {
     return (
         <ToastPrimitive.Action
             className={cn(
@@ -133,7 +130,7 @@ function ToastAction(
             {...props}
         />
     );
-}
+});
 
 ToastAction.displayName = 'ToastAction';
 
@@ -144,10 +141,10 @@ ToastAction.displayName = 'ToastAction';
  * @param ref - Forwarded ref to the button element.
  * @returns The rendered ToastClose component.
  */
-function ToastClose(
-    { className, ...props }: ToastCloseProps,
-    ref: React.ForwardedRef<HTMLButtonElement>,
-): React.ReactElement {
+const ToastClose = React.forwardRef<HTMLButtonElement, ToastCloseProps>(function ToastClose(
+    { className, ...props },
+    ref,
+) {
     return (
         <ToastPrimitive.Close
             className={cn(
@@ -161,7 +158,7 @@ function ToastClose(
             <X className="h-4 w-4" />
         </ToastPrimitive.Close>
     );
-}
+});
 
 ToastClose.displayName = 'ToastClose';
 
@@ -172,14 +169,11 @@ ToastClose.displayName = 'ToastClose';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered ToastTitle component.
  */
-function ToastTitle(
-    { className, ...props }: ToastTitleProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+const ToastTitle = React.forwardRef<HTMLDivElement, ToastTitleProps>(function ToastTitle({ className, ...props }, ref) {
     return (
         <ToastPrimitive.Title className={cn('text-sm font-semibold [&+div]:text-xs', className)} ref={ref} {...props} />
     );
-}
+});
 
 ToastTitle.displayName = 'ToastTitle';
 
@@ -190,12 +184,12 @@ ToastTitle.displayName = 'ToastTitle';
  * @param ref - Forwarded ref to the div element.
  * @returns The rendered ToastDescription component.
  */
-function ToastDescription(
-    { className, ...props }: ToastDescriptionProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
-): React.ReactElement {
+const ToastDescription = React.forwardRef<HTMLDivElement, ToastDescriptionProps>(function ToastDescription(
+    { className, ...props },
+    ref,
+) {
     return <ToastPrimitive.Description className={cn('text-sm opacity-90', className)} ref={ref} {...props} />;
-}
+});
 
 ToastDescription.displayName = 'ToastDescription';
 

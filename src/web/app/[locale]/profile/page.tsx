@@ -32,7 +32,7 @@ import {
     CardHeader,
     CardTitle,
     Separator,
-} from '@/components/ui/index.js';
+} from '@armoury/ui';
 
 /** Props for the locale-parameterized profile page. */
 export interface ProfilePageProps {

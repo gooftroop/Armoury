@@ -36,7 +36,7 @@ import {
     Switch,
     Separator,
     Button,
-} from '@/components/ui/index.js';
+} from '@armoury/ui';
 import type { SaveState } from '@/components/AccountSettingsView.js';
 
 /** Props for the PreferencesSection component. */
