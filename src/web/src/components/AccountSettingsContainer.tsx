@@ -94,12 +94,7 @@ function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): 
     const authorization = `Bearer ${accessToken}`;
     const params = { userId: user.userId };
 
-    const accountQuery = useQuery(
-        queryAccount(authorization, params) as unknown as Parameters<typeof useQuery<Account, Error>>[0],
-    ) as {
-        data?: Account;
-        isLoading: boolean;
-    };
+    const accountQuery = useQuery<Account, Error>(queryAccount(authorization, params));
 
     const [localPreferences, setLocalPreferences] = useState<UserPreferences>({
         theme: 'dark',
@@ -116,9 +111,7 @@ function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): 
 
     const updateMutation = useMutation({
         mutationFn: (preferences: UserPreferences) => {
-            const opts = mutationUpdateAccount(authorization, params, { preferences }) as unknown as {
-                mutationFn: () => Promise<void>;
-            };
+            const opts = mutationUpdateAccount(authorization, params, { preferences });
 
             return opts.mutationFn!();
         },
@@ -135,9 +128,7 @@ function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): 
         },
     });
 
-    const deleteMutation = useMutation(
-        mutationDeleteAccount(authorization, params) as unknown as Parameters<typeof useMutation>[0],
-    ) as { mutate: (variables?: void) => void };
+    const deleteMutation = useMutation(mutationDeleteAccount(authorization, params));
 
     const handleSavePreferences = useCallback(() => {
         updateMutation.mutate(localPreferences);
@@ -148,7 +139,7 @@ function AccountSettingsContainer({ user, accessToken }: AccountSettingsProps): 
     }, []);
 
     const handleDeleteAccount = useCallback(() => {
-        deleteMutation.mutate(undefined);
+        deleteMutation.mutate();
     }, [deleteMutation]);
 
     const saveButtonLabel = useMemo(() => getSaveButtonLabel(saveState, t), [saveState, t]);

@@ -11,7 +11,7 @@
  * 4. Must not implement form or container logic.
  */
 
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export interface CreateArmyPageProps {
     params: Promise<{
@@ -23,12 +23,12 @@ export interface CreateArmyPageProps {
 export default async function CreateArmyPage({ params }: CreateArmyPageProps) {
     const { locale } = await params;
     setRequestLocale(locale);
+    const t = await getTranslations('armyCreation');
 
     return (
         <div className="flex flex-1 flex-col gap-4 p-6">
             <header className="space-y-1">
-                <h1 className="text-2xl font-semibold tracking-tight">Create Army</h1>
-                <p className="text-muted-foreground">The army creation form will be wired in the next task.</p>
+                <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
             </header>
 
             <div className="min-h-64 rounded-lg border border-dashed border-border-subtle bg-muted/20 p-6" />
