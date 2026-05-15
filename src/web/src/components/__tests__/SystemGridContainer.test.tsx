@@ -11,9 +11,9 @@
  * | REQ-SGC-05 | Activates idle systems by resolving system and calling enableSystem. | "resolves and enables on idle click" |
  * | REQ-SGC-06 | Persists enabled system to account when userId is provided. | "persists enabled system when userId exists" |
  * | REQ-SGC-07 | Surfaces persistence failures as tile error and allows retry recovery. | "sets persist error when account mutation fails", "clears persist error after successful retry" |
- * | REQ-SGC-08 | Surfaces activation failure when resolveGameSystem returns null and reports to Sentry. | "surfaces activation error when resolveGameSystem returns null" |
- * | REQ-SGC-09 | Surfaces activation failure when enableSystem throws and reports to Sentry. | "surfaces activation error when enableSystem throws" |
- * | REQ-SGC-10 | Clears activation error on successful retry. | "clears activation error after successful retry" |
+ * | REQ-SGC-11 | Surfaces activation failure when resolveGameSystem returns null and reports to Sentry. | "surfaces activation error when resolveGameSystem returns null" |
+ * | REQ-SGC-11 | Surfaces activation failure when enableSystem throws and reports to Sentry. | "surfaces activation error when enableSystem throws" |
+ * | REQ-SGC-11 | Clears activation error on successful retry. | "clears activation error after successful retry" |
  */
 
 import { render, screen, waitFor, within } from '@testing-library/react';
