@@ -1,17 +1,24 @@
 /**
- * Create Army page shell for the WH40K 10e Forge flow.
+ * Create Army page for the WH40K 10e Forge flow.
  *
- * Renders the route scaffold that T4 will compose with the actual form
- * container. Keeps the route reachable without wiring mutation logic yet.
+ * Async Server Component that resolves the Auth0 session and locale, then
+ * renders the CreateArmyContainer client component. Redirects to login when
+ * unauthenticated, mirroring the Forge list page.
  *
  * @requirements
- * 1. Must be a Server Component.
- * 2. Must set the request locale for next-intl server-side.
- * 3. Must render a placeholder shell for the Create Army page.
- * 4. Must not implement form or container logic.
+ * 1. Must be a Server Component (no 'use client').
+ * 2. Must fetch the Auth0 session via auth0.getSession().
+ * 3. Must redirect to /auth/login when no session exists.
+ * 4. Must redirect to /auth/logout when the internal_id claim is missing (stale session).
+ * 5. Must set the request locale for next-intl server-side.
+ * 6. Must render the CreateArmyContainer with the authenticated userId and locale.
  */
 
+import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
+import { CreateArmyContainer } from '@/components/CreateArmyContainer.js';
 
 export interface CreateArmyPageProps {
     params: Promise<{
@@ -19,11 +26,23 @@ export interface CreateArmyPageProps {
     }>;
 }
 
-/** Renders the Create Army page shell. */
+/** Renders the Create Army page. */
 export default async function CreateArmyPage({ params }: CreateArmyPageProps) {
     const { locale } = await params;
     setRequestLocale(locale);
     const t = await getTranslations('armyCreation');
+
+    const session = (await auth0?.getSession()) ?? null;
+
+    if (!session) {
+        redirect('/auth/login');
+    }
+
+    const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
+
+    if (!userId) {
+        redirect('/auth/logout');
+    }
 
     return (
         <div className="flex flex-1 flex-col gap-4 p-6">
@@ -31,7 +50,7 @@ export default async function CreateArmyPage({ params }: CreateArmyPageProps) {
                 <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
             </header>
 
-            <div className="min-h-64 rounded-lg border border-dashed border-border-subtle bg-muted/20 p-6" />
+            <CreateArmyContainer userId={userId} locale={locale} />
         </div>
     );
 }
