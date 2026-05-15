@@ -34,7 +34,7 @@ export function Providers({ children }: ProvidersProps) {
     const queryClient = getQueryClient();
 
     return (
-        <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient as unknown as import('@tanstack/react-query').QueryClient}>
             <DataContextManagerProvider>
                 <SyncManifestProvider>
                     <PresenceProvider>{children}</PresenceProvider>

@@ -67,8 +67,10 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
         }
 
         const queryClient = getQueryClient();
-        await queryClient.prefetchQuery(queryAccount(authorization, { userId }));
-        const dehydratedState = dehydrate(queryClient);
+        await queryClient.prefetchQuery(
+            queryAccount(authorization, { userId }) as unknown as Parameters<typeof queryClient.prefetchQuery>[0],
+        );
+        const dehydratedState = dehydrate(queryClient as unknown as import('@tanstack/react-query').QueryClient);
 
         return (
             <HydrationBoundary state={dehydratedState}>
