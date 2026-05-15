@@ -19,3 +19,7 @@ export {
     type ForgeSortBy,
 } from './components/ArmyFilterPanel.mobile.js';
 export { ArmyCardSkeleton } from './components/ArmyCardSkeleton.mobile.js';
+
+// === Utils ===
+
+export { buildNewArmy, getPointsLimitForBattleSize, type CreateArmyDraft } from './utils/createArmyHelpers.js';

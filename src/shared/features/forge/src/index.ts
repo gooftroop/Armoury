@@ -28,3 +28,7 @@ export {
     type FactionOption,
     type DetachmentOption,
 } from './components/CreateArmyForm.web.js';
+
+// === Utils ===
+
+export { buildNewArmy, getPointsLimitForBattleSize, type CreateArmyDraft } from './utils/createArmyHelpers.js';
