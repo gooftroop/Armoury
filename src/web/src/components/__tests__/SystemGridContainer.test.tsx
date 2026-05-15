@@ -8,14 +8,19 @@
  * | REQ-SGC-02 | Derives syncing/synced/error/overlay/href tile states from sync status and persistence errors. | "derives isSyncing", "derives isSynced", "derives isError", "derives href", "derives showOverlay true", "derives showOverlay false", "derives isQueued" |
  * | REQ-SGC-03 | Delegates unauthenticated clicks and blocks activation. | "calls onUnauthenticatedClick" |
  * | REQ-SGC-04 | Ignores clicks while already syncing. | "no-op when sync status is syncing" |
- * | REQ-SGC-05 | Activates idle systems by resolving system and calling enableSystem. | "resolves and enables on idle click", "does nothing when resolve returns null" |
+ * | REQ-SGC-05 | Activates idle systems by resolving system and calling enableSystem. | "resolves and enables on idle click" |
  * | REQ-SGC-06 | Persists enabled system to account when userId is provided. | "persists enabled system when userId exists" |
  * | REQ-SGC-07 | Surfaces persistence failures as tile error and allows retry recovery. | "sets persist error when account mutation fails", "clears persist error after successful retry" |
+ * | REQ-SGC-11 | Surfaces activation failure when resolveGameSystem returns null and reports to Sentry. | "surfaces activation error when resolveGameSystem returns null" |
+ * | REQ-SGC-11 | Surfaces activation failure when enableSystem throws and reports to Sentry. | "surfaces activation error when enableSystem throws" |
+ * | REQ-SGC-11 | Clears activation error on successful retry. | "clears activation error after successful retry" |
  */
 
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import * as Sentry from '@sentry/nextjs';
 
 import type { GameSystemManifest, SyncProgressState } from '@armoury/data-dao';
 
@@ -293,7 +298,7 @@ describe('SystemGridContainer', () => {
         expect(enableSystemMock).toHaveBeenCalledTimes(1);
     });
 
-    it('does nothing when resolveGameSystem returns null', async () => {
+    it('surfaces activation error when resolveGameSystem returns null', async () => {
         resolveGameSystemMock.mockResolvedValueOnce(null);
         const user = userEvent.setup();
         renderHarness({ statuses: { [manifest.id]: { status: 'idle' } } });
@@ -301,9 +306,55 @@ describe('SystemGridContainer', () => {
         await user.click(screen.getByRole('button', { name: 'click:wh40k10e' }));
 
         await waitFor(() => {
-            expect(resolveGameSystemMock).toHaveBeenCalledWith('wh40k10e');
+            expect(within(getTile(manifest.id)).getByText('error')).toBeInTheDocument();
         });
         expect(enableSystemMock).not.toHaveBeenCalled();
+        expect(Sentry.captureMessage).toHaveBeenCalledWith(
+            'SystemGrid activation: resolveGameSystem returned null',
+            expect.objectContaining({
+                level: 'error',
+                tags: expect.objectContaining({ systemId: 'wh40k10e' }),
+            }),
+        );
+        expect(within(getTile(manifest.id)).queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('surfaces activation error when enableSystem throws', async () => {
+        enableSystemMock.mockRejectedValueOnce(new Error('boom'));
+        const user = userEvent.setup();
+        renderHarness({ statuses: { [manifest.id]: { status: 'idle' } } });
+
+        await user.click(screen.getByRole('button', { name: 'click:wh40k10e' }));
+
+        await waitFor(() => {
+            expect(within(getTile(manifest.id)).getByText('error')).toBeInTheDocument();
+        });
+        expect(Sentry.captureException).toHaveBeenCalledWith(
+            expect.any(Error),
+            expect.objectContaining({
+                tags: expect.objectContaining({ systemId: 'wh40k10e', operation: 'activate-system-tile' }),
+            }),
+        );
+        expect(within(getTile(manifest.id)).queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('clears activation error after successful retry', async () => {
+        enableSystemMock.mockRejectedValueOnce(new Error('boom'));
+        enableSystemMock.mockResolvedValueOnce(undefined);
+        const user = userEvent.setup();
+        renderHarness({ statuses: { [manifest.id]: { status: 'idle' } } });
+
+        await user.click(screen.getByRole('button', { name: 'click:wh40k10e' }));
+
+        await waitFor(() => {
+            expect(within(getTile(manifest.id)).getByText('error')).toBeInTheDocument();
+        });
+
+        await user.click(screen.getByRole('button', { name: 'click:wh40k10e' }));
+
+        await waitFor(() => {
+            expect(within(getTile(manifest.id)).queryByText('error')).not.toBeInTheDocument();
+        });
     });
 
     it('persists enabled system when userId exists', async () => {
