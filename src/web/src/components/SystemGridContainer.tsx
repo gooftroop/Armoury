@@ -17,6 +17,7 @@
  * 8. Must surface account persistence failures as error state on the tile so the user can retry.
  * 9. Must provide navigation href for synced tiles pointing to the system's armies page.
  * 10. Must derive queue state from system sync statuses without SyncQueueProvider dependencies.
+ * 11. Must surface activation failures (thrown errors or null-resolved system) as an error state on the tile so the user can retry, and report them to Sentry with diagnostic context.
  *
  * @module system-grid-container
  */
@@ -25,6 +26,8 @@ import { useState, useCallback, useMemo } from 'react';
 import type { ReactElement, Dispatch, SetStateAction } from 'react';
 
 import { useTranslations } from 'next-intl';
+
+import * as Sentry from '@sentry/nextjs';
 
 import type { GameSystemManifest } from '@armoury/data-dao';
 import type { SyncProgressState } from '@armoury/data-dao';
@@ -75,6 +78,7 @@ async function activateSystemTile(
     userId: string | undefined,
     setActivatingId: Dispatch<SetStateAction<string | null>>,
     setPersistErrors: Dispatch<SetStateAction<Record<string, string>>>,
+    setActivationErrors: Dispatch<SetStateAction<Record<string, string>>>,
 ): Promise<void> {
     if (onUnauthenticatedClick) {
         onUnauthenticatedClick();
@@ -89,15 +93,55 @@ async function activateSystemTile(
     }
 
     setActivatingId(manifest.id);
+    setActivationErrors((prev) => {
+        if (!prev[manifest.id]) {
+            return prev;
+        }
+
+        const next = { ...prev };
+        delete next[manifest.id];
+
+        return next;
+    });
+
+    Sentry.addBreadcrumb({
+        category: 'system-grid',
+        level: 'info',
+        message: 'activate:start',
+        data: { systemId: manifest.id, hasUserId: Boolean(userId) },
+    });
 
     try {
         const system = await resolveGameSystem(manifest.id);
 
         if (!system) {
+            Sentry.captureMessage('SystemGrid activation: resolveGameSystem returned null', {
+                level: 'error',
+                tags: { area: 'system-grid', operation: 'resolve-game-system', systemId: manifest.id },
+            });
+            setActivationErrors((prev) => ({
+                ...prev,
+                [manifest.id]: `System "${manifest.id}" is not available in this build.`,
+            }));
+
             return;
         }
 
+        Sentry.addBreadcrumb({
+            category: 'system-grid',
+            level: 'info',
+            message: 'activate:resolved',
+            data: { systemId: manifest.id },
+        });
+
         await enableSystem(system);
+
+        Sentry.addBreadcrumb({
+            category: 'system-grid',
+            level: 'info',
+            message: 'activate:enabled',
+            data: { systemId: manifest.id },
+        });
 
         if (userId) {
             try {
@@ -133,6 +177,12 @@ async function activateSystemTile(
                 setPersistErrors((prev) => ({ ...prev, [manifest.id]: message }));
             }
         }
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to activate system';
+        Sentry.captureException(err, {
+            tags: { area: 'system-grid', operation: 'activate-system-tile', systemId: manifest.id },
+        });
+        setActivationErrors((prev) => ({ ...prev, [manifest.id]: message }));
     } finally {
         setActivatingId(null);
     }
@@ -154,6 +204,7 @@ function buildTiles(
     syncStates: SyncStateMap,
     activatingId: string | null,
     persistErrors: Record<string, string>,
+    activationErrors: Record<string, string>,
     syncProgress: SyncProgressState | null,
     t: ReturnType<typeof useTranslations<'landing'>>,
     handleTileClick: (manifest: GameSystemManifest) => void,
@@ -163,8 +214,9 @@ function buildTiles(
         const isQueued = status === SyncStatus.Pending || status === SyncStatus.Syncing;
         const isSyncing = status === SyncStatus.Syncing || activatingId === manifest.id;
         const hasPersistError = Boolean(persistErrors[manifest.id]);
-        const isSynced = status === SyncStatus.Synced && !hasPersistError;
-        const isError = status === SyncStatus.Error || hasPersistError;
+        const hasActivationError = Boolean(activationErrors[manifest.id]);
+        const isSynced = status === SyncStatus.Synced && !hasPersistError && !hasActivationError;
+        const isError = status === SyncStatus.Error || hasPersistError || hasActivationError;
         const showOverlay = !isSynced;
 
         return {
@@ -203,6 +255,7 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
     const syncProgress = useSyncProgress(syncProgressCollector);
     const [activatingId, setActivatingId] = useState<string | null>(null);
     const [persistErrors, setPersistErrors] = useState<Record<string, string>>({});
+    const [activationErrors, setActivationErrors] = useState<Record<string, string>>({});
 
     const handleTileClick = useCallback(
         async (manifest: GameSystemManifest) => {
@@ -214,6 +267,7 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
                 userId,
                 setActivatingId,
                 setPersistErrors,
+                setActivationErrors,
             );
         },
         [onUnauthenticatedClick, systemSyncStates, enableSystem, userId],
@@ -226,11 +280,12 @@ function SystemGridContainer({ manifests, userId, onUnauthenticatedClick }: Syst
                 systemSyncStates,
                 activatingId,
                 persistErrors,
+                activationErrors,
                 syncProgress.phase !== 'idle' ? syncProgress : null,
                 t,
                 (manifest) => void handleTileClick(manifest),
             ),
-        [manifests, systemSyncStates, activatingId, persistErrors, syncProgress, t, handleTileClick],
+        [manifests, systemSyncStates, activatingId, persistErrors, activationErrors, syncProgress, t, handleTileClick],
     );
 
     return <SystemGridView tiles={tiles} />;
