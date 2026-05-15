@@ -13,7 +13,7 @@
  * 3. Must render ArmyFilterPanel above the army grid.
  * 4. Must render a responsive grid: 1 col at mobile, 2 at md, 3 at lg.
  * 5. Must show ArmyCardSkeleton placeholders during loading.
- * 6. Must show EmptyState callout (no action button) when no armies exist.
+ * 6. Must show EmptyState callout with a Create Army CTA when no armies exist.
  * 7. Must use next-intl useTranslations for all user-facing strings.
  * 8. Must not own any state or perform data fetching.
  * 9. Must display displayName in React DevTools.
@@ -69,6 +69,9 @@ export interface ArmyListViewProps {
 /** Number of skeleton cards to display during loading. */
 const SKELETON_COUNT = 4;
 
+/** Canonical route for creating a new army. */
+const CREATE_ARMY_HREF = '/wh40k10e/armies/new';
+
 /**
  * ArmyListView — pure render view for the Forge (army list) page.
  *
@@ -99,7 +102,7 @@ function ArmyListView({
                     <h1 className="text-3xl font-bold text-primary">{t('title')}</h1>
                     <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
                 </div>
-                <Link href="./armies/new">
+                <Link href={CREATE_ARMY_HREF}>
                     <Button variant="primary">
                         <Plus />
                         {t('actions.createArmy')}
@@ -118,7 +121,19 @@ function ArmyListView({
 
             {/* Empty state — no armies at all */}
             {!isLoading && isEmpty && (
-                <EmptyState icon={<Shield />} title={t('emptyState.title')} description={t('emptyState.description')} />
+                <EmptyState
+                    action={
+                        <Link href={CREATE_ARMY_HREF}>
+                            <Button variant="primary">
+                                <Plus />
+                                {t('actions.createArmy')}
+                            </Button>
+                        </Link>
+                    }
+                    icon={<Shield />}
+                    title={t('emptyState.title')}
+                    description={t('emptyState.description')}
+                />
             )}
 
             {/* Army list with filters */}
