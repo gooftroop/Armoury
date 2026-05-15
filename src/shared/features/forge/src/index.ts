@@ -19,3 +19,12 @@ export {
     type ForgeSortBy,
 } from './components/ArmyFilterPanel.web.js';
 export { ArmyCardSkeleton, type ArmyCardSkeletonProps } from './components/ArmyCardSkeleton.web.js';
+export {
+    CreateArmyForm,
+    BATTLE_SIZE_OPTIONS,
+    type CreateArmyFormProps,
+    type CreateArmyFormValues,
+    type CreateArmyFormErrors,
+    type FactionOption,
+    type DetachmentOption,
+} from './components/CreateArmyForm.web.js';
