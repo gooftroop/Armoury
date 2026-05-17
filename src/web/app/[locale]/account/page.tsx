@@ -18,8 +18,8 @@
  * @module account-page
  */
 
-import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import * as Sentry from '@sentry/nextjs';
 
 import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
 import { AccountSettings } from '@/components/AccountSettingsContainer.js';
@@ -47,6 +47,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
     setRequestLocale(locale);
 
     const t = await getTranslations('account');
+    const tError = await getTranslations('error');
     const session = (await auth0?.getSession()) ?? null;
 
     return (
@@ -56,7 +57,28 @@ export default async function AccountPage({ params }: AccountPageProps) {
                     const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
 
                     if (!userId) {
-                        redirect('/auth/logout');
+                        // Render an error UI instead of redirecting to /auth/logout —
+                        // an active session without internal_id indicates a broken
+                        // Auth0 Post-Login Action, not a stale session. Sign-out must
+                        // be user-initiated to avoid redirect loops.
+                        Sentry.captureMessage('Authenticated session missing internal_id claim on account page', {
+                            level: 'error',
+                            tags: { component: 'AccountPage' },
+                            extra: { sub: session.user.sub, email: session.user.email },
+                        });
+
+                        return (
+                            <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 py-12">
+                                <h1 className="text-2xl font-semibold">{tError('title')}</h1>
+                                <p className="text-secondary">{tError('description')}</p>
+                                <a
+                                    href="/auth/logout"
+                                    className="rounded-md border border-foreground px-4 py-2 text-sm hover:bg-foreground hover:text-base"
+                                >
+                                    {tError('retry')}
+                                </a>
+                            </div>
+                        );
                     }
 
                     return (

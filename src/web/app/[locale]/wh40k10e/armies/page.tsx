@@ -15,7 +15,8 @@
  */
 
 import { redirect } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import * as Sentry from '@sentry/nextjs';
 
 import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
 import { ForgeContainer } from '@/components/ForgeContainer.js';
@@ -49,7 +50,29 @@ export default async function ArmiesPage({ params }: ArmiesPageProps) {
     const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
 
     if (!userId) {
-        redirect('/auth/logout');
+        // Render an error UI instead of redirecting to /auth/logout — an active
+        // session without internal_id indicates a broken Auth0 Post-Login Action,
+        // not a stale session. Sign-out must be user-initiated to avoid redirect loops.
+        Sentry.captureMessage('Authenticated session missing internal_id claim on armies page', {
+            level: 'error',
+            tags: { component: 'ArmiesPage' },
+            extra: { sub: session.user.sub, email: session.user.email },
+        });
+
+        const t = await getTranslations('error');
+
+        return (
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
+                <h1 className="text-2xl font-semibold">{t('title')}</h1>
+                <p className="text-secondary">{t('description')}</p>
+                <a
+                    href="/auth/logout"
+                    className="rounded-md border border-foreground px-4 py-2 text-sm hover:bg-foreground hover:text-base"
+                >
+                    {t('retry')}
+                </a>
+            </div>
+        );
     }
 
     return (

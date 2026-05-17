@@ -7,7 +7,7 @@
  * @requirements
  * - REQ-LANDING-01: Renders AuthenticatedLanding wrapped in HydrationBoundary when session exists with userId.
  * - REQ-LANDING-02: Prefetches account data via queryAccount when authenticated.
- * - REQ-LANDING-03: Renders meta refresh redirect to /auth/login when session exists but internal_id is missing.
+ * - REQ-LANDING-03: Renders error UI with sign-out retry button when session exists but internal_id is missing.
  * - REQ-LANDING-04: Renders SilentAuthCheck + UnauthenticatedLanding when no session.
  * - REQ-LANDING-05: Calls setRequestLocale with the resolved locale param.
  * - REQ-LANDING-06: Calls discoverSystemManifests and passes manifests to landing components.
@@ -18,7 +18,7 @@
  * |-------------------|---------------------------------------------------------------------------|
  * | REQ-LANDING-01    | authenticated user → HydrationBoundary + AuthenticatedLanding             |
  * | REQ-LANDING-02    | authenticated user → prefetchQuery called with queryAccount               |
- * | REQ-LANDING-03    | authenticated user without internal_id → meta refresh to /auth/login      |
+ * | REQ-LANDING-03    | authenticated user without internal_id → error UI with sign-out retry button             |
  * | REQ-LANDING-04    | no session → SilentAuthCheck + UnauthenticatedLanding                     |
  * | REQ-LANDING-05    | locale param is forwarded to setRequestLocale                             |
  * | REQ-LANDING-06    | manifests are passed through to landing components                        |
@@ -42,6 +42,7 @@ const { mockGetSession, mockSetRequestLocale, mockDiscoverSystemManifests, mockG
 
 vi.mock('next-intl/server', () => ({
     setRequestLocale: mockSetRequestLocale,
+    getTranslations: vi.fn(() => async () => ''),
 }));
 
 vi.mock('@/lib/auth0.js', () => ({
@@ -261,14 +262,17 @@ describe('LandingContent', () => {
         expect(mockQc.prefetchQuery).toHaveBeenCalledWith(queryOpts);
     });
 
-    it('renders meta refresh redirect when authenticated but internal_id is missing', async () => {
+    it('renders error UI with retry button when authenticated but internal_id is missing', async () => {
         mockGetSession.mockResolvedValue(makeSession());
 
         const result = (await LandingContent({ params: Promise.resolve({ locale: 'en' }) })) as unknown as ReactElement;
+        const main = findByType(result, 'main');
 
-        expect(result.type).toBe('meta');
-        expect(result.props.httpEquiv).toBe('refresh');
-        expect(result.props.content).toBe('0;url=/auth/login');
+        expect(main).toBeDefined();
+        expect(hasType(result, 'h1')).toBe(true);
+        expect(hasType(result, 'a')).toBe(true);
+        const link = findByType(result, 'a');
+        expect(link!.props.href).toBe('/auth/logout');
     });
 
     it('renders UnauthenticatedLanding when session has no tokenSet', async () => {

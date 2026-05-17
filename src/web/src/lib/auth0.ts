@@ -13,7 +13,10 @@
  * 1. Must export a singleton Auth0Client instance (or null when unconfigured) for server-side auth operations.
  * 2. Must use environment variables for all Auth0 configuration (no hardcoded values).
  * 3. Must export isAuth0Configured() so consumers can branch without crashing.
- * 4. Must preserve the `https://armoury.app/internal_id` custom claim in session.user via beforeSessionSaved.
+ * 4. Must preserve the `https://armoury.app/internal_id` custom claim in session.user via beforeSessionSaved
+ *    when the claim is present. If the claim is absent (e.g. Auth0 Post-Login Action misconfigured), the hook
+ *    must NOT throw — it returns the session as-is and logs a Sentry warning so downstream consumers can
+ *    render a graceful error UI instead of breaking the entire login flow.
  * 5. Must export INTERNAL_ID_CLAIM constant for consistent claim key access across web client code.
  * 6. Must actively extract the internal_id from the raw ID token JWT during both initial login and token refresh.
  *
@@ -114,6 +117,24 @@ export const auth0: Auth0Client | null = isAuth0Configured()
               // 2. Fall back to whatever the SDK already placed on session.user
               //    (covers the edge case where idToken is null).
               const internalId = fromToken ?? (session.user[INTERNAL_ID_CLAIM] as string | undefined);
+
+              // 3. Allow session without internal_id for graceful degradation.
+              if (!internalId) {
+                  Sentry.captureMessage(
+                      'Auth0 session missing internal_id claim — Post-Login Action may not be deployed or M2M is misconfigured.',
+                      {
+                          level: 'warning',
+                          tags: { component: 'auth0', hook: 'beforeSessionSaved' },
+                          extra: {
+                              sub: session.user.sub,
+                              email: session.user.email,
+                              hasIdToken: Boolean(idToken),
+                          },
+                      },
+                  );
+
+                  return session;
+              }
 
               return {
                   ...session,
