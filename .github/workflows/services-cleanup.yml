@@ -70,6 +70,7 @@ jobs:
 
     cleanup-authorizer:
         needs: [cleanup-campaigns, cleanup-matches, cleanup-friends, cleanup-users]
+        if: always()
         uses: ./.github/workflows/_cleanup-service.yml
         with:
             working-directory: src/services/authorizer
