@@ -1,57 +1,16 @@
--- Migration: remove legacy user columns after Auth0 sub cutover
--- `sub` is now the canonical user identifier, so the legacy migration bridge
--- is no longer needed. Drop any indexes on these columns first, then remove
--- the columns themselves.
+-- Migration: cleanup legacy index after Auth0 sub cutover.
+--
+-- After 0002, `users.id` IS the Auth0 sub. The legacy `users.sub` bridge
+-- column is now redundant.
+--
+-- DSQL LIMITATION: AWS DSQL does not support `ALTER TABLE ... DROP COLUMN`
+-- (PostgreSQL feature_not_supported / SQLSTATE 0A000) and does not support
+-- `DO $$ ... $$` anonymous blocks. We therefore:
+--   1. Drop the now-redundant `idx_users_sub` index (supported).
+--   2. Leave the `sub` column in place. It is inert: the Drizzle schema in
+--      `src/services/users/schema.ts` does not declare it, so the ORM never
+--      reads or writes it, and `users.id == users.sub` for all rows.
+--
+-- If/when DSQL adds DROP COLUMN support, a follow-up migration can remove it.
 
-BEGIN;
-
-DO $$
-DECLARE
-    index_name text;
-BEGIN
-    -- Drop `sub` only when it still exists; this is the old Auth0 bridge column
-    -- and is no longer needed once user IDs are stored directly in `id`.
-    IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = current_schema()
-          AND table_name = 'users'
-          AND column_name = 'sub'
-    ) THEN
-        FOR index_name IN
-            SELECT indexname
-            FROM pg_indexes
-            WHERE schemaname = current_schema()
-              AND tablename = 'users'
-              AND indexdef ILIKE '%("sub")%'
-        LOOP
-            EXECUTE format('DROP INDEX IF EXISTS %I', index_name);
-        END LOOP;
-
-        ALTER TABLE "users" DROP COLUMN IF EXISTS "sub";
-    END IF;
-
-    -- Drop `legacy_id` only when it still exists; it was a temporary safety
-    -- net that preserved the old UUID primary key during the Auth0 migration.
-    IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = current_schema()
-          AND table_name = 'users'
-          AND column_name = 'legacy_id'
-    ) THEN
-        FOR index_name IN
-            SELECT indexname
-            FROM pg_indexes
-            WHERE schemaname = current_schema()
-              AND tablename = 'users'
-              AND indexdef ILIKE '%("legacy_id")%'
-        LOOP
-            EXECUTE format('DROP INDEX IF EXISTS %I', index_name);
-        END LOOP;
-
-        ALTER TABLE "users" DROP COLUMN IF EXISTS "legacy_id";
-    END IF;
-END $$;
-
-COMMIT;
+DROP INDEX IF EXISTS idx_users_sub;
