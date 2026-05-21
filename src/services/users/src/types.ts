@@ -60,11 +60,8 @@ export interface ApiResponse {
  * | updated_at | TEXT | NOT NULL    |
  */
 export interface User {
-    /** Unique identifier for this user record. */
+    /** Unique identifier for this user record — the Auth0 sub. */
     id: string;
-
-    /** User subject identifier from the identity provider. */
-    sub: string;
 
     /** User email address. */
     email: string;
@@ -202,8 +199,8 @@ export type RouteHandler = (
  * Request body for creating a new user.
  */
 export interface CreateUserPayload {
-    /** User subject identifier from the identity provider. */
-    sub: string;
+    /** User subject identifier from the identity provider (used as the user id). */
+    id: string;
 
     /** User email address. */
     email: string;
@@ -237,8 +234,8 @@ export interface UpdateUserPayload {
  * profile fields on subsequent logins.
  */
 export interface UpsertUserPayload {
-    /** User subject identifier from the identity provider. */
-    sub: string;
+    /** User subject identifier from the identity provider (used as the user id). */
+    id: string;
 
     /** User email address. */
     email: string;

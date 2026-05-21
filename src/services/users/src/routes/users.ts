@@ -47,8 +47,7 @@ export const createUser: RouteHandler = async (
     const now = new Date().toISOString();
 
     const user: User = {
-        id: randomUUID(),
-        sub: request.sub,
+        id: request.id,
         email: request.email,
         name: request.name,
         picture: request.picture,
@@ -211,10 +210,9 @@ export const deleteUser: RouteHandler = async (
 /**
  * Upserts a user on login.
  *
- * Called by the Auth0 Post-Login Action via an M2M token. Looks up the
- * user by `sub`; creates a new record on first login or updates profile
- * fields on subsequent logins. Always returns the user with their stable
- * internal `id`.
+ * Called by the Auth0 Post-Login Action via an M2M token. The user's
+ * Auth0 `sub` IS their primary key (`id`). Creates a new record on first
+ * login or updates profile fields on subsequent logins.
  *
  * @param adapter - Database adapter instance.
  * @param body - Request body containing user details from Auth0.
@@ -234,12 +232,12 @@ export const upsertUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const existing = await adapter.getByField('user', 'sub', request.sub);
+    const existing = await adapter.get('user', request.id);
     const now = new Date().toISOString();
 
-    if (existing.length > 0) {
+    if (existing) {
         const updated: User = {
-            ...existing[0],
+            ...existing,
             email: request.email,
             name: request.name,
             picture: request.picture,
@@ -251,7 +249,7 @@ export const upsertUser: RouteHandler = async (
         return jsonResponse(200, updated);
     }
 
-    const userId = randomUUID();
+    const userId = request.id;
     const accountId = randomUUID();
 
     const account: Account = {
@@ -265,7 +263,6 @@ export const upsertUser: RouteHandler = async (
 
     const user: User = {
         id: userId,
-        sub: request.sub,
         email: request.email,
         name: request.name,
         picture: request.picture,

@@ -11,7 +11,6 @@ const baseUserContext: UserContext = {
 
 const seedUser: User = {
     id: 'user-1',
-    sub: 'auth0|user-1',
     email: 'user@test.com',
     name: 'Test User',
     picture: null,

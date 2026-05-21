@@ -32,7 +32,7 @@ describe('validation utilities', () => {
 
             const payload = result as CreateUserPayload;
 
-            expect(payload.sub).toBe('auth0|user-1');
+            expect(payload.id).toBe('auth0|user-1');
             expect(payload.email).toBe('user@test.com');
             expect(payload.name).toBe('Test');
             expect(payload.picture).toBeNull();
@@ -92,7 +92,7 @@ describe('validation utilities', () => {
 
             const payload = result as UpsertUserPayload;
 
-            expect(payload.sub).toBe('auth0|user-1');
+            expect(payload.id).toBe('auth0|user-1');
             expect(payload.email).toBe('user@test.com');
             expect(payload.name).toBe('Test');
             expect(payload.picture).toBeNull();

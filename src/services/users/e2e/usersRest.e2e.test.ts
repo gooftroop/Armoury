@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Account, CreateAccountPayload, CreateUserPayload, User, UserContext } from '@/types.js';
+import type { Account, CreateAccountPayload, User, UserContext } from '@/types.js';
 import { router } from '@/router.js';
 import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
 import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
@@ -8,7 +8,7 @@ let adapter: LocalDatabaseAdapter;
 
 const userContext: UserContext = { userId: 'user-sub-1', email: 'test@armoury.dev', name: 'Test User' };
 
-const createUserBody: CreateUserPayload = {
+const createUserBody = {
     sub: 'user-sub-1',
     email: 'test@armoury.dev',
     name: 'Test User',
@@ -53,7 +53,7 @@ describe('users REST e2e', () => {
         const user = JSON.parse(res.body) as User;
         expect(user.name).toBe('Test User');
         expect(user.email).toBe('test@armoury.dev');
-        expect(user.sub).toBe('user-sub-1');
+        expect(user.id).toBe('user-sub-1');
         expect(user.id).toBeTruthy();
     });
 

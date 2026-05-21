@@ -16,7 +16,7 @@
 
 import pg from 'pg';
 
-import { E2E_ACCOUNT_ID, E2E_USER_ID, E2E_USER_SUB } from '../constants.js';
+import { E2E_ACCOUNT_ID, E2E_USER_ID } from '../constants.js';
 
 /** Postgres connection config matching src/services/users/docker-compose.yml. */
 const PG_CONFIG = {
@@ -65,15 +65,14 @@ export async function seedTestUser(): Promise<() => Promise<void>> {
 
     // UPSERT user — idempotent across re-runs.
     await client.query(
-        `INSERT INTO users (id, sub, email, name, picture, account_id, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, NULL, $5, $6, $6)
+        `INSERT INTO users (id, email, name, picture, account_id, created_at, updated_at)
+         VALUES ($1, $2, $3, NULL, $4, $5, $5)
          ON CONFLICT (id) DO UPDATE SET
-           sub = EXCLUDED.sub,
            email = EXCLUDED.email,
            name = EXCLUDED.name,
            account_id = EXCLUDED.account_id,
            updated_at = EXCLUDED.updated_at`,
-        [E2E_USER_ID, E2E_USER_SUB, 'e2e@armoury.test', 'E2E Test User', E2E_ACCOUNT_ID, now],
+        [E2E_USER_ID, 'e2e@armoury.test', 'E2E Test User', E2E_ACCOUNT_ID, now],
     );
 
     // UPSERT account — starts with empty systems so the download flow can write to it.

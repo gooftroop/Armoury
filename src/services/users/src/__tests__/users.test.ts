@@ -29,7 +29,7 @@ describe('user routes', () => {
             const payload = JSON.parse(response.body) as User;
 
             expect(payload.id).toEqual(expect.any(String));
-            expect(payload.sub).toBe('auth0|user-1');
+            expect(payload.id).toBe('auth0|user-1');
             expect(payload.email).toBe('user@test.com');
             expect(payload.name).toBe('Test');
             expect(payload.picture).toBeNull();
@@ -213,7 +213,7 @@ describe('user routes', () => {
             const payload = JSON.parse(response.body) as User;
 
             expect(payload.id).toEqual(expect.any(String));
-            expect(payload.sub).toBe('auth0|user-1');
+            expect(payload.id).toBe('auth0|user-1');
             expect(payload.email).toBe('user@test.com');
             expect(payload.name).toBe('Test');
             expect(payload.picture).toBeNull();

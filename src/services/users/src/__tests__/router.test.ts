@@ -11,7 +11,6 @@ const baseUserContext: UserContext = {
 
 const seedUser: User = {
     id: 'user-1',
-    sub: 'auth0|user-1',
     email: 'user@test.com',
     name: 'Test User',
     picture: null,
@@ -50,7 +49,7 @@ describe('router', () => {
         );
 
         expect(response.statusCode).toBe(201);
-        expect(JSON.parse(response.body)).toMatchObject({ sub: 'auth0|user-1' });
+        expect(JSON.parse(response.body)).toMatchObject({ id: 'auth0|user-1' });
     });
 
     it('routes GET / to listUsers (returns 200, empty array)', async () => {
