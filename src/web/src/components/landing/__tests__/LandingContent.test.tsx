@@ -7,7 +7,7 @@
  * @requirements
  * - REQ-LANDING-01: Renders AuthenticatedLanding wrapped in HydrationBoundary when session exists with userId.
  * - REQ-LANDING-02: Prefetches account data via queryAccount when authenticated.
- * - REQ-LANDING-03: Renders meta refresh redirect to /auth/login when session exists but internal_id is missing.
+ * - REQ-LANDING-03: Renders meta refresh redirect to /auth/login when session exists but sub claim is missing.
  * - REQ-LANDING-04: Renders SilentAuthCheck + UnauthenticatedLanding when no session.
  * - REQ-LANDING-05: Calls setRequestLocale with the resolved locale param.
  * - REQ-LANDING-06: Calls discoverSystemManifests and passes manifests to landing components.
@@ -18,7 +18,7 @@
  * |-------------------|---------------------------------------------------------------------------|
  * | REQ-LANDING-01    | authenticated user → HydrationBoundary + AuthenticatedLanding             |
  * | REQ-LANDING-02    | authenticated user → prefetchQuery called with queryAccount               |
- * | REQ-LANDING-03    | authenticated user without internal_id → meta refresh to /auth/login      |
+ * | REQ-LANDING-03    | authenticated user without sub → meta refresh to /auth/login              |
  * | REQ-LANDING-04    | no session → SilentAuthCheck + UnauthenticatedLanding                     |
  * | REQ-LANDING-05    | locale param is forwarded to setRequestLocale                             |
  * | REQ-LANDING-06    | manifests are passed through to landing components                        |
@@ -46,7 +46,6 @@ vi.mock('next-intl/server', () => ({
 
 vi.mock('@/lib/auth0.js', () => ({
     auth0: { getSession: mockGetSession },
-    INTERNAL_ID_CLAIM: 'https://armoury.app/internal_id',
 }));
 
 vi.mock('@/lib/discoverSystems.js', () => ({
@@ -89,8 +88,6 @@ vi.mock('next/headers', () => ({
 
 /* ---------- helpers ---------- */
 
-const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
-
 const fakeManifests: GameSystemManifest[] = [
     {
         id: 'wh40k10e',
@@ -119,8 +116,7 @@ function makeMockQueryClient() {
 function makeSession(userId?: string) {
     return {
         user: {
-            sub: 'auth0|abc123',
-            ...(userId !== undefined ? { [INTERNAL_ID_CLAIM]: userId } : {}),
+            sub: userId ?? undefined,
         },
         tokenSet: { accessToken: 'test-access-token' },
     };
@@ -261,7 +257,7 @@ describe('LandingContent', () => {
         expect(mockQc.prefetchQuery).toHaveBeenCalledWith(queryOpts);
     });
 
-    it('renders meta refresh redirect when authenticated but internal_id is missing', async () => {
+    it('renders meta refresh redirect when authenticated but sub is missing', async () => {
         mockGetSession.mockResolvedValue(makeSession());
 
         const result = (await LandingContent({ params: Promise.resolve({ locale: 'en' }) })) as unknown as ReactElement;
