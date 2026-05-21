@@ -70,13 +70,16 @@ export class UserDAO extends BaseDAO<User> {
 
     /**
      * Finds a user by their Auth0 subject identifier.
-     * @param sub - Auth0 subject identifier.
+     *
+     * After the Wave 1 migration, `users.id` holds the Auth0 sub directly,
+     * so this is an alias for `get(sub)`. The `sub` column is retained through
+     * Wave 2 (Task 15) and dropped in Task 17.
+     *
+     * @param sub - Auth0 subject identifier (equals `users.id` post-migration).
      * @returns The user or null if not found.
      */
     public async findBySub(sub: string): Promise<User | null> {
-        const results = await this.adapter.getByField('user', 'sub', sub);
-
-        return (results[0] as User) ?? null;
+        return this.get(sub);
     }
 
     /**
