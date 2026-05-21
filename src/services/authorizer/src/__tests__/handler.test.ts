@@ -132,7 +132,6 @@ describe('handler', () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'auth0|user-123',
-                'https://armoury.app/internal_id': 'internal-uuid-123',
                 'https://armoury.app/email': 'user@example.com',
                 'https://armoury.app/name': 'Test User',
                 aud: 'https://api.armoury.com',
@@ -148,7 +147,6 @@ describe('handler', () => {
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
         expect(result.context).toEqual({
-            'https://armoury.app/internal_id': 'internal-uuid-123',
             sub: 'auth0|user-123',
             email: 'user@example.com',
             name: 'Test User',
@@ -159,7 +157,6 @@ describe('handler', () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'auth0|user-123',
-                'https://armoury.app/internal_id': 'internal-uuid-123',
                 aud: 'https://api.armoury.com',
                 iss: 'https://test.auth0.com/',
             },
@@ -171,7 +168,6 @@ describe('handler', () => {
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
         expect(result.context).toEqual({
-            'https://armoury.app/internal_id': 'internal-uuid-123',
             sub: 'auth0|user-123',
         });
     });
@@ -219,7 +215,7 @@ describe('handler', () => {
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
-    it('returns Deny when payload has no internal_id claim', async () => {
+    it('returns Allow when payload has sub but no internal_id claim (internal_id no longer required)', async () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'auth0|user-123',
@@ -232,7 +228,7 @@ describe('handler', () => {
 
         const result = await invokeHandler(buildEvent('Bearer valid-token'));
 
-        expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
+        expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
     });
 
     it('returns Deny when Bearer token value is empty after scheme', async () => {
@@ -264,7 +260,6 @@ describe('handler - REQUEST events (WebSocket)', () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'auth0|user-123',
-                'https://armoury.app/internal_id': 'internal-uuid-123',
                 'https://armoury.app/email': 'user@example.com',
                 'https://armoury.app/name': 'Test User',
                 aud: 'https://api.armoury.com',
@@ -280,7 +275,6 @@ describe('handler - REQUEST events (WebSocket)', () => {
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
         expect(result.context).toEqual({
-            'https://armoury.app/internal_id': 'internal-uuid-123',
             sub: 'auth0|user-123',
             email: 'user@example.com',
             name: 'Test User',
@@ -341,7 +335,6 @@ describe('handler - OPTIONS preflight bypass', () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'auth0|user-123',
-                'https://armoury.app/internal_id': 'internal-uuid-123',
                 'https://armoury.app/email': 'user@example.com',
                 'https://armoury.app/name': 'Test User',
                 aud: 'https://api.armoury.com',
@@ -382,6 +375,18 @@ describe('handler - OPTIONS preflight bypass', () => {
 describe('handler - M2M token support', () => {
     beforeEach(() => {
         resetMocks();
+
+        joseMocks.jwtVerifyMock.mockResolvedValue({
+            payload: {
+                sub: 'auth0|user-123',
+                'https://armoury.app/email': 'user@example.com',
+                'https://armoury.app/name': 'Test User',
+                aud: 'https://api.armoury.com',
+                iss: 'https://test.auth0.com/',
+            },
+            protectedHeader: { alg: 'RS256' },
+            key: {},
+        });
     });
 
     it('returns Allow policy with m2m principal for valid M2M token', async () => {
@@ -436,7 +441,7 @@ describe('handler - M2M token support', () => {
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
-    it('returns Deny when gty has wrong value', async () => {
+    it('returns Allow when gty has wrong value but sub/aud/iss are valid (falls through to user token path)', async () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'client-id-abc@clients',
@@ -450,14 +455,14 @@ describe('handler - M2M token support', () => {
 
         const result = await invokeHandler(buildEvent('Bearer m2m-token'));
 
-        expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
+        expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
+        expect(result.principalId).toBe('client-id-abc@clients');
     });
 
     it('falls through to user token validation when gty is absent', async () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'auth0|user-123',
-                'https://armoury.app/internal_id': 'internal-uuid-123',
                 aud: 'https://api.armoury.com',
                 iss: 'https://test.auth0.com/',
             },
@@ -468,19 +473,18 @@ describe('handler - M2M token support', () => {
         const result = await invokeHandler(buildEvent('Bearer user-token'));
 
         expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
-        expect(result.principalId).toBe('internal-uuid-123');
+        expect(result.principalId).toBe('auth0|user-123');
     });
 });
 
 describe('generatePolicy', () => {
     it('creates Allow policy with correct structure and wildcard resource', () => {
-        const result = generatePolicy('internal-uuid-1', 'Allow', TEST_METHOD_ARN, {
-            'https://armoury.app/internal_id': 'internal-uuid-1',
+        const result = generatePolicy('auth0|user-1', 'Allow', TEST_METHOD_ARN, {
             sub: 'auth0|user-1',
         });
 
         expect(result).toEqual({
-            principalId: 'internal-uuid-1',
+            principalId: 'auth0|user-1',
             policyDocument: {
                 Version: '2012-10-17',
                 Statement: [
@@ -492,7 +496,6 @@ describe('generatePolicy', () => {
                 ],
             },
             context: {
-                'https://armoury.app/internal_id': 'internal-uuid-1',
                 sub: 'auth0|user-1',
             },
         });
@@ -518,7 +521,7 @@ describe('generatePolicy', () => {
     });
 
     it('converts specific method ARN to wildcard resource', () => {
-        const result = generatePolicy('internal-uuid-1', 'Allow', TEST_METHOD_ARN);
+        const result = generatePolicy('auth0|user-1', 'Allow', TEST_METHOD_ARN);
 
         expect(result.policyDocument.Statement[0].Resource).toBe(WILDCARD_RESOURCE);
     });
