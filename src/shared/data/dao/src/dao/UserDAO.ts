@@ -1,3 +1,10 @@
+/**
+ * @requirements
+ * - Drizzle table definitions for user entities (Postgres and SQLite variants)
+ * - `usersTable` is used by the Postgres adapter; `usersSqliteTable` by the SQLite adapter
+ * - `sub` column retained through Wave 2 of the Auth0 migration (Task 15 reads it)
+ * - `legacyId` column stores the old UUID PK during the Auth0 sub migration window
+ */
 import type { DatabaseAdapter } from '@/adapter.js';
 import { BaseDAO } from '@/dao/BaseDAO.js';
 import type { User } from '@armoury/models';
@@ -16,6 +23,7 @@ export const usersTable = pgTable(
         name: text('name').notNull(),
         picture: text('picture'),
         accountId: text('account_id'),
+        legacyId: text('legacy_id'),
         createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },
@@ -38,6 +46,7 @@ export const usersSqliteTable = sl.sqliteTable(
         name: sl.text('name').notNull(),
         picture: sl.text('picture'),
         accountId: sl.text('account_id'),
+        legacyId: sl.text('legacy_id'),
         createdAt: sl.text('created_at').notNull(),
         updatedAt: sl.text('updated_at').notNull(),
     },

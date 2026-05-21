@@ -6,6 +6,8 @@
  * - Table definitions must stay in sync with the canonical definitions in the DAO layer
  * - Tables must be schema-qualified when DB_SCHEMA is set to a non-public schema,
  *   so that drizzle-kit's schemaFilter includes them in the desired snapshot
+ * - `legacy_id` column stores the old UUID PK during the Auth0 sub migration window
+ * - `sub` column is retained until Task 17 (post-migration cleanup)
  */
 
 import { index, pgSchema, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
@@ -32,6 +34,7 @@ export const usersTable = table(
         name: text('name').notNull(),
         picture: text('picture'),
         accountId: text('account_id'),
+        legacyId: text('legacy_id'),
         createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },
