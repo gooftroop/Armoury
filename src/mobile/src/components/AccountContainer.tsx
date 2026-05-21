@@ -5,7 +5,7 @@
  * 1. Must own auth, query, mutation, and local preference orchestration.
  * 2. Must delegate rendering to AccountView/AccountUnauthenticatedView.
  * 3. Must preserve existing Auth0 and account preference update behavior.
- * 4. Must use the internal_id custom claim (UUID) as the user identifier for all API calls.
+ * 4. Must use the Auth0 user.sub as the user identifier for all API calls.
  *
  * @module account-container
  */
@@ -18,13 +18,6 @@ import type { Account, UserPreferences } from '@armoury/clients-users';
 
 import { AccountUnauthenticatedView, AccountView } from '@/components/AccountView.js';
 import type { SaveState } from '@/components/AccountView.js';
-
-/**
- * Custom claim namespace for the internal user identifier.
- *
- * Must match the claim key set by the Auth0 Post-Login Action.
- */
-const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id' as const;
 
 /**
  * Returns the user-facing label for account save lifecycle state.
@@ -77,7 +70,7 @@ function AccountContainer(): React.ReactElement {
         })();
     }, [getCredentials, isAuthenticated]);
 
-    const userId = user?.[INTERNAL_ID_CLAIM] as string | undefined;
+    const userId = user?.sub;
 
     const accountQuery = useQuery<Account, Error>({
         ...queryAccount(authorization, { userId: userId ?? '' }),
