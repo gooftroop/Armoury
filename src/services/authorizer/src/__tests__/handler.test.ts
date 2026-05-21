@@ -215,7 +215,7 @@ describe('handler', () => {
         expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
-    it('returns Allow when payload has sub but no internal_id claim (internal_id no longer required)', async () => {
+    it('returns Allow when payload has sub claim only (sub is the only required user identity claim)', async () => {
         joseMocks.jwtVerifyMock.mockResolvedValue({
             payload: {
                 sub: 'auth0|user-123',
