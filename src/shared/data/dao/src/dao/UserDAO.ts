@@ -2,8 +2,9 @@
  * @requirements
  * - Drizzle table definitions for user entities (Postgres and SQLite variants)
  * - `usersTable` is used by the Postgres adapter; `usersSqliteTable` by the SQLite adapter
- * - `sub` column retained through Wave 2 of the Auth0 migration (Task 15 reads it)
+ * - `sub` column retained in the DB through Wave 2 of the Auth0 migration (Task 15 reads it)
  * - `legacyId` column stores the old UUID PK during the Auth0 sub migration window
+ * - `findBySub()` removed: `User.id` now holds the Auth0 sub directly, so `get(id)` suffices
  */
 import type { DatabaseAdapter } from '@/adapter.js';
 import { BaseDAO } from '@/dao/BaseDAO.js';
@@ -66,20 +67,6 @@ export class UserDAO extends BaseDAO<User> {
      */
     public constructor(adapter: DatabaseAdapter) {
         super(adapter, 'user');
-    }
-
-    /**
-     * Finds a user by their Auth0 subject identifier.
-     *
-     * After the Wave 1 migration, `users.id` holds the Auth0 sub directly,
-     * so this is an alias for `get(sub)`. The `sub` column is retained through
-     * Wave 2 (Task 15) and dropped in Task 17.
-     *
-     * @param sub - Auth0 subject identifier (equals `users.id` post-migration).
-     * @returns The user or null if not found.
-     */
-    public async findBySub(sub: string): Promise<User | null> {
-        return this.get(sub);
     }
 
     /**

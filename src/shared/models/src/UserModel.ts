@@ -3,12 +3,11 @@
  *
  * Complements the Account model which stores auth + preferences.
  * The User model provides the publicly visible profile data that
- * other entities (e.g. friends) reference by userId. The Auth0
- * `sub` field links a user to their Account.
+ * other entities (e.g. friends) reference by userId.
  *
  * @requirements
  * 1. Must define the User interface for cross-service profile lookups.
- * 2. Must include `sub` for Auth0 identity linkage (retained through Wave 2 migration).
+ * 2. `id` holds the Auth0 subject identifier (e.g. `auth0|123456789`) — not a UUID.
  * 3. Must include `legacyId` as an optional field to hold the pre-migration UUID PK.
  */
 
@@ -19,11 +18,13 @@
  * profile pictures without duplicating data in the friend record.
  */
 export interface User {
-    /** Primary key for the user record. */
+    /**
+     * Primary key for the user record.
+     *
+     * Holds the Auth0 subject identifier (e.g. `auth0|123456789`).
+     * This value is the same as the `sub` claim in Auth0 JWTs.
+     */
     id: string;
-
-    /** Auth0 subject identifier linking this user to their Account. */
-    sub: string;
 
     /** User email address. */
     email: string;
