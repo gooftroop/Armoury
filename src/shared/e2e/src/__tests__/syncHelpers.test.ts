@@ -164,26 +164,26 @@ describe('syncTable', () => {
     it('writes a single batch for rows under the limit', async () => {
         const rows = Array.from({ length: 5 }, (_, i) => ({ id: String(i), name: `user_${i}` }));
         const source = makeMockClient([{ rows }]);
-        const target = makeMockClient();
+        const target = makeMockClient([{ rows: [{ column_name: 'id' }, { column_name: 'name' }] }]);
 
         const result = await syncTable(source, target, 'pr_1', 'users');
 
         expect(result).toEqual({ table: 'users', rowsRead: 5, batchesWritten: 1 });
-        expect(target.query).toHaveBeenCalledTimes(1);
+        expect(target.query).toHaveBeenCalledTimes(2);
     });
 
     it('batches writes at DSQL_BATCH_SIZE', async () => {
         const rowCount = DSQL_BATCH_SIZE * 2 + 500;
         const rows = Array.from({ length: rowCount }, (_, i) => ({ id: String(i) }));
         const source = makeMockClient([{ rows }]);
-        const target = makeMockClient();
+        const target = makeMockClient([{ rows: [{ column_name: 'id' }] }]);
 
         const result = await syncTable(source, target, 'pr_1', 'users');
 
         expect(result.rowsRead).toBe(rowCount);
         // 3000 + 3000 + 500 = 3 batches
         expect(result.batchesWritten).toBe(3);
-        expect(target.query).toHaveBeenCalledTimes(3);
+        expect(target.query).toHaveBeenCalledTimes(4);
     });
 
     it('rejects invalid table names', async () => {
