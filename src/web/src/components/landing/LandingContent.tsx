@@ -22,8 +22,9 @@
  * @module landing-content
  */
 
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import * as Sentry from '@sentry/nextjs';
 
 import { queryAccount } from '@armoury/clients-users';
 
@@ -61,9 +62,30 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
         const userId = session.user['sub'] as string | undefined;
 
         if (!userId) {
-            // Graceful re-auth: redirect to login instead of logout to avoid an
-            // infinite loop when the claim is temporarily missing (e.g. stale session).
-            return <meta httpEquiv="refresh" content="0;url=/auth/login" />;
+            // The session exists but lacks internal_id — almost always a misconfigured
+            // Auth0 Post-Login Action. Render an error UI instead of redirecting,
+            // because redirecting to /auth/login on an active session is what caused
+            // the post-signup infinite loop. Sign-out must be user-initiated.
+            Sentry.captureMessage('Authenticated session missing internal_id claim on landing', {
+                level: 'error',
+                tags: { component: 'LandingContent' },
+                extra: { sub: session.user.sub, email: session.user.email },
+            });
+
+            const t = await getTranslations('error');
+
+            return (
+                <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-base p-6 text-foreground">
+                    <h1 className="text-2xl font-semibold">{t('title')}</h1>
+                    <p className="text-secondary">{t('description')}</p>
+                    <a
+                        href="/auth/logout"
+                        className="rounded-md border border-foreground px-4 py-2 text-sm hover:bg-foreground hover:text-base"
+                    >
+                        {t('retry')}
+                    </a>
+                </main>
+            );
         }
 
         const queryClient = getQueryClient();

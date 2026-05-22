@@ -162,8 +162,30 @@ export class DataContextManager {
         this.assertNotDisposed();
         this.systemsById.set(system.id, system);
 
+        Sentry.addBreadcrumb({
+            category: 'data-context-manager',
+            level: 'info',
+            message: 'enableSystem:start',
+            data: { systemId: system.id },
+        });
+
         await this.ensureAdapterAndContainer();
+
+        Sentry.addBreadcrumb({
+            category: 'data-context-manager',
+            level: 'info',
+            message: 'enableSystem:adapter-ready',
+            data: { systemId: system.id },
+        });
+
         await this.ensureSystemDataContext(system);
+
+        Sentry.addBreadcrumb({
+            category: 'data-context-manager',
+            level: 'info',
+            message: 'enableSystem:context-ready',
+            data: { systemId: system.id },
+        });
 
         /**
          * Skip sync when this system was already synced in the current browser session
