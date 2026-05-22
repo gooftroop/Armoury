@@ -282,8 +282,12 @@ export const upsertUser: RouteHandler = async (
                 updatedAt: now,
             };
 
-            await adapter.put('account', account);
+            // Order matters: insert `user` first so a PK conflict on the
+            // sub-as-id raises BEFORE we persist the account row. This keeps
+            // the create path safe even if the adapter's `transaction` does
+            // not actually roll back on error (some KV adapters are no-op).
             await adapter.put('user', user);
+            await adapter.put('account', account);
 
             return user;
         });
