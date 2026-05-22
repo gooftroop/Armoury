@@ -51,9 +51,9 @@ export default async function ArmiesPage({ params }: ArmiesPageProps) {
 
     if (!userId) {
         // Render an error UI instead of redirecting to /auth/logout — an active
-        // session without internal_id indicates a broken Auth0 Post-Login Action,
-        // not a stale session. Sign-out must be user-initiated to avoid redirect loops.
-        Sentry.captureMessage('Authenticated session missing internal_id claim on armies page', {
+        // session without a `sub` claim should be unreachable for a valid Auth0
+        // session. Sign-out must be user-initiated to avoid redirect loops.
+        Sentry.captureMessage('Authenticated session missing sub claim on armies page', {
             level: 'error',
             tags: { component: 'ArmiesPage' },
             extra: { sub: session.user.sub, email: session.user.email },

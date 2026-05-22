@@ -58,10 +58,10 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
                     if (!userId) {
                         // Render an error UI instead of redirecting to /auth/logout —
-                        // an active session without internal_id indicates a broken
-                        // Auth0 Post-Login Action, not a stale session. Sign-out must
-                        // be user-initiated to avoid redirect loops.
-                        Sentry.captureMessage('Authenticated session missing internal_id claim on account page', {
+                        // an active session without a `sub` claim should be unreachable
+                        // for a valid Auth0 session. Sign-out must be user-initiated to
+                        // avoid redirect loops.
+                        Sentry.captureMessage('Authenticated session missing sub claim on account page', {
                             level: 'error',
                             tags: { component: 'AccountPage' },
                             extra: { sub: session.user.sub, email: session.user.email },

@@ -7,7 +7,7 @@
  * @requirements
  * - REQ-LANDING-01: Renders AuthenticatedLanding wrapped in HydrationBoundary when session exists with userId.
  * - REQ-LANDING-02: Prefetches account data via queryAccount when authenticated.
- * - REQ-LANDING-03: Renders error UI with sign-out retry button when session exists but internal_id is missing.
+ * - REQ-LANDING-03: Renders error UI with sign-out retry button when session exists but sub claim is missing.
  * - REQ-LANDING-04: Renders SilentAuthCheck + UnauthenticatedLanding when no session.
  * - REQ-LANDING-05: Calls setRequestLocale with the resolved locale param.
  * - REQ-LANDING-06: Calls discoverSystemManifests and passes manifests to landing components.
@@ -18,7 +18,7 @@
  * |-------------------|---------------------------------------------------------------------------|
  * | REQ-LANDING-01    | authenticated user → HydrationBoundary + AuthenticatedLanding             |
  * | REQ-LANDING-02    | authenticated user → prefetchQuery called with queryAccount               |
- * | REQ-LANDING-03    | authenticated user without internal_id → error UI with sign-out retry button             |
+ * | REQ-LANDING-03    | authenticated user without sub claim → error UI with sign-out retry button             |
  * | REQ-LANDING-04    | no session → SilentAuthCheck + UnauthenticatedLanding                     |
  * | REQ-LANDING-05    | locale param is forwarded to setRequestLocale                             |
  * | REQ-LANDING-06    | manifests are passed through to landing components                        |
@@ -256,7 +256,7 @@ describe('LandingContent', () => {
         expect(mockQc.prefetchQuery).toHaveBeenCalledWith(queryOpts);
     });
 
-    it('renders error UI with retry button when authenticated but internal_id is missing', async () => {
+    it('renders error UI with retry button when authenticated but sub claim is missing', async () => {
         mockGetSession.mockResolvedValue(makeSession({ omitSub: true }));
 
         const result = (await LandingContent({ params: Promise.resolve({ locale: 'en' }) })) as unknown as ReactElement;
