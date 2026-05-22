@@ -232,47 +232,55 @@ export const upsertUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const existing = await adapter.get('user', request.id);
-    const now = new Date().toISOString();
+    // Wrap read + writes in a single transaction so concurrent first-logins
+    // for the same Auth0 sub cannot produce orphan accounts or duplicate rows.
+    // Re-check existence inside the transaction; PK conflict on `user` (id = sub)
+    // is the ultimate guard if two transactions race past the initial check.
+    const result = await adapter.transaction(async (): Promise<User> => {
+        const existing = await adapter.get('user', request.id);
+        const now = new Date().toISOString();
 
-    if (existing) {
-        const updated: User = {
-            ...existing,
-            email: request.email,
-            name: request.name,
-            picture: request.picture,
+        if (existing) {
+            const updated: User = {
+                ...existing,
+                email: request.email,
+                name: request.name,
+                picture: request.picture,
+                updatedAt: now,
+            };
+
+            await adapter.put('user', updated);
+
+            return updated;
+        }
+
+        const userId = request.id;
+        const accountId = randomUUID();
+
+        const account: Account = {
+            id: accountId,
+            userId,
+            preferences: DEFAULT_PREFERENCES,
+            systems: {},
+            createdAt: now,
             updatedAt: now,
         };
 
-        await adapter.put('user', updated);
+        const user: User = {
+            id: userId,
+            email: request.email,
+            name: request.name,
+            picture: request.picture,
+            accountId,
+            createdAt: now,
+            updatedAt: now,
+        };
 
-        return jsonResponse(200, updated);
-    }
+        await adapter.put('account', account);
+        await adapter.put('user', user);
 
-    const userId = request.id;
-    const accountId = randomUUID();
+        return user;
+    });
 
-    const account: Account = {
-        id: accountId,
-        userId,
-        preferences: DEFAULT_PREFERENCES,
-        systems: {},
-        createdAt: now,
-        updatedAt: now,
-    };
-
-    const user: User = {
-        id: userId,
-        email: request.email,
-        name: request.name,
-        picture: request.picture,
-        accountId,
-        createdAt: now,
-        updatedAt: now,
-    };
-
-    await adapter.put('account', account);
-    await adapter.put('user', user);
-
-    return jsonResponse(200, user);
+    return jsonResponse(200, result);
 };

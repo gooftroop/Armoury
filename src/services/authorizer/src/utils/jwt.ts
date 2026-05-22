@@ -37,7 +37,7 @@ export const isJwtPayload = (payload: unknown): payload is JwtPayload => {
  * Guards payloads to the expected M2M token shape.
  *
  * M2M tokens issued via the client_credentials grant include a `gty`
- * claim but lack user-specific claims like `internal_id`.
+ * claim but lack user-specific claims like `email` or `name`.
  *
  * @param payload - JWT payload to validate.
  * @returns True when payload matches the M2M token shape.

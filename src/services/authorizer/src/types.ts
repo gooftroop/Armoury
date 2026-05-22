@@ -188,7 +188,7 @@ export interface JwtPayload {
  * JWT payload fields present in Auth0 machine-to-machine tokens.
  *
  * M2M tokens are issued via the client_credentials grant and lack
- * user-specific claims like `internal_id`, `email`, and `name`.
+ * user-specific claims like `email` and `name`.
  */
 export interface M2mPayload {
     /**

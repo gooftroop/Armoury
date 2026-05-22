@@ -20,7 +20,7 @@ export async function putAccount(
     body: UpdateAccountRequest,
 ): Promise<Account> {
     return ky
-        .put(`${params.userId}/account`, {
+        .put(`${encodeURIComponent(params.userId)}/account`, {
             prefixUrl: USERS_BASE_URL,
             headers: { Authorization: authorization },
             json: body,
