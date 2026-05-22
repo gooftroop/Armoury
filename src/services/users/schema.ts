@@ -24,7 +24,6 @@ export const usersTable = table(
         name: text('name').notNull(),
         picture: text('picture'),
         accountId: text('account_id'),
-        legacyId: text('legacy_id'),
         createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },
