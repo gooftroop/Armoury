@@ -62,11 +62,12 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
         const userId = session.user['sub'] as string | undefined;
 
         if (!userId) {
-            // The session exists but lacks internal_id — almost always a misconfigured
-            // Auth0 Post-Login Action. Render an error UI instead of redirecting,
-            // because redirecting to /auth/login on an active session is what caused
-            // the post-signup infinite loop. Sign-out must be user-initiated.
-            Sentry.captureMessage('Authenticated session missing internal_id claim on landing', {
+            // The session exists but lacks the Auth0 `sub` claim — should be
+            // unreachable for any valid Auth0 session. Render an error UI
+            // instead of redirecting, because redirecting to /auth/login on an
+            // active session caused the post-signup infinite loop. Sign-out
+            // must be user-initiated.
+            Sentry.captureMessage('Authenticated session missing sub claim on landing', {
                 level: 'error',
                 tags: { component: 'LandingContent' },
                 extra: { sub: session.user.sub, email: session.user.email },
