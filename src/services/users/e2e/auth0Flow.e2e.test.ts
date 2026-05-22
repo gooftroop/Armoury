@@ -35,7 +35,7 @@ describe('Auth0 sub-based user flow e2e', () => {
 
     it('upsertUser creates user with id === sub on first login', async () => {
         const res = await router(
-            restEvent('PUT', '/', {
+            restEvent('POST', '/upsert', {
                 sub: auth0Sub,
                 email: 'test@armoury.dev',
                 name: 'Auth0 Test User',
@@ -54,7 +54,7 @@ describe('Auth0 sub-based user flow e2e', () => {
 
     it('upsertUser updates existing user on subsequent login', async () => {
         const first = await router(
-            restEvent('PUT', '/', {
+            restEvent('POST', '/upsert', {
                 sub: auth0Sub,
                 email: 'old@armoury.dev',
                 name: 'Old Name',
@@ -66,7 +66,7 @@ describe('Auth0 sub-based user flow e2e', () => {
         expect(first.statusCode).toBe(200);
 
         const second = await router(
-            restEvent('PUT', '/', {
+            restEvent('POST', '/upsert', {
                 sub: auth0Sub,
                 email: 'new@armoury.dev',
                 name: 'New Name',
@@ -90,7 +90,7 @@ describe('Auth0 sub-based user flow e2e', () => {
 
     it('getUser resolves by sub (which is id)', async () => {
         await router(
-            restEvent('PUT', '/', {
+            restEvent('POST', '/upsert', {
                 sub: auth0Sub,
                 email: 'test@armoury.dev',
                 name: 'Test',
@@ -108,7 +108,7 @@ describe('Auth0 sub-based user flow e2e', () => {
 
     it('account operations use sub as userId', async () => {
         const upsertRes = await router(
-            restEvent('PUT', '/', {
+            restEvent('POST', '/upsert', {
                 sub: auth0Sub,
                 email: 'test@armoury.dev',
                 name: 'Test',
