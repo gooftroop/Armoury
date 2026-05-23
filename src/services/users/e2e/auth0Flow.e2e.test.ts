@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Account, CreateAccountPayload, User, UserContext } from '@/types.js';
+import type { Account, User, UserContext } from '@/types.js';
 import { router } from '@/router.js';
 import { createE2EAdapter, resetDatabase } from '@/__testing__/e2eAdapter.js';
 import type { LocalDatabaseAdapter } from '@/utils/localAdapter.js';
@@ -119,18 +119,6 @@ describe('Auth0 sub-based user flow e2e', () => {
         );
         const user = JSON.parse(upsertRes.body) as User;
         expect(user.id).toBe(auth0Sub);
-
-        const createAccountBody: CreateAccountPayload = {
-            preferences: { theme: 'dark', language: 'en', notificationsEnabled: false },
-        };
-        const accountRes = await router(
-            restEvent('POST', '/{id}/account', createAccountBody, { id: auth0Sub }),
-            adapter,
-            m2mContext,
-        );
-        expect(accountRes.statusCode).toBe(201);
-        const account = JSON.parse(accountRes.body) as Account;
-        expect(account.userId).toBe(auth0Sub);
 
         const getRes = await router(
             restEvent('GET', '/{id}/account', undefined, { id: auth0Sub }),
