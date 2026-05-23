@@ -87,6 +87,12 @@ const detachmentOptions: DetachmentOption[] = [
     { id: 'gladius', name: 'Gladius Task Force' },
 ];
 
+const battleSizeOptions = [
+    { id: 'Incursion', name: 'Incursion' },
+    { id: 'StrikeForce', name: 'Strike Force' },
+    { id: 'Onslaught', name: 'Onslaught' },
+];
+
 function makeValues(overrides: Partial<CreateArmyFormValues> = {}): CreateArmyFormValues {
     return {
         name: '',
@@ -107,6 +113,7 @@ describe('CreateArmyForm', () => {
             <CreateArmyForm
                 values={makeValues()}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={[]}
                 isValid={false}
                 onChange={vi.fn()}
@@ -129,6 +136,7 @@ describe('CreateArmyForm', () => {
             <CreateArmyForm
                 values={makeValues()}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={[]}
                 isValid={false}
                 onChange={onChange}
@@ -147,6 +155,7 @@ describe('CreateArmyForm', () => {
             <CreateArmyForm
                 values={makeValues()}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={[]}
                 isValid={false}
                 onChange={vi.fn()}
@@ -163,6 +172,7 @@ describe('CreateArmyForm', () => {
             <CreateArmyForm
                 values={makeValues()}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={[]}
                 isValid={true}
                 saving={true}
@@ -180,6 +190,7 @@ describe('CreateArmyForm', () => {
             <CreateArmyForm
                 values={makeValues()}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={[]}
                 isValid={false}
                 saveError="Something went wrong"
@@ -200,6 +211,7 @@ describe('CreateArmyForm', () => {
             <CreateArmyForm
                 values={makeValues()}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={[]}
                 isValid={true}
                 onChange={vi.fn()}
@@ -221,6 +233,7 @@ describe('CreateArmyForm', () => {
             <CreateArmyForm
                 values={makeValues()}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={[]}
                 isValid={false}
                 onChange={vi.fn()}
@@ -237,8 +250,9 @@ describe('CreateArmyForm', () => {
     it('renders the army preview with faction name when a faction is selected', () => {
         render(
             <CreateArmyForm
-                values={makeValues({ name: 'Iron Fists', factionId: 'space-marines' })}
+                values={makeValues({ name: 'Iron Fists', factionId: 'space-marines', battleSize: 'StrikeForce' })}
                 factionOptions={factionOptions}
+                battleSizeOptions={battleSizeOptions}
                 detachmentOptions={detachmentOptions}
                 isValid={false}
                 onChange={vi.fn()}
@@ -251,5 +265,6 @@ describe('CreateArmyForm', () => {
         expect(preview).toBeInTheDocument();
         expect(screen.getByText('Iron Fists')).toBeInTheDocument();
         expect(preview).toHaveTextContent('Space Marines');
+        expect(preview).toHaveTextContent('Strike Force');
     });
 });

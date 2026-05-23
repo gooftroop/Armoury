@@ -19,7 +19,7 @@ const mockPush = vi.fn();
 const mockInvalidateQueries = vi.fn();
 const useMutationMock = vi.fn();
 
-let mockDataContextValue = {
+const mockDataContextValue = {
     status: 'ready' as string,
     dataContext: {
         armies: {
@@ -148,6 +148,7 @@ describe('CreateArmyContainer', () => {
     it('surfaces a localized error message on save failure', async () => {
         useMutationMock.mockImplementation(({ onError }: { onError: () => void }) => {
             onError();
+
             return { mutate: vi.fn(), isPending: false };
         });
 

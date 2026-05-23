@@ -229,6 +229,7 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
         <CreateArmyForm
             values={values}
             factionOptions={factionOptions}
+            battleSizeOptions={BATTLE_SIZE_OPTIONS}
             detachmentOptions={detachmentOptions}
             errors={errors}
             isValid={isValid}

@@ -83,6 +83,8 @@ export interface CreateArmyFormProps {
     values: CreateArmyFormValues;
     /** Faction options to display. */
     factionOptions: readonly FactionOption[];
+    /** Battle size options to display in the preview. */
+    battleSizeOptions: readonly { id: BattleSize; name: string }[];
     /** Detachment options for the currently-selected faction. */
     detachmentOptions: readonly DetachmentOption[];
     /** Per-field validation errors to display inline. */
@@ -110,6 +112,7 @@ export interface CreateArmyFormProps {
 function CreateArmyForm({
     values,
     factionOptions,
+    battleSizeOptions,
     detachmentOptions,
     errors,
     isValid,
@@ -140,7 +143,11 @@ function CreateArmyForm({
     const handleSubmit = useCallback(
         (event: FormEvent<HTMLFormElement>) => {
             event.preventDefault();
-            if (!isValid || saving) return;
+
+            if (!isValid || saving) {
+                return;
+            }
+
             onSubmit();
         },
         [isValid, saving, onSubmit],
@@ -271,6 +278,9 @@ function CreateArmyForm({
                 <p className="text-sm font-medium">{values.name || t('preview.namePlaceholder')}</p>
                 <p className="text-sm text-muted-foreground">
                     {factionOptions.find((f) => f.id === values.factionId)?.name ?? t('preview.factionPlaceholder')}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                    {battleSizeOptions.find((b) => b.id === values.battleSize)?.name ?? t('preview.battleSizePlaceholder')}
                 </p>
             </section>
 
