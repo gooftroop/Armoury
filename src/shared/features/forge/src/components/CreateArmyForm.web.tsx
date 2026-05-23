@@ -267,6 +267,13 @@ function CreateArmyForm({
                 ) : null}
             </div>
 
+            <section aria-label={t('preview.label')} className="rounded-md border border-border bg-muted/40 p-4">
+                <p className="text-sm font-medium">{values.name || t('preview.namePlaceholder')}</p>
+                <p className="text-sm text-muted-foreground">
+                    {factionOptions.find((f) => f.id === values.factionId)?.name ?? t('preview.factionPlaceholder')}
+                </p>
+            </section>
+
             <div className="flex items-center justify-end gap-2 pt-2">
                 <Button type="button" variant="ghost" onClick={onCancel} disabled={saving}>
                     {t('actions.cancel')}
