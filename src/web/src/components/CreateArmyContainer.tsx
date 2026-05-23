@@ -38,7 +38,7 @@ import {
     type DetachmentOption,
     type FactionOption,
 } from '@armoury/feature-forge';
-import type { Army, BattleSize } from '@armoury/wh40k10e';
+import type { Army } from '@armoury/wh40k10e';
 import { FACTION_MAP, getAllFactionIds } from '@armoury/wh40k10e';
 
 /** Minimum trimmed army name length. */
@@ -158,12 +158,21 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
 
     const factionOptions = useMemo(() => buildFactionOptions(), []);
 
-    // Detachment options are sourced from plugin FactionData. The current
-    // GameData API exposes detachments only via per-faction getters, so wiring
-    // a faction-id → FactionData lookup is deferred to a follow-up task. The
-    // form treats an empty detachment list as "not applicable" (per the UI
-    // contract: detachment is required only when options exist).
-    const detachmentOptions = useMemo<readonly DetachmentOption[]>(() => [], []);
+    // Derive detachment options from the selected faction's plugin data.
+    const detachmentOptions = useMemo<readonly DetachmentOption[]>(
+        () =>
+            (FACTION_MAP[values.factionId ?? '']?.detachments ?? []).map((d) => ({
+                id: d.id,
+                name: d.name,
+            })),
+        [values.factionId],
+    );
+
+    // Reset detachmentId whenever the faction changes so stale selections
+    // from a previous faction are never submitted.
+    useEffect(() => {
+        setValues((v) => ({ ...v, detachmentId: null }));
+    }, [values.factionId]);
 
     const { errors, isValid } = useMemo(
         () => validate(values, detachmentOptions, t),
@@ -181,7 +190,7 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
                 throw new Error('DataContext not ready');
             }
 
-            await dataContext.armies.save(army as never);
+            await dataContext.armies.save(army);
 
             return army;
         },
@@ -210,7 +219,7 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
             name: values.name,
             factionId: values.factionId,
             detachmentId: values.detachmentId,
-            battleSize: values.battleSize as BattleSize,
+            battleSize: values.battleSize,
             ownerId: userId,
         });
 
