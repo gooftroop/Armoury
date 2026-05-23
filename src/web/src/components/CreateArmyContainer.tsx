@@ -158,20 +158,15 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
 
     const factionOptions = useMemo(() => buildFactionOptions(), []);
 
-    // Derive detachment options from the selected faction's plugin data.
-    const detachmentOptions = useMemo<readonly DetachmentOption[]>(
-        () =>
-            (FACTION_MAP[values.factionId ?? '']?.detachments ?? []).map((d) => ({
-                id: d.id,
-                name: d.name,
-            })),
-        [values.factionId],
-    );
+    // Detachment options require runtime FactionData (loaded from BattleScribe files).
+    // Until the DataContext exposes per-faction detachment queries, this remains empty.
+    // The form treats an empty list as "detachment not required" per the validation contract.
+    const detachmentOptions = useMemo<readonly DetachmentOption[]>(() => [], []);
 
     // Reset detachmentId whenever the faction changes so stale selections
     // from a previous faction are never submitted.
     useEffect(() => {
-        setValues((v) => ({ ...v, detachmentId: null }));
+        setValues((v: CreateArmyFormValues) => ({ ...v, detachmentId: null }));
     }, [values.factionId]);
 
     const { errors, isValid } = useMemo(
