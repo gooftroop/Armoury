@@ -207,3 +207,64 @@ test.describe('Forge army list', () => {
         await expect(page.getByRole('heading', { name: /Original Army \(Copy\)/i, level: 3 })).toBeVisible();
     });
 });
+
+test.describe('Create army flow', () => {
+    // PGlite sync + soft navigation takes extra time.
+    test.slow();
+
+    test('navigates to create army form when CTA is clicked', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        const forge = new ForgeListPage(page);
+        await expect(forge.createArmyButton).toBeVisible();
+
+        await forge.createArmyButton.click();
+
+        await page.waitForURL(/\/wh40k10e\/armies\/new/, { timeout: 10_000 });
+        await expect(page.getByRole('heading', { name: /create army/i })).toBeVisible();
+    });
+
+    test('submits form and redirects to army list', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        await page.goto('/wh40k10e/armies/new');
+
+        await page.getByLabel('Army Name').fill('Test Army Name');
+
+        const comboboxes = page.getByRole('combobox');
+        await comboboxes.first().click();
+        await page.getByRole('option').first().click();
+
+        await comboboxes.nth(2).click();
+        await page.getByRole('option', { name: /strike force/i }).click();
+
+        await page.getByRole('button', { name: /create army/i }).click();
+
+        await page.waitForURL(/\/wh40k10e\/armies/, { timeout: 15_000 });
+        await expect(page).not.toHaveURL(/\/wh40k10e\/armies\/new/);
+    });
+
+    test('shows validation error for empty name', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        await page.goto('/wh40k10e/armies/new');
+
+        const nameInput = page.getByLabel('Army Name');
+        await nameInput.fill('ab');
+        await nameInput.clear();
+        await nameInput.blur();
+
+        await expect(page.getByText(/army name is required/i)).toBeVisible({ timeout: 5_000 });
+    });
+
+    test('cancel returns to army list', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        await page.goto('/wh40k10e/armies/new');
+
+        await page.getByRole('button', { name: /cancel/i }).click();
+
+        await page.waitForURL(/\/wh40k10e\/armies$/, { timeout: 10_000 });
+        await expect(page).toHaveURL(/\/wh40k10e\/armies$/);
+    });
+});
