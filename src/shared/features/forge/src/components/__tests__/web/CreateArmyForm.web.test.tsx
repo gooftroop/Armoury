@@ -247,8 +247,9 @@ describe('CreateArmyForm', () => {
             />,
         );
 
-        expect(screen.getByRole('region', { name: 'preview.label' })).toBeInTheDocument();
+        const preview = screen.getByRole('region', { name: 'preview.label' });
+        expect(preview).toBeInTheDocument();
         expect(screen.getByText('Iron Fists')).toBeInTheDocument();
-        expect(screen.getByText('Space Marines')).toBeInTheDocument();
+        expect(preview).toHaveTextContent('Space Marines');
     });
 });
