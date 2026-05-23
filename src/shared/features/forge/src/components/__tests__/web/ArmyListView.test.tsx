@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * ArmyListView component tests.
  *
