@@ -10,14 +10,14 @@
  * @requirements
  * 1. Must be a Server Component (no 'use client').
  * 2. Must call auth0.getSession() at request time to detect authentication.
- * 3. Must extract the internal_id custom claim from session.user for user identification.
- * 4. Must redirect to /auth/login when authenticated but internal_id claim is missing (triggers graceful re-auth).
+ * 3. Must use session.user.sub as the canonical user identifier.
+ * 4. Must redirect to /auth/login when authenticated but sub claim is missing.
  * 5. Must discover game system manifests via discoverSystemManifests().
  * 6. Must prefetch account data via React Query when authenticated.
- * 5. Must wrap authenticated path in HydrationBoundary with dehydrated state.
- * 6. Must render AuthenticatedLanding for logged-in users.
- * 7. Must render UnauthenticatedLanding for anonymous users.
- * 8. Must set the request locale for next-intl server-side.
+ * 7. Must wrap authenticated path in HydrationBoundary with dehydrated state.
+ * 8. Must render AuthenticatedLanding for logged-in users.
+ * 9. Must render UnauthenticatedLanding for anonymous users.
+ * 10. Must set the request locale for next-intl server-side.
  *
  * @module landing-content
  */
@@ -28,7 +28,7 @@ import * as Sentry from '@sentry/nextjs';
 
 import { queryAccount } from '@armoury/clients-users';
 
-import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
+import { auth0 } from '@/lib/auth0.js';
 import { discoverSystemManifests } from '@/lib/discoverSystems.js';
 import { getQueryClient } from '@armoury/query';
 import { AuthenticatedLanding } from '@/components/landing/AuthenticatedLanding.js';
@@ -59,14 +59,15 @@ export async function LandingContent({ params }: LandingContentProps): Promise<R
 
     if (isAuthenticated && session.user && session.tokenSet?.accessToken) {
         const authorization = `Bearer ${session.tokenSet.accessToken as string}`;
-        const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
+        const userId = session.user['sub'] as string | undefined;
 
         if (!userId) {
-            // The session exists but lacks internal_id — almost always a misconfigured
-            // Auth0 Post-Login Action. Render an error UI instead of redirecting,
-            // because redirecting to /auth/login on an active session is what caused
-            // the post-signup infinite loop. Sign-out must be user-initiated.
-            Sentry.captureMessage('Authenticated session missing internal_id claim on landing', {
+            // The session exists but lacks the Auth0 `sub` claim — should be
+            // unreachable for any valid Auth0 session. Render an error UI
+            // instead of redirecting, because redirecting to /auth/login on an
+            // active session caused the post-signup infinite loop. Sign-out
+            // must be user-initiated.
+            Sentry.captureMessage('Authenticated session missing sub claim on landing', {
                 level: 'error',
                 tags: { component: 'LandingContent' },
                 extra: { sub: session.user.sub, email: session.user.email },

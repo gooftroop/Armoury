@@ -47,7 +47,7 @@ export function createApiGatewayEvent(options: {
             authorizer: {
                 jwt: {
                     claims: {
-                        'https://armoury.app/internal_id': userContext.userId,
+                        sub: userContext.userId,
                         'https://armoury.app/email': userContext.email,
                         'https://armoury.app/name': userContext.name,
                     },
@@ -88,7 +88,7 @@ export function createWebSocketEvent(options: {
             ...(userContext
                 ? {
                       authorizer: {
-                          'https://armoury.app/internal_id': userContext.userId,
+                          sub: userContext.userId,
                           email: userContext.email,
                           name: userContext.name,
                       },

@@ -116,16 +116,6 @@ export interface AuthorizerResult {
 }
 
 /**
- * Custom claim namespace for the internal user identifier.
- *
- * Auth0 requires custom claims in access tokens to use a namespace prefix.
- * The Post-Login Action writes a stable UUID into this claim so that every
- * authentication method (Google OAuth, email/password, etc.) resolves to the
- * same application-level user ID.
- */
-export const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id' as const;
-
-/**
  * Custom claim namespace for the user's email address.
  *
  * Auth0 access tokens with an API audience cannot use bare OIDC claim names
@@ -160,18 +150,18 @@ export const M2M_PRINCIPAL_ID = 'm2m' as const;
 
 /**
  * JWT payload fields required by the authorizer for user tokens.
+ *
+ * @requirements
+ * - REQ-AUTH-001: Validate standard JWT `sub` claim as the principal identifier.
+ * - REQ-AUTH-002: Validate `aud` and `iss` claims for token integrity.
+ * - REQ-AUTH-003: Support optional namespaced email and name claims for context forwarding.
  */
 export interface JwtPayload {
     /**
-     * The subject identifier for the token (Auth0 `sub` — kept for logging/diagnostics).
+     * The subject identifier for the token (Auth0 `sub`).
+     * Used as the principal identifier for IAM policy generation.
      */
     sub: string;
-
-    /**
-     * Stable internal user identifier injected by the Auth0 Post-Login Action.
-     * This is the primary key used across all application services.
-     */
-    'https://armoury.app/internal_id': string;
 
     /**
      * The email address for the token subject (namespaced claim).
@@ -198,7 +188,7 @@ export interface JwtPayload {
  * JWT payload fields present in Auth0 machine-to-machine tokens.
  *
  * M2M tokens are issued via the client_credentials grant and lack
- * user-specific claims like `internal_id`, `email`, and `name`.
+ * user-specific claims like `email` and `name`.
  */
 export interface M2mPayload {
     /**

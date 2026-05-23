@@ -15,7 +15,7 @@
  * 3. Must inject the cookie into the browser context with correct attributes.
  * 4. Must save storageState to src/web/e2e/.auth/user.json.
  * 5. Must provide a realistic session shape (user sub, email, tokenSet).
- * 6. Must include namespaced `https://armoury.app/internal_id` claim so authenticated views resolve the internal user ID.
+ * 6. Must use `sub` as the canonical user identifier — no custom namespace claims.
  */
 
 import { test as setup } from '@playwright/test';
@@ -24,13 +24,12 @@ import { mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { E2E_USER_ID } from '../constants.js';
+
 // Resolve relative to this file, not CWD, so the path is stable regardless of where Playwright runs.
 const __dir = dirname(fileURLToPath(import.meta.url));
 const AUTH_STATE_PATH = resolve(__dir, '..', '.auth', 'user.json');
 const AUTH0_COOKIE_NAME = '__session';
-
-const E2E_USER_ID = 'e2e-test-user-00000000-0000-0000-0000-000000000001';
-const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
 
 setup('forge authenticated session', async ({ context }) => {
     const secret = process.env['AUTH0_SECRET'] || 'e2e-test-secret';
@@ -38,11 +37,10 @@ setup('forge authenticated session', async ({ context }) => {
     const cookieValue = await generateSessionCookie(
         {
             user: {
-                sub: 'auth0|e2e-test-user',
+                sub: E2E_USER_ID,
                 email: 'e2e@armoury.test',
                 name: 'E2E Test User',
                 email_verified: true,
-                [INTERNAL_ID_CLAIM]: E2E_USER_ID,
             },
             tokenSet: {
                 accessToken: 'e2e-fake-access-token',

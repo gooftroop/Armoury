@@ -1,6 +1,11 @@
 import type { UserContext } from '@/types.js';
 
-const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
+/**
+ * @requirements
+ * - REQ-AUTH-HTTP: Extract UserContext from httpApi native JWT authorizer context.
+ * - REQ-AUTH-CLAIM: Read userId from `sub` claim (Auth0 subject identifier).
+ */
+
 const EMAIL_CLAIM = 'https://armoury.app/email';
 const NAME_CLAIM = 'https://armoury.app/name';
 
@@ -32,7 +37,7 @@ export function extractUserContext(event: AuthorizerEvent): UserContext {
         throw new Error('Missing authorizer context');
     }
 
-    const userId = typeof claims[INTERNAL_ID_CLAIM] === 'string' ? claims[INTERNAL_ID_CLAIM] : null;
+    const userId = typeof claims['sub'] === 'string' ? claims['sub'] : null;
     const email = typeof claims[EMAIL_CLAIM] === 'string' ? claims[EMAIL_CLAIM] : undefined;
     const name = typeof claims[NAME_CLAIM] === 'string' ? claims[NAME_CLAIM] : undefined;
 

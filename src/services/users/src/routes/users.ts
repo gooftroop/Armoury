@@ -47,8 +47,7 @@ export const createUser: RouteHandler = async (
     const now = new Date().toISOString();
 
     const user: User = {
-        id: randomUUID(),
-        sub: request.sub,
+        id: request.id,
         email: request.email,
         name: request.name,
         picture: request.picture,
@@ -211,10 +210,9 @@ export const deleteUser: RouteHandler = async (
 /**
  * Upserts a user on login.
  *
- * Called by the Auth0 Post-Login Action via an M2M token. Looks up the
- * user by `sub`; creates a new record on first login or updates profile
- * fields on subsequent logins. Always returns the user with their stable
- * internal `id`.
+ * Called by the Auth0 Post-Login Action via an M2M token. The user's
+ * Auth0 `sub` IS their primary key (`id`). Creates a new record on first
+ * login or updates profile fields on subsequent logins.
  *
  * @param adapter - Database adapter instance.
  * @param body - Request body containing user details from Auth0.
@@ -234,48 +232,90 @@ export const upsertUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const existing = await adapter.getByField('user', 'sub', request.sub);
-    const now = new Date().toISOString();
+    // Wrap read + writes in a single transaction so concurrent first-logins
+    // for the same Auth0 sub cannot produce orphan accounts or duplicate rows.
+    // Re-check existence inside the transaction; PK conflict on `user` (id = sub)
+    // is the ultimate guard if two transactions race past the initial check.
+    //
+    // Idempotency: if a concurrent request wins the PK race, the losing
+    // transaction throws a unique-violation error. Catch it, re-fetch the
+    // committed user, and return it so the caller sees a successful upsert
+    // instead of a 5xx error.
+    const runUpsert = async (): Promise<User> =>
+        adapter.transaction(async (): Promise<User> => {
+            const existing = await adapter.get('user', request.id);
+            const now = new Date().toISOString();
 
-    if (existing.length > 0) {
-        const updated: User = {
-            ...existing[0],
-            email: request.email,
-            name: request.name,
-            picture: request.picture,
-            updatedAt: now,
-        };
+            if (existing) {
+                const updated: User = {
+                    ...existing,
+                    email: request.email,
+                    name: request.name,
+                    picture: request.picture,
+                    updatedAt: now,
+                };
 
-        await adapter.put('user', updated);
+                await adapter.put('user', updated);
 
-        return jsonResponse(200, updated);
+                return updated;
+            }
+
+            const userId = request.id;
+            const accountId = randomUUID();
+
+            const account: Account = {
+                id: accountId,
+                userId,
+                preferences: DEFAULT_PREFERENCES,
+                systems: {},
+                createdAt: now,
+                updatedAt: now,
+            };
+
+            const user: User = {
+                id: userId,
+                email: request.email,
+                name: request.name,
+                picture: request.picture,
+                accountId,
+                createdAt: now,
+                updatedAt: now,
+            };
+
+            // Order matters: insert `user` first so a PK conflict on the
+            // sub-as-id raises BEFORE we persist the account row. This keeps
+            // the create path safe even if the adapter's `transaction` does
+            // not actually roll back on error (some KV adapters are no-op).
+            await adapter.put('user', user);
+            await adapter.put('account', account);
+
+            return user;
+        });
+
+    let result: User;
+
+    try {
+        result = await runUpsert();
+    } catch (error) {
+        // Detect unique/PK violation from a concurrent first-login race.
+        // Adapters surface this differently (Postgres SQLSTATE 23505,
+        // SQLite UNIQUE constraint, generic message). We match broadly
+        // and then re-fetch; if the user is now present, return it.
+        const message = error instanceof Error ? error.message : String(error);
+        const isConflict = /unique|duplicate|conflict|23505|constraint/i.test(message);
+
+        if (!isConflict) {
+            throw error;
+        }
+
+        const committed = await adapter.get('user', request.id);
+
+        if (!committed) {
+            throw error;
+        }
+
+        result = committed as User;
     }
 
-    const userId = randomUUID();
-    const accountId = randomUUID();
-
-    const account: Account = {
-        id: accountId,
-        userId,
-        preferences: DEFAULT_PREFERENCES,
-        systems: {},
-        createdAt: now,
-        updatedAt: now,
-    };
-
-    const user: User = {
-        id: userId,
-        sub: request.sub,
-        email: request.email,
-        name: request.name,
-        picture: request.picture,
-        accountId,
-        createdAt: now,
-        updatedAt: now,
-    };
-
-    await adapter.put('account', account);
-    await adapter.put('user', user);
-
-    return jsonResponse(200, user);
+    return jsonResponse(200, result);
 };

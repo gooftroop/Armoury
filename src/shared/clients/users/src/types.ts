@@ -9,11 +9,8 @@
 
 /** A user entity as returned by the users REST API. */
 export interface User {
-    /** Unique identifier for the user. */
+    /** Unique identifier for the user (Auth0 subject identifier). */
     id: string;
-
-    /** Auth0 subject identifier for the user. */
-    sub: string;
 
     /** Email address of the user. */
     email: string;

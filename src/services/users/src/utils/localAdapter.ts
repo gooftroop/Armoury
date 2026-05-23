@@ -56,7 +56,6 @@ const STORE_CONFIGS: Record<EntityType, StoreConfig> = {
         primaryKey: 'id',
         fieldToColumn: {
             id: 'id',
-            sub: 'sub',
             email: 'email',
             name: 'name',
             picture: 'picture',

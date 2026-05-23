@@ -1,3 +1,9 @@
+/**
+ * @requirements
+ * - Drizzle table definitions for user entities (Postgres and SQLite variants)
+ * - `usersTable` is used by the Postgres adapter; `usersSqliteTable` by the SQLite adapter
+ * - `id` IS the Auth0 sub — no separate UUID, no `sub` column
+ */
 import type { DatabaseAdapter } from '@/adapter.js';
 import { BaseDAO } from '@/dao/BaseDAO.js';
 import type { User } from '@armoury/models';
@@ -8,10 +14,7 @@ import * as sl from 'drizzle-orm/sqlite-core';
 export const usersTable = pgTable(
     'users',
     {
-        id: text('id')
-            .primaryKey()
-            .$defaultFn(() => crypto.randomUUID()),
-        sub: text('sub').notNull(),
+        id: text('id').primaryKey(),
         email: text('email').notNull(),
         name: text('name').notNull(),
         picture: text('picture'),
@@ -20,7 +23,6 @@ export const usersTable = pgTable(
         updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
     },
     (table) => ({
-        subIndex: index('idx_users_sub').on(table.sub),
         emailIndex: index('idx_users_email').on(table.email),
     }),
 );
@@ -29,11 +31,7 @@ export const usersTable = pgTable(
 export const usersSqliteTable = sl.sqliteTable(
     'users',
     {
-        id: sl
-            .text('id')
-            .primaryKey()
-            .$defaultFn(() => crypto.randomUUID()),
-        sub: sl.text('sub').notNull(),
+        id: sl.text('id').primaryKey(),
         email: sl.text('email').notNull(),
         name: sl.text('name').notNull(),
         picture: sl.text('picture'),
@@ -42,7 +40,6 @@ export const usersSqliteTable = sl.sqliteTable(
         updatedAt: sl.text('updated_at').notNull(),
     },
     (table) => ({
-        subIndex: sl.index('idx_users_sub').on(table.sub),
         emailIndex: sl.index('idx_users_email').on(table.email),
     }),
 );
@@ -60,24 +57,11 @@ export class UserDAO extends BaseDAO<User> {
     }
 
     /**
-     * Finds a user by their Auth0 subject identifier.
-     * @param sub - Auth0 subject identifier.
-     * @returns The user or null if not found.
-     */
-    public async findBySub(sub: string): Promise<User | null> {
-        const results = await this.adapter.getByField('user', 'sub', sub);
-
-        return (results[0] as User) ?? null;
-    }
-
-    /**
      * Finds a user by their email address.
-     * @param email - Email address to search for.
-     * @returns The user or null if not found.
+     * @param email - Email to search for.
+     * @returns Array of matching users (typically 0 or 1).
      */
-    public async findByEmail(email: string): Promise<User | null> {
-        const results = await this.adapter.getByField('user', 'email', email);
-
-        return (results[0] as User) ?? null;
+    public async findByEmail(email: string): Promise<User[]> {
+        return this.adapter.getByField('user', 'email', email);
     }
 }

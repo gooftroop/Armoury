@@ -71,7 +71,7 @@ export function parseCreateUser(body: unknown | null): CreateUserPayload | Error
     }
 
     return {
-        sub,
+        id: sub,
         email,
         name,
         picture: isString(picture) ? picture : null,
@@ -111,7 +111,7 @@ export function parseUpsertUser(body: unknown | null): UpsertUserPayload | Error
     }
 
     return {
-        sub,
+        id: sub,
         email,
         name,
         picture: isString(picture) ? picture : null,

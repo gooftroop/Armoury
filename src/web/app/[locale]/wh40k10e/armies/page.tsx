@@ -8,8 +8,8 @@
  * @requirements
  * 1. Must be a Server Component (no 'use client').
  * 2. Must fetch the Auth0 session via auth0.getSession().
- * 3. Must pass userId (internal_id claim) to ForgeContainer when authenticated.
- * 4. Must redirect to /auth/logout when no session exists or internal_id claim is missing (stale session).
+ * 3. Must pass userId (sub claim) to ForgeContainer when authenticated.
+ * 4. Must redirect to /auth/logout when no session exists or sub claim is missing (stale session).
  * 5. Must use next-intl for locale setup.
  * 6. Must set the request locale for next-intl server-side.
  */
@@ -18,7 +18,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import * as Sentry from '@sentry/nextjs';
 
-import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
+import { auth0 } from '@/lib/auth0.js';
 import { ForgeContainer } from '@/components/ForgeContainer.js';
 
 export interface ArmiesPageProps {
@@ -47,13 +47,13 @@ export default async function ArmiesPage({ params }: ArmiesPageProps) {
         redirect('/auth/login');
     }
 
-    const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
+    const userId = session.user['sub'] as string | undefined;
 
     if (!userId) {
         // Render an error UI instead of redirecting to /auth/logout — an active
-        // session without internal_id indicates a broken Auth0 Post-Login Action,
-        // not a stale session. Sign-out must be user-initiated to avoid redirect loops.
-        Sentry.captureMessage('Authenticated session missing internal_id claim on armies page', {
+        // session without a `sub` claim should be unreachable for a valid Auth0
+        // session. Sign-out must be user-initiated to avoid redirect loops.
+        Sentry.captureMessage('Authenticated session missing sub claim on armies page', {
             level: 'error',
             tags: { component: 'ArmiesPage' },
             extra: { sub: session.user.sub, email: session.user.email },

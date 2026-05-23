@@ -111,7 +111,32 @@ export async function syncTable(
         return { table, rowsRead: 0, batchesWritten: 0 };
     }
 
-    const columns = Object.keys(rows[0]!);
+    const sourceColumns = Object.keys(rows[0]!);
+
+    // Filter to columns that exist in the target schema. The target schema may
+    // have dropped columns the source still has (e.g. legacy columns removed in
+    // a migration not yet applied to production).
+    const targetColsResult = await targetClient.query(
+        `SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2`,
+        [targetSchema, table],
+    );
+    const targetColumnSet = new Set(targetColsResult.rows.map((r) => r['column_name'] as string));
+    const columns = sourceColumns.filter((c) => targetColumnSet.has(c));
+
+    if (columns.length === 0) {
+        console.log(`[db:sync] No overlapping columns between source and target for "${table}" — skipping.`);
+
+        return { table, rowsRead: rows.length, batchesWritten: 0 };
+    }
+
+    const droppedColumns = sourceColumns.filter((c) => !targetColumnSet.has(c));
+
+    if (droppedColumns.length > 0) {
+        console.log(
+            `[db:sync] Skipping columns not present in target "${targetSchema}"."${table}": ${droppedColumns.join(', ')}`,
+        );
+    }
+
     let batchesWritten = 0;
 
     for (let offset = 0; offset < rows.length; offset += DSQL_BATCH_SIZE) {

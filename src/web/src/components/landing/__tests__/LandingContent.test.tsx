@@ -7,7 +7,7 @@
  * @requirements
  * - REQ-LANDING-01: Renders AuthenticatedLanding wrapped in HydrationBoundary when session exists with userId.
  * - REQ-LANDING-02: Prefetches account data via queryAccount when authenticated.
- * - REQ-LANDING-03: Renders error UI with sign-out retry button when session exists but internal_id is missing.
+ * - REQ-LANDING-03: Renders error UI with sign-out retry button when session exists but sub claim is missing.
  * - REQ-LANDING-04: Renders SilentAuthCheck + UnauthenticatedLanding when no session.
  * - REQ-LANDING-05: Calls setRequestLocale with the resolved locale param.
  * - REQ-LANDING-06: Calls discoverSystemManifests and passes manifests to landing components.
@@ -18,7 +18,7 @@
  * |-------------------|---------------------------------------------------------------------------|
  * | REQ-LANDING-01    | authenticated user → HydrationBoundary + AuthenticatedLanding             |
  * | REQ-LANDING-02    | authenticated user → prefetchQuery called with queryAccount               |
- * | REQ-LANDING-03    | authenticated user without internal_id → error UI with sign-out retry button             |
+ * | REQ-LANDING-03    | authenticated user without sub claim → error UI with sign-out retry button             |
  * | REQ-LANDING-04    | no session → SilentAuthCheck + UnauthenticatedLanding                     |
  * | REQ-LANDING-05    | locale param is forwarded to setRequestLocale                             |
  * | REQ-LANDING-06    | manifests are passed through to landing components                        |
@@ -47,7 +47,6 @@ vi.mock('next-intl/server', () => ({
 
 vi.mock('@/lib/auth0.js', () => ({
     auth0: { getSession: mockGetSession },
-    INTERNAL_ID_CLAIM: 'https://armoury.app/internal_id',
 }));
 
 vi.mock('@/lib/discoverSystems.js', () => ({
@@ -90,8 +89,6 @@ vi.mock('next/headers', () => ({
 
 /* ---------- helpers ---------- */
 
-const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
-
 const fakeManifests: GameSystemManifest[] = [
     {
         id: 'wh40k10e',
@@ -117,12 +114,9 @@ function makeMockQueryClient() {
     };
 }
 
-function makeSession(userId?: string) {
+function makeSession(opts?: { omitSub?: boolean }) {
     return {
-        user: {
-            sub: 'auth0|abc123',
-            ...(userId !== undefined ? { [INTERNAL_ID_CLAIM]: userId } : {}),
-        },
+        user: opts?.omitSub ? {} : { sub: 'auth0|abc123' },
         tokenSet: { accessToken: 'test-access-token' },
     };
 }
@@ -223,8 +217,8 @@ describe('LandingContent', () => {
     it('renders HydrationBoundary + AuthenticatedLanding when authenticated with userId', async () => {
         const mockQc = makeMockQueryClient();
         mockGetQueryClient.mockReturnValue(mockQc);
-        mockGetSession.mockResolvedValue(makeSession('user-123'));
-        mockQueryAccount.mockReturnValue({ queryKey: ['account', 'user-123'] });
+        mockGetSession.mockResolvedValue(makeSession());
+        mockQueryAccount.mockReturnValue({ queryKey: ['account', 'auth0|abc123'] });
 
         const result = (await LandingContent({ params: Promise.resolve({ locale: 'en' }) })) as unknown as ReactElement;
 
@@ -237,14 +231,14 @@ describe('LandingContent', () => {
     it('passes userId, manifests, and locale to AuthenticatedLanding', async () => {
         const mockQc = makeMockQueryClient();
         mockGetQueryClient.mockReturnValue(mockQc);
-        mockGetSession.mockResolvedValue(makeSession('user-456'));
-        mockQueryAccount.mockReturnValue({ queryKey: ['account', 'user-456'] });
+        mockGetSession.mockResolvedValue(makeSession());
+        mockQueryAccount.mockReturnValue({ queryKey: ['account', 'auth0|abc123'] });
 
         const result = (await LandingContent({ params: Promise.resolve({ locale: 'ja' }) })) as unknown as ReactElement;
 
         const authed = findByType(result, AuthenticatedLanding);
         expect(authed).toBeDefined();
-        expect(authed!.props.userId).toBe('user-456');
+        expect(authed!.props.userId).toBe('auth0|abc123');
         expect(authed!.props.manifests).toEqual(fakeManifests);
         expect(authed!.props.locale).toBe('ja');
     });
@@ -252,18 +246,18 @@ describe('LandingContent', () => {
     it('prefetches account data via queryClient.prefetchQuery when authenticated', async () => {
         const mockQc = makeMockQueryClient();
         mockGetQueryClient.mockReturnValue(mockQc);
-        mockGetSession.mockResolvedValue(makeSession('user-789'));
-        const queryOpts = { queryKey: ['account', 'user-789'] };
+        mockGetSession.mockResolvedValue(makeSession());
+        const queryOpts = { queryKey: ['account', 'auth0|abc123'] };
         mockQueryAccount.mockReturnValue(queryOpts);
 
         await LandingContent({ params: Promise.resolve({ locale: 'en' }) });
 
-        expect(mockQueryAccount).toHaveBeenCalledWith('Bearer test-access-token', { userId: 'user-789' });
+        expect(mockQueryAccount).toHaveBeenCalledWith('Bearer test-access-token', { userId: 'auth0|abc123' });
         expect(mockQc.prefetchQuery).toHaveBeenCalledWith(queryOpts);
     });
 
-    it('renders error UI with retry button when authenticated but internal_id is missing', async () => {
-        mockGetSession.mockResolvedValue(makeSession());
+    it('renders error UI with retry button when authenticated but sub claim is missing', async () => {
+        mockGetSession.mockResolvedValue(makeSession({ omitSub: true }));
 
         const result = (await LandingContent({ params: Promise.resolve({ locale: 'en' }) })) as unknown as ReactElement;
         const main = findByType(result, 'main');

@@ -1,6 +1,12 @@
 import type { UserContext } from '@/types.js';
 
-const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
+/**
+ * @requirements
+ * - REQ-AUTH-010: Middleware extracts user identity from the httpApi native JWT authorizer context.
+ * - REQ-AUTH-011: `userId` is sourced from `claims.sub` (Auth0 subject identifier).
+ * - REQ-AUTH-012: M2M tokens (client_credentials grant) bypass user identity; sentinel `userId: 'm2m'` returned.
+ */
+
 const EMAIL_CLAIM = 'https://armoury.app/email';
 const NAME_CLAIM = 'https://armoury.app/name';
 const M2M_GRANT_TYPE = 'client-credentials';
@@ -26,9 +32,16 @@ interface AuthorizerEvent {
  * httpApi JWT authorizers return claims nested under
  * `event.requestContext.authorizer.jwt.claims`.
  *
+ * The authorizer passes the Auth0 subject identifier (`sub`) as the user
+ * identity. `userId` is read directly from `claims.sub`.
+ *
  * M2M tokens (client_credentials grant) lack user-specific claims.
  * When an M2M token is detected, a sentinel context with `userId` set
  * to `'m2m'` is returned so callers can distinguish M2M requests.
+ *
+ * @param event - API Gateway v2 event with authorizer context.
+ * @returns Extracted user context containing `userId` and optional profile fields.
+ * @throws Error if authorizer context is absent or `sub` claim is missing.
  */
 export function extractUserContext(event: AuthorizerEvent): UserContext {
     const claims = event.requestContext.authorizer?.jwt?.claims;
@@ -41,7 +54,7 @@ export function extractUserContext(event: AuthorizerEvent): UserContext {
         return { userId: 'm2m' };
     }
 
-    const userId = typeof claims[INTERNAL_ID_CLAIM] === 'string' ? claims[INTERNAL_ID_CLAIM] : null;
+    const userId = typeof claims['sub'] === 'string' ? claims['sub'] : null;
     const email = typeof claims[EMAIL_CLAIM] === 'string' ? claims[EMAIL_CLAIM] : undefined;
     const name = typeof claims[NAME_CLAIM] === 'string' ? claims[NAME_CLAIM] : undefined;
 

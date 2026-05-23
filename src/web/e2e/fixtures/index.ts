@@ -26,14 +26,12 @@ import type { Page, Request } from '@playwright/test';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { E2E_USER_ID, E2E_USER_SUB } from '../constants.js';
+import { E2E_USER_SUB } from '../constants.js';
 import { seedTestUser } from './localstack.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const GITHUB_HAR_PATH = resolve(__dirname, 'har/github-wh40k10e.har');
-
-const INTERNAL_ID_CLAIM = 'https://armoury.app/internal_id';
 
 /**
  * User profile returned by the mocked /auth/profile endpoint.
@@ -45,7 +43,6 @@ const E2E_USER_PROFILE = {
     email: 'e2e@armoury.test',
     name: 'E2E Test User',
     email_verified: true,
-    [INTERNAL_ID_CLAIM]: E2E_USER_ID,
 };
 
 interface ArmouryFixtures {
