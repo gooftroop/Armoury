@@ -9,15 +9,14 @@
  * 1. Must be a Server Component (no 'use client').
  * 2. Must fetch the Auth0 session via auth0.getSession().
  * 3. Must redirect to /auth/login when no session exists.
- * 4. Must redirect to /auth/logout when the internal_id claim is missing (stale session).
- * 5. Must set the request locale for next-intl server-side.
- * 6. Must render the CreateArmyContainer with the authenticated userId and locale.
+ * 4. Must set the request locale for next-intl server-side.
+ * 5. Must render the CreateArmyContainer with the authenticated userId and locale.
  */
 
 import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { auth0, INTERNAL_ID_CLAIM } from '@/lib/auth0.js';
+import { auth0 } from '@/lib/auth0.js';
 import { CreateArmyContainer } from '@/components/CreateArmyContainer.js';
 
 export interface CreateArmyPageProps {
@@ -38,11 +37,7 @@ export default async function CreateArmyPage({ params }: CreateArmyPageProps) {
         redirect('/auth/login');
     }
 
-    const userId = session.user[INTERNAL_ID_CLAIM] as string | undefined;
-
-    if (!userId) {
-        redirect('/auth/logout');
-    }
+    const userId = session.user.sub;
 
     return (
         <div className="flex flex-1 flex-col gap-4 p-6">
