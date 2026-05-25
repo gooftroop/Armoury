@@ -6,6 +6,8 @@
  * - resolveUser returns null when caller sub does not match path id
  * - resolveUser returns null when id is not a valid Auth0 sub
  * - resolveUser returns null when userContext is absent (unauthenticated path)
+ * - resolveUser wraps JIT writes in adapter.transaction
+ * - resolveUser is idempotent under race: if user appears mid-transaction, returns raced user without double-writing
  *
  * Test plan:
  * - existing user passthrough → no writes
@@ -14,8 +16,10 @@
  * - mismatched sub → no JIT, returns null
  * - non-Auth0-shaped id → no JIT, returns null
  * - missing userContext → no JIT, returns null
+ * - JIT path invokes adapter.transaction exactly once
+ * - race: user inserted between outer check and txn body → no account written, raced user returned
  */
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
 import type { User, UserContext } from '@/types.js';
 import { resolveUser } from '@/utils/resolveUser.js';
@@ -104,5 +108,39 @@ describe('resolveUser', () => {
 
         expect(result).not.toBeNull();
         expect(result?.id).toBe(googleSub);
+    });
+
+    it('wraps JIT provisioning writes in adapter.transaction', async () => {
+        const txnSpy = vi.spyOn(adapter, 'transaction');
+
+        await resolveUser(adapter, SUB, fullContext);
+
+        expect(txnSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('is idempotent when a concurrent caller provisions the user mid-transaction', async () => {
+        const raced: User = {
+            id: SUB,
+            email: 'raced@example.com',
+            name: 'Raced',
+            picture: null,
+            accountId: 'acct-raced',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            updatedAt: '2025-01-01T00:00:00.000Z',
+        };
+
+        // Simulate a parallel JIT insert happening between the outer check and
+        // the txn body by injecting the user inside the transaction wrapper.
+        const realTxn = adapter.transaction.bind(adapter);
+        vi.spyOn(adapter, 'transaction').mockImplementation(async (fn) => {
+            await adapter.put('user', raced);
+            return realTxn(fn);
+        });
+
+        const result = await resolveUser(adapter, SUB, fullContext);
+
+        expect(result).toEqual(raced);
+        expect(await adapter.getAll('account')).toHaveLength(0);
+        expect(await adapter.getAll('user')).toHaveLength(1);
     });
 });

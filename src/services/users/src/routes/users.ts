@@ -9,16 +9,12 @@ import type {
     User,
     UserContext,
 } from '@/types.js';
+import { DEFAULT_PREFERENCES } from '@/utils/defaultPreferences.js';
 import { resolveUser } from '@/utils/resolveUser.js';
 import { errorResponse, jsonResponse } from '@/utils/response.js';
 import { parseCreateUser, parseUpdateUser, parseUpsertUser } from '@/utils/validation.js';
 
-/** Default preferences applied when auto-creating an account on first login. */
-export const DEFAULT_PREFERENCES = {
-    theme: 'auto' as const,
-    language: 'en',
-    notificationsEnabled: false,
-};
+export { DEFAULT_PREFERENCES };
 
 /**
  * Creates a new user.

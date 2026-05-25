@@ -1,9 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
-import { DEFAULT_PREFERENCES } from '@/routes/users.js';
+import { DEFAULT_PREFERENCES } from '@/utils/defaultPreferences.js';
 import type { Account, DatabaseAdapter, User, UserContext } from '@/types.js';
 
-// Auth0 sub: `<strategy>|<provider-id>` (e.g. `auth0|abc`, `google-oauth2|123`, `samlp|tenant|user`).
 const AUTH0_SUB_PATTERN = /^[a-z0-9-]+\|[A-Za-z0-9|._-]+$/;
 
 /**
@@ -23,7 +22,6 @@ export async function resolveUser(
         return existing;
     }
 
-    // Only JIT-provision authenticated callers whose path id matches their token sub.
     if (!userContext || userContext.userId !== userId) {
         return null;
     }
@@ -32,35 +30,38 @@ export async function resolveUser(
         return null;
     }
 
-    const now = new Date().toISOString();
-    const accountId = randomUUID();
+    return adapter.transaction(async () => {
+        const racedExisting = await adapter.get('user', userId);
 
-    const account: Account = {
-        id: accountId,
-        userId,
-        preferences: DEFAULT_PREFERENCES,
-        systems: {},
-        createdAt: now,
-        updatedAt: now,
-    };
+        if (racedExisting) {
+            return racedExisting;
+        }
 
-    const user: User = {
-        id: userId,
-        email: userContext.email ?? `pending+${userId}@armoury-app.com`,
-        name: userContext.name ?? 'Pending User',
-        picture: null,
-        accountId,
-        createdAt: now,
-        updatedAt: now,
-    };
+        const now = new Date().toISOString();
+        const accountId = randomUUID();
 
-    await adapter.put('account', account);
-    await adapter.put('user', user);
+        const account: Account = {
+            id: accountId,
+            userId,
+            preferences: DEFAULT_PREFERENCES,
+            systems: {},
+            createdAt: now,
+            updatedAt: now,
+        };
 
-    console.info(
-        '[resolveUser] JIT-provisioned user',
-        JSON.stringify({ userId, accountId, hasEmail: Boolean(userContext.email), hasName: Boolean(userContext.name) }),
-    );
+        const user: User = {
+            id: userId,
+            email: userContext.email ?? `pending+${userId}@armoury-app.com`,
+            name: userContext.name ?? 'Pending User',
+            picture: null,
+            accountId,
+            createdAt: now,
+            updatedAt: now,
+        };
 
-    return user;
+        await adapter.put('account', account);
+        await adapter.put('user', user);
+
+        return user;
+    });
 }
