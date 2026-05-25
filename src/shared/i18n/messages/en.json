@@ -148,6 +148,12 @@
             "detachmentRequired": "Select a detachment",
             "battleSizeRequired": "Select a battle size"
         },
+        "preview": {
+            "label": "Army preview",
+            "namePlaceholder": "Army name",
+            "factionPlaceholder": "No faction selected",
+            "battleSizePlaceholder": "No battle size selected"
+        },
         "actions": {
             "create": "Create Army",
             "creating": "Creating…",

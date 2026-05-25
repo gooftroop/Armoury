@@ -13,7 +13,7 @@
  * 3. Must render ArmyFilterPanel above the army grid.
  * 4. Must render a responsive grid: 1 col at mobile, 2 at md, 3 at lg.
  * 5. Must show ArmyCardSkeleton placeholders during loading.
- * 6. Must show EmptyState callout (no action button) when no armies exist.
+ * 6. Must show EmptyState callout with a Create Army CTA when no armies exist.
  * 7. Must use next-intl useTranslations for all user-facing strings.
  * 8. Must not own any state or perform data fetching.
  * 9. Must display displayName in React DevTools.
@@ -70,6 +70,14 @@ export interface ArmyListViewProps {
 const SKELETON_COUNT = 4;
 
 /**
+ * Relative route for creating a new army.
+ *
+ * Resolved relative to the current pathname so the shared forge package
+ * stays locale-agnostic (next-intl prepends the locale at the route level).
+ */
+const CREATE_ARMY_HREF = './new';
+
+/**
  * ArmyListView — pure render view for the Forge (army list) page.
  *
  * Renders the page header, filter panel, and a responsive grid of army cards.
@@ -99,7 +107,7 @@ function ArmyListView({
                     <h1 className="text-3xl font-bold text-primary">{t('title')}</h1>
                     <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
                 </div>
-                <Link href="./armies/new">
+                <Link href={CREATE_ARMY_HREF}>
                     <Button variant="primary">
                         <Plus />
                         {t('actions.createArmy')}
@@ -118,7 +126,19 @@ function ArmyListView({
 
             {/* Empty state — no armies at all */}
             {!isLoading && isEmpty && (
-                <EmptyState icon={<Shield />} title={t('emptyState.title')} description={t('emptyState.description')} />
+                <EmptyState
+                    action={
+                        <Link href={CREATE_ARMY_HREF}>
+                            <Button variant="primary">
+                                <Plus />
+                                {t('actions.createArmy')}
+                            </Button>
+                        </Link>
+                    }
+                    icon={<Shield />}
+                    title={t('emptyState.title')}
+                    description={t('emptyState.description')}
+                />
             )}
 
             {/* Army list with filters */}

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * ArmyListView component tests.
  *
@@ -106,6 +104,8 @@ describe('ArmyListView', () => {
             />,
         );
 
+        expect(screen.getAllByRole('link', { name: 'actions.createArmy' })).toHaveLength(1);
+        expect(screen.getByRole('link', { name: 'actions.createArmy' })).toHaveAttribute('href', './new');
         expect(screen.getByRole('heading', { name: 'Alpha' })).toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'deploy-card' }));
@@ -152,6 +152,12 @@ describe('ArmyListView', () => {
         );
 
         expect(screen.getByRole('heading', { name: 'emptyState.title' })).toBeInTheDocument();
-        expect(screen.queryByRole('link', { name: 'emptyState.action' })).not.toBeInTheDocument();
+
+        const createArmyLinks = screen.getAllByRole('link', { name: 'actions.createArmy' });
+
+        expect(createArmyLinks).toHaveLength(2);
+        createArmyLinks.forEach((link) => {
+            expect(link).toHaveAttribute('href', './new');
+        });
     });
 });

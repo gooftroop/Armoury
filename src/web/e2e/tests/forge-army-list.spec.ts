@@ -88,7 +88,9 @@ test.describe('Forge army list', () => {
         const forge = new ForgeListPage(page);
         await expect(forge.emptyState).toBeVisible();
         await expect(forge.createArmyButton).toBeVisible();
-        await expect(forge.emptyState.getByRole('link')).not.toBeVisible();
+        // The empty-state callout includes its own "Create Army" CTA in addition
+        // to the header button so zero-state users have a prominent call to action.
+        await expect(forge.emptyState.getByRole('link')).toBeVisible();
     });
 
     test('faction filter narrows list to matching armies only', async ({ page }) => {
@@ -205,5 +207,66 @@ test.describe('Forge army list', () => {
 
         await expect(forge.armyCards).toHaveCount(2, { timeout: 10_000 });
         await expect(page.getByRole('heading', { name: /Original Army \(Copy\)/i, level: 3 })).toBeVisible();
+    });
+});
+
+test.describe('Create army flow', () => {
+    // PGlite sync + soft navigation takes extra time.
+    test.slow();
+
+    test('navigates to create army form when CTA is clicked', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        const forge = new ForgeListPage(page);
+        await expect(forge.createArmyButton).toBeVisible();
+
+        await forge.createArmyButton.click();
+
+        await page.waitForURL(/\/wh40k10e\/armies\/new/, { timeout: 10_000 });
+        await expect(page.getByRole('heading', { name: /create army/i })).toBeVisible();
+    });
+
+    test('submits form and redirects to army list', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        await page.goto('/wh40k10e/armies/new');
+
+        await page.getByLabel('Army Name').fill('Test Army Name');
+
+        const comboboxes = page.getByRole('combobox');
+        await comboboxes.first().click();
+        await page.getByRole('option').first().click();
+
+        await comboboxes.nth(2).click();
+        await page.getByRole('option', { name: /strike force/i }).click();
+
+        await page.getByRole('button', { name: /create army/i }).click();
+
+        await page.waitForURL(/\/wh40k10e\/armies/, { timeout: 15_000 });
+        await expect(page).not.toHaveURL(/\/wh40k10e\/armies\/new/);
+    });
+
+    test('shows validation error for empty name', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        await page.goto('/wh40k10e/armies/new');
+
+        const nameInput = page.getByLabel('Army Name');
+        await nameInput.fill('ab');
+        await nameInput.clear();
+        await nameInput.blur();
+
+        await expect(page.getByText(/army name is required/i)).toBeVisible({ timeout: 5_000 });
+    });
+
+    test('cancel returns to army list', async ({ page }) => {
+        await seedAndNavigateToForge(page, []);
+
+        await page.goto('/wh40k10e/armies/new');
+
+        await page.getByRole('button', { name: /cancel/i }).click();
+
+        await page.waitForURL(/\/wh40k10e\/armies$/, { timeout: 10_000 });
+        await expect(page).toHaveURL(/\/wh40k10e\/armies$/);
     });
 });
