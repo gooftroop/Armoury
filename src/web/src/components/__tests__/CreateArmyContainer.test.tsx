@@ -67,7 +67,12 @@ vi.mock('@armoury/feature-forge', () => ({
         detachmentOptions: Array<{ id: string; name: string }>;
         saving: boolean;
         saveError?: string | null;
-        onChange: (v: { name: string; factionId: string | null; detachmentId: string | null; battleSize: string | null }) => void;
+        onChange: (v: {
+            name: string;
+            factionId: string | null;
+            detachmentId: string | null;
+            battleSize: string | null;
+        }) => void;
         onSubmit: () => void;
         onCancel: () => void;
     }) => (
@@ -80,15 +85,31 @@ vi.mock('@armoury/feature-forge', () => ({
                 data-testid="name-input"
                 value={values.name}
                 onChange={(e) =>
-                    onChange({ name: e.target.value, factionId: values.factionId, detachmentId: null, battleSize: null })
+                    onChange({
+                        name: e.target.value,
+                        factionId: values.factionId,
+                        detachmentId: null,
+                        battleSize: null,
+                    })
                 }
             />
+            <button
+                onClick={() =>
+                    onChange({
+                        name: 'Valid Army',
+                        factionId: 'space-marines',
+                        detachmentId: 'gladius',
+                        battleSize: 'Incursion',
+                    })
+                }
+            >
+                fill-valid
+            </button>
             <button onClick={onSubmit}>submit</button>
             <button onClick={onCancel}>cancel</button>
         </div>
     ),
     buildNewArmy: vi.fn().mockReturnValue({ id: 'new-army-id', name: 'Test Army' }),
-    BATTLE_SIZE_OPTIONS: ['Incursion', 'StrikeForce', 'Onslaught'],
 }));
 
 vi.mock('@armoury/wh40k10e', () => ({
@@ -130,6 +151,7 @@ describe('CreateArmyContainer', () => {
 
         render(<CreateArmyContainer userId="user-1" locale="en" />);
 
+        await user.click(screen.getByRole('button', { name: 'fill-valid' }));
         await user.click(screen.getByRole('button', { name: 'submit' }));
 
         expect(mutate).toHaveBeenCalled();
@@ -146,13 +168,16 @@ describe('CreateArmyContainer', () => {
     });
 
     it('surfaces a localized error message on save failure', async () => {
-        useMutationMock.mockImplementation(({ onError }: { onError: () => void }) => {
-            onError();
+        useMutationMock.mockImplementation(({ onError }: { onError: () => void }) => ({
+            mutate: () => onError(),
+            isPending: false,
+        }));
 
-            return { mutate: vi.fn(), isPending: false };
-        });
-
+        const user = userEvent.setup();
         render(<CreateArmyContainer userId="user-1" locale="en" />);
+
+        await user.click(screen.getByRole('button', { name: 'fill-valid' }));
+        await user.click(screen.getByRole('button', { name: 'submit' }));
 
         await waitFor(() => {
             expect(screen.getByRole('alert')).toHaveTextContent('error');

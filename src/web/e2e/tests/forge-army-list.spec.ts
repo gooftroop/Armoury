@@ -88,7 +88,9 @@ test.describe('Forge army list', () => {
         const forge = new ForgeListPage(page);
         await expect(forge.emptyState).toBeVisible();
         await expect(forge.createArmyButton).toBeVisible();
-        await expect(forge.emptyState.getByRole('link')).not.toBeVisible();
+        // The empty-state callout includes its own "Create Army" CTA in addition
+        // to the header button so zero-state users have a prominent call to action.
+        await expect(forge.emptyState.getByRole('link')).toBeVisible();
     });
 
     test('faction filter narrows list to matching armies only', async ({ page }) => {

@@ -69,8 +69,13 @@ export interface ArmyListViewProps {
 /** Number of skeleton cards to display during loading. */
 const SKELETON_COUNT = 4;
 
-/** Canonical route for creating a new army. */
-const CREATE_ARMY_HREF = '/wh40k10e/armies/new';
+/**
+ * Relative route for creating a new army.
+ *
+ * Resolved relative to the current pathname so the shared forge package
+ * stays locale-agnostic (next-intl prepends the locale at the route level).
+ */
+const CREATE_ARMY_HREF = './new';
 
 /**
  * ArmyListView — pure render view for the Forge (army list) page.

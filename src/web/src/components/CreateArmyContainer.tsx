@@ -158,6 +158,15 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
 
     const factionOptions = useMemo(() => buildFactionOptions(), []);
 
+    const battleSizeOptions = useMemo(
+        () =>
+            (['Incursion', 'StrikeForce', 'Onslaught'] as const).map((id) => ({
+                id,
+                name: t(`battleSizes.${id}`),
+            })),
+        [t],
+    );
+
     // Detachment options require runtime FactionData (loaded from BattleScribe files).
     // Until the DataContext exposes per-faction detachment queries, this remains empty.
     // The form treats an empty list as "detachment not required" per the validation contract.
@@ -169,10 +178,7 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
         setValues((v: CreateArmyFormValues) => ({ ...v, detachmentId: null }));
     }, [values.factionId]);
 
-    const { errors, isValid } = useMemo(
-        () => validate(values, detachmentOptions, t),
-        [values, detachmentOptions, t],
-    );
+    const { errors, isValid } = useMemo(() => validate(values, detachmentOptions, t), [values, detachmentOptions, t]);
 
     const handleChange = useCallback((next: CreateArmyFormValues) => {
         setValues(next);
@@ -229,7 +235,7 @@ function CreateArmyContainer({ userId, locale }: CreateArmyContainerProps): Reac
         <CreateArmyForm
             values={values}
             factionOptions={factionOptions}
-            battleSizeOptions={BATTLE_SIZE_OPTIONS}
+            battleSizeOptions={battleSizeOptions}
             detachmentOptions={detachmentOptions}
             errors={errors}
             isValid={isValid}
