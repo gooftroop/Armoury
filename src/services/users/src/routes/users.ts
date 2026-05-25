@@ -9,16 +9,12 @@ import type {
     User,
     UserContext,
 } from '@/types.js';
+import { DEFAULT_PREFERENCES } from '@/utils/defaultPreferences.js';
 import { resolveUser } from '@/utils/resolveUser.js';
 import { errorResponse, jsonResponse } from '@/utils/response.js';
 import { parseCreateUser, parseUpdateUser, parseUpsertUser } from '@/utils/validation.js';
 
-/** Default preferences applied when auto-creating an account on first login. */
-const DEFAULT_PREFERENCES = {
-    theme: 'auto' as const,
-    language: 'en',
-    notificationsEnabled: false,
-};
+export { DEFAULT_PREFERENCES };
 
 /**
  * Creates a new user.
@@ -89,14 +85,14 @@ export const listUsers: RouteHandler = async (
  * @param adapter - Database adapter instance.
  * @param _body - Unused request body.
  * @param pathParameters - Path parameters containing the user ID.
- * @param _userContext - Unused authenticated user context.
+ * @param userContext - Authenticated user context (enables JIT provisioning in resolveUser).
  * @returns 200 with the user entity, or 404 if not found.
  */
 export const getUser: RouteHandler = async (
     adapter: DatabaseAdapter,
     _body: unknown | null,
     pathParameters: PathParameters | null | undefined,
-    _userContext: UserContext,
+    userContext: UserContext,
 ): Promise<ApiResponse> => {
     const userId = pathParameters?.id;
 
@@ -104,7 +100,7 @@ export const getUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const user = await resolveUser(adapter, userId);
+    const user = await resolveUser(adapter, userId, userContext);
 
     if (!user) {
         console.error('[users:getUser] 404 User not found', JSON.stringify({ userId }));
@@ -124,14 +120,14 @@ export const getUser: RouteHandler = async (
  * @param adapter - Database adapter instance.
  * @param body - Request body with fields to update.
  * @param pathParameters - Path parameters containing the user ID.
- * @param _userContext - Unused authenticated user context.
+ * @param userContext - Authenticated user context (enables JIT provisioning in resolveUser).
  * @returns 200 with the updated user entity, or 404 if not found.
  */
 export const updateUser: RouteHandler = async (
     adapter: DatabaseAdapter,
     body: unknown | null,
     pathParameters: PathParameters | null | undefined,
-    _userContext: UserContext,
+    userContext: UserContext,
 ): Promise<ApiResponse> => {
     const userId = pathParameters?.id;
 
@@ -145,7 +141,7 @@ export const updateUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', request.message);
     }
 
-    const existing = await resolveUser(adapter, userId);
+    const existing = await resolveUser(adapter, userId, userContext);
 
     if (!existing) {
         console.error('[users:updateUser] 404 User not found', JSON.stringify({ userId }));
@@ -173,14 +169,14 @@ export const updateUser: RouteHandler = async (
  * @param adapter - Database adapter instance.
  * @param _body - Unused request body.
  * @param pathParameters - Path parameters containing the user ID.
- * @param _userContext - Unused authenticated user context.
+ * @param userContext - Authenticated user context (enables JIT provisioning in resolveUser).
  * @returns 204 on success, or 404 if not found.
  */
 export const deleteUser: RouteHandler = async (
     adapter: DatabaseAdapter,
     _body: unknown | null,
     pathParameters: PathParameters | null | undefined,
-    _userContext: UserContext,
+    userContext: UserContext,
 ): Promise<ApiResponse> => {
     const userId = pathParameters?.id;
 
@@ -188,7 +184,7 @@ export const deleteUser: RouteHandler = async (
         return errorResponse(400, 'ValidationError', 'Missing user id');
     }
 
-    const existing = await resolveUser(adapter, userId);
+    const existing = await resolveUser(adapter, userId, userContext);
 
     if (!existing) {
         console.error('[users:deleteUser] 404 User not found', JSON.stringify({ userId }));
