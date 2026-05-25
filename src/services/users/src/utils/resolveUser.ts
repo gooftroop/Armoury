@@ -1,15 +1,25 @@
-import { randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 import { DEFAULT_PREFERENCES } from '@/utils/defaultPreferences.js';
 import type { Account, DatabaseAdapter, User, UserContext } from '@/types.js';
 
-const AUTH0_SUB_PATTERN = /^[a-z0-9-]+\|[A-Za-z0-9|._-]+$/;
+/**
+ * @requirements
+ * - If a user row exists for the given userId, return it immediately (passthrough).
+ * - If no user exists and the caller's JWT sub does NOT match userId, return null.
+ * - If no user exists and caller matches, JIT-provision user + account inside a transaction.
+ * - If an account already exists for the userId (user row missing), reuse its id rather than creating a duplicate account.
+ * - The account id must be deterministic from userId so concurrent JIT calls converge on a single account row.
+ * - Placeholder email/name are used when claims are absent; the Auth0 Post-Login Action overwrites them via upsertUser on next login.
+ */
+
+function deterministicAccountId(userId: string): string {
+    return createHash('sha256').update(userId).digest('hex').slice(0, 24);
+}
 
 /**
  * Resolves a user by Auth0 sub, JIT-provisioning a user + account row when
- * missing and the caller's token sub matches the requested id. Placeholder
- * email/name are used when claims are absent; the Auth0 Post-Login Action
- * overwrites them via `upsertUser` on next login.
+ * missing and the caller's token sub matches the requested id.
  */
 export async function resolveUser(
     adapter: DatabaseAdapter,
@@ -26,10 +36,6 @@ export async function resolveUser(
         return null;
     }
 
-    if (!AUTH0_SUB_PATTERN.test(userId)) {
-        return null;
-    }
-
     return adapter.transaction(async () => {
         const racedExisting = await adapter.get('user', userId);
 
@@ -37,17 +43,27 @@ export async function resolveUser(
             return racedExisting;
         }
 
+        const existingAccounts = await adapter.getByField('account', 'userId', userId);
         const now = new Date().toISOString();
-        const accountId = randomUUID();
 
-        const account: Account = {
-            id: accountId,
-            userId,
-            preferences: DEFAULT_PREFERENCES,
-            systems: {},
-            createdAt: now,
-            updatedAt: now,
-        };
+        let accountId: string;
+
+        if (existingAccounts.length > 0) {
+            accountId = existingAccounts[0]!.id;
+        } else {
+            accountId = deterministicAccountId(userId);
+
+            const account: Account = {
+                id: accountId,
+                userId,
+                preferences: DEFAULT_PREFERENCES,
+                systems: {},
+                createdAt: now,
+                updatedAt: now,
+            };
+
+            await adapter.put('account', account);
+        }
 
         const user: User = {
             id: userId,
@@ -59,7 +75,6 @@ export async function resolveUser(
             updatedAt: now,
         };
 
-        await adapter.put('account', account);
         await adapter.put('user', user);
 
         return user;

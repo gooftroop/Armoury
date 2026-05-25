@@ -1,23 +1,25 @@
 /**
  * @requirements
  * - resolveUser returns existing user when found
- * - resolveUser JIT-provisions user+account when sub matches caller and id is valid Auth0 sub
+ * - resolveUser JIT-provisions user+account when sub matches caller
  * - resolveUser uses real claims when present, placeholders otherwise
  * - resolveUser returns null when caller sub does not match path id
- * - resolveUser returns null when id is not a valid Auth0 sub
  * - resolveUser returns null when userContext is absent (unauthenticated path)
  * - resolveUser wraps JIT writes in adapter.transaction
  * - resolveUser is idempotent under race: if user appears mid-transaction, returns raced user without double-writing
+ * - resolveUser reuses an existing account row when the user row is missing (e.g., after partial failure)
+ * - account id is deterministic from userId so concurrent JIT calls converge on one account
  *
  * Test plan:
  * - existing user passthrough → no writes
  * - JIT with full claims → real email/name persisted
  * - JIT with missing claims → placeholder email/name persisted
  * - mismatched sub → no JIT, returns null
- * - non-Auth0-shaped id → no JIT, returns null
  * - missing userContext → no JIT, returns null
  * - JIT path invokes adapter.transaction exactly once
  * - race: user inserted between outer check and txn body → no account written, raced user returned
+ * - orphaned account (user missing) → user created with same accountId, no duplicate accounts
+ * - deterministic account id from userId
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MockDatabaseAdapter } from '@/__mocks__/MockDatabaseAdapter.js';
@@ -87,12 +89,33 @@ describe('resolveUser', () => {
         expect(await adapter.getAll('account')).toHaveLength(0);
     });
 
-    it('returns null for non-Auth0-shaped id', async () => {
-        const badId = 'not-an-auth0-sub';
-        const result = await resolveUser(adapter, badId, { userId: badId });
+    it('determines account id from userId deterministically', async () => {
+        const result = await resolveUser(adapter, SUB, fullContext);
 
-        expect(result).toBeNull();
-        expect(await adapter.getAll('user')).toHaveLength(0);
+        expect(result).not.toBeNull();
+        expect(result?.accountId).toMatch(/^[a-f0-9]{24}$/);
+
+        const result2 = await resolveUser(adapter, SUB, fullContext);
+        expect(result2?.accountId).toBe(result?.accountId);
+    });
+
+    it('reuses existing account when user row is missing (orphaned account)', async () => {
+        const existingAccount = {
+            id: 'orphan-acct-id',
+            userId: SUB,
+            preferences: { theme: 'dark' as const, language: 'en', notificationsEnabled: false },
+            systems: {},
+            createdAt: '2025-01-01T00:00:00.000Z',
+            updatedAt: '2025-01-01T00:00:00.000Z',
+        };
+
+        await adapter.put('account', existingAccount);
+
+        const result = await resolveUser(adapter, SUB, fullContext);
+
+        expect(result).not.toBeNull();
+        expect(result?.accountId).toBe('orphan-acct-id');
+        expect(await adapter.getAll('account')).toHaveLength(1);
     });
 
     it('returns null when userContext is absent', async () => {
@@ -134,6 +157,7 @@ describe('resolveUser', () => {
         const realTxn = adapter.transaction.bind(adapter);
         vi.spyOn(adapter, 'transaction').mockImplementation(async (fn) => {
             await adapter.put('user', raced);
+
             return realTxn(fn);
         });
 
